@@ -19,7 +19,7 @@
 # 
 # --
 
-import pychem.units as units
+from pychem.units import from_unified
 
 import string, Numeric, copy
 
@@ -58,7 +58,7 @@ class PeriodicData(object):
                 self.numbers.append(n)
                 self.row[n] = int(cells[3])
                 self.col[n] = int(cells[4])
-                if cells[5] != "NA": self.mass[n] = units.unified(float(cells[5]))
+                if cells[5] != "NA": self.mass[n] = from_unified(float(cells[5]))
                 if cells[7] != "NA": 
                     radius = float(cells[7])
                     if radius > self.max_radius: self.max_radius = radius

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # PyChem is a general chemistry oriented python package.
 # Copyright (C) 2005 Toon Verstraelen
 # 
@@ -19,31 +20,54 @@
 # 
 # --
 #
-# Source of numbers: http://physics.nist.gov/cuu/Constants/
-# Except for calorie: 1 calorie = 4.184 Joules (thank google) :-)
+# Source of the conversion values: The NIST Reference on Constants, Units, 
+# and Uncertainty (http://physics.nist.gov/cuu/Constants/)
+# Except for calorie: 1 calorie = 4.184 Joules
+#
+#
+# Naming conventions in this module:
+#    * to_unit is a function that converts a value in internal units to a
+#      value in external units
+#    * unit is the value of one external unit in internal units
+#    * from_unit is a function that does the inverse of to_unit
+#  The internal units are the atomic units. External units can be anything else.
 
-ATOMARY = 0
+# Constants that depict measures and units
 
-LENGTH = 0
-ANGSTROM = 1
-NANOMETER = 2
+class Counter:
+    def __init__(self):
+        self.counter = 0
+        
+    def __call__(self):
+        self.counter += 1
+        return self.counter
+        
+measure_counter = Counter()
+unit_counter = Counter()
 
-ENERGY = 1
-JOULE = 3
-CALORIE = 4
-KJMOL = 5
-KCALMOL = 6
-EV = 7
+ATOMARY = measure_counter()
 
-MASS = 2
-UNIFIED = 8
+LENGTH = measure_counter()
+ANGSTROM = unit_counter()
+NANOMETER = unit_counter()
 
-CHARGE = 3
-COULOMB = 9
+ENERGY = measure_counter()
+JOULE = unit_counter()
+CALORIE = unit_counter()
+KJMOL = unit_counter()
+KCALMOL = unit_counter()
+EV = unit_counter()
 
-ANGLE = 4
-RADIALS = 10
-DEGREES = 11
+MASS = measure_counter()
+UNIFIED = unit_counter()
+KG = unit_counter()
+
+CHARGE = measure_counter()
+COULOMB = unit_counter()
+
+ANGLE = measure_counter()
+RADIALS = unit_counter()
+DEGREES = unit_counter()
 
 suffices = {
     ATOMARY: "a.u.",
@@ -55,15 +79,32 @@ suffices = {
     KCALMOL: "kcal/mol",
     EV: "eV",
     UNIFIED: "u",
+    KG: "kg", 
     COULOMB: "C",
     RADIALS: "rad",
     DEGREES: "°"
 }
 
+tex_suffices = {
+    ATOMARY: r"a.u.",
+    ANGSTROM: r"\AA",
+    NANOMETER: r"nm",
+    JOULE: r"J",
+    CALORIE: r"cal",
+    KJMOL: r"\frac{kJ}{mol}",
+    KCALMOL: r"\frac{kcal}{mol}",
+    EV: r"eV",
+    UNIFIED: r"u",
+    KG: r"kg", 
+    COULOMB: r"C",
+    RADIALS: r"rad",
+    DEGREES: r"^{\circ}"
+}
+
 measures = {
     LENGTH: [ATOMARY, ANGSTROM, NANOMETER],
     ENERGY: [ATOMARY, JOULE, CALORIE, KJMOL, KCALMOL, EV],
-    MASS: [ATOMARY, UNIFIED],
+    MASS: [ATOMARY, UNIFIED, KG],
     CHARGE: [ATOMARY, COULOMB],
     ANGLE: [RADIALS, DEGREES]
 }
@@ -76,37 +117,77 @@ measure_names = {
     ANGLE: "Angle"
 }
 
-## Conversion to internal units (a.u)
+
+# Usefull constants
+
+avogadro = 6.0221415e23
 
 # Length
 
-angstrom = lambda x: x * 1.8897261249
-nanometer = lambda x: x * 18.897261249
+angstrom = 1.8897261249
+nanometer = 18.897261249
+
+def to_angstrom(x): return x * 0.5291772108
+def to_nanometer(x): return x * 0.05291772108
+
+def from_angstrom(x): return x * 1.8897261249
+def from_nanometer(x): return x * 18.897261249
+
 
 # Energy
 
-joule = lambda x: x * 2.2937125689189235e+17
-calorie = lambda x: x * 9.596893388356777e+17
-kjmol = lambda x: x * 0.00038087988615327677
-kcalmol = lambda x: x * 0.0015859838459422444
-ev = lambda x: x * 0.036749324444879071
+joule = 2.2937125689189235e17
+calorie = 9.596893388356777e17
+kjmol = 0.00038087988615327677
+kcalmol = 0.0015859838459422444
+ev = 0.036749324444879071
+
+def to_joule(x): return x * 4.35974417e-18
+def to_calorie(x): return x * 1.0420038647227532e-18
+def to_kjmol(x): return x * 2625.4996295540054
+def to_kcalmol(x): return x * 630.52344609846432
+def to_ev(x): return x * 27.211384565719481
+
+def from_joule(x): return x * 2.2937125689189235e17
+def from_calorie(x): return x * 9.596893388356777e17
+def from_kjmol(x): return x * 0.00038087988615327677
+def from_kcalmol(x): return x * 0.0015859838459422444
+def from_ev(x): return x * 0.036749324444879071
+
 
 # Mass
 
-unified = lambda x: x * 1822.8884798405547
+unified = 1822.8884798405547
+kg = 1.0977692384992151e30
+
+def to_unified(x): return x * 0.0005485799109814269
+def to_kg(x): return x * 9.1093826e-31
+
+def from_unified(x): return x * 1822.8884798405547
+def from_kg(x): return x * 1.0977692384992151e30
 
 # Charge
 
-coulomb = lambda x: x * 6.2415094796077179e+18
+coulomb = 6.2415094796077179e18
+
+def to_coulomb(x): return x * 1.60217653e-19
+
+def from_coulomb(x): return x * 6.2415094796077179e18
 
 # Angles
 
-degrees = lambda x: x * 0.017453292519943295
+degrees = 0.017453292519943295
+
+def to_degrees(x): return x * 57.295779513082323
+
+def from_degrees(x): return x * 0.017453292519943295
 
 # In a dictionary
 
+def unity(x): return x
+
 unit = {
-    ATOMARY: lambda x: x,
+    ATOMARY: 1,
     ANGSTROM: angstrom,
     NANOMETER: nanometer,
     JOULE: joule,
@@ -116,41 +197,12 @@ unit = {
     EV: ev,
     UNIFIED: unified,
     COULOMB: coulomb,
-    RADIALS: lambda x: x,
+    RADIALS: 1,
     DEGREES: degrees
 }
 
-## Conversion from internal units (a.u.)
-
-# Length
-
-to_angstrom = lambda x: x * 0.5291772108
-to_nanometer = lambda x: x * 0.05291772108
-
-# Energy
-
-to_joule = lambda x: x * 4.35974417e-18
-to_calorie = lambda x: x * 1.0420038647227532e-18
-to_kjmol = lambda x: x * 2625.4996295540054
-to_kcalmol = lambda x: x * 630.52344609846432
-to_ev = lambda x: x * 27.211384565719481
-
-# Mass
-
-to_unified = lambda x: x * 0.0005485799109814269
-
-# Charge
-
-to_coulomb = lambda x: x * 1.60217653e-19
-
-# Degrees
-
-to_degrees = lambda x: x * 57.295779513082323
-
-# In a dictionary
-
 to_unit = {
-    ATOMARY: lambda x: x,
+    ATOMARY: unity,
     ANGSTROM: to_angstrom,
     NANOMETER: to_nanometer,
     JOULE: to_joule,
@@ -160,6 +212,21 @@ to_unit = {
     EV: to_ev,
     UNIFIED: to_unified,
     COULOMB: to_coulomb,
-    RADIALS: lambda x: x,
+    RADIALS: unity,
     DEGREES: to_degrees
+}
+
+from_unit = {
+    ATOMARY: unity,
+    ANGSTROM: from_angstrom,
+    NANOMETER: from_nanometer,
+    JOULE: from_joule,
+    CALORIE: from_calorie,
+    KJMOL: from_kjmol,
+    KCALMOL: from_kcalmol,
+    EV: from_ev,
+    UNIFIED: from_unified,
+    COULOMB: from_coulomb,
+    RADIALS: unity,
+    DEGREES: from_degrees
 }

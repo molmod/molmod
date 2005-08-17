@@ -4,17 +4,7 @@ PyChem TODO
 milestone 0.1.1
 ---------------
 
-- change the unit conversion library so that it uses the following naming
-  conventions:
-    * to_unit is a function that converts a value in internal units to a
-      value in external units
-    * unit is the value of one external unit in internal units
-    * from_unit is a function that does the inverse of to_unit
-  Internal units are the atomic units, external units can be anything else.
-
 - double check all unit conversions
-
-- add documentation strings to the current code
 
 - move and cleanup the binning tools and topology tools from
   Zeobuilder into this directory.
