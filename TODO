@@ -4,8 +4,6 @@ PyChem TODO
 milestone 0.1.1
 ---------------
 
-- double check all unit conversions
-
 - move and cleanup the binning tools and topology tools from
   Zeobuilder into this directory.
   
