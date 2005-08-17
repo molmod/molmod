@@ -1,0 +1,7 @@
+for i in `find * | egrep "\.py$" | grep -v "_darcs"`; do
+  if grep -I -m 1 $'\t' ${i}; then
+    echo Tabs found in file ${i}!!
+    exit 1
+  fi
+done
+exit 0

@@ -1,0 +1,4 @@
+include COPYING
+include README
+include src/moldata/*.csv
+include src/moldata/*.sxc

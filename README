@@ -1,0 +1,44 @@
+Pychem 0.1.0 Readme
+
+LICENSE
+-------
+
+PyChem is distributed under the GNU GPL license.
+For details read the file COPYING.
+
+DOCUMENTATION and SUPPORT
+-------------------------
+
+If you have problems with using or installing PyChem, consult
+the online documentation and support at http://molmod.UGent.be/projects/pychem/
+
+Most of the source code is self-documented. For example the documentation
+about pychem.moldata can be read using the python interpreter with the following
+two commands:
+>>> import pychem.moldata
+>>> help(pychem.moldata)
+
+INSTALLING
+----------
+
+PyChem depends on:
+    - python 2.4
+    - Numeric
+    
+To install Pychem on your system, run this command:
+$ python setup.py install
+
+AUTHORS
+-------
+
+* Main author
+
+  Toon Verstraelen
+  Centre for Molecular Modeling
+  Ghent University
+  Proeftuinstraat 86
+  9000 Gent
+  Belgium
+  Tel: 09/264.65.56
+  E-mail: Toon.Verstraelen@UGent.be
+
