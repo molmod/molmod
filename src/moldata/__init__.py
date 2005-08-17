@@ -18,6 +18,14 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 # 
 # --
+# 
+# periodic is an instance of the PeriodicData class in the module 
+# pychem.moldata.periodicdata. It represents the data in periodic.csv.
+#
+# bonds is an instance of the BondsData class in the module 
+# pychem.moldata.bondsdata. It represents the data in bonds.csv.
+#
+#
 
 from periodicdata import PeriodicData
 from bondsdata import BondData, BOND_SINGLE, BOND_DOUBLE, BOND_TRIPLE, bond_types
