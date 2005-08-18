@@ -7,9 +7,6 @@ milestone 0.1.1
 - move and cleanup the binning tools from
   Zeobuilder into this project.
   
-- move the interface code from FFAudit to this
-  project.
-  
 - write tests that check wether all the code works fine
   
   
