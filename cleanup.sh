@@ -1,5 +1,8 @@
 for i in `find * | egrep "\.pyc$|\.py~$|\.pyc~$|\.bak$"` ; do rm -v ${i}; done
 
+rm -vr test/output
+rm -v test/pychem
+
 rm -vr extensions/build
 rm -v extensions/*.so
 rm -v extensions/*.c

@@ -4,11 +4,29 @@ PyChem TODO
 milestone 0.1.1
 ---------------
 
-- move and cleanup the binning tools and topology tools from
-  Zeobuilder into this directory.
+- move and cleanup the binning tools from
+  Zeobuilder into this project.
   
 - move the molecule and interface codes from FFAudit to this
   project.
   
-- write test that check wether all the code works fine
+- write tests that check wether all the code works fine
   
+  
+milestone 0.1.2
+---------------
+
+- try to find out again how the graph algorithms work.
+
+  For those who don't know: This algorithm was written by Toon Verstraelen
+  during a long-lasting but moslty painless otitis media. He was deaf for more
+  than a week, so he had the time to think about an effecient algorithm that
+  detects symmetries and subgraphs in a given graphs rather efficiently. Six
+  months later, he suddenly finds him in a situation that he could actually use
+  the thing, but he has forgotten how the algorithm worked. Despite his good
+  intentions of documenting the code this time, it seems that some external
+  help is needed to find back the principles on which the algo is based.
+  
+  Now the algorithm looks very ugly, but actually it's very elegant and an
+  example of how to uses the generators concept in python to create algorithms
+  that can deal with very complex problems.
