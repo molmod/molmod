@@ -24,10 +24,13 @@ import os, copy, glob
 import Numeric
 from ffaudit import context
 
-from pychem.units import to_angstrom, angstrom
+from pychem.units import to_angstrom, from_angstrom
 
 
-__all__ = ["ExternalError", "MpqcJob", "SimpleMpqcJob", "SimpleMpqcJobSinglePoint", "SimpleMpqcJobOptimize"]
+__all__ = [
+    "ExternalError", "MpqcJob", "SimpleMpqcJob", 
+    "SimpleMpqcJobSinglePoint", "SimpleMpqcJobOptimize"
+]
 
 
 class ExternalError(Exception):
@@ -182,7 +185,7 @@ class SimpleMpqcJobSinglePoint(SimpleMpqcJob):
     def process_summary(self):
         if self.gradient != None:
             self.gradient = Numeric.array(self.gradient, Numeric.Float)
-        self.input_molecule.coordinates = angstrom(Numeric.array(self.input_coordinates, Numeric.Float))
+        self.input_molecule.coordinates = from_angstrom(Numeric.array(self.input_coordinates, Numeric.Float))
         del self.input_coordinates
 
 
@@ -204,5 +207,5 @@ class SimpleMpqcJobOptimize(SimpleMpqcJob):
         
     def process_summary(self):
         self.output_molecule = copy.deepcopy(self.input_molecule)
-        self.output_molecule.coordinates = angstrom(Numeric.array(self.output_coordinates, Numeric.Float))
+        self.output_molecule.coordinates = from_angstrom(Numeric.array(self.output_coordinates, Numeric.Float))
         del self.output_coordinates

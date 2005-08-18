@@ -27,8 +27,9 @@ __all__ = ["PeriodicData"]
 
 
 class PeriodicData(object):
-    """Objects of the PeriodicData class centralize information about the 
-       periodic system. The data is loaded during initialization.
+    """
+    Objects of the PeriodicData class centralize information about the 
+    periodic system. The data is loaded during initialization.
     """
     def __init__(self, filename):
         # Initialize empty lists
@@ -70,6 +71,6 @@ class PeriodicData(object):
         periodic_file.close()
         
     def reverse_symbol_lookup(self, symbol):
-        """A safe method for looking up symbols in the periodic system."""
+        """Return the atom number of the given symbol (case insensitive)."""
         return self.symbol_reverse.get(symbol.lower())   
             

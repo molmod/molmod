@@ -179,10 +179,10 @@ class Graph(object):
         equivalent nodes of a given node are all the nodes on which the given
         node may me mapped by a symmetry transformation.
         """
-        print "="*50
-        print "="*50
+        #print "="*50
+        #print "="*50
         self.pairs = pairs # a list of 2-tuples connecting nodes
-        print self.pairs
+        #print self.pairs
         self.init_neighbours()
         self.initiator = self.pairs[0][0]        
         self.init_symmetries()
@@ -203,7 +203,7 @@ class Graph(object):
             add_relation(pair[0], pair[1])
             add_relation(pair[1], pair[0])
         
-        print self.neighbours
+        #print self.neighbours
 
         
     def init_symmetries(self):
@@ -237,7 +237,7 @@ class Graph(object):
                 return False
                 
         def find_symmetries(source, destination):
-            print "SYMMETRIES %s ~ %s" % (source, destination)
+            #print "SYMMETRIES %s ~ %s" % (source, destination)
             for symmetry in self.yield_matches(source, destination, self.neighbours, Permutation(), allow_more=False, no_duplicates=False):
                 if add_symmetry(symmetry):
                     add_symmetry(symmetry.inverse())
@@ -251,12 +251,12 @@ class Graph(object):
                 find_symmetries(source, destination)
          
                     
-        print "-- number of symmetries: %i" % (len(self.symmetries))
-        for cycles in self.symmetries.iterkeys():
-            print cycles
-        print "-- number of cycles: %i" % (len(self.cycles))
-        for cycle in self.cycles:
-            print cycle
+        #print "-- number of symmetries: %i" % (len(self.symmetries))
+        #for cycles in self.symmetries.iterkeys():
+        #    print cycles
+        #print "-- number of cycles: %i" % (len(self.cycles))
+        #for cycle in self.cycles:
+        #    print cycle
 
     def init_initiator_cycle(self):
         """Find a largest cycle that contains the initiator."""
@@ -264,7 +264,7 @@ class Graph(object):
         for cycle in self.cycles:
             if self.initiator in cycle and len(cycle) > len(self.initiator_cycle):
                 self.initiator_cycle = cycle
-        print "initiator_cycle", self.initiator_cycle
+        #print "initiator_cycle", self.initiator_cycle
 
     def len_cycle_prefix(self, sequence):
         """Returns the largest cycle at the beginning of the given sequence."""
@@ -298,22 +298,22 @@ class Graph(object):
         no_duplicates -- lets the algorithm use symmetry information to a priori
                          avoid duplicate mathces.
         """
-        #print spaces + "BEGIN ONE -- add %s -> %s to %s" % (node, thing, match)
+        ##print spaces + "BEGIN ONE -- add %s -> %s to %s" % (node, thing, match)
         
         if allow_more and len(self.neighbours[node]) > len(thing_neighbours[thing]):
-            #print spaces + "ONE -- graph node containse more neighbours than thing"
+            ##print spaces + "ONE -- graph node containse more neighbours than thing"
             return
             
         if not allow_more and len(self.neighbours[node]) != len(thing_neighbours[thing]):
-            #print spaces + "ONE -- number of neighbours differs"
+            ##print spaces + "ONE -- number of neighbours differs"
             return
             
         if not match.add_relation(node, thing):
-            #print spaces + "ONE -- given relation conflicts with existing match"
+            ##print spaces + "ONE -- given relation conflicts with existing match"
             return
             
         if len(match) == len(self.neighbours):
-            #print spaces + "ONE -- match is complete"
+            ##print spaces + "ONE -- match is complete"
             yield match
             return
         
@@ -342,7 +342,7 @@ class Graph(object):
             else:
                 return True
 
-        #print spaces + "ONE -- possible relations  %s -> %s" % (self.neighbours[node], thing_neighbours[thing])
+        ##print spaces + "ONE -- possible relations  %s -> %s" % (self.neighbours[node], thing_neighbours[thing])
                 
         if no_duplicates:
             def relations_without_symmetric_images(list1, list2, worth_trying=None, num_ordered=0):
@@ -390,7 +390,7 @@ class Graph(object):
             # These extend matches will feed recursively to this algorithm.
             if len(relation_set) == 0:
                 continue
-            #print spaces + "BEGIN SET -- add %s to %s" % (relation_set, match)
+            ##print spaces + "BEGIN SET -- add %s to %s" % (relation_set, match)
             former_matches = [copy.copy(match)]
             for node, thing in relation_set:
                 new_matches = []
@@ -404,12 +404,12 @@ class Graph(object):
                 former_matches = new_matches
                 
             for new_match in new_matches:
-                #print spaces + "SET -- yield %s" % new_match
+                ##print spaces + "SET -- yield %s" % new_match
                 yield new_match
   
-            #print spaces + "END SET"
+            ##print spaces + "END SET"
             
-        #print spaces + "END ONE"
+        ##print spaces + "END ONE"
      
     def lowest_initiator(self, match):
         """
@@ -431,7 +431,7 @@ class Graph(object):
         for thing in thing_neighbours:
             for match in self.yield_matches(self.initiator, thing, thing_neighbours, OneToOne()):
                 if self.lowest_initiator(match):
-                    print match
+                    #print match
                     yield match
 
 
@@ -460,10 +460,10 @@ class MatchFilter(object):
             For the given (transformed) match return wether it meets the
             criteria.
             """
-            print match
+            #print match
             for node, neighbours in self.subgraph.neighbours.iteritems():
                 if not self.check_thing(node, transformed_match.get_destination(node)):
-                    print "check_thing fails"
+                    #print "check_thing fails"
                     return False
                 for neighbour in neighbours:
                     if not self.check_relation(
@@ -472,7 +472,7 @@ class MatchFilter(object):
                             transformed_match.get_destination(node), 
                             transformed_match.get_destination(neighbour)
                         ])):
-                        print "check_neighbour fails"
+                        #print "check_neighbour fails"
                         return False
             return True
     

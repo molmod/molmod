@@ -3,9 +3,6 @@ PyChem TODO
 
 milestone 0.1.1
 ---------------
-
-- move and cleanup the binning tools from
-  Zeobuilder into this project.
   
 - write tests that check wether all the code works fine
   

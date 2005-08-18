@@ -23,7 +23,7 @@
 import init_files
 
 from pychem import context
-context.share_path = "ffaudit/"
+context.share_path = "pychem/"
 
 import unittest
 suite = unittest.TestSuite()
@@ -34,6 +34,7 @@ suite = unittest.TestSuite()
 
 import graphs
 suite.addTest(graphs.suite)
+
 
 test_result = unittest.TextTestRunner(verbosity=2).run(suite)
 

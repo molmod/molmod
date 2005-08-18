@@ -21,7 +21,7 @@
 
 import Numeric, RandomArray, math, copy
 from pychem.moldata import periodic
-from pychem.units import angstrom
+from pychem.units import from_angstrom
 
 
 __all__ = ["Molecule", "molecule_from_xyz"]
@@ -100,9 +100,9 @@ def molecule_from_xyz(filename):
         elif len(words) == 4:
             atoms.append([
                 periodic.reverse_symbol_lookup(words[0]), 
-                angstrom(float(words[1])), 
-                angstrom(float(words[2])),
-                angstrom(float(words[3]))
+                from_angstrom(float(words[1])), 
+                from_angstrom(float(words[2])),
+                from_angstrom(float(words[3]))
             ])
     f.close()
     assert len(atoms) == num_atoms, "Inconsistent number of atoms."

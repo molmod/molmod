@@ -23,12 +23,14 @@
 from pychem.graphs import Graph
 
 import unittest, copy
-suite = unittest.TestSuite()
 
-__all__ = ["TestExampleTopologies"]
-        
 
-class TestExampleTopologies(unittest.TestCase):
+__all__ = ["suite"]
+
+suite = unittest.TestSuite()        
+
+
+class TestExampleGraphs(unittest.TestCase):
     def setUp(self):
         self.graphs = [
             (   
@@ -172,4 +174,5 @@ class TestExampleTopologies(unittest.TestCase):
             self.assert_(len(unexpected) == 0, message())
             self.assert_(len(unsatisfied) == 0, message())
 
-suite.addTest(unittest.makeSuite(TestExampleTopologies))
+
+suite.addTest(unittest.makeSuite(TestExampleGraphs))
