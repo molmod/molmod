@@ -29,8 +29,8 @@ import unittest
 suite = unittest.TestSuite()
 
 
-#import binning
-#suite.addTest(binning.suite)
+import binning
+suite.addTest(binning.suite)
 
 import graphs
 suite.addTest(graphs.suite)
