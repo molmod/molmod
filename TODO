@@ -4,8 +4,12 @@ PyChem TODO
 milestone 0.1.1
 ---------------
   
-- write tests that check wether all the code works fine
-  
+- Extend the SymmetricGraph. Make it able to use (non) equality of nodes.
+  Use this to describe lower symmetric graphs due to differing node properties.
+  This is finally usefull to make a MatchFilter that doesn't return symmetric
+  duplicates in terms symmetry of the match_conditions
+
+- In MatchFilters: if node in blabla: blabla[node] ...
   
 milestone 0.1.2
 ---------------

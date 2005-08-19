@@ -45,7 +45,7 @@ class BondData(object):
         self.periodic_data = periodic_data
         self.load_bond_data(filename)
         self.approximate_unkown_bond_lengths()
-        self.max_length = max(self.bond_lengths.itervalues())
+        self.max_length = max(max(type_lengths.itervalues()) for type_lengths in self.bond_lengths.itervalues())
         
     def read_length(self, BOND_TYPE, cells, col):
         """This is a helper method for load_bond_data."""
@@ -98,11 +98,11 @@ class BondData(object):
         """
         if distance > self.max_length * self.bond_tolerance: return None
         deviation = 0.0
-        pair = frozenset(n1,n2)
+        pair = frozenset([n1,n2])
         bond_type = None
         for bt in bond_types:
-            bond_length =  self.bond_lengths[bt][pair]
-            if distance < bond_length * self.bond_tolerance:
+            bond_length = self.bond_lengths[bt].get(pair)
+            if (bond_length != None) and (distance < bond_length * self.bond_tolerance):
                 if bond_type == None:
                     bond_type = bt
                     deviation = abs(bond_length - distance)

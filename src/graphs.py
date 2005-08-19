@@ -35,7 +35,7 @@ symmetries of the graph to be known, in order to avoid duplicates.
 
 import copy
 
-__all__ = ["OneToOne", "Permutation", "all_relations", "Graph",
+__all__ = ["OneToOne", "Permutation", "all_relations", "Graph", "SymmetricGraph"
            "MatchFilter", "MatchFilterParameterized",
            "MatchFilterMolecular"]
 
@@ -170,24 +170,27 @@ def all_relations(list1, list2, worth_trying=None):
 
 
 class Graph(object):
+    """
+    A Graph object contains two typical pythonic (not oriented) graph
+    representations: pairs and neigbours.
+    """
+    
     def __init__(self, pairs):
         """
-        Initialize the graph and find all symmetries in the graph.
+        Initialize a Graph object.
         
-        If possible, make sure that the first element of the first pair is
-        a node with as less as possible equivalent nodes in the graph. The
-        equivalent nodes of a given node are all the nodes on which the given
-        node may me mapped by a symmetry transformation.
+        Arguments:
+        pairs -- [frozenset([node1, node2]), ...]
+        
+        During initialization, also the neighbour-representation will be created
+        neighbourlist = {node1: [neighbour_node1, ...], ...}
         """
         #print "="*50
         #print "="*50
-        self.pairs = pairs # a list of 2-tuples connecting nodes
+        self.pairs = pairs # a list of 2-frozenset connecting nodes
         #print self.pairs
         self.init_neighbours()
-        self.initiator = self.pairs[0][0]        
-        self.init_symmetries()
-        self.init_initiator_cycle()
-        
+
     def init_neighbours(self):
         """Generate a neigbours-representation of the graph."""
         self.neighbours = {}
@@ -206,6 +209,28 @@ class Graph(object):
         #print self.neighbours
 
         
+class SymmetricGraph(Graph):
+    def __init__(self, pairs, initiator=None):
+        """
+        Initialize the graph and find all symmetries in the graph.
+        
+        Arguments:
+        pairs -- see Graph
+        initiator -- a node with as less as possible symmetric equivalents
+        
+        If possible, make sure that the initiator is a node with as less as
+        possible equivalent nodes in the graph. The equivalent nodes of a given
+        node are all the nodes on which the given node may me mapped by a
+        symmetry transformation.
+        """
+        Graph.__init__(self, pairs)
+        if initiator == None:
+            self.initiator = list(self.pairs[0])[0]
+        else:
+            self.initiator = initiator
+        self.init_symmetries()
+        self.init_initiator_cycle()
+                
     def init_symmetries(self):
         """
         Analyze the symmetries of this graph.
@@ -479,10 +504,11 @@ class MatchFilter(object):
         for symmetry in self.subgraph.symmetries.itervalues():
             transformed_match = match * symmetry
             if check_match(transformed_match):
-                return transformed_match
+                yield transformed_match
 
-        return None
-            
+        return
+
+
 class MatchFilterParameterized(MatchFilter):
     """
     This MatchFilter uses dictionaries that map each node and relation of the

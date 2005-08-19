@@ -69,7 +69,6 @@ class TestDistances(unittest.TestCase):
             message += "%10s %10s: \t % 10.7f != % 10.7f\n" % wrong_distance
         message += "DUPLICATE PAIRS: %i\n" % len(distances)
         for identifier, fast_distance in distances.iteritems():
-            print tuple(identifier) + (fast_distance,)
             message += "%10s %10s: \t % 10.7f\n" % (tuple(identifier) + (fast_distance,))
         message += "-"*50+"\n"
         

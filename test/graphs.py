@@ -20,7 +20,8 @@
 # --
 
 
-from pychem.graphs import Graph
+from pychem.graphs import SymmetricGraph, MatchFilterMolecular
+from pychem.molecules import molecule_from_xyz
 
 import unittest, copy
 
@@ -35,27 +36,27 @@ class TestExampleGraphs(unittest.TestCase):
         self.graphs = [
             (   
                 "bond", 
-                Graph([(0,1)]), 
+                SymmetricGraph([(0,1)]), 
                 [(), ((0,1),)]
             ), (
                 "angle",
-                Graph([(0,1), (0,2)]),
+                SymmetricGraph([(0,1), (0,2)]),
                 [(), ((1,2),)]
             ), (
                 "star 3", 
-                Graph([(0,1), (0,2), (0,3)]),
+                SymmetricGraph([(0,1), (0,2), (0,3)]),
                 [(), ((1,2,3),), ((1,3,2),), ((1,2),), ((2,3),), ((1,3),)]
             ), (
                 "triangle", 
-                Graph([(0,1), (1,2), (2,0)]),
+                SymmetricGraph([(0,1), (1,2), (2,0)]),
                 [(), ((0,1,2),), ((0,2,1),), ((0,1),), ((1,2),), ((0,2),)]
             ), (
                 "chain 3", 
-                Graph([(0,1), (1,2), (2,3)]),
+                SymmetricGraph([(0,1), (1,2), (2,3)]),
                 [(), ((0,3), (1,2))]
             ), (
                 "star 4", 
-                Graph([(0,1), (0,2), (0,3), (0,4)]),
+                SymmetricGraph([(0,1), (0,2), (0,3), (0,4)]),
                 [(), ((1,2),), ((1,3),), ((1,4),), ((2,3),), ((2,4),), ((3,4),),
                  ((1,2),(3,4)), ((1,3),(2,4)), ((1,4),(2,3)),
                  ((1, 2, 3),), ((1, 3, 2),), ((1,2,4),), ((1,4,2),), ((1,3,4),),
@@ -63,7 +64,7 @@ class TestExampleGraphs(unittest.TestCase):
                  ((1,3,2,4),), ((1,3,4,2),), ((1,4,2,3),), ((1,4,3,2),)]
             ), (
                 "2 star 3", 
-                Graph([(0,1), (0,2), (0,3), (1,4), (1,5)]),
+                SymmetricGraph([(0,1), (0,2), (0,3), (1,4), (1,5)]),
                 [(),
                 ((2,3),), ((4,5),), ((2,3),(4,5)), 
                 
@@ -72,7 +73,7 @@ class TestExampleGraphs(unittest.TestCase):
                 ]
             ), (
                 "4 star 3", 
-                Graph([(0, 1), (0, 2), (0, 3), (1, 4), (1, 5), (2, 6), (2, 7), (3, 8), (3, 9)]),
+                SymmetricGraph([(0, 1), (0, 2), (0, 3), (1, 4), (1, 5), (2, 6), (2, 7), (3, 8), (3, 9)]),
                 [(), 
                 ((4,5),), ((6,7),), ((8,9),),
                 ((4,5),(6,7)), ((4,5),(8,9)), ((6,7),(8,9)), 
@@ -110,43 +111,43 @@ class TestExampleGraphs(unittest.TestCase):
         self.todo = [
             (
                 "ortho hexane",
-                Graph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 0), (0, 6), (3, 7)]),
+                SymmetricGraph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 0), (0, 6), (3, 7)]),
                 []
             ), (
                 "square",
-                Graph([(0, 1), (1, 2), (2, 3), (3, 0)]),
+                SymmetricGraph([(0, 1), (1, 2), (2, 3), (3, 0)]),
                 []
             ), (
                 "benzene",
-                Graph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 0)]),
+                SymmetricGraph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 0)]),
                 []
             ), (
                 "0-2-4 hexane",
-                Graph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 0), (0, 6), (2, 7), (4,8)]),
+                SymmetricGraph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 0), (0, 6), (2, 7), (4,8)]),
                 []
             ), (
                 "ethene",
-                Graph([(0, 1), (0, 2), (0, 3), (1, 4), (1, 5)]),
+                SymmetricGraph([(0, 1), (0, 2), (0, 3), (1, 4), (1, 5)]),
                 []
             ), (
                 "difficult",
-                Graph([(0, 1), (0, 2), (1, 3), (1, 4), (2, 5), (2, 6)]),
+                SymmetricGraph([(0, 1), (0, 2), (1, 3), (1, 4), (2, 5), (2, 6)]),
                 []
             ), (
                 "naphthalene",
-                Graph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 0), (2, 6), (6, 7), (7, 8), (8, 9), (9, 3)]),
+                SymmetricGraph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 0), (2, 6), (6, 7), (7, 8), (8, 9), (9, 3)]),
                 []
             ), (
                 "cage",
-                Graph([(0, 1), (0, 2), (0, 3), (1, 4), (2, 5), (3, 6), (4, 7), (5, 7), (6, 7)]),
+                SymmetricGraph([(0, 1), (0, 2), (0, 3), (1, 4), (2, 5), (3, 6), (4, 7), (5, 7), (6, 7)]),
                 []
             ), (
                 "tetraeder",
-                Graph([(0, 1), (0, 2), (0, 3), (1, 2), (2, 3), (3, 1)]),
+                SymmetricGraph([(0, 1), (0, 2), (0, 3), (1, 2), (2, 3), (3, 1)]),
                 []
             ), (
                 "cube",
-                Graph([(0, 1), (0, 2), (0, 3), (1, 4), (1, 6), (2, 4), (2, 5), (3, 5), (3, 6), (4, 7), (5, 7), (6, 7)]),
+                SymmetricGraph([(0, 1), (0, 2), (0, 3), (1, 4), (1, 6), (2, 4), (2, 5), (3, 5), (3, 6), (4, 7), (5, 7), (6, 7)]),
                 []
             )
         ]
@@ -175,4 +176,28 @@ class TestExampleGraphs(unittest.TestCase):
             self.assert_(len(unsatisfied) == 0, message())
 
 
-suite.addTest(unittest.makeSuite(TestExampleGraphs))
+class TestMolecularGraphs(unittest.TestCase):        
+    def test_tpa(self):
+        molecule = molecule_from_xyz("input/tpa.xyz")
+        graph, bonds = molecule.get_graph()
+        
+        subgraph = SymmetricGraph([(0, 1), (0, 2), (0, 3), (0, 4)])
+        graph_filter = MatchFilterMolecular(subgraph, bonds,
+            atom_criteria = { 0: lambda index: molecule.numbers[index] == 6,
+                              1: lambda index: molecule.numbers[index] == 6,
+                              2: lambda index: molecule.numbers[index] == 6,
+                              3: lambda index: molecule.numbers[index] != 6,
+                              4: lambda index: molecule.numbers[index] != 6}
+        )
+        
+        print
+        for match in subgraph.yield_matching_subgraphs(graph.neighbours):
+            print "="*50
+            for parsed in graph_filter.parse(match):
+                print parsed.forward
+                
+        
+suite.addTests([
+    unittest.makeSuite(TestExampleGraphs),
+    unittest.makeSuite(TestMolecularGraphs)
+])
