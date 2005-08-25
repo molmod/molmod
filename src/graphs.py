@@ -529,23 +529,22 @@ class MatchFilterParameterized(MatchFilter):
         MatchFilter.__init__(self, subgraph)
         
     def check_thing(self, node, thing):
-        if node in self.thing_criteria:
-            self.thing_criteria[node](thing)
-        else:
+        thing_criterium = self.thing_criteria.get(node)
+        if thing_criterium == None:
             return True
+        else:
+            thing_criterium(thing)
         
     def check_relation(self, nodes, things):
-        if nodes in self.relation_criteria:
-            self.relation_criteria[nodes](things[0], things[1])
-        else:
+        relation_criterium = self.relation_criteria.get(nodes)
+        if relation_criterium == None:
             return True
+        else:
+            relation_criterium(things[0], things[1])
 
 
 class MatchFilterMolecular(MatchFilter):
     """The MatchFilterMolecular is specialized in analyzing molecular subgraphs."""
-    # bonds = {(node1, node2): bond object}
-    # atom_criteria = {node: function that gets atom as argument and returns true when good and false when bad.}
-    # bond_criteria = {node: function that gets bond as argument and returns true when good and false when bad.}
     def __init__(self, subgraph, bonds, atom_criteria={}, bond_criteria={}):
         """
         Initialize a MatchFilterMolecular instance
@@ -561,13 +560,15 @@ class MatchFilterMolecular(MatchFilter):
         MatchFilter.__init__(self, subgraph)
         
     def check_thing(self, node, thing):
-        if node in self.atom_criteria:
-            return self.atom_criteria[node](thing)
-        else:
+        atom_criterium = self.atom_criteria.get(node)
+        if atom_criterium == None:
             return True
+        else:
+            return atom_criterium(thing)
         
     def check_relation(self, nodes, things):
-        if nodes in self.bond_criteria:
-            return self.bond_criteria[nodes](self.bonds[things])
-        else:
+        bond_criterium = self.bond_criteria.get(nodes)
+        if bond_criterium == None:
             return True
+        else:
+            return bond_criterium(self.bonds[things])
