@@ -1,13 +1,5 @@
 PyChem TODO
 ===========
-
-milestone 0.1.1
----------------
-  
-- Extend the SymmetricGraph. Make it able to use (non) equality of nodes.
-  Use this to describe lower symmetric graphs due to differing node properties.
-  This is finally usefull to make a MatchFilter that doesn't return symmetric
-  duplicates in terms symmetry of the match_conditions
   
 milestone 0.1.2
 ---------------
@@ -26,3 +18,14 @@ milestone 0.1.2
   Now the algorithm looks very ugly, but actually it's very elegant and an
   example of how to uses the generators concept in python to create algorithms
   that can deal with very complex problems.
+  
+- implement the list of symmetries in a Graph or MatchFilter as a set, instead
+  of a dictionary
+  
+- SymmetricGraph.init_symmetries -> add_symmetry -> self.cycles is implemented
+  more effeciently as a set instead of a list.
+  
+- remove all debug code from graphs.py
+
+- write good tests for the MatchFilters
+  

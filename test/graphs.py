@@ -20,7 +20,7 @@
 # --
 
 
-from pychem.graphs import SymmetricGraph, MatchFilterMolecular
+from pychem.graphs import SymmetricGraph, MatchFilterMolecular, OneToOne, Criterium
 from pychem.molecules import molecule_from_xyz
 
 import unittest, copy
@@ -176,28 +176,57 @@ class TestExampleGraphs(unittest.TestCase):
             self.assert_(len(unsatisfied) == 0, message())
 
 
+class TestOneToOne(unittest.TestCase):
+    def test_multiplication(self):
+        A = OneToOne([(1, "a"), (4, "z"), (2, "b")])
+        B = OneToOne([("a", 7), ("z", 2), ("b", 0)])
+        C = OneToOne([(1, 7), (4, 2), (2, 0)])
+        self.assertEqual((B*A).forward, C.forward)
+
+
+class AtomRequire(Criterium):
+    def __init__(self, number, molecule):
+        self.number = number
+        self.molecule = molecule
+        Criterium.__init__(self, number)
+        
+    def __call__(self, index):
+        return self.molecule.numbers[index] == self.number
+
+
+class AtomDeny(Criterium):
+    def __init__(self, number, molecule):
+        self.number = number
+        self.molecule = molecule
+        Criterium.__init__(self, number)
+        
+    def __call__(self, index):
+        return self.molecule.numbers[index] != self.number
+
+
 class TestMolecularGraphs(unittest.TestCase):        
     def test_tpa(self):
         molecule = molecule_from_xyz("input/tpa.xyz")
         graph, bonds = molecule.get_graph()
         
-        subgraph = SymmetricGraph([(0, 1), (0, 2), (0, 3), (0, 4)])
-        graph_filter = MatchFilterMolecular(subgraph, bonds,
-            atom_criteria = { 0: lambda index: molecule.numbers[index] == 6,
-                              1: lambda index: molecule.numbers[index] == 6,
-                              2: lambda index: molecule.numbers[index] == 6,
-                              3: lambda index: molecule.numbers[index] != 6,
-                              4: lambda index: molecule.numbers[index] != 6}
+        subgraph = SymmetricGraph([(0, 1), (0, 2), (0, 3)], 0)
+        graph_filter = MatchFilterMolecular(
+            subgraph, 
+            {0: 0, 1: 1, 1: 1, 3: 1},
+            bonds,
+            atom_criteria = {0: AtomRequire(6, molecule),
+                             1: AtomRequire(1, molecule),
+                             2: AtomRequire(1, molecule),
+                             3: AtomRequire(1, molecule)}
         )
         
         print
         for match in subgraph.yield_matching_subgraphs(graph.neighbours):
-            print "="*50
             for parsed in graph_filter.parse(match):
-                print parsed.forward
+                pass
                 
         
 suite.addTests([
     unittest.makeSuite(TestExampleGraphs),
-    unittest.makeSuite(TestMolecularGraphs)
+    unittest.makeSuite(TestOneToOne)
 ])
