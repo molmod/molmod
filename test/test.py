@@ -35,6 +35,9 @@ suite.addTest(binning.suite)
 import graphs
 suite.addTest(graphs.suite)
 
+import interfaces
+suite.addTest(interfaces.suite)
+
 
 test_result = unittest.TextTestRunner(verbosity=2).run(suite)
 

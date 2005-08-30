@@ -56,9 +56,9 @@ BEGIN {
 
 END {
     if (complete==1) {
-        printf("\t'job_completed': True,\n");
+        printf("\t'completed': True,\n");
     } else {
-        printf("\t'job_completed': False,\n");
+        printf("\t'completed': False,\n");
     }
     print "}";
 }

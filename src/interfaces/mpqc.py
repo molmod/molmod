@@ -109,19 +109,19 @@ class MpqcJob(object):
         """Process the attributes taken from the summary file and assigned to self."""
         raise NotImplementedError        
         
-    def run(self):
+    def run(self, user_overwrite=False):
         """Perform the complete calculation and analysis."""
-        print "running job: %s" % self.filename
+        #print "running job: %s" % self.filename
         self.write_input(file(self.filename + ".in", 'w'))
-        recycled = self.run_external()
-        print "output recycled: %s" % recycled
+        recycled = self.run_external(overwrite=user_overwrite)
+        #print "output recycled: %s" % recycled
         self.__dict__.update(self.summarize_output())
-        print "job completed: %s" % self.job_completed
-        if recycled and not self.job_completed:
-            print "trying again: %s"
+        #print "job completed: %s" % self.completed
+        if recycled and not self.completed:
+            #print "trying again: %s"
             recycled = self.run_external(overwrite=True)
-        print "job completed: %s" % self.job_completed
-        if not self.job_completed:
+        #print "job completed: %s" % self.completed
+        if not self.completed:
             raise ExternalError("Output file of external job is not complete (%s)" % self.filename)
         self.process_summary()
         return recycled
