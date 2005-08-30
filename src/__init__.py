@@ -25,7 +25,7 @@ __all__ = ["context"]
 class Context(object):
     def __init__(self):
         self.title = "PyChem"
-        self.version = "0.1.1"
+        self.version = "0.1.2"
         self.share_path = "/usr/share/pychem/%s/" % self.version
 
 context = Context()
