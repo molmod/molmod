@@ -22,7 +22,7 @@
 from pychem.moldata import periodic
 import os, copy, glob
 import Numeric
-from ffaudit import context
+from pychem import context
 
 from pychem.units import to_angstrom, from_angstrom
 
@@ -95,7 +95,7 @@ class MpqcJob(object):
         Return the sumary file interpreted as a python expression.
         """
         os.system(
-            "gawk -f %sawk/%s.awk < %s.out > %s.smr" % (
+            "gawk -f %sinterfaces/awk/%s.awk < %s.out > %s.smr" % (
                 context.share_path, self.awk_scriptname(),
                 self.filename, self.filename
             )
