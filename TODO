@@ -1,7 +1,13 @@
 PyChem TODO
 ===========
-  
+
 milestone 0.1.2
+---------------
+
+- debug and cleanup the interfaces
+- add tests for the mpqc interface
+
+milestone 0.1.3
 ---------------
 
 - try to find out again how the graph algorithms work.
