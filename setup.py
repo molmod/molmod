@@ -32,8 +32,11 @@ setup(name='PyChem',
       author_email='Toon.Verstraelen@UGent.be',
       url='http://molmod.ugent.be/projects/pychem',
       package_dir = {'pychem': 'src'},
-      data_files=[('share/pychem/%s/moldata' % version, glob.glob('src/moldata/*.csv'))],
-      packages=['pychem', 'pychem.moldata'],
+      data_files=[
+          ('share/pychem/%s/moldata' % version, glob.glob('src/moldata/*.csv')),
+          ('share/pychem/%s/interfaces/awk' % version, glob.glob('src/interfaces/awk/*.awk'))
+      ],
+      packages=['pychem', 'pychem.moldata', 'pychem.interfaces'],
       classifiers=['Development Status :: 3 - Alpha',
                    'Environment :: Console',
                    'Intended Audience :: Science/Research',
