@@ -220,8 +220,7 @@ class TestMolecularGraphs(unittest.TestCase):
                              3: AtomRequire(1, molecule)}
         )
         
-        print
-        for match in subgraph.yield_matching_subgraphs(graph.neighbours):
+        for match in subgraph.yield_matching_subgraphs(graph):
             for parsed in graph_filter.parse(match):
                 pass
                 

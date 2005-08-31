@@ -10,7 +10,7 @@ DOCUMENTATION and SUPPORT
 -------------------------
 
 If you have problems with using or installing PyChem, consult
-the online documentation and support at http://molmod.UGent.be/projects/pychem/
+the online documentation and support at http://molmod.UGent.be/code/pychem/
 
 Most of the source code is self-documented. For example the documentation
 about pychem.moldata can be read using the python interpreter with the following

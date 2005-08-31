@@ -446,7 +446,7 @@ class SymmetricGraph(Graph):
         """
         return match.get_destination(self.initiator) == min([match.get_destination(node) for node in self.initiator_cycle])
 
-    def yield_matching_subgraphs(self, thing_neighbours):
+    def yield_matching_subgraphs(self, graph):
         """
         Returns all macthings subgraphs in terms bijections between nodes and
         things.
@@ -455,8 +455,8 @@ class SymmetricGraph(Graph):
         possible equivalent nodes. The cost of the algorithm is proportional
         to this number of equivalent nodes (including the initiator).
         """
-        for thing in thing_neighbours:
-            for match in self.yield_matches(self.initiator, thing, thing_neighbours, OneToOne()):
+        for thing in graph.neighbours:
+            for match in self.yield_matches(self.initiator, thing, graph.neighbours, OneToOne()):
                 if self.lowest_initiator(match):
                     #print match
                     yield match
