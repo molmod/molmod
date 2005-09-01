@@ -205,8 +205,9 @@ class Graph(object):
         
         
         for pair in self.pairs:
-            add_relation(pair[0], pair[1])
-            add_relation(pair[1], pair[0])
+            a, b = pair
+            add_relation(a, b)
+            add_relation(b, a)
         
         #print self.neighbours
 
@@ -470,6 +471,8 @@ class Criterium(object):
         
     def get_tag(self):
         """Return a tag that uniquely identifies the behaviour of a criterium."""
+        if "parameters" not in self.__dict__:
+            print self, self.__class__
         return (self.__class__, self.parameters)
 
 
@@ -577,7 +580,7 @@ class MatchFilterParameterized(MatchFilter):
     subgraph to a criterion function.
     """
     
-    def __init__(self, subgraph, calculation_tags, thing_criteria={}, relation_criteria={}):
+    def __init__(self, subgraph, calculation_tags, thing_criteria={}, relation_criteria={}, filter_tags=True):
         """
         Initialize a MatchFilterParameterized
         
@@ -588,11 +591,14 @@ class MatchFilterParameterized(MatchFilter):
         """
         self.thing_criteria = thing_criteria
         self.relation_criteria = relation_criteria
+        self.filter_tags = filter_tags
         MatchFilter.__init__(self, subgraph, calculation_tags)
         
     def invariant_tags(self, symmetry):
         if not MatchFilter.invariant_tags(self, symmetry):
             return False
+        if not self.filter_tags:
+            return True
             
         nodes = set(pair[0] for pair in self.subgraph.pairs) | \
                 set(pair[1] for pair in self.subgraph.pairs)
@@ -640,26 +646,4 @@ class MatchFilterParameterized(MatchFilter):
         if relation_criterium == None:
             return True
         else:
-            return relation_criterium(things[0], things[1])
-
-
-class MatchFilterMolecular(MatchFilterParameterized):
-    """The MatchFilterMolecular is specialized in analyzing molecular subgraphs."""
-    def __init__(self, subgraph, calculation_tags, bonds, atom_criteria={}, bond_criteria={}):
-        """
-        Initialize a MatchFilterMolecular instance
-        
-        Arguments:
-        bonds -- {frozenset([atom1, atom2]: bond, ...}
-        atom_criteria -- {node: atom_criterion(atom)}
-        bond_criteria -- {frozenset([node1, node2]): bond_criterion(bond)}
-        """        
-        self.bonds = bonds
-        MatchFilterParameterized.__init__(self, subgraph, calculation_tags, atom_criteria, bond_criteria)
-        
-    def check_relation(self, nodes, things):
-        relation_criterium = self.relation_criteria.get(nodes)
-        if relation_criterium == None:
-            return True
-        else:
-            return relation_criterium(self.bonds[things])
+            return relation_criterium(things)

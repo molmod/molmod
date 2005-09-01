@@ -20,11 +20,8 @@
 # --
 
 import Numeric, RandomArray, math, copy
-from pychem.moldata import periodic, bonds
+from pychem.moldata import periodic
 from pychem.units import from_angstrom
-
-from pychem.graphs import Graph
-from pychem.binning import IntraAnalyseNeighbouringObjects, PositionedObject, SparseBinnedObjects
 
 
 __all__ = ["Molecule", "molecule_from_xyz"]
@@ -88,27 +85,6 @@ class Molecule:
         result.coordinates += position*grid_size
         result.coordinates += RandomArray.uniform(-0.5*grid_size, 0.5*grid_size, result.coordinates.shape)
         return result
-        
-    def get_graph(self):
-        """
-        Generate a graph of the molecule where relations between nodes represent
-        bonds. Bonds are estimated by interatomic distances.
-        """
-        def yield_positioned_atoms():
-            for index in xrange(len(self.numbers)):
-                yield PositionedObject(index, self.coordinates[index])
-        
-        binned_atoms = SparseBinnedObjects(yield_positioned_atoms, bonds.max_length*bonds.bond_tolerance)
-        
-        def compare_function(index1, index2, position1, position2):
-            delta = position2 - position1
-            distance = math.sqrt(Numeric.dot(delta, delta))
-            if distance < binned_atoms.gridsize:
-                return bonds.bonded(self.numbers[index1], self.numbers[index2], distance)
-        
-        bond_information = dict(IntraAnalyseNeighbouringObjects(binned_atoms, compare_function)())
-        pairs = [tuple(key) for key in bond_information]
-        return Graph(pairs), bond_information
 
 
 def molecule_from_xyz(filename):

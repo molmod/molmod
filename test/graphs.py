@@ -182,47 +182,6 @@ class TestOneToOne(unittest.TestCase):
         B = OneToOne([("a", 7), ("z", 2), ("b", 0)])
         C = OneToOne([(1, 7), (4, 2), (2, 0)])
         self.assertEqual((B*A).forward, C.forward)
-
-
-class AtomRequire(Criterium):
-    def __init__(self, number, molecule):
-        self.number = number
-        self.molecule = molecule
-        Criterium.__init__(self, number)
-        
-    def __call__(self, index):
-        return self.molecule.numbers[index] == self.number
-
-
-class AtomDeny(Criterium):
-    def __init__(self, number, molecule):
-        self.number = number
-        self.molecule = molecule
-        Criterium.__init__(self, number)
-        
-    def __call__(self, index):
-        return self.molecule.numbers[index] != self.number
-
-
-class TestMolecularGraphs(unittest.TestCase):        
-    def test_tpa(self):
-        molecule = molecule_from_xyz("input/tpa.xyz")
-        graph, bonds = molecule.get_graph()
-        
-        subgraph = SymmetricGraph([(0, 1), (0, 2), (0, 3)], 0)
-        graph_filter = MatchFilterMolecular(
-            subgraph, 
-            {0: 0, 1: 1, 1: 1, 3: 1},
-            bonds,
-            atom_criteria = {0: AtomRequire(6, molecule),
-                             1: AtomRequire(1, molecule),
-                             2: AtomRequire(1, molecule),
-                             3: AtomRequire(1, molecule)}
-        )
-        
-        for match in subgraph.yield_matching_subgraphs(graph):
-            for parsed in graph_filter.parse(match):
-                pass
                 
         
 suite.addTests([

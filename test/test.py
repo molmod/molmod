@@ -29,15 +29,17 @@ import unittest
 suite = unittest.TestSuite()
 
 
-import binning
-suite.addTest(binning.suite)
+#import binning
+#suite.addTest(binning.suite)
 
-import graphs
-suite.addTest(graphs.suite)
+#import graphs
+#suite.addTest(graphs.suite)
 
-import interfaces
-suite.addTest(interfaces.suite)
+#import interfaces
+#suite.addTest(interfaces.suite)
 
+import molecular_graphs
+suite.addTest(molecular_graphs.suite)
 
 test_result = unittest.TextTestRunner(verbosity=2).run(suite)
 
