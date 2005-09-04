@@ -20,7 +20,7 @@
 # --
 
 
-from pychem.graphs import SymmetricGraph, MatchFilterMolecular, OneToOne, Criterium
+from pychem.graphs import SymmetricGraph, OneToOne, Criterium
 from pychem.molecules import molecule_from_xyz
 
 import unittest, copy
