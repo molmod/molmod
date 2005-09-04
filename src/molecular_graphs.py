@@ -132,6 +132,10 @@ class CriteriaSets(object):
     def yield_criteria(self):
         for item in self.sets:
             yield item.tag, item.atom_criteria, item.bond_criteria, item.filter_tags
+            
+    def yield_tags(self):
+        for item in self.sets:
+            yield item.tag
 
 
 class CriteriaSet(object):
