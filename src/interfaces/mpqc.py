@@ -101,11 +101,15 @@ class MpqcJob(object):
             )
         )
         smr = file("%s.smr" % self.filename)
-        result = eval(''.join(smr))
+        self.summary = eval(''.join(smr))
         smr.close()
-        return result
+        self.assign_fields(["completed", "accuracy_warnings"])
+        
+    def assign_fields(self, fields):
+        for field in fields:
+            self.__dict__[field] = self.summary[field]
 
-    def process_summary(self, f):
+    def process_summary(self):
         """Process the attributes taken from the summary file and assigned to self."""
         raise NotImplementedError        
         
@@ -115,11 +119,12 @@ class MpqcJob(object):
         self.write_input(file(self.filename + ".in", 'w'))
         recycled = self.run_external(overwrite=user_overwrite)
         #print "output recycled: %s" % recycled
-        self.__dict__.update(self.summarize_output())
+        self.summarize_output()
         #print "job completed: %s" % self.completed
         if recycled and not self.completed:
             #print "trying again: %s"
             recycled = self.run_external(overwrite=True)
+            self.summarize_output()
         #print "job completed: %s" % self.completed
         if not self.completed:
             raise ExternalError("Output file of external job is not complete (%s)" % self.filename)
@@ -183,10 +188,13 @@ class SimpleMpqcJobSinglePoint(SimpleMpqcJob):
         print >> f, "gradient: " + yesno(self.do_gradient)
         
     def process_summary(self):
-        if self.gradient != None:
-            self.gradient = Numeric.array(self.gradient, Numeric.Float)
-        self.input_molecule.coordinates = from_angstrom(Numeric.array(self.input_coordinates, Numeric.Float))
-        del self.input_coordinates
+        if not self.accuracy_warnings:
+            self.assign_fields(["energy"])
+            gradient = self.summary.get("gradient")
+            if gradient != None:
+                self.gradient = Numeric.array(gradient, Numeric.Float)
+            self.input_molecule.coordinates = from_angstrom(Numeric.array(self.summary["input_coordinates"], Numeric.Float))
+            
 
 
 class SimpleMpqcJobOptimize(SimpleMpqcJob):
@@ -206,6 +214,7 @@ class SimpleMpqcJobOptimize(SimpleMpqcJob):
         print >> f, "optimize: yes"
         
     def process_summary(self):
-        self.output_molecule = copy.deepcopy(self.input_molecule)
-        self.output_molecule.coordinates = from_angstrom(Numeric.array(self.output_coordinates, Numeric.Float))
-        del self.output_coordinates
+        if not self.accuracy_warnings:
+            self.assign_fields(["energies"])
+            self.output_molecule = copy.deepcopy(self.input_molecule)
+            self.output_molecule.coordinates = from_angstrom(Numeric.array(self.summary["output_coordinates"], Numeric.Float))

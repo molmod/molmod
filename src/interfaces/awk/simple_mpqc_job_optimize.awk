@@ -25,6 +25,7 @@ BEGIN {
     converged = 0;
     output_molecule = 0;
     complete=0;
+    accuracy_warnings=0;
 }
 
 /total scf energy/ {
@@ -50,11 +51,20 @@ BEGIN {
     printf("\t'output_coordinates': [\n");
 }
 
+/WARNING: AccResultInfo/ {
+    accuracy_warnings=1;
+}
+
 /End Time/ {
     complete=1;
 }
 
 END {
+    if (accuracy_warnings==1) {
+        printf("\t'accuracy_warnings': True,\n");
+    } else {
+        printf("\t'accuracy_warnings': False,\n");
+    }
     if (complete==1) {
         printf("\t'completed': True,\n");
     } else {
