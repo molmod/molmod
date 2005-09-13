@@ -62,6 +62,9 @@ class MpqcJob(object):
     def write_input(self, f):
         raise NotImplementedError
 
+    def output_file_exists(self):
+        return os.path.isfile("%s.out" % self.filename)
+
     def run_external(self, overwrite=False):
         """
         Call the external program.
@@ -69,7 +72,7 @@ class MpqcJob(object):
         Note that the calculation is only executed if no output file is found,
         unless overwrite == True
         """
-        if (not os.path.isfile("%s.out" % self.filename)) or overwrite:
+        if (not self.output_file_exists()) or overwrite:
             os.system("mpqc -o %s.out %s.in" % (self.filename, self.filename))
             for temp_filename in glob.glob("%s.wfn.*.tmp" % self.filename):
                 os.remove(temp_filename)
@@ -139,7 +142,8 @@ class MpqcJob(object):
     def run(self, user_overwrite=False):
         """Perform the complete calculation and analysis."""
         #print "running job: %s" % self.filename
-        self.write_input(file(self.filename + ".in", 'w'))
+        if (not self.output_file_exists()) or user_overwrite:
+            self.write_input(file(self.filename + ".in", 'w'))
         recycled = self.run_external(overwrite=user_overwrite)
         #print "output recycled: %s" % recycled
         self.summarize_output()
