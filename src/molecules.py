@@ -19,7 +19,7 @@
 # 
 # --
 
-import Numeric, RandomArray, math, copy
+import Numeric, math
 from pychem.moldata import periodic
 from pychem.units import from_angstrom
 
@@ -78,13 +78,6 @@ class Molecule:
         ])
         rotation = Numeric.transpose(Numeric.array([new_x, new_y, new_z]))
         self.coordinates = Numeric.dot(self.coordinates, rotation)
-        
-    def mutate(self, position, grid_size):
-        """This method returns a copy of self, but with modified coordinates."""
-        result = copy.deepcopy(self)
-        result.coordinates += position*grid_size
-        result.coordinates += RandomArray.uniform(-0.5*grid_size, 0.5*grid_size, result.coordinates.shape)
-        return result
 
 
 def molecule_from_xyz(filename):
