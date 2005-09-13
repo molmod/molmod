@@ -19,12 +19,13 @@
 # 
 # --
 
+from pychem import context
 from pychem.moldata import periodic
+from pychem.units import to_angstrom, from_angstrom
+from pychem.molecules import molecule_from_xyz_string
+
 import os, copy, glob
 import Numeric
-from pychem import context
-
-from pychem.units import to_angstrom, from_angstrom
 
 
 __all__ = [
@@ -56,6 +57,7 @@ class MpqcJob(object):
         self.filename = filename
         self.title = title
         self.input_molecule = input_molecule
+        self.summary = {}
 
     def write_input(self, f):
         raise NotImplementedError
@@ -73,6 +75,8 @@ class MpqcJob(object):
                 os.remove(temp_filename)
             return False
         else:
+            self.summarize_input()
+            self.process_input_summary()
             return True
 
     def awk_scriptname(self):
@@ -89,19 +93,34 @@ class MpqcJob(object):
                 result += "_"+char.lower()
         return result
 
+    def summarize_input(self):
+        """
+        Generate a summary file based on the input for the calculation.
+        Return the sumary file interpreted as a python expression.
+        """
+        os.system(
+            "gawk -f %sinterfaces/awk/%s.in.awk < %s.in > %s.in.smr" % (
+                context.share_path, self.awk_scriptname(),
+                self.filename, self.filename
+            )
+        )
+        smr = file("%s.in.smr" % self.filename)
+        self.summary.update(eval(''.join(smr)))
+        smr.close()
+        
     def summarize_output(self):
         """
         Generate a summary file based on the output of the calculation.
         Return the sumary file interpreted as a python expression.
         """
         os.system(
-            "gawk -f %sinterfaces/awk/%s.awk < %s.out > %s.smr" % (
+            "gawk -f %sinterfaces/awk/%s.out.awk < %s.out > %s.out.smr" % (
                 context.share_path, self.awk_scriptname(),
                 self.filename, self.filename
             )
         )
-        smr = file("%s.smr" % self.filename)
-        self.summary = eval(''.join(smr))
+        smr = file("%s.out.smr" % self.filename)
+        self.summary.update(eval(''.join(smr)))
         smr.close()
         self.assign_fields(["completed", "accuracy_warnings"])
         
@@ -109,7 +128,11 @@ class MpqcJob(object):
         for field in fields:
             self.__dict__[field] = self.summary[field]
 
-    def process_summary(self):
+    def process_input_summary(self):
+        """Process the attributes taken from the summary file and assigned to self."""
+        raise NotImplementedError        
+
+    def process_output_summary(self):
         """Process the attributes taken from the summary file and assigned to self."""
         raise NotImplementedError        
         
@@ -128,7 +151,7 @@ class MpqcJob(object):
         #print "job completed: %s" % self.completed
         if not self.completed:
             raise ExternalError("Output file of external job is not complete (%s)" % self.filename)
-        self.process_summary()
+        self.process_output_summary()
         return recycled
 
 
@@ -157,6 +180,12 @@ class SimpleMpqcJob(MpqcJob):
         print >> f, "molecule: "
         for number, (x, y, z) in zip(self.input_molecule.numbers, to_angstrom(self.input_molecule.coordinates)):
             print >> f, "   %2s  % 10.7f  % 10.7f  % 10.7f" % (periodic.symbol[number], x, y, z)
+
+    def process_input_summary(self):
+        self.assign_fields(["method", "basis"])
+        self.input_molecule = molecule_from_xyz_string(self.summary["input_xyz"])
+        self.input_molecule.charge = self.summary["charge"]
+        self.input_molecule.spin_multiplicity = self.summary["multiplicity"]
 
 
 def yesno(value):
@@ -187,14 +216,16 @@ class SimpleMpqcJobSinglePoint(SimpleMpqcJob):
         print >> f, "optimize: no"
         print >> f, "gradient: " + yesno(self.do_gradient)
         
-    def process_summary(self):
+    def process_input_summary(self):
+        SimpleMpqcJob.process_input_summary(self)
+        self.assign_fields(["do_gradient"])
+
+    def process_output_summary(self):
         if not self.accuracy_warnings:
             self.assign_fields(["energy"])
             gradient = self.summary.get("gradient")
             if gradient != None:
                 self.gradient = Numeric.array(gradient, Numeric.Float)
-            self.input_molecule.coordinates = from_angstrom(Numeric.array(self.summary["input_coordinates"], Numeric.Float))
-            
 
 
 class SimpleMpqcJobOptimize(SimpleMpqcJob):
@@ -213,7 +244,7 @@ class SimpleMpqcJobOptimize(SimpleMpqcJob):
         SimpleMpqcJob.write_input(self, f)
         print >> f, "optimize: yes"
         
-    def process_summary(self):
+    def process_output_summary(self):
         if not self.accuracy_warnings:
             self.assign_fields(["energies"])
             self.output_molecule = copy.deepcopy(self.input_molecule)

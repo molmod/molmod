@@ -20,7 +20,7 @@
 # --
 
 from pychem.molecular_graphs import *
-from pychem.molecules import molecule_from_xyz
+from pychem.molecules import molecule_from_xyz_filename
 from pychem.moldata import BOND_SINGLE
 
 import unittest, copy
@@ -32,7 +32,7 @@ suite = unittest.TestSuite()
 
 class TestMolecularGraphsTPA(unittest.TestCase):        
     def setUp(self):
-        self.molecule = molecule_from_xyz("input/tpa.xyz")
+        self.molecule = molecule_from_xyz_filename("input/tpa.xyz")
         self.molecular_graph = MolecularGraph(self.molecule)
         
     def verify(self, expected_results, test_results, generate_alternatives):

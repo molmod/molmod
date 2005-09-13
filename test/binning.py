@@ -35,8 +35,8 @@ class TestDistances(unittest.TestCase):
     gridsize = 1.0
     
     def load_binned_atoms(self, filename):
-        from pychem.molecules import molecule_from_xyz
-        m = molecule_from_xyz("input/"+filename)
+        from pychem.molecules import molecule_from_xyz_filename
+        m = molecule_from_xyz_filename("input/"+filename)
         
         def yield_positioned_atoms():
             for index in xrange(len(m.numbers)):

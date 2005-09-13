@@ -20,7 +20,7 @@
 # --
 
 from pychem.interfaces.mpqc import SimpleMpqcJobSinglePoint, SimpleMpqcJobOptimize
-from pychem.molecules import molecule_from_xyz
+from pychem.molecules import molecule_from_xyz_filename
 
 import math, Numeric
 import unittest
@@ -35,7 +35,20 @@ class TestMpqcInterface(unittest.TestCase):
     gridsize = 1.0
     
     def test_single_point(self):
-        water = molecule_from_xyz("input/water.xyz")
+        def validate():
+            self.assert_(job.completed)
+            self.assertAlmostEqual(job.energy, -75.9734488121, 8)
+            self.assertAlmostEqual(job.gradient[0,0],  0.01174361, 6)
+            self.assertAlmostEqual(job.gradient[0,1],  0.0,        6)
+            self.assertAlmostEqual(job.gradient[0,2],  0.0,        6)
+            self.assertAlmostEqual(job.gradient[1,0], -0.0058718,  6)
+            self.assertAlmostEqual(job.gradient[1,1],  0.0,        6)
+            self.assertAlmostEqual(job.gradient[1,2], -0.01381411, 6)
+            self.assertAlmostEqual(job.gradient[2,0], -0.0058718,  6)
+            self.assertAlmostEqual(job.gradient[2,1],  0.0,        6)
+            self.assertAlmostEqual(job.gradient[2,2],  0.01381411, 6)
+            
+        water = molecule_from_xyz_filename("input/water.xyz")
         job = SimpleMpqcJobSinglePoint(
             "output/water_sp",
             "Water single point berekening", 
@@ -45,20 +58,23 @@ class TestMpqcInterface(unittest.TestCase):
             do_gradient=True
         )
         job.run(user_overwrite=True)
-        self.assert_(job.completed)
-        self.assertAlmostEqual(job.energy, -75.9734488121, 8)
-        self.assertAlmostEqual(job.gradient[0,0],  0.01174361, 6)
-        self.assertAlmostEqual(job.gradient[0,1],  0.0,        6)
-        self.assertAlmostEqual(job.gradient[0,2],  0.0,        6)
-        self.assertAlmostEqual(job.gradient[1,0], -0.0058718,  6)
-        self.assertAlmostEqual(job.gradient[1,1],  0.0,        6)
-        self.assertAlmostEqual(job.gradient[1,2], -0.01381411, 6)
-        self.assertAlmostEqual(job.gradient[2,0], -0.0058718,  6)
-        self.assertAlmostEqual(job.gradient[2,1],  0.0,        6)
-        self.assertAlmostEqual(job.gradient[2,2],  0.01381411, 6)
+        validate()
+        job.run()
+        validate()
                   
     def test_optimize(self):
-        water = molecule_from_xyz("input/water.xyz")
+        def validate():
+            self.assert_(job.completed)
+            self.assertAlmostEqual(job.energies[-1], -75.973963163199997, 8)
+            coordinates = job.output_molecule.coordinates
+            delta = coordinates[0]-coordinates[1]
+            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 6)
+            delta = coordinates[0]-coordinates[2]
+            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 6)
+            delta = coordinates[1]-coordinates[2]
+            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 2.96668446577, 6)
+        
+        water = molecule_from_xyz_filename("input/water.xyz")
         job = SimpleMpqcJobOptimize(
             "output/water_opt",
             "Water single point berekening", 
@@ -67,15 +83,9 @@ class TestMpqcInterface(unittest.TestCase):
             "3-21G*"
         )
         job.run(user_overwrite=True)
-        self.assert_(job.completed)
-        self.assertAlmostEqual(job.energies[-1], -75.973963163199997, 8)
-        coordinates = job.output_molecule.coordinates
-        delta = coordinates[0]-coordinates[1]
-        self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 6)
-        delta = coordinates[0]-coordinates[2]
-        self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 6)
-        delta = coordinates[1]-coordinates[2]
-        self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 2.96668446577, 6)
+        validate()
+        job.run()
+        validate()
         
 
 suite.addTest(unittest.makeSuite(TestMpqcInterface))

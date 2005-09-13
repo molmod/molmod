@@ -19,12 +19,19 @@
 # 
 # --
 
-import Numeric, math
 from pychem.moldata import periodic
 from pychem.units import from_angstrom
 
+from StringIO import StringIO
 
-__all__ = ["Molecule", "molecule_from_xyz"]
+import Numeric, math
+
+
+__all__ = [
+    "Molecule", 
+    "molecule_from_xyz_stream", "molecule_from_xyz_str", 
+    "molecule_from_xyz_filename"
+]
 
 
 class Molecule:
@@ -80,12 +87,10 @@ class Molecule:
         self.coordinates = Numeric.dot(self.coordinates, rotation)
 
 
-def molecule_from_xyz(filename):
-    """Load an xyz file and return a Molecule instance."""
-    f = file(filename)
+def molecule_from_xyz_stream(stream):
     num_atoms = None
     atoms = []
-    for line in f:
+    for line in stream:
         line = line[0:line.find("#")]
         words = line.split()
         if len(words) == 1 and num_atoms == None:
@@ -97,7 +102,19 @@ def molecule_from_xyz(filename):
                 from_angstrom(float(words[2])),
                 from_angstrom(float(words[3]))
             ])
-    f.close()
     assert len(atoms) == num_atoms, "Inconsistent number of atoms."
     return Molecule(atoms)
+
+def molecule_from_xyz_filename(filename):
+    """Load an xyz file and return a Molecule instance."""
+    f = file(filename)
+    result = molecule_from_xyz_stream(f)
+    f.close()
+    return result
+
+def molecule_from_xyz_string(string):
+    stream = StringIO(string)
+    result = molecule_from_xyz_stream(stream)
+    stream.close()
+    return result
 
