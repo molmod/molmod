@@ -57,6 +57,7 @@ class MpqcJob(object):
         self.filename = filename
         self.title = title
         self.input_molecule = input_molecule
+        self.ran = False
         self.summary = {}
 
     def write_input(self, f):
@@ -156,6 +157,7 @@ class MpqcJob(object):
         if not self.completed:
             raise ExternalError("Output file of external job is not complete (%s)" % self.filename)
         self.process_output_summary()
+        self.ran = True
         return recycled
 
 
