@@ -26,6 +26,10 @@ BEGIN {
     numatoms = 0;
 }
 
+/memory:/ {
+    printf("\t\"memory\": \"%s\",\n", $2);
+}
+
 /method:/ {
     method = $0
     sub("method: ", "", method)

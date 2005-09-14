@@ -57,7 +57,7 @@ class MpqcJob(object):
         self.filename = filename
         self.title = title
         self.input_molecule = input_molecule
-        self.memory = None
+        self.memory = memory
         
         self.ran = False
         self.summary = {}
