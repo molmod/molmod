@@ -50,11 +50,12 @@ class TestMpqcInterface(unittest.TestCase):
             
         water = molecule_from_xyz_filename("input/water.xyz")
         job = SimpleMpqcJobSinglePoint(
-            "output/water_sp",
-            "Water single point berekening", 
-            water,
-            "KS (xc = B3LYP)",
-            "3-21G*",
+            filename="output/water_sp",
+            title="Water single point berekening", 
+            input_molecule=water,
+            method="KS (xc = B3LYP)",
+            basis="3-21G*",
+            memory="100MB",
             do_gradient=True
         )
         job.run(user_overwrite=True)
@@ -76,11 +77,12 @@ class TestMpqcInterface(unittest.TestCase):
         
         water = molecule_from_xyz_filename("input/water.xyz")
         job = SimpleMpqcJobOptimize(
-            "output/water_opt",
-            "Water single point berekening", 
-            water,
-            "KS (xc = B3LYP)",
-            "3-21G*"
+            filename="output/water_opt",
+            title="Water single point berekening", 
+            input_molecule=water,
+            method="KS (xc = B3LYP)",
+            basis="3-21G*",
+            memory="100MB"
         )
         job.run(user_overwrite=True)
         validate()
