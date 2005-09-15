@@ -331,7 +331,7 @@ class Collection(object):
                 Cos, 
                 d1,
                 d2, 
-                name="bond cos %i-%i-%i (%s)" % (match.get_destination(0), match.get_destination(1), match.get_destination(2), tag),
+                name="bond angle cos %i-%i-%i (%s)" % (match.get_destination(0), match.get_destination(1), match.get_destination(2), tag),
             )
             result[tag].append(c)
         self.user_coordinates.update(result)
@@ -349,7 +349,7 @@ class Collection(object):
             d = self.add(
                 Distance, 
                 e, 
-                name="angle span %i-%i-%i (%s)" % (match.get_destination(0), match.get_destination(1), match.get_destination(2), tag),
+                name="bond angle span %i-%i-%i (%s)" % (match.get_destination(0), match.get_destination(1), match.get_destination(2), tag),
             )
             result[tag].append(d)
         self.user_coordinates.update(result)
@@ -389,7 +389,7 @@ class Collection(object):
                 Div, 
                 t, 
                 n,
-                name="dihedral angle %i-%i-%i-%i (%s)" % (match.get_destination(0), match.get_destination(1), match.get_destination(2), match.get_destination(3), tag),
+                name="dihedral angle cos %i-%i-%i-%i (%s)" % (match.get_destination(0), match.get_destination(1), match.get_destination(2), match.get_destination(3), tag),
              )
             result[tag].append(dihedral_cos)
         self.user_coordinates.update(result)        
