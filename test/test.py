@@ -41,6 +41,10 @@ suite.addTest(interfaces.suite)
 import molecular_graphs
 suite.addTest(molecular_graphs.suite)
 
+import internal_coordinates
+suite.addTest(internal_coordinates.suite)
+
+
 test_result = unittest.TextTestRunner(verbosity=2).run(suite)
 
 if len(test_result.failures) > 0 or len(test_result.errors) > 0:
