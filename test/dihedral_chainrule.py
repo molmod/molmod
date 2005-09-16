@@ -37,7 +37,7 @@ class TestDihedralChainrule(unittest.TestCase):
 
         # Define a set of independant internal coordinates.
         collection = Collection(chlorobromoethene)
-        collection.add_dihedral_angles(DihedralAngleSets([CriteriaSet("HCCH-angles", ((1, 6, 6, 1), None))]))
+        collection.add_dihedral_cosines(DihedralAngleSets([CriteriaSet("HCCH-angles", ((1, 6, 6, 1), None))]))
         dihedral = collection["HCCH-angles"][0]
         value, gradient = dihedral(chlorobromoethene.coordinates)
         delta = chlorobromoethene.coordinates - chlorobromoethene_mod.coordinates 

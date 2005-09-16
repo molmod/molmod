@@ -404,7 +404,7 @@ class Collection(object):
             result[tag].append(d)
         self.user_coordinates.update(result)
 
-    def add_dihedral_angles(self, criteria_sets):
+    def add_dihedral_cosines(self, criteria_sets):
         """
         Adds the dihedral angles described in criteria_sets to the collection.
         """

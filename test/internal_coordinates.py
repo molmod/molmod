@@ -111,7 +111,7 @@ class TestInternalCoordinatesTPA(unittest.TestCase):
         dihedral_angle_sets = DihedralAngleSets([
             CriteriaSet("All dihedral angles", (None, None)),
         ])
-        self.collection.add_dihedral_angles(dihedral_angle_sets)
+        self.collection.add_dihedral_cosines(dihedral_angle_sets)
         expected_results = self.load_expected_results(
             "input/tpa_tors.csv", 
             lambda x: math.cos(math.pi*x/180.0)
