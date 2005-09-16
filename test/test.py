@@ -35,8 +35,8 @@ suite.addTest(binning.suite)
 import graphs
 suite.addTest(graphs.suite)
 
-#import interfaces
-#suite.addTest(interfaces.suite)
+import interfaces
+suite.addTest(interfaces.suite)
 
 import molecular_graphs
 suite.addTest(molecular_graphs.suite)
