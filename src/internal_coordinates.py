@@ -424,7 +424,7 @@ class Similars(object):
         counter = 0
         self.internal_coordinates = []
         for similar in self.items:
-            self.internal_coordinates.append(similar.internal_coordinates)
+            self.internal_coordinates.extend(similar.internal_coordinates)
             similar.indices = []
             for internal_coordinate in similar.internal_coordinates:
                 internal_coordinate.index = counter
@@ -455,6 +455,7 @@ class JacobianSolver(object):
     """
     
     def __init__(self, internal_coordinates, num_atoms):
+        assert len(internal_coordinates) >= num_atoms*3-6, "Specify more internal coordinates"
         self.internal_coordinates = internal_coordinates
         # internal coordinates mask: This masks out the non-independant
         # carthesian coordinates in the center of mass frame. It is assumed
@@ -468,7 +469,6 @@ class JacobianSolver(object):
         self.internal_mask = Numeric.ravel(self.internal_mask)
         # One must specify at least as much internal coordinates as
         # there are internal degrees of freedom in a molecule.
-        assert sum(len(similar.internal_coordinates) for similar in similars) >= num_atoms*3-6, "Specify more internal coordinates"
         
     def __call__(self, job):
         """
