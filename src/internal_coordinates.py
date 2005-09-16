@@ -302,27 +302,30 @@ class Collection(object):
         """
         result = dict((tag, []) for tag in criteria_sets.yield_tags())
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
-            s0 = self.add(Select, match.get_destination(0))
-            s1 = self.add(Select, match.get_destination(1))
+            id = tuple([match.get_destination(source) for source in [0, 1]])
+            s0 = self.add(Select, id[0])
+            s1 = self.add(Select, id[1])
             e = self.add(Sub, s1, s0)
             d = self.add(
                 Distance, 
                 e, 
-                name="bond length %i-%i (%s)" % (match.get_destination(0), match.get_destination(1), tag),
+                name="bond length %i-%i (%s)" % (id + (tag,)),
+                id=id
             )
             result[tag].append(d)
         self.user_coordinates.update(result)
             
-    def add_bond_cos(self, criteria_sets):
+    def add_bond_cosines(self, criteria_sets):
         """
         Adds the cosines of the bond angles described in criteria_sets to the 
         collection.
         """
         result = dict((tag, []) for tag in criteria_sets.yield_tags())
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
-            s0 = self.add(Select, match.get_destination(0))
-            s1 = self.add(Select, match.get_destination(1))
-            s2 = self.add(Select, match.get_destination(2))
+            id = tuple([match.get_destination(source) for source in [0, 1, 2]])
+            s0 = self.add(Select, id[0])
+            s1 = self.add(Select, id[1])
+            s2 = self.add(Select, id[2])
             e1 = self.add(Sub, s0, s1)
             e2 = self.add(Sub, s2, s1)
             d1 = self.add(Distance, e1)
@@ -331,39 +334,43 @@ class Collection(object):
                 Cos, 
                 d1,
                 d2, 
-                name="bond angle cos %i-%i-%i (%s)" % (match.get_destination(0), match.get_destination(1), match.get_destination(2), tag),
+                name="bond angle cos %i-%i-%i (%s)" % (id + (tag,)),
+                id=id
             )
             result[tag].append(c)
         self.user_coordinates.update(result)
         
-    def add_angle_span(self, criteria_sets):
+    def add_angle_spans(self, criteria_sets):
         """
         Adds the distances that span the bond angles described in criteria_sets
         to the collection.
         """
         result = dict((tag, []) for tag in criteria_sets.yield_tags())
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
-            s0 = self.add(Select, match.get_destination(0))
-            s2 = self.add(Select, match.get_destination(2))
+            id = tuple([match.get_destination(source) for source in [0, 1, 2]])
+            s0 = self.add(Select, id[0])
+            s2 = self.add(Select, id[2])
             e = self.add(Sub, s0, s2)
             d = self.add(
                 Distance, 
                 e, 
-                name="bond angle span %i-%i-%i (%s)" % (match.get_destination(0), match.get_destination(1), match.get_destination(2), tag),
+                name="bond angle span %i-%i-%i (%s)" % (id + (tag,)),
+                id=id
             )
             result[tag].append(d)
         self.user_coordinates.update(result)
 
-    def add_dihedral_angle(self, criteria_sets):
+    def add_dihedral_angles(self, criteria_sets):
         """
         Adds the dihedral angles described in criteria_sets to the collection.
         """
         result = dict((tag, []) for tag in criteria_sets.yield_tags())
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
-            s0 = self.add(Select, match.get_destination(0))
-            s1 = self.add(Select, match.get_destination(1))
-            s2 = self.add(Select, match.get_destination(2))
-            s3 = self.add(Select, match.get_destination(3))
+            id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
+            s0 = self.add(Select, id[0])
+            s1 = self.add(Select, id[1])
+            s2 = self.add(Select, id[2])
+            s3 = self.add(Select, id[3])
             el = self.add(Sub, s0, s1)
             em = self.add(Sub, s1, s2)
             er = self.add(Sub, s3, s2)
@@ -389,7 +396,8 @@ class Collection(object):
                 Div, 
                 t, 
                 n,
-                name="dihedral angle cos %i-%i-%i-%i (%s)" % (match.get_destination(0), match.get_destination(1), match.get_destination(2), match.get_destination(3), tag),
+                name="dihedral angle cos %i-%i-%i-%i (%s)" % (id + (tag,)),
+                id=id
              )
             result[tag].append(dihedral_cos)
         self.user_coordinates.update(result)        
@@ -413,6 +421,16 @@ class Similars(object):
     def __init__(self, items):
         self.items = items
         self.dict_items = dict((item.name, item) for item in items)
+        counter = 0
+        self.internal_coordinates = []
+        for similar in self.items:
+            self.internal_coordinates.append(similar.internal_coordinates)
+            similar.indices = []
+            for internal_coordinate in similar.internal_coordinates:
+                internal_coordinate.index = counter
+                similar.indices.append(counter)
+                counter += 1
+            
         
     def __len__(self):
         return len(self.items)
@@ -436,16 +454,8 @@ class JacobianSolver(object):
     Configuration object.
     """
     
-    def __init__(self, similars, num_atoms):
-        self.similars = similars
-        # by passing similars to the JacobianSolver __init__, you agree with
-        # the convention that each internal coordinate will get a unique index:
-        counter = 0
-        for similar in self.similars:
-            similar.indices = []
-            for internal_coordinate in similar.internal_coordinates:
-                similar.indices.append(counter)
-                counter += 1
+    def __init__(self, internal_coordinates, num_atoms):
+        self.internal_coordinates = internal_coordinates
         # internal coordinates mask: This masks out the non-independant
         # carthesian coordinates in the center of mass frame. It is assumed
         # that the molecule is transformed into it's normalized frame.
@@ -489,12 +499,11 @@ class JacobianSolver(object):
         jacobian = []
         full_jacobian = []
         values = []
-        for similar in self.similars:
-            for internal_coordinate in similar.internal_coordinates:
-                value, pd = internal_coordinate(job.input_molecule.coordinates)
-                values.append(value)
-                jacobian.append(Numeric.compress(self.internal_mask, Numeric.ravel(pd)))
-                full_jacobian.append(Numeric.ravel(pd))
+        for internal_coordinate in self.internal_coordinates:
+            value, pd = internal_coordinate(job.input_molecule.coordinates)
+            values.append(value)
+            jacobian.append(Numeric.compress(self.internal_mask, Numeric.ravel(pd)))
+            full_jacobian.append(Numeric.ravel(pd))
             
         result.values = Numeric.array(values)
         result.jacobian = Numeric.transpose(Numeric.array(jacobian))
