@@ -292,7 +292,44 @@ class Collection(object):
     
     def add_group(self, tag, internal_coordinates):
         self.user_coordinates[tag] = internal_coordinates
+   
+    def add_non_bonded_distances(self, criteria_sets):
+        def all_pairs(atom_criteria):
+            first_criterium = atom_criteria[0]
+            first_criterium.set_molecular_graph(self.molecular_graph)
+            second_criterium = atom_criteria[1]
+            second_criterium.set_molecular_graph(self.molecular_graph)
+            molecule = self.molecular_graph.molecule
+            for index1 in xrange(len(molecule.numbers)):
+                for index2 in xrange(index1+1, len(molecule.numbers)):
+                    if first_criterium(index1) and second_criterium(index2):
+                        yield (index1, index2)
+                    elif first_criterium(index2) and second_criterium(index1):
+                        yield (index2, index1)
+                
     
+        nonbonded_pairs = dict((tag, set(all_pairs(atom_criteria))) for tag, atom_criteria, bond_criteria, filter_tags in criteria_sets.yield_criteria())
+        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
+            id = tuple([match.get_destination(source) for source in [0, 1]])
+            nonbonded_pairs[tag].discard(id)
+            reverse_id = (id[1], id[0])
+            nonbonded_pairs[tag].discard(id)
+
+        def distance(id):
+            s0 = self.add(Select, id[0])
+            s1 = self.add(Select, id[1])
+            e = self.add(Sub, s1, s0)
+            d = self.add(
+                Distance, 
+                e, 
+                name="nonbonded pair %i-%i (%s)" % (id + (tag,)),
+                id=id
+            )
+            return d
+
+        result = dict((tag, [distance(id) for id in ids]) for tag, ids in nonbonded_pairs.iteritems())
+        self.user_coordinates.update(result)
+   
     def add_bond_lengths(self, criteria_sets):
         """
         Adds the bond lengths described in criteria_sets to the collection.
@@ -401,6 +438,24 @@ class Collection(object):
              )
             result[tag].append(dihedral_cos)
         self.user_coordinates.update(result)        
+
+    def yield_related_internal_coordinates(self, tag1, tag2, order_related=2):
+        for ic1 in self[tag1]:
+            for ic2 in self[tag2]:
+                if len(set(ic1.id) & set(ic2.id)) >= order_related:
+                    yield (ic1, ic2)
+
+    def add_related_products(self, tag, tag1, tag2, order_related=2):
+        result = []
+        for ic1, ic2 in self.yield_related_internal_coordinates(tag1, tag2, order_related):
+            product = self.add(
+                Mul,
+                ic1,
+                ic2,
+                name="%s x %s (%s)" % (ic1.name, ic2.name, tag)
+            )
+            result.append(product)
+        self.user_coordinates[tag] = result
 
 
 class Similar(object):
