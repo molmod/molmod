@@ -184,7 +184,7 @@ class DihedralAngleSets(CriteriaSets):
 
 class OutOfPlaneAngleSets(CriteriaSets):
     def __init__(self, sets):
-        CriteriaSets.__init__(self, [(0, 1), (0, 2), (0, 3)], 0, {0: 0, 1: 1, 2: 2, 3: 2}, sets)
+        CriteriaSets.__init__(self, [(1, 0), (1, 2), (1, 3)], 1, {0: 0, 1: 1, 2: 2, 3: 2}, sets)
 
 
 #     
