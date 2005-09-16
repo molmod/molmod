@@ -35,8 +35,8 @@ suite.addTest(binning.suite)
 import graphs
 suite.addTest(graphs.suite)
 
-import interfaces
-suite.addTest(interfaces.suite)
+#import interfaces
+#suite.addTest(interfaces.suite)
 
 import molecular_graphs
 suite.addTest(molecular_graphs.suite)
@@ -46,6 +46,9 @@ suite.addTest(internal_coordinates.suite)
 
 import dihedral_chainrule
 suite.addTest(dihedral_chainrule.suite)
+
+import out_of_plane_chainrule
+suite.addTest(out_of_plane_chainrule.suite)
 
 test_result = unittest.TextTestRunner(verbosity=2).run(suite)
 

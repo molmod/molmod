@@ -26,7 +26,7 @@ import Numeric, LinearAlgebra
 
 __all__ = [
     "InternalCoordinate", "Select", 
-    "Binary", "Add", "Sub", "Mul", "Div", "Dot", "Cos", 
+    "Binary", "Add", "Sub", "Delta", "Mul", "Div", "Dot", "Cos", 
     "Unary", "Distance", "DistanceSqr", "Sqr", "Sqrt", "ArcCos",
     "Configuration", "JacobianSolver"
 ]
@@ -66,7 +66,7 @@ class InternalCoordinate(object):
             dependant on the i'th column of the given coordinates and the
             i'th column of the gradient contains the partial derivates of the
             i'th internal coordinate towards the given carthesian coordinates.
-    Some Internal coordinate classes can handle both conventions (eg. Sub)
+    Some Internal coordinate classes can handle both conventions (eg. Delta)
     """
     
     def __init__(self, **keyvals):
@@ -118,10 +118,17 @@ class Add(Binary):
     def __call__(self, coordinates):
         v1, gv1 = self.iic1(coordinates)
         v2, gv2 = self.iic2(coordinates)
-        return v1 + v2, gv1 - gv2
+        return v1 + v2, gv1 + gv2
 
 
 class Sub(Binary):
+    def __call__(self, coordinates):
+        v1, gv1 = self.iic1(coordinates)
+        v2, gv2 = self.iic2(coordinates)
+        return v1 - v2, gv1 - gv2
+
+
+class Delta(Binary):
     def __call__(self, coordinates):
         b, gb = self.iic1(coordinates)
         e, ge = self.iic2(coordinates)
@@ -318,7 +325,7 @@ class Collection(object):
         def distance(id):
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
-            e = self.add(Sub, s1, s0)
+            e = self.add(Delta, s1, s0)
             d = self.add(
                 Distance, 
                 e, 
@@ -342,7 +349,7 @@ class Collection(object):
             id = tuple([match.get_destination(source) for source in [0, 1]])
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
-            e = self.add(Sub, s1, s0)
+            e = self.add(Delta, s1, s0)
             d = self.add(
                 Distance, 
                 e, 
@@ -363,8 +370,8 @@ class Collection(object):
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
             s2 = self.add(Select, id[2])
-            e1 = self.add(Sub, s0, s1)
-            e2 = self.add(Sub, s2, s1)
+            e1 = self.add(Delta, s1, s0)
+            e2 = self.add(Delta, s1, s2)
             d1 = self.add(Distance, e1)
             d2 = self.add(Distance, e2)
             c = self.add(
@@ -387,7 +394,7 @@ class Collection(object):
             id = tuple([match.get_destination(source) for source in [0, 1, 2]])
             s0 = self.add(Select, id[0])
             s2 = self.add(Select, id[2])
-            e = self.add(Sub, s0, s2)
+            e = self.add(Delta, s0, s2)
             d = self.add(
                 Distance, 
                 e, 
@@ -408,9 +415,9 @@ class Collection(object):
             s1 = self.add(Select, id[1])
             s2 = self.add(Select, id[2])
             s3 = self.add(Select, id[3])
-            el = self.add(Sub, s0, s1)
-            em = self.add(Sub, s1, s2)
-            er = self.add(Sub, s3, s2)
+            el = self.add(Delta, s1, s0)
+            em = self.add(Delta, s1, s2)
+            er = self.add(Delta, s2, s3)
             dll = self.add(DistanceSqr, el)
             dmm = self.add(DistanceSqr, em)
             drr = self.add(DistanceSqr, er)
@@ -420,7 +427,7 @@ class Collection(object):
             #
             tin = self.add(Mul, dlm, dmr)
             tout = self.add(Mul, drl, dmm)
-            t = self.add(Sub, tin, tout)
+            t = self.add(Sub, tout, tin)
             noutl = self.add(Mul, dll, dmm)
             noutr = self.add(Mul, dmm, drr)
             dlm2 = self.add(Sqr, dlm)
@@ -438,6 +445,46 @@ class Collection(object):
              )
             result[tag].append(dihedral_cos)
         self.user_coordinates.update(result)        
+
+    def add_out_of_plane_cosines(self, criteria_sets):
+        """
+        Adds the dihedral angles described in criteria_sets to the collection.
+        """
+        result = dict((tag, []) for tag in criteria_sets.yield_tags())
+        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
+            id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
+            s0 = self.add(Select, id[0])
+            s1 = self.add(Select, id[1])
+            s2 = self.add(Select, id[2])
+            s3 = self.add(Select, id[3])
+            rt = self.add(Delta, s0, s1)
+            ra = self.add(Delta, s0, s2)
+            rb = self.add(Delta, s0, s3)
+            dat = self.add(Dot, ra, rt)
+            dbt = self.add(Dot, rb, rt)
+            dl = self.add(Mul, rb, dat)
+            dr = self.add(Mul, ra, dbt)
+            d = self.add(Sub, dl, dr)
+            ddb = self.add(Dot, d, rb)
+            dda = self.add(Dot, d, ra)
+            pl = self.add(Mul, ddb, ra)
+            pr = self.add(Mul, dda, rb)
+            p = self.add(Sub, pl, pr)
+            t = self.add(Dot, p, rt)
+            n1 = self.add(DistanceSqr, p)
+            n2 = self.add(DistanceSqr, rt)
+            nn = self.add(Mul, n1, n2)
+            n = self.add(Sqrt, nn)
+            out_of_plane_cos = self.add(
+                Div,
+                t,
+                n,
+                name="out of plane angle cos %i-%i (%i,%i) (%s)" % (id + (tag,)),
+                id=id
+            )
+            result[tag].append(out_of_plane_cos)
+        self.user_coordinates.update(result)        
+ 
 
     def yield_related_internal_coordinates(self, tag1, tag2, order_related=2):
         for ic1 in self[tag1]:

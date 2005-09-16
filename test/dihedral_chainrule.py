@@ -20,10 +20,8 @@
 # --
 
 from pychem.internal_coordinates import Collection
-from pychem.molecular_graphs import BondSets, BondAngleSets, DihedralAngleSets, CriteriaSet
+from pychem.molecular_graphs import DihedralAngleSets, CriteriaSet
 from pychem.molecules import molecule_from_xyz_filename
-from pychem.moldata import BOND_SINGLE
-from pychem.units import from_angstrom
 
 import unittest, math, Numeric
 
@@ -34,17 +32,17 @@ suite = unittest.TestSuite()
 
 class TestDihedralChainrule(unittest.TestCase):        
     def test_dihedral_chainrule(self):
-        ethene = molecule_from_xyz_filename("input/ethene.xyz")
-        ethene_mod = molecule_from_xyz_filename("input/ethene_mod.xyz")
+        chlorobromoethene = molecule_from_xyz_filename("input/chlorobromoethene.xyz")
+        chlorobromoethene_mod = molecule_from_xyz_filename("input/chlorobromoethene_dih.xyz")
 
         # Define a set of independant internal coordinates.
-        collection = Collection(ethene)
+        collection = Collection(chlorobromoethene)
         collection.add_dihedral_angles(DihedralAngleSets([CriteriaSet("HCCH-angles", ((1, 6, 6, 1), None))]))
         dihedral = collection["HCCH-angles"][0]
-        value, gradient = dihedral(ethene.coordinates)
-        delta = ethene.coordinates - ethene_mod.coordinates 
+        value, gradient = dihedral(chlorobromoethene.coordinates)
+        delta = chlorobromoethene.coordinates - chlorobromoethene_mod.coordinates 
         cos_estimate = Numeric.dot(Numeric.ravel(gradient), Numeric.ravel(delta))
-        cos_real = math.cos(90.0/180.0*math.pi)-math.cos(80.0/180.0*math.pi)
+        cos_real = math.cos(90.0/180.0*math.pi)-math.cos(100.0/180.0*math.pi)
         self.assertAlmostEqual(
             cos_real, 
             cos_estimate, 

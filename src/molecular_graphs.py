@@ -33,6 +33,7 @@ __all__ = [
     "BondTypeCriterium", "BondTypeRequire", "BondTypeRefuse",
     "NumNeighboursCriterium", "NumNeighboursRequire", "NumNeighboursRefuse",
     "CriteriaSets", "CriteriaSet", "BondSets", "BondAngleSets", "DihedralAngleSets",
+    "OutOfPlaneAngleSets",
     "MolecularGraph", 
 ]
 
@@ -179,6 +180,11 @@ class BondAngleSets(CriteriaSets):
 class DihedralAngleSets(CriteriaSets):
     def __init__(self, sets):
         CriteriaSets.__init__(self, [(0, 1), (1, 2), (2, 3)], 1, {0: 0, 1: 1, 2: 1, 3: 0}, sets)
+
+
+class OutOfPlaneAngleSets(CriteriaSets):
+    def __init__(self, sets):
+        CriteriaSets.__init__(self, [(0, 1), (0, 2), (0, 3)], 0, {0: 0, 1: 1, 2: 2, 3: 2}, sets)
 
 
 #     
