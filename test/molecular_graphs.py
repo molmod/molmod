@@ -87,7 +87,7 @@ class TestMolecularGraphsTPA(unittest.TestCase):
         self.verify(expected_results, test_results, generate_alternatives)
 
     def test_bond_angles(self):
-        criteria_sets = BondAngleSets([
+        criteria_sets = BendSets([
             CriteriaSet("HCH", ((1, 6, 1), None)),
             CriteriaSet("HCC", ((1, 6, 6), None)),
             CriteriaSet("CCC", ((6, 6, 6), None)),
@@ -117,7 +117,7 @@ class TestMolecularGraphsTPA(unittest.TestCase):
         self.verify(expected_results, test_results, generate_alternatives)        
 
     def test_dihedral_angles(self):
-        criteria_sets = DihedralAngleSets([
+        criteria_sets = DihedralSets([
             CriteriaSet("HCCH", ((1, 6, 6, 1), None)),
             CriteriaSet("HCCN", ((1, 6, 6, 7), None)),
             CriteriaSet("HCNC", ((1, 6, 7, 6), None))

@@ -20,7 +20,7 @@
 # --
 
 from pychem.internal_coordinates import Collection
-from pychem.molecular_graphs import BondSets, BondAngleSets, DihedralAngleSets, CriteriaSet
+from pychem.molecular_graphs import BondSets, BendSets, DihedralSets, CriteriaSet
 from pychem.molecules import molecule_from_xyz_filename
 from pychem.moldata import BOND_SINGLE
 from pychem.units import from_angstrom
@@ -87,10 +87,10 @@ class TestInternalCoordinatesTPA(unittest.TestCase):
         )
 
     def test_bond_angles(self):
-        bond_angle_sets = BondAngleSets([
-            CriteriaSet("All bond angles", (None, None))
+        bend_sets = BendSets([
+            CriteriaSet("All bends", (None, None))
         ])
-        self.collection.add_bond_cosines(bond_angle_sets)
+        self.collection.add_bend_cosines(bend_sets)
         expected_results = self.load_expected_results(
             "input/tpa_bend.csv", 
             lambda x: math.cos(math.pi*x/180.0)
@@ -103,15 +103,15 @@ class TestInternalCoordinatesTPA(unittest.TestCase):
                 
         self.verify(
             expected_results, 
-            self.collection["All bond angles"], 
+            self.collection["All bends"], 
             yield_alternatives
         )
 
     def test_dihedral_angles(self):
-        dihedral_angle_sets = DihedralAngleSets([
-            CriteriaSet("All dihedral angles", (None, None)),
+        dihedral_sets = DihedralSets([
+            CriteriaSet("All dihedrals", (None, None)),
         ])
-        self.collection.add_dihedral_cosines(dihedral_angle_sets)
+        self.collection.add_dihedral_cosines(dihedral_sets)
         expected_results = self.load_expected_results(
             "input/tpa_tors.csv", 
             lambda x: math.cos(math.pi*x/180.0)
@@ -123,7 +123,7 @@ class TestInternalCoordinatesTPA(unittest.TestCase):
                 
         self.verify(
             expected_results, 
-            self.collection["All dihedral angles"], 
+            self.collection["All dihedrals"], 
             yield_alternatives
         )     
             

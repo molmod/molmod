@@ -32,8 +32,8 @@ __all__ = [
     "AtomNumberCriterium", "AtomNumberRequire", "AtomNumberRefuse", 
     "BondTypeCriterium", "BondTypeRequire", "BondTypeRefuse",
     "NumNeighboursCriterium", "NumNeighboursRequire", "NumNeighboursRefuse",
-    "CriteriaSets", "CriteriaSet", "BondSets", "BondAngleSets", "DihedralAngleSets",
-    "OutOfPlaneAngleSets",
+    "CriteriaSets", "CriteriaSet", "BondSets", "BendSets", "DihedralSets",
+    "OutOfPlaneSets", "LongRangePairSets",
     "MolecularGraph", 
 ]
 
@@ -172,19 +172,51 @@ class BondSets(CriteriaSets):
         CriteriaSets.__init__(self, [(0, 1)], 0, {0: 0, 1: 0}, sets)
 
 
-class BondAngleSets(CriteriaSets):
+class BendSets(CriteriaSets):
     def __init__(self, sets):
         CriteriaSets.__init__(self, [(0, 1), (1, 2)], 1, {0: 1, 1: 0, 2: 1}, sets)
 
 
-class DihedralAngleSets(CriteriaSets):
+class DihedralSets(CriteriaSets):
     def __init__(self, sets):
         CriteriaSets.__init__(self, [(0, 1), (1, 2), (2, 3)], 1, {0: 0, 1: 1, 2: 1, 3: 0}, sets)
 
 
-class OutOfPlaneAngleSets(CriteriaSets):
+class OutOfPlaneSets(CriteriaSets):
     def __init__(self, sets):
         CriteriaSets.__init__(self, [(1, 0), (1, 2), (1, 3)], 1, {0: 0, 1: 1, 2: 2, 3: 2}, sets)
+
+
+class LongRangePairSets(CriteriaSets):
+    def __init__(self, sets):
+        CriteriaSets.__init__(self, [(0, 1)], 0, {0: 0, 1: 0}, sets)
+
+    def bond_excludes(self):
+        return BondSets(self.sets)
+
+    def bend_excludes(self):
+        new_sets = [
+            CriteriaSet(
+                set.tag,
+                extensive=({0: set.atom_criteria[0], 2: set.atom_criteria[1]}, None),
+                filter_tags=set.filter_tags
+            )
+            for set
+            in self.sets
+        ]
+        return BendSets(new_sets)
+
+    def dihedral_excludes(self):
+        new_sets = [
+            CriteriaSet(
+                set.tag,
+                extensive=({0: set.atom_criteria[0], 3: set.atom_criteria[1]}, None),
+                filter_tags=set.filter_tags
+            )
+            for set
+            in self.sets
+        ]
+        return DihedralSets(new_sets)
 
 
 #     

@@ -20,7 +20,7 @@
 # --
 
 from pychem.internal_coordinates import Collection
-from pychem.molecular_graphs import DihedralAngleSets, CriteriaSet
+from pychem.molecular_graphs import DihedralSets, CriteriaSet
 from pychem.molecules import molecule_from_xyz_filename
 
 import unittest, math, Numeric
@@ -37,8 +37,8 @@ class TestDihedralChainrule(unittest.TestCase):
 
         # Define a set of independant internal coordinates.
         collection = Collection(chlorobromoethene)
-        collection.add_dihedral_cosines(DihedralAngleSets([CriteriaSet("HCCH-angles", ((1, 6, 6, 1), None))]))
-        dihedral = collection["HCCH-angles"][0]
+        collection.add_dihedral_cosines(DihedralSets([CriteriaSet("HCCH", ((1, 6, 6, 1), None))]))
+        dihedral = collection["HCCH"][0]
         value, gradient = dihedral(chlorobromoethene.coordinates)
         delta = chlorobromoethene.coordinates - chlorobromoethene_mod.coordinates 
         cos_estimate = Numeric.dot(Numeric.ravel(gradient), Numeric.ravel(delta))

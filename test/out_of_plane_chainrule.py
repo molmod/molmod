@@ -20,7 +20,7 @@
 # --
 
 from pychem.internal_coordinates import Collection
-from pychem.molecular_graphs import OutOfPlaneAngleSets, CriteriaSet
+from pychem.molecular_graphs import OutOfPlaneSets, CriteriaSet
 from pychem.molecules import molecule_from_xyz_filename
 
 import unittest, math, Numeric
@@ -37,7 +37,7 @@ class TestOutOfPlaneChainrule(unittest.TestCase):
 
         # Define a set of independant internal coordinates.
         collection = Collection(chlorobromoethene)
-        collection.add_out_of_plane_cosines(OutOfPlaneAngleSets([CriteriaSet("CC(HCl)-angles", ((6, 6, 1, 17), None))]))
+        collection.add_out_of_plane_cosines(OutOfPlaneSets([CriteriaSet("CC(HCl)-angles", ((6, 6, 1, 17), None))]))
         out_of_plane = collection["CC(HCl)-angles"][0]
         value, gradient = out_of_plane(chlorobromoethene.coordinates)
         delta = chlorobromoethene.coordinates - chlorobromoethene_mod.coordinates 

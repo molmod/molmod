@@ -300,7 +300,7 @@ class Collection(object):
     def add_group(self, tag, internal_coordinates):
         self.user_coordinates[tag] = internal_coordinates
    
-    def add_non_bonded_distances(self, criteria_sets):
+    def add_long_range_distances(self, criteria_sets):
         def all_pairs(atom_criteria):
             first_criterium = atom_criteria[0]
             first_criterium.set_molecular_graph(self.molecular_graph)
@@ -316,25 +316,38 @@ class Collection(object):
                 
     
         nonbonded_pairs = dict((tag, set(all_pairs(atom_criteria))) for tag, atom_criteria, bond_criteria, filter_tags in criteria_sets.yield_criteria())
-        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
+
+        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets.bond_excludes()):
             id = tuple([match.get_destination(source) for source in [0, 1]])
             nonbonded_pairs[tag].discard(id)
             reverse_id = (id[1], id[0])
-            nonbonded_pairs[tag].discard(id)
+            nonbonded_pairs[tag].discard(reverse_id)
 
-        def distance(id):
+        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets.bend_excludes()):
+            id = tuple([match.get_destination(source) for source in [0, 2]])
+            nonbonded_pairs[tag].discard(id)
+            reverse_id = (id[1], id[0])
+            nonbonded_pairs[tag].discard(reverse_id)
+
+        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets.dihedral_excludes()):
+            id = tuple([match.get_destination(source) for source in [0, 3]])
+            nonbonded_pairs[tag].discard(id)
+            reverse_id = (id[1], id[0])
+            nonbonded_pairs[tag].discard(reverse_id)
+
+        def distance(id, tag):
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
             e = self.add(Delta, s1, s0)
             d = self.add(
                 Distance, 
                 e, 
-                name="nonbonded pair %i-%i (%s)" % (id + (tag,)),
+                name="long range distance %i-%i (%s)" % (id + (tag,)),
                 id=id
             )
             return d
 
-        result = dict((tag, [distance(id) for id in ids]) for tag, ids in nonbonded_pairs.iteritems())
+        result = dict((tag, [distance(id, tag) for id in ids]) for tag, ids in nonbonded_pairs.iteritems())
         self.user_coordinates.update(result)
    
     def add_bond_lengths(self, criteria_sets):
@@ -359,9 +372,9 @@ class Collection(object):
             result[tag].append(d)
         self.user_coordinates.update(result)
             
-    def add_bond_cosines(self, criteria_sets):
+    def add_bend_cosines(self, criteria_sets):
         """
-        Adds the cosines of the bond angles described in criteria_sets to the 
+        Adds the cosines of the bend angles described in criteria_sets to the 
         collection.
         """
         result = dict((tag, []) for tag in criteria_sets.yield_tags())
@@ -378,15 +391,15 @@ class Collection(object):
                 Cos, 
                 d1,
                 d2, 
-                name="bond angle cos %i-%i-%i (%s)" % (id + (tag,)),
+                name="bend cos %i-%i-%i (%s)" % (id + (tag,)),
                 id=id
             )
             result[tag].append(c)
         self.user_coordinates.update(result)
         
-    def add_angle_spans(self, criteria_sets):
+    def add_bend_spans(self, criteria_sets):
         """
-        Adds the distances that span the bond angles described in criteria_sets
+        Adds the distances that span the bend angles described in criteria_sets
         to the collection.
         """
         result = dict((tag, []) for tag in criteria_sets.yield_tags())
@@ -398,7 +411,7 @@ class Collection(object):
             d = self.add(
                 Distance, 
                 e, 
-                name="bond angle span %i-%i-%i (%s)" % (id + (tag,)),
+                name="bend span %i-%i-%i (%s)" % (id + (tag,)),
                 id=id
             )
             result[tag].append(d)
@@ -440,15 +453,36 @@ class Collection(object):
                 Div, 
                 t, 
                 n,
-                name="dihedral angle cos %i-%i-%i-%i (%s)" % (id + (tag,)),
+                name="dihedral cos %i-%i-%i-%i (%s)" % (id + (tag,)),
                 id=id
              )
             result[tag].append(dihedral_cos)
         self.user_coordinates.update(result)        
 
+    def add_dihedral_spans(self, criteria_sets):
+        """
+        Adds the distances that span the dihedral angles described in
+        criteria_sets to the collection.
+        """
+        result = dict((tag, []) for tag in criteria_sets.yield_tags())
+        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
+            id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
+            s0 = self.add(Select, id[0])
+            s3 = self.add(Select, id[3])
+            e = self.add(Delta, s0, s3)
+            d = self.add(
+                Distance, 
+                e, 
+                name="dihedral span %i-%i-%i-%i (%s)" % (id + (tag,)),
+                id=id
+            )
+            result[tag].append(d)
+        self.user_coordinates.update(result)
+
     def add_out_of_plane_cosines(self, criteria_sets):
         """
-        Adds the dihedral angles described in criteria_sets to the collection.
+        Adds the out of plane cosines described in criteria_sets to the
+        collection.
         """
         result = dict((tag, []) for tag in criteria_sets.yield_tags())
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
@@ -479,7 +513,7 @@ class Collection(object):
                 Div,
                 t,
                 n,
-                name="out of plane angle cos %i-%i (%i,%i) (%s)" % (id + (tag,)),
+                name="out of plane cos %i-%i (%i,%i) (%s)" % (id + (tag,)),
                 id=id
             )
             result[tag].append(out_of_plane_cos)
