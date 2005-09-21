@@ -1,6 +1,8 @@
 PyChem TODO
 ===========
 
+Still find better checks for chain rules of complicated internal_coordinates.
+
 milestone 0.1.3
 ---------------
 
