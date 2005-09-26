@@ -44,11 +44,6 @@ suite.addTest(molecular_graphs.suite)
 import internal_coordinates
 suite.addTest(internal_coordinates.suite)
 
-import dihedral_chainrule
-suite.addTest(dihedral_chainrule.suite)
-
-import out_of_plane_chainrule
-suite.addTest(out_of_plane_chainrule.suite)
 
 test_result = unittest.TextTestRunner(verbosity=2).run(suite)
 

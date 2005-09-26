@@ -455,7 +455,7 @@ class Collection(object):
                 n,
                 name="dihedral cos %i-%i-%i-%i (%s)" % (id + (tag,)),
                 id=id
-             )
+            )
             result[tag].append(dihedral_cos)
         self.user_coordinates.update(result)        
 

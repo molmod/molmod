@@ -20,12 +20,12 @@
 # --
 
 from pychem.internal_coordinates import Collection
-from pychem.molecular_graphs import BondSets, BendSets, DihedralSets, CriteriaSet
+from pychem.molecular_graphs import BondSets, BendSets, DihedralSets, OutOfPlaneSets, CriteriaSet
 from pychem.molecules import molecule_from_xyz_filename
 from pychem.moldata import BOND_SINGLE
 from pychem.units import from_angstrom
 
-import unittest, math
+import unittest, math, copy, Numeric
 
 
 __all__ = ["suite"]
@@ -127,7 +127,79 @@ class TestInternalCoordinatesTPA(unittest.TestCase):
             yield_alternatives
         )     
             
-            
+
+
+class TestChainrule(unittest.TestCase):        
+    def setUp(self):
+        self.ethene = molecule_from_xyz_filename("input/ethene.xyz")
+        # Define the two (buggy) internal coordinates.
+        self.collection = Collection(self.ethene)
+    
+    def pair_test(self, internal_coordinate, ethene1, ethene2, expected_cos1, expected_cos2):
+        test_cos1, gradient1 = internal_coordinate(ethene1.coordinates)
+        test_cos2, gradient2 = internal_coordinate(ethene2.coordinates)
+        if abs(test_cos1 - expected_cos1) > 1e-5:
+            self.errors.append("Ethene1 problem: test cosine (%s) and expected cosine (%s) differ: %s" % (test_cos1, expected_cos1, test_cos1 - expected_cos1))
+        if abs(test_cos2 - expected_cos2) > 1e-5:
+            self.errors.append("Ethene2 problem: test cosine (%s) and expected cosine (%s) differ: %s" % (test_cos2, expected_cos2, test_cos2 - expected_cos2))
+        delta = ethene2.coordinates - ethene1.coordinates
+        gradient = 0.5*(gradient1+gradient2)
+        delta_cos_estimate = Numeric.dot(Numeric.ravel(gradient), Numeric.ravel(delta))
+        if abs(delta_cos_estimate - (expected_cos2 - expected_cos1)) > 1e-4:
+            self.errors.append("Chain rule problem: delta_cos_estimate (%s) and delta_cos_expected (%s) differ: %s" % (delta_cos_estimate, (expected_cos2 - expected_cos1), delta_cos_estimate - (expected_cos2 - expected_cos1)))
+        if abs(delta_cos_estimate - (test_cos2 - test_cos1)) > 1e-4:
+            self.errors.append("Chain rule problem: delta_cos_estimate (%s) and delta_cos_test (%s) differ: %s" % (delta_cos_estimate, (test_cos2 - test_cos1), delta_cos_estimate - (test_cos2 - test_cos1)))
+
+    def test_dihedral(self):
+        self.collection.add_dihedral_cosines(DihedralSets([CriteriaSet("HCCH", ((1, 6, 6, 1), None))]))
+        dihedral_cos = self.collection["HCCH"][0]
+
+        self.errors = []
+        
+        def mutate_ethene(angle):
+            result = copy.deepcopy(self.ethene)
+            result.coordinates[1,1] = self.ethene.coordinates[1,1]*math.cos(angle)
+            result.coordinates[1,2] = self.ethene.coordinates[1,1]*math.sin(angle)
+            result.coordinates[2,1] = self.ethene.coordinates[2,1]*math.cos(angle)
+            result.coordinates[2,2] = self.ethene.coordinates[2,1]*math.sin(angle)
+            return result
+        
+        
+        number = 100
+        for index in xrange(number):
+            angle1 = float(index)/number*2*math.pi
+            angle2 = float(index+1)/number*2*math.pi
+            ethene1 = mutate_ethene(angle1)
+            ethene2 = mutate_ethene(angle2)
+            self.pair_test(dihedral_cos, ethene1, ethene2, math.cos(angle1), math.cos(angle2))
+        
+        self.assertEqual(len(self.errors), 0, "\n".join(self.errors))
+    
+    def test_out_of_plane(self):
+        self.collection.add_out_of_plane_cosines(OutOfPlaneSets([CriteriaSet("CC(HCl)", ((6, 6, 1, 17), None))]))
+        out_of_plane_cos = self.collection["CC(HCl)"][0]
+
+        self.errors = []
+        
+        def mutate_ethene(angle):
+            result = copy.deepcopy(self.ethene)
+            result.coordinates[1,0] = self.ethene.coordinates[1,0]*math.cos(angle)
+            result.coordinates[1,2] = self.ethene.coordinates[1,0]*math.sin(angle)
+            result.coordinates[2,0] = self.ethene.coordinates[2,0]*math.cos(angle)
+            result.coordinates[2,2] = self.ethene.coordinates[2,0]*math.sin(angle)
+            return result
+        
+        number = 50
+        for index in xrange(number):
+            angle1 = (float(index)/number-0.5)*math.pi
+            angle2 = (float(index+1)/number-0.5)*math.pi
+            ethene1 = mutate_ethene(angle1)
+            ethene2 = mutate_ethene(angle2)
+            self.pair_test(out_of_plane_cos, ethene1, ethene2, math.cos(angle1), math.cos(angle2))
+        
+        self.assertEqual(len(self.errors), 0, "\n".join(self.errors))            
+                    
 suite.addTests([
-    unittest.makeSuite(TestInternalCoordinatesTPA)
+    unittest.makeSuite(TestInternalCoordinatesTPA),
+    unittest.makeSuite(TestChainrule)
 ])
