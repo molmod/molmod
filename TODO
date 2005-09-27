@@ -1,7 +1,25 @@
 PyChem TODO
 ===========
 
-milestone 0.1.3
+version 0.1.3
+-------------
+
+- job filenames should have sha hashes based on the complete content of the
+  input file
+
+- completely restartable jobs: add blablabla.cls file that contains the class
+  name of the job, or a blablabla.pp file that contains the job object
+
+- OO MPQC input files
+    * two layers:
+        (1) something that can read/write OO MPQC input files into a isomorf
+            data structure
+        (2) interpretation and generation of such data structures
+
+- use of wavefunction files to accelerate the single point calculations
+      
+
+version 0.1.4
 ---------------
 
 - try to find out again how the graph algorithms work.
