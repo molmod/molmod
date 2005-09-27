@@ -19,7 +19,8 @@
 # 
 # --
 
-from pychem import context
+from base import SimpleJob, ExternalError
+
 from pychem.moldata import periodic
 from pychem.units import to_angstrom, from_angstrom
 from pychem.molecules import molecule_from_xyz_string
@@ -29,146 +30,14 @@ import Numeric
 
 
 __all__ = [
-    "ExternalError", "MpqcJob", "SimpleMpqcJob", 
-    "SimpleMpqcJobSinglePoint", "SimpleMpqcJobOptimize"
+    "SimpleMpqcJob", "SimpleMpqcJobSinglePoint", "SimpleMpqcJobOptimize"
 ]
 
 
-class ExternalError(Exception):
-    """
-    This error is raised when an external executable doesn't appear to do it's
-    job. This is judged on the completeness of the generated output files.
-    """
-    pass
-
-
-class MpqcJob(object):
-    """
-    This is the base class for all MPQC calculations.
-    
-    Arguments:
-    filename -- This is the base name for input (.in), ouput (.out), 
-                summary (.smr), ... filenames.
-    title -- The description of the calculation in the input file.
-    input_molecule -- 
-    """
-    
-    def __init__(self, filename, title, input_molecule, memory=None):
-        self.filename = filename
-        self.title = title
-        self.input_molecule = input_molecule
-        self.memory = memory
-        
-        self.ran = False
-        self.summary = {}
-
-    def write_input(self, f):
-        print >> f, "% " + self.title
-        if self.memory != None:
-            print >> f, "memory: " + self.memory
-
-    def output_file_exists(self):
-        return os.path.isfile("%s.out" % self.filename)
-
-    def run_external(self, overwrite=False):
-        """
-        Call the external program.
-
-        Note that the calculation is only executed if no output file is found,
-        unless overwrite == True
-        """
-        if (not self.output_file_exists()) or overwrite:
-            os.system("mpqc -o %s.out %s.in" % (self.filename, self.filename))
-            for temp_filename in glob.glob("%s.wfn.*.tmp" % self.filename):
-                os.remove(temp_filename)
-            return False
-        else:
-            self.summarize_input()
-            self.process_input_summary()
-            return True
-
-    def awk_scriptname(self):
-        """Translate the class name into a base name for the awk script filename."""
-        result = ""
-        class_name = str(self.__class__)
-        class_name = class_name[class_name.rfind(".")+1:-2]
-        for char in str(class_name):
-            if char == char.lower():
-                result += char
-            elif len(result)==0:
-                result += char.lower()
-            else:
-                result += "_"+char.lower()
-        return result
-
-    def summarize_input(self):
-        """
-        Generate a summary file based on the input for the calculation.
-        Return the sumary file interpreted as a python expression.
-        """
-        os.system(
-            "gawk -f %sinterfaces/awk/%s.in.awk < %s.in > %s.in.smr" % (
-                context.share_path, self.awk_scriptname(),
-                self.filename, self.filename
-            )
-        )
-        smr = file("%s.in.smr" % self.filename)
-        self.summary.update(eval(''.join(smr)))
-        smr.close()
-        
-    def summarize_output(self):
-        """
-        Generate a summary file based on the output of the calculation.
-        Return the sumary file interpreted as a python expression.
-        """
-        os.system(
-            "gawk -f %sinterfaces/awk/%s.out.awk < %s.out > %s.out.smr" % (
-                context.share_path, self.awk_scriptname(),
-                self.filename, self.filename
-            )
-        )
-        smr = file("%s.out.smr" % self.filename)
-        self.summary.update(eval(''.join(smr)))
-        smr.close()
-        self.assign_fields(["completed", "accuracy_warnings"])
-        
-    def assign_fields(self, fields):
-        for field in fields:
-            self.__dict__[field] = self.summary[field]
-
-    def process_input_summary(self):
-        """Process the attributes taken from the summary file and assigned to self."""
-        raise NotImplementedError        
-
-    def process_output_summary(self):
-        """Process the attributes taken from the summary file and assigned to self."""
-        raise NotImplementedError        
-        
-    def run(self, user_overwrite=False):
-        """Perform the complete calculation and analysis."""
-        #print "running job: %s" % self.filename
-        if (not self.output_file_exists()) or user_overwrite:
-            self.write_input(file(self.filename + ".in", 'w'))
-        recycled = self.run_external(overwrite=user_overwrite)
-        #print "output recycled: %s" % recycled
-        self.summarize_output()
-        #print "job completed: %s" % self.completed
-        if recycled and not self.completed:
-            #print "trying again: %s"
-            recycled = self.run_external(overwrite=True)
-            self.summarize_output()
-        #print "job completed: %s" % self.completed
-        if not self.completed:
-            raise ExternalError("Output file of external job is not complete (%s)" % self.filename)
-        self.process_output_summary()
-        self.ran = True
-        return recycled
-
-
-class SimpleMpqcJob(MpqcJob):
+class SimpleMpqcJob(SimpleJob):
     """MPQC jobs that use the simple input format."""
     
-    def __init__(self, filename, title, input_molecule, method, basis, memory=None):
+    def __init__(self, prefix, title, input_molecule, method, basis, memory=None):
         """
         Initialize a SimpleMpqcJob instance.
         
@@ -177,12 +46,15 @@ class SimpleMpqcJob(MpqcJob):
                   Hamiltonian
         basis -- The basis set used to describe the wave-function.
         """
-        MpqcJob.__init__(self, filename, title, input_molecule, memory)
+        SimpleJob.__init__(self, prefix, title, input_molecule)
+        self.memory = memory
         self.method = method
         self.basis = basis
         
     def write_input(self, f):
-        MpqcJob.write_input(self, f)
+        print >> f, "% " + self.title
+        if self.memory != None:
+            print >> f, "memory: " + self.memory
         print >> f, "method: " + self.method
         print >> f, "basis: " + self.basis
         print >> f, "charge: " + str(self.input_molecule.charge)
@@ -190,6 +62,17 @@ class SimpleMpqcJob(MpqcJob):
         print >> f, "molecule: "
         for number, (x, y, z) in zip(self.input_molecule.numbers, to_angstrom(self.input_molecule.coordinates)):
             print >> f, "   %2s  % 10.7f  % 10.7f  % 10.7f" % (periodic.symbol[number], x, y, z)
+
+    def external_command(self):
+        return "mpqc -o %s.out %s.in" % (self.filename, self.filename)
+        
+    def remove_temporary_files(self):
+        for temp_filename in glob.glob("%s.wfn.*.tmp" % self.filename):
+            os.remove(temp_filename)
+
+    def summarize_output(self):
+        SimpleJob.summarize_output(self)
+        self.assign_fields(["accuracy_warnings"])
 
     def process_input_summary(self):
         self.assign_fields(["method", "basis"])
@@ -209,14 +92,14 @@ class SimpleMpqcJobSinglePoint(SimpleMpqcJob):
     Simple MPQC jobs that doesn't change the geometry of the molecule.
     Only one SCF calculation is performed, with eventual post analysis.
     """
-    def __init__(self, filename, title, input_molecule, method, basis, memory=None, do_gradient=False):
+    def __init__(self, prefix, title, input_molecule, method, basis, memory=None, do_gradient=False):
         """
         Initialize a SimpleMpqcJobSinglePoint instance.
         
         Extra arguments:
         do_gradient -- wether calculate the gradient of the energy
         """
-        SimpleMpqcJob.__init__(self, filename, title, input_molecule, method, basis, memory)
+        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, memory)
         self.do_gradient = do_gradient
         self.energy = None
         self.gradient = None
@@ -243,9 +126,9 @@ class SimpleMpqcJobOptimize(SimpleMpqcJob):
     A Simple MPQC job that optimizes the geometry of the molecule towards
     lower energies. The default MPQC optimization scheme is used.
     """
-    def __init__(self, filename, title, input_molecule, method, basis, memory=None):
+    def __init__(self, prefix, title, input_molecule, method, basis, memory=None):
         """Initialize a SimpleMpqcJobOptimize instance."""
-        SimpleMpqcJob.__init__(self, filename, title, input_molecule, method, basis, memory)
+        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, memory)
         self.energies = []
         self.output_molecule = None
         self.gradient = None

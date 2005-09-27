@@ -50,7 +50,7 @@ class TestMpqcInterface(unittest.TestCase):
             
         water = molecule_from_xyz_filename("input/water.xyz")
         job = SimpleMpqcJobSinglePoint(
-            filename="output/water_sp",
+            prefix="output/water_sp",
             title="Water single point berekening", 
             input_molecule=water,
             method="KS (xc = B3LYP)",
@@ -77,7 +77,7 @@ class TestMpqcInterface(unittest.TestCase):
         
         water = molecule_from_xyz_filename("input/water.xyz")
         job = SimpleMpqcJobOptimize(
-            filename="output/water_opt",
+            prefix="output/water_opt",
             title="Water single point berekening", 
             input_molecule=water,
             method="KS (xc = B3LYP)",

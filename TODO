@@ -6,9 +6,6 @@ version 0.1.3
 
 - interfaces to gaussian, lammps, gulp, ...
 
-- job filenames should have sha hashes based on the complete content of the
-  input file
-
 - completely restartable jobs: add blablabla.cls file that contains the class
   name of the job, or a blablabla.pp file that contains the job object
 

@@ -21,14 +21,19 @@
 
 BEGIN {
     printf("{\n");
-    printf("\t'energies': [");
+    after_guess = 0;
     converged = 0;
     output_molecule = 0;
-    complete=0;
-    accuracy_warnings=0;
+    complete = 0;
+    accuracy_warnings = 0;
 }
 
-/total scf energy/ {
+/MPQC options:/ {
+    printf("\t'energies': [");
+    after_guess = 1;
+}
+
+/total scf energy/ && (after_guess==1) {
     printf("%s, ", $5);
 }
 
