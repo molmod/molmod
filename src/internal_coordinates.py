@@ -297,8 +297,12 @@ class Collection(object):
         else:
             return existing_internal_coordinate
     
-    def add_group(self, tag, internal_coordinates):
-        self.user_coordinates[tag] = internal_coordinates
+    def add_internal_coordinate(self, tag, internal_coordinate):
+        existing_internal_coordinates = self.user_coordinates.get(tag)
+        if existing_internal_coordinates == None:
+            self.user_coordinates[tag] = [internal_coordinate]
+        else:
+            existing_internal_coordinates.append(internal_coordinate)
    
     def add_long_range_distances(self, criteria_sets):
         def all_pairs(atom_criteria):
@@ -347,8 +351,9 @@ class Collection(object):
             )
             return d
 
-        result = dict((tag, [distance(id, tag) for id in ids]) for tag, ids in nonbonded_pairs.iteritems())
-        self.user_coordinates.update(result)
+        for tag, ids in nonbonded_pairs.iteritems():
+            for id in ids:
+                self.add_internal_coordinate(tag, distance(id, tag))
    
     def add_bond_lengths(self, criteria_sets):
         """
@@ -369,8 +374,7 @@ class Collection(object):
                 name="bond length %i-%i (%s)" % (id + (tag,)),
                 id=id
             )
-            result[tag].append(d)
-        self.user_coordinates.update(result)
+            self.add_internal_coordinate(tag, d)
             
     def add_bend_cosines(self, criteria_sets):
         """
@@ -394,8 +398,7 @@ class Collection(object):
                 name="bend cos %i-%i-%i (%s)" % (id + (tag,)),
                 id=id
             )
-            result[tag].append(c)
-        self.user_coordinates.update(result)
+            self.add_internal_coordinate(tag, c)
         
     def add_bend_spans(self, criteria_sets):
         """
@@ -414,8 +417,7 @@ class Collection(object):
                 name="bend span %i-%i-%i (%s)" % (id + (tag,)),
                 id=id
             )
-            result[tag].append(d)
-        self.user_coordinates.update(result)
+            self.add_internal_coordinate(tag, d)
 
     def add_dihedral_cosines(self, criteria_sets):
         """
@@ -456,8 +458,7 @@ class Collection(object):
                 name="dihedral cos %i-%i-%i-%i (%s)" % (id + (tag,)),
                 id=id
             )
-            result[tag].append(dihedral_cos)
-        self.user_coordinates.update(result)        
+            self.add_internal_coordinate(tag, dihedral_cos)
 
     def add_dihedral_spans(self, criteria_sets):
         """
@@ -476,8 +477,7 @@ class Collection(object):
                 name="dihedral span %i-%i-%i-%i (%s)" % (id + (tag,)),
                 id=id
             )
-            result[tag].append(d)
-        self.user_coordinates.update(result)
+            self.add_internal_coordinate(tag, d)
 
     def add_out_of_plane_cosines(self, criteria_sets):
         """
@@ -516,9 +516,7 @@ class Collection(object):
                 name="out of plane cos %i-%i (%i,%i) (%s)" % (id + (tag,)),
                 id=id
             )
-            result[tag].append(out_of_plane_cos)
-        self.user_coordinates.update(result)        
- 
+            self.add_internal_coordinate(tag, out_of_plane_cos) 
 
     def yield_related_internal_coordinates(self, tag1, tag2, order_related=2):
         for ic1 in self[tag1]:
@@ -535,8 +533,7 @@ class Collection(object):
                 ic2,
                 name="%s x %s (%s)" % (ic1.name, ic2.name, tag)
             )
-            result.append(product)
-        self.user_coordinates[tag] = result
+            self.add_internal_coordinate(tag, product)
 
 
 # Tools for solving the jacobian system
