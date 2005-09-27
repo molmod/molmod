@@ -539,44 +539,6 @@ class Collection(object):
         self.user_coordinates[tag] = result
 
 
-class Similar(object):
-    """
-    Similars contains a group of internal coordinates with that (should) obey to
-    the same model with the same parameters.
-    """
-    def __init__(self, name, internal_coordinates, unit, conversion):
-        self.name = name
-        self.internal_coordinates = internal_coordinates
-        self.ylim = None
-        self.unit = unit
-        self.conversion = conversion
-        self.model = None
-
-
-class Similars(object):
-    def __init__(self, items):
-        self.items = items
-        self.dict_items = dict((item.name, item) for item in items)
-        counter = 0
-        self.internal_coordinates = []
-        for similar in self.items:
-            self.internal_coordinates.extend(similar.internal_coordinates)
-            similar.indices = []
-            for internal_coordinate in similar.internal_coordinates:
-                internal_coordinate.index = counter
-                similar.indices.append(counter)
-                counter += 1
-            
-        
-    def __len__(self):
-        return len(self.items)
-        
-    def __getitem__(self, key):
-        return self.dict_items.get(key)
-        
-    def __iter__(self):
-        return iter(self.items)
-
 # Tools for solving the jacobian system
 
 class Configuration(object):
