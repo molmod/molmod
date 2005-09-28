@@ -38,24 +38,25 @@ class ExternalError(Exception):
 class Job(object):
     def __init__(self, prefix, title, input_molecule):
         self.prefix = prefix
-        self.filename = None
         self.title = title
         self.input_molecule = input_molecule
         
         self.ran = False
+
+        self.filename = "%s_%s" % (self.prefix, self.input_sha())
         
     def write_input(self, f):
         raise NotImplementedError
     
-    def create_input_file(self):
+    def input_sha(self):
         input_string_io = StringIO()
         self.write_input(input_string_io)
         input_sha = sha.new(input_string_io.getvalue())
-        self.filename = "%s_%s" % (self.prefix, input_sha.hexdigest())
-        # write the input file, even if it already exists. Just to be sure
-        # that it's content is correct.
+        return input_sha.hexdigest()
+        
+    def create_input_file(self):
         input_file = file(self.filename + ".in", 'w')
-        input_file.write(input_string_io.getvalue())
+        self.write_input(input_file)
         input_file.close()
 
     def output_file_exists(self):

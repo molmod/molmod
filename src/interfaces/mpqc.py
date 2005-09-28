@@ -46,10 +46,10 @@ class SimpleMpqcJob(SimpleJob):
                   Hamiltonian
         basis -- The basis set used to describe the wave-function.
         """
-        SimpleJob.__init__(self, prefix, title, input_molecule)
         self.memory = memory
         self.method = method
         self.basis = basis
+        SimpleJob.__init__(self, prefix, title, input_molecule)
         
     def write_input(self, f):
         print >> f, "% " + self.title
@@ -99,10 +99,10 @@ class SimpleMpqcJobSinglePoint(SimpleMpqcJob):
         Extra arguments:
         do_gradient -- wether calculate the gradient of the energy
         """
-        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, memory)
         self.do_gradient = do_gradient
         self.energy = None
         self.gradient = None
+        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, memory)
         
     def write_input(self, f):
         SimpleMpqcJob.write_input(self, f)
@@ -128,10 +128,10 @@ class SimpleMpqcJobOptimize(SimpleMpqcJob):
     """
     def __init__(self, prefix, title, input_molecule, method, basis, memory=None):
         """Initialize a SimpleMpqcJobOptimize instance."""
-        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, memory)
         self.energies = []
         self.output_molecule = None
         self.gradient = None
+        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, memory)
         
     def write_input(self, f):
         SimpleMpqcJob.write_input(self, f)
