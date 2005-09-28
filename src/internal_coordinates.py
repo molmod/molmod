@@ -298,6 +298,7 @@ class Collection(object):
             return existing_internal_coordinate
     
     def add_internal_coordinate(self, tag, internal_coordinate):
+        internal_coordinate.tag = tag
         existing_internal_coordinates = self.user_coordinates.get(tag)
         if existing_internal_coordinates == None:
             self.user_coordinates[tag] = [internal_coordinate]
