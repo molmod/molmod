@@ -24,6 +24,7 @@ from pychem import context
 
 
 from StringIO import StringIO
+from pickle import load, dump
 import sha, os
 
 
@@ -53,7 +54,12 @@ class Job(object):
         self.write_input(input_string_io)
         input_sha = sha.new(input_string_io.getvalue())
         return input_sha.hexdigest()
-        
+    
+    def create_job_file(self):
+        f = file(self.filename + ".job", 'w')
+        dump(self, f)
+        f.close()
+    
     def create_input_file(self):
         input_file = file(self.filename + ".in", 'w')
         self.write_input(input_file)
@@ -96,6 +102,7 @@ class Job(object):
             
     def run(self, user_overwrite=False):
         """Perform the complete calculation and analysis."""
+        self.create_job_file()
         self.create_input_file()
         recycled = self.run_external(overwrite=user_overwrite)
         if recycled and not self.completed:
@@ -178,3 +185,10 @@ class SimpleJob(Job):
     def process_output_summary(self):
         """Process the attributes taken from the summary file and assigned to self."""
         raise NotImplementedError
+
+
+def reload_job(job_filename):
+    f = file(job_filename, 'r')
+    job = load(f)
+    f.close()
+    return job

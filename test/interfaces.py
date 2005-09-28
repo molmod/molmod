@@ -19,6 +19,7 @@
 # 
 # --
 
+from pychem.interfaces.base import reload_job
 from pychem.interfaces.mpqc import SimpleMpqcJobSinglePoint, SimpleMpqcJobOptimize
 from pychem.molecules import molecule_from_xyz_filename
 
@@ -62,6 +63,11 @@ class TestMpqcInterface(unittest.TestCase):
         validate()
         job.run()
         validate()
+        
+        filename = job.filename
+        job = reload_job(filename + ".job")
+        job.run()
+        validate()
                   
     def test_optimize(self):
         def validate():
@@ -86,6 +92,11 @@ class TestMpqcInterface(unittest.TestCase):
         )
         job.run(user_overwrite=True)
         validate()
+        job.run()
+        validate()
+        
+        filename = job.filename
+        job = reload_job(filename + ".job")
         job.run()
         validate()
         

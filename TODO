@@ -6,9 +6,6 @@ version 0.1.3
 
 - interfaces to gaussian, lammps, gulp, ...
 
-- completely restartable jobs: add blablabla.cls file that contains the class
-  name of the job, or a blablabla.pp file that contains the job object
-
 - OO MPQC input files
     * two layers:
         (1) something that can read/write OO MPQC input files into a isomorf
