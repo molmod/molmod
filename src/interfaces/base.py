@@ -74,9 +74,6 @@ class Job(object):
     def remove_temporary_files(self):
         raise NotImplementedError
         
-    def reread_input(self):
-        raise NotImplementedError
-        
     def determine_completed(self):
         raise NotImplementedError
 
@@ -92,7 +89,6 @@ class Job(object):
             os.system(self.external_command())
             self.remove_temporary_files()
         else:
-            self.reread_input()
             recycled = True
         self.determine_completed()
         return recycled
@@ -119,10 +115,6 @@ class SimpleJob(Job):
         Job.__init__(self, prefix, title, input_molecule)
         self.summary = {}
 
-    def reread_input(self):
-        self.summarize_input()
-        self.process_input_summary()
-
     def determine_completed(self):
         self.summarize_output()
 
@@ -142,29 +134,14 @@ class SimpleJob(Job):
             else:
                 result += "_"+char.lower()
         return result
-
-    def summarize_input(self):
-        """
-        Generate a summary file based on the input for the calculation.
-        Return the sumary file interpreted as a python expression.
-        """
-        os.system(
-            "gawk -f %sinterfaces/awk/%s.in.awk < %s.in > %s.in.smr" % (
-                context.share_path, self.awk_scriptname(),
-                self.filename, self.filename
-            )
-        )
-        smr = file("%s.in.smr" % self.filename)
-        self.summary.update(eval(''.join(smr)))
-        smr.close()
-        
+  
     def summarize_output(self):
         """
         Generate a summary file based on the output of the calculation.
         Return the sumary file interpreted as a python expression.
         """
         os.system(
-            "gawk -f %sinterfaces/awk/%s.out.awk < %s.out > %s.out.smr" % (
+            "gawk -f %sinterfaces/awk/%s.awk < %s.out > %s.out.smr" % (
                 context.share_path, self.awk_scriptname(),
                 self.filename, self.filename
             )
@@ -177,10 +154,6 @@ class SimpleJob(Job):
     def assign_fields(self, fields):
         for field in fields:
             self.__dict__[field] = self.summary[field]
-
-    def process_input_summary(self):
-        """Process the attributes taken from the summary file and assigned to self."""
-        raise NotImplementedError
 
     def process_output_summary(self):
         """Process the attributes taken from the summary file and assigned to self."""

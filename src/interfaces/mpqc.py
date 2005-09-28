@@ -74,12 +74,6 @@ class SimpleMpqcJob(SimpleJob):
         SimpleJob.summarize_output(self)
         self.assign_fields(["accuracy_warnings"])
 
-    def process_input_summary(self):
-        self.assign_fields(["method", "basis"])
-        self.input_molecule = molecule_from_xyz_string(self.summary["input_xyz"])
-        self.input_molecule.charge = self.summary["charge"]
-        self.input_molecule.spin_multiplicity = self.summary["multiplicity"]
-
 
 def yesno(value):
     if value:
@@ -108,10 +102,6 @@ class SimpleMpqcJobSinglePoint(SimpleMpqcJob):
         SimpleMpqcJob.write_input(self, f)
         print >> f, "optimize: no"
         print >> f, "gradient: " + yesno(self.do_gradient)
-        
-    def process_input_summary(self):
-        SimpleMpqcJob.process_input_summary(self)
-        self.assign_fields(["do_gradient"])
 
     def process_output_summary(self):
         if not self.accuracy_warnings:
