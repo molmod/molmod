@@ -26,27 +26,13 @@ from pychem import context
 context.share_path = "pychem/"
 
 import unittest
-suite = unittest.TestSuite()
 
 
-import binning
-suite.addTest(binning.suite)
+from binning import *
+from graphs import *
+from interfaces import *
+from molecular_graphs import *
+from internal_coordinates import *
 
-import graphs
-suite.addTest(graphs.suite)
+unittest.main()
 
-import interfaces
-suite.addTest(interfaces.suite)
-
-import molecular_graphs
-suite.addTest(molecular_graphs.suite)
-
-import internal_coordinates
-suite.addTest(internal_coordinates.suite)
-
-
-test_result = unittest.TextTestRunner(verbosity=2).run(suite)
-
-if len(test_result.failures) > 0 or len(test_result.errors) > 0:
-    import sys
-    sys.exit(1)

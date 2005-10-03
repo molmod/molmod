@@ -1,4 +1,4 @@
-# PyChem is a general chemistry oriented python package.
+ # PyChem is a general chemistry oriented python package.
 # Copyright (C) 2005 Toon Verstraelen
 # 
 # This file is part of PyChem.
@@ -20,21 +20,16 @@
 # --
 
 from pychem.interfaces.base import reload_job
-from pychem.interfaces.mpqc import SimpleMpqcJobSinglePoint, SimpleMpqcJobOptimize
+from pychem.interfaces.mpqc.simple import SimpleMpqcJobSinglePoint, SimpleMpqcJobOptimize
 from pychem.molecules import molecule_from_xyz_filename
 
 import math, Numeric
 import unittest
 
-
-suite = unittest.TestSuite()
-
-__all__ = ["suite"]
+__all__ = ["SimpleMpqcInterface"]
 
 
-class TestMpqcInterface(unittest.TestCase):
-    gridsize = 1.0
-    
+class SimpleMpqcInterface(unittest.TestCase):
     def test_single_point(self):
         def validate():
             self.assert_(job.completed)
@@ -99,6 +94,4 @@ class TestMpqcInterface(unittest.TestCase):
         job = reload_job(filename + ".job")
         job.run()
         validate()
-        
 
-suite.addTest(unittest.makeSuite(TestMpqcInterface))

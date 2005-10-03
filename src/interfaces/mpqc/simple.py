@@ -36,7 +36,7 @@ __all__ = [
 class SimpleMpqcJob(SimpleJob):
     """MPQC jobs that use the simple input format."""
     
-    def __init__(self, prefix, title, input_molecule, method, basis, memory=None):
+    def __init__(self, prefix, title, input_molecule, method, basis, charge=0, multiplicity=1, memory=None):
         """
         Initialize a SimpleMpqcJob instance.
         
@@ -46,9 +46,11 @@ class SimpleMpqcJob(SimpleJob):
         basis -- The basis set used to describe the wave-function.
         """
         self.input_molecule = input_molecule
-        self.memory = memory
         self.method = method
         self.basis = basis
+        self.charge = charge
+        self.multiplicity = multiplicity
+        self.memory = memory
         SimpleJob.__init__(self, prefix, title)
         
     def write_input(self, f):
@@ -57,8 +59,8 @@ class SimpleMpqcJob(SimpleJob):
             print >> f, "memory: " + self.memory
         print >> f, "method: " + self.method
         print >> f, "basis: " + self.basis
-        print >> f, "charge: " + str(self.input_molecule.charge)
-        print >> f, "multiplicity: " + str(self.input_molecule.spin_multiplicity)
+        print >> f, "charge: " + str(self.charge)
+        print >> f, "multiplicity: " + str(self.multiplicity)
         print >> f, "molecule: "
         for number, (x, y, z) in zip(self.input_molecule.numbers, to_angstrom(self.input_molecule.coordinates)):
             print >> f, "   %2s  % 10.7f  % 10.7f  % 10.7f" % (periodic.symbol[number], x, y, z)
@@ -86,7 +88,7 @@ class SimpleMpqcJobSinglePoint(SimpleMpqcJob):
     Simple MPQC jobs that doesn't change the geometry of the molecule.
     Only one SCF iteration is performed, with eventual post analysis.
     """
-    def __init__(self, prefix, title, input_molecule, method, basis, memory=None, do_gradient=False):
+    def __init__(self, prefix, title, input_molecule, method, basis, charge=0, multiplicity=1, memory=None, do_gradient=False):
         """
         Initialize a SimpleMpqcJobSinglePoint instance.
         
@@ -94,7 +96,7 @@ class SimpleMpqcJobSinglePoint(SimpleMpqcJob):
         do_gradient -- wether calculate the gradient of the energy
         """
         self.do_gradient = do_gradient
-        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, memory)
+        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, charge, multiplicity, memory)
         self.energy = None
         self.gradient = None
         
@@ -116,9 +118,9 @@ class SimpleMpqcJobOptimize(SimpleMpqcJob):
     A Simple MPQC job that optimizes the geometry of the molecule towards
     lower energies. The default MPQC optimization scheme is used.
     """
-    def __init__(self, prefix, title, input_molecule, method, basis, memory=None):
+    def __init__(self, prefix, title, input_molecule, method, basis, charge=0, multiplicity=1, memory=None):
         """Initialize a SimpleMpqcJobOptimize instance."""
-        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, memory)
+        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, charge, multiplicity, memory)
         self.energies = []
         self.output_molecule = None
         self.gradient = None

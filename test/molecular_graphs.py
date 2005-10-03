@@ -25,12 +25,10 @@ from pychem.moldata import BOND_SINGLE
 
 import unittest, copy
 
+__all__ = ["MolecularGraphsTPA"]
 
-__all__ = ["suite"]
 
-suite = unittest.TestSuite()   
-
-class TestMolecularGraphsTPA(unittest.TestCase):        
+class MolecularGraphsTPA(unittest.TestCase):        
     def setUp(self):
         self.molecule = molecule_from_xyz_filename("input/tpa.xyz")
         self.molecular_graph = MolecularGraph(self.molecule)
@@ -139,8 +137,4 @@ class TestMolecularGraphsTPA(unittest.TestCase):
                 return [test_item]
                 
         self.verify(expected_results, test_results, generate_alternatives)     
-            
-            
-suite.addTests([
-    unittest.makeSuite(TestMolecularGraphsTPA)
-])
+

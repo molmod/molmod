@@ -27,12 +27,10 @@ from pychem.units import from_angstrom
 
 import unittest, math, copy, Numeric
 
+__all__ = ["InternalCoordinatesTPA", "Chainrule"]
 
-__all__ = ["suite"]
 
-suite = unittest.TestSuite()   
-
-class TestInternalCoordinatesTPA(unittest.TestCase):        
+class InternalCoordinatesTPA(unittest.TestCase):        
     def setUp(self):
         self.molecule = molecule_from_xyz_filename("input/tpa_optimized.xyz")
         self.collection = Collection(self.molecule)
@@ -129,7 +127,7 @@ class TestInternalCoordinatesTPA(unittest.TestCase):
             
 
 
-class TestChainrule(unittest.TestCase):        
+class Chainrule(unittest.TestCase):        
     def setUp(self):
         self.ethene = molecule_from_xyz_filename("input/ethene.xyz")
         # Define the two (buggy) internal coordinates.
@@ -198,8 +196,4 @@ class TestChainrule(unittest.TestCase):
             self.pair_test(out_of_plane_cos, ethene1, ethene2, math.cos(angle1), math.cos(angle2))
         
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))            
-                    
-suite.addTests([
-    unittest.makeSuite(TestInternalCoordinatesTPA),
-    unittest.makeSuite(TestChainrule)
-])
+

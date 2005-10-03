@@ -25,13 +25,10 @@ from pychem.binning import InterAnalyseNeighbouringObjects, IntraAnalyseNeighbou
 import math, Numeric
 import unittest
 
-
-suite = unittest.TestSuite()
-
-__all__ = ["suite"]
+__all__ = ["Distances"]
 
 
-class TestDistances(unittest.TestCase):
+class Distances(unittest.TestCase):
     gridsize = 1.0
     
     def load_binned_atoms(self, filename):
@@ -108,6 +105,3 @@ class TestDistances(unittest.TestCase):
 
         distances = dict(InterAnalyseNeighbouringObjects(binned_atoms1, binned_atoms2, self.compare_function)())
         self.verify_inter(molecule1, molecule2, distances)
-        
-
-suite.addTest(unittest.makeSuite(TestDistances))

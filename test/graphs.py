@@ -24,13 +24,10 @@ from pychem.graphs import SymmetricGraph, OneToOne, Criterium
 
 import unittest, copy
 
-
-__all__ = ["suite"]
-
-suite = unittest.TestSuite()        
+__all__ = ["ExampleGraphs", "OneToOne"]    
 
 
-class TestExampleGraphs(unittest.TestCase):
+class ExampleGraphs(unittest.TestCase):
     def setUp(self):
         self.graphs = [
             (   
@@ -175,15 +172,9 @@ class TestExampleGraphs(unittest.TestCase):
             self.assert_(len(unsatisfied) == 0, message())
 
 
-class TestOneToOne(unittest.TestCase):
+class OneToOne(unittest.TestCase):
     def test_multiplication(self):
         A = OneToOne([(1, "a"), (4, "z"), (2, "b")])
         B = OneToOne([("a", 7), ("z", 2), ("b", 0)])
         C = OneToOne([(1, 7), (4, 2), (2, 0)])
         self.assertEqual((B*A).forward, C.forward)
-                
-        
-suite.addTests([
-    unittest.makeSuite(TestExampleGraphs),
-    unittest.makeSuite(TestOneToOne)
-])
