@@ -29,19 +29,19 @@ class KeyVal(object):
         self.items = items
     
     def write_stream(self, f, indent='', location='$:'):
-        if location ='$:':
+        if location == '$:':
             self.clear_locations()
-        for name, item in items.iter_items():
+        for name, item in self.items.iteritems():
             if isinstance(item, int) or isinstance(item, float) or isinstance(item, str) or isinstance(item, list):
                 print >> f, "%s%s=%s" % (indent, name, item)
             elif isinstance(item, KeyValObject):
                 print >> f, "%s%s" % (indent, name), 
-                item.write_stream(f, indent, location+':'+self.name)
+                item.write_stream(f, indent, location+':'+name)
             elif item!=None:
                 raise KeyValError, "Object not supported %s=%s" % (name, item)
 
     def clear_locations(self):
-        for item in items.itervalues():
+        for item in self.items.itervalues():
             if isinstance(item, KeyValObject):
                 item.clear_locations()
 

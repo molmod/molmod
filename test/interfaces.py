@@ -21,12 +21,16 @@
 
 from pychem.interfaces.base import reload_job
 from pychem.interfaces.mpqc.simple import SimpleMpqcJobSinglePoint, SimpleMpqcJobOptimize
+from pychem.interfaces.mpqc.oo import OOMpqcJob
+from pychem.interfaces.mpqc.kvo import create_single_point_kv
+from pychem.interfaces.mpqc.file_parsers import MolecularEnergiesParser, GradientsParser
+from pychem.interfaces.output_parsers.base import OutputParser
 from pychem.molecules import molecule_from_xyz_filename
 
 import math, Numeric
 import unittest
 
-__all__ = ["SimpleMpqcInterface"]
+__all__ = ["SimpleMpqcInterface", "OOMpqcInterface"]
 
 
 class SimpleMpqcInterface(unittest.TestCase):
@@ -95,3 +99,43 @@ class SimpleMpqcInterface(unittest.TestCase):
         job.run()
         validate()
 
+class OOMpqcInterface(unittest.TestCase):
+    def test_single_point(self):
+        def validate():
+            self.assert_(job.completed)
+            self.assertAlmostEqual(job.energy, -75.9734488121, 8)
+            self.assertAlmostEqual(job.gradient[0,0],  0.01174361, 6)
+            self.assertAlmostEqual(job.gradient[0,1],  0.0,        6)
+            self.assertAlmostEqual(job.gradient[0,2],  0.0,        6)
+            self.assertAlmostEqual(job.gradient[1,0], -0.0058718,  6)
+            self.assertAlmostEqual(job.gradient[1,1],  0.0,        6)
+            self.assertAlmostEqual(job.gradient[1,2], -0.01381411, 6)
+            self.assertAlmostEqual(job.gradient[2,0], -0.0058718,  6)
+            self.assertAlmostEqual(job.gradient[2,1],  0.0,        6)
+            self.assertAlmostEqual(job.gradient[2,2],  0.01381411, 6)
+            
+        water = molecule_from_xyz_filename("input/water.xyz")
+        job = OOMpqcJob(
+            prefix="output/water_oo_sp",
+            title="Water single point berekening", 
+            keyval=create_single_point_kv(
+                molecule=water,
+                charge=0,
+                method="CLKS",
+                basis="3-21G*",
+                functional="B3LYP"
+            ),
+            output_parser=OutputParser([
+                MolecularEnergiesParser('energies'),
+                GradientsParser('gradients')
+            ])
+        )
+        job.run(user_overwrite=True)
+        validate()
+        job.run()
+        validate()
+        
+        filename = job.filename
+        job = reload_job(filename + ".job")
+        job.run()
+        validate()

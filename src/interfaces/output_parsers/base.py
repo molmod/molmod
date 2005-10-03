@@ -21,16 +21,17 @@
 
 
 class OutputParser(object):
-    def __init__(self):
+    def __init__(self, file_parsers=[]):
         self.file_parsers = {}
+        self.add_parsers(file_parsers)
         
-    def add_parser(file_parsers):
+    def add_parsers(self, file_parsers):
         for file_parser in file_parsers:
             existing_file_parsers = self.file_parsers.get(file_parser.extension)
             if existing_file_parsers == None:
                 self.file_parsers[file_parser.extension] = [file_parser]
             else:
-                existing_file_parsers.append(file_parsers)
+                existing_file_parsers.append(file_parser)
             
     def parse(self, prefix):
         result = {}
@@ -43,15 +44,15 @@ class OutputParser(object):
                     file_parser.conditioned_parse(line)
             f.close()
             for file_parser in file_parsers:
-                result[file_parser.name] = file_parser.result()
+                result[file_parser.label] = file_parser.result()
         return result
 
 
 class FileParser(object):
     extension = None
 
-    def __init__(self, name, condition=None):
-        self.name = name
+    def __init__(self, label, condition=None):
+        self.label = label
         self.condition = condition
         self.reset()
     

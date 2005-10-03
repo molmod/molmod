@@ -19,7 +19,7 @@
 # 
 # --
 
-from pychem.interfaces.output_parsers import FileParser
+from pychem.interfaces.output_parsers.base import FileParser
 from pychem.moldata import periodic
 
 import re
@@ -27,8 +27,8 @@ import re
 class ScfEnergiesParser(FileParser):
     extension="out"
 
-    def __init__(self, name, condition=None):
-        FileParser.__init__(self, name, condition)
+    def __init__(self, label, condition=None):
+        FileParser.__init__(self, label, condition)
         self.re = re.compile(r"total scf energy =\s(?P<energy>\S+)")
         
     def reset(self):
@@ -46,8 +46,8 @@ class ScfEnergiesParser(FileParser):
 class MolecularEnergiesParser(FileParser):
     extension="out"
 
-    def __init__(self, name, condition=None):
-        FileParser.__init__(self, name, condition)
+    def __init__(self, label, condition=None):
+        FileParser.__init__(self, label, condition)
         self.re = re.compile(r"Value of the MolecularEnergy:\s(?P<energy>\S+)")
         
     def reset(self):
@@ -65,8 +65,8 @@ class MolecularEnergiesParser(FileParser):
 class WarningParser(FileParser):
     extension="out"
 
-    def __init__(self, name, condition=None):
-        FileParser.__init__(self, name, condition)
+    def __init__(self, label, condition=None):
+        FileParser.__init__(self, label, condition)
         self.re = re.compile(r"WARNING:")
         
     def reset(self):
@@ -85,8 +85,8 @@ class WarningParser(FileParser):
 class OptimizationConvergedParser(FileParser):
     extension="out"
 
-    def __init__(self, name, condition=None):
-        FileParser.__init__(self, name, condition)
+    def __init__(self, label, condition=None):
+        FileParser.__init__(self, label, condition)
         self.re = re.compile(r"The optimization has converged.")
         
     def reset(self):
@@ -103,8 +103,8 @@ class OptimizationConvergedParser(FileParser):
 
 
 class MultiLineParser(FileParser):
-    def __init__(self, name, activator, deactivator, condition=None):
-        FileParser.__init__(self, name, condition)
+    def __init__(self, label, activator, deactivator, condition=None):
+        FileParser.__init__(self, label, condition)
         self.activator = activator
         self.deactivator = deactivator
 
@@ -132,13 +132,13 @@ class MultiLineParser(FileParser):
         raise NotImplementedError
 
 
-class OutputMoleculesParsers(MultiLineParser):
+class OutputMoleculesParser(MultiLineParser):
     extension="out"
 
-    def __init__(self, name, condition=None):
+    def __init__(self, label, condition=None):
         activator = re.compile(r"n\s+atoms\s+geometry")
         deactivator = re.compile(r"}$")
-        MultiLineParser.__init__(self, name, activator, deactivator, condition)
+        MultiLineParser.__init__(self, label, activator, deactivator, condition)
         self.re = re.compile(r"(?P<symbol>\S+)\s*[\s*(?P<x>\S+)\s*(?P<y>\S+)\s*(?P<z>\S+)\s*]")
         
     def reset(self):
@@ -151,7 +151,7 @@ class OutputMoleculesParsers(MultiLineParser):
     def collect(self, line):
         match_object = self.re.search(line)
         self.current_atoms.append([
-            periodic.reverse_symbol_lookup(match_object.group("symbol"))),
+            periodic.reverse_symbol_lookup(match_object.group("symbol")),
             float(match_object.group("x")),
             float(match_object.group("y")),
             float(match_object.group("z"))
@@ -165,13 +165,13 @@ class OutputMoleculesParsers(MultiLineParser):
         return self.molecules
 
 
-class GradientsParsers(MultiLineParser):
+class GradientsParser(MultiLineParser):
     extension="out"
 
-    def __init__(self, condition):
+    def __init__(self, label, condition=None):
         activator = re.compile(r"Gradient of the MolecularEnergy:")
         deactivator = re.compile(r"^$")
-        MultiLineParser.__init__(self, name, activator, deactivator, condition)
+        MultiLineParser.__init__(self, label, activator, deactivator, condition)
         self.re = re.compile(r"\d+\s+(?P<gradient>\S+)")
         
     def reset(self):

@@ -23,7 +23,7 @@ from pychem.interfaces.base import Job
 from pychem.interfaces.mpqc.keyval import KeyValObject
 from pychem.moldata import periodic
 
-import os
+import os, glob
 
 
 class OOMpqcJob(Job):
@@ -34,7 +34,7 @@ class OOMpqcJob(Job):
         
     def write_input(self, f):
         print >> f, "%% %s" % self.title
-        self.keyvalfile.write_stream(f)
+        self.keyval.write_stream(f)
 
     def external_command(self):
         return "mpqc -o %s.out %s.in" % (self.filename, self.filename)
@@ -44,7 +44,7 @@ class OOMpqcJob(Job):
             os.remove(temp_filename)
 
     def determine_completed(self):
-        return os.system("grep \"End Time\" %.out" % self.filename) == 0
+        self.completed = (os.system("grep \"End Time\" %s.out" % self.filename) == 0)
         
     def read_output(self):
-        self.__dict__.update(self.output_parser.parse())
+        self.__dict__.update(self.output_parser.parse(self.filename))
