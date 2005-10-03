@@ -19,8 +19,7 @@
 # 
 # --
 
-from base import SimpleJob, ExternalError
-
+from pychem.interfaces.base import SimpleJob
 from pychem.moldata import periodic
 from pychem.units import to_angstrom, from_angstrom
 from pychem.molecules import molecule_from_xyz_string
@@ -46,10 +45,11 @@ class SimpleMpqcJob(SimpleJob):
                   Hamiltonian
         basis -- The basis set used to describe the wave-function.
         """
+        self.input_molecule = input_molecule
         self.memory = memory
         self.method = method
         self.basis = basis
-        SimpleJob.__init__(self, prefix, title, input_molecule)
+        SimpleJob.__init__(self, prefix, title)
         
     def write_input(self, f):
         print >> f, "% " + self.title
@@ -84,7 +84,7 @@ def yesno(value):
 class SimpleMpqcJobSinglePoint(SimpleMpqcJob):
     """
     Simple MPQC jobs that doesn't change the geometry of the molecule.
-    Only one SCF calculation is performed, with eventual post analysis.
+    Only one SCF iteration is performed, with eventual post analysis.
     """
     def __init__(self, prefix, title, input_molecule, method, basis, memory=None, do_gradient=False):
         """
@@ -94,9 +94,9 @@ class SimpleMpqcJobSinglePoint(SimpleMpqcJob):
         do_gradient -- wether calculate the gradient of the energy
         """
         self.do_gradient = do_gradient
+        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, memory)
         self.energy = None
         self.gradient = None
-        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, memory)
         
     def write_input(self, f):
         SimpleMpqcJob.write_input(self, f)
@@ -118,10 +118,10 @@ class SimpleMpqcJobOptimize(SimpleMpqcJob):
     """
     def __init__(self, prefix, title, input_molecule, method, basis, memory=None):
         """Initialize a SimpleMpqcJobOptimize instance."""
+        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, memory)
         self.energies = []
         self.output_molecule = None
         self.gradient = None
-        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, memory)
         
     def write_input(self, f):
         SimpleMpqcJob.write_input(self, f)

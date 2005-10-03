@@ -37,23 +37,18 @@ class ExternalError(Exception):
 
 
 class Job(object):
-    def __init__(self, prefix, title, input_molecule):
+    def __init__(self, prefix, title):
         self.prefix = prefix
         self.title = title
-        self.input_molecule = input_molecule
-        
         self.ran = False
-
-        self.filename = "%s_%s" % (self.prefix, self.input_sha())
+        input_string_io = StringIO()
+        self.write_input(input_string_io)
+        self.input_string = input_string_io.getvalue()
+        input_string_io.close()
+        self.filename = "%s_%s" % (self.prefix, sha.new(self.input_string).hexdigest())
         
     def write_input(self, f):
         raise NotImplementedError
-    
-    def input_sha(self):
-        input_string_io = StringIO()
-        self.write_input(input_string_io)
-        input_sha = sha.new(input_string_io.getvalue())
-        return input_sha.hexdigest()
     
     def create_job_file(self):
         f = file(self.filename + ".job", 'w')
@@ -62,7 +57,7 @@ class Job(object):
     
     def create_input_file(self):
         input_file = file(self.filename + ".in", 'w')
-        self.write_input(input_file)
+        input_file.write(self.input_string)
         input_file.close()
 
     def output_file_exists(self):
@@ -111,8 +106,8 @@ class Job(object):
 
 
 class SimpleJob(Job):
-    def __init__(self, prefix, title, input_molecule):
-        Job.__init__(self, prefix, title, input_molecule)
+    def __init__(self, prefix, title):
+        Job.__init__(self, prefix, title)
         self.summary = {}
 
     def determine_completed(self):

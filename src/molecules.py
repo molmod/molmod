@@ -37,27 +37,21 @@ __all__ = [
 class Molecule:
     """
     A Molecule instance describes a molecule in the following representation:
-    - charge
-    - spin_multiplicity
     - carthesian coordinates
     """
 
-    def __init__(self, atoms, charge=0, spin_multiplicity=1):
+    def __init__(self, atoms):
         """
         Initialiaze a Molecule instance.
         
         arguments:
         atoms -- [[number, x, y, z], ...]
-        charge -- the charge of the molecule
-        spin_multiplicity -- 2*spin+1
         """
         self.numbers = Numeric.zeros(len(atoms), Numeric.Int)
         self.coordinates = Numeric.zeros((len(atoms), 3), Numeric.Float)
         for index, line in enumerate(atoms):
             self.numbers[index] = line[0]
             self.coordinates[index] = line[1:4]
-        self.charge = charge
-        self.spin_multiplicity = spin_multiplicity
                 
     def normalize(self):
         """
