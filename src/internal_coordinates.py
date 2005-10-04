@@ -566,7 +566,7 @@ class JacobianSolver(object):
         # One must specify at least as much internal coordinates as
         # there are internal degrees of freedom in a molecule.
         
-    def __call__(self, job):
+    def analyze_gradient(self, job):
         """
         Extract all information about partial derivates towards new internal 
         coordinates of a single point job.
@@ -619,3 +619,20 @@ class JacobianSolver(object):
             result.particular -= Numeric.dot(result.nullspace, Numeric.dot(result.particular, result.nullspace))
             
         return result
+
+
+    def analyze_hessian(self, job, molecule):
+        result = Configuration()
+        full_jacobian = []
+        for internal_coordinate in self.internal_coordinates:
+            value, pd = internal_coordinate(molecule.coordinates)
+            full_jacobian.append(Numeric.ravel(pd))
+            
+        full_jacobian = Numeric.transpose(Numeric.array(full_jacobian))
+        normalized_full_jacobian = full_jacobian.copy()
+        for col in Numeric.transpose(normalized_full_jacobian):
+            col[:] /= math.sqrt(Numeric.dot(col, Numeric.dot(job.hessian, col)))
+        
+        coupling = Numeric.dot(Numeric.transpose(normalized_full_jacobian), Numeric.dot(job.hessian, normalized_full_jacobian))
+        return coupling
+        

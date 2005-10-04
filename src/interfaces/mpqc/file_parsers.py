@@ -230,10 +230,10 @@ class HessianParser(FileParser):
         result = Numeric.zeros((self.num_atoms*3, self.num_atoms*3), Numeric.Float)
         counter = 0
         for i in xrange(self.num_atoms*3):
-            result[i,i] = self.hessian_elements[counter]
-            counter += 1
-            for j in xrange(i+1, self.num_atoms*3):
+            for j in xrange(0, i):
                 result[i,j] = self.hessian_elements[counter]
                 result[j,i] = self.hessian_elements[counter]
                 counter += 1
+            result[i,i] = self.hessian_elements[counter]
+            counter += 1
         return result
