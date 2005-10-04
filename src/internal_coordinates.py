@@ -347,7 +347,7 @@ class Collection(object):
             d = self.add(
                 Distance, 
                 e, 
-                name="long range distance %i-%i (%s)" % (id + (tag,)),
+                name="long range distance %i-%i" % id,
                 id=id
             )
             return d
@@ -372,7 +372,7 @@ class Collection(object):
             d = self.add(
                 Distance, 
                 e, 
-                name="bond length %i-%i (%s)" % (id + (tag,)),
+                name="bond length %i-%i" % id,
                 id=id
             )
             self.add_internal_coordinate(tag, d)
@@ -396,7 +396,7 @@ class Collection(object):
                 Cos, 
                 d1,
                 d2, 
-                name="bend cos %i-%i-%i (%s)" % (id + (tag,)),
+                name="bend cos %i-%i-%i" % id,
                 id=id
             )
             self.add_internal_coordinate(tag, c)
@@ -415,7 +415,7 @@ class Collection(object):
             d = self.add(
                 Distance, 
                 e, 
-                name="bend span %i-%i-%i (%s)" % (id + (tag,)),
+                name="bend span %i-%i-%i" % id,
                 id=id
             )
             self.add_internal_coordinate(tag, d)
@@ -456,7 +456,7 @@ class Collection(object):
                 Div, 
                 t, 
                 n,
-                name="dihedral cos %i-%i-%i-%i (%s)" % (id + (tag,)),
+                name="dihedral cos %i-%i-%i-%i" % id,
                 id=id
             )
             self.add_internal_coordinate(tag, dihedral_cos)
@@ -475,7 +475,7 @@ class Collection(object):
             d = self.add(
                 Distance, 
                 e, 
-                name="dihedral span %i-%i-%i-%i (%s)" % (id + (tag,)),
+                name="dihedral span %i-%i-%i-%i" % id,
                 id=id
             )
             self.add_internal_coordinate(tag, d)
@@ -514,7 +514,7 @@ class Collection(object):
                 Div,
                 t,
                 n,
-                name="out of plane cos %i-%i (%i,%i) (%s)" % (id + (tag,)),
+                name="out of plane cos %i-%i (%i,%i)" % id,
                 id=id
             )
             self.add_internal_coordinate(tag, out_of_plane_cos) 
@@ -532,7 +532,7 @@ class Collection(object):
                 Mul,
                 ic1,
                 ic2,
-                name="%s x %s (%s)" % (ic1.name, ic2.name, tag)
+                name="%s x %s" % (ic1.name, ic2.name)
             )
             self.add_internal_coordinate(tag, product)
 
@@ -623,16 +623,25 @@ class JacobianSolver(object):
 
     def analyze_hessian(self, job, molecule):
         result = Configuration()
-        full_jacobian = []
+        jacobian = []
         for internal_coordinate in self.internal_coordinates:
             value, pd = internal_coordinate(molecule.coordinates)
-            full_jacobian.append(Numeric.ravel(pd))
-            
-        full_jacobian = Numeric.transpose(Numeric.array(full_jacobian))
-        normalized_full_jacobian = full_jacobian.copy()
-        for col in Numeric.transpose(normalized_full_jacobian):
-            col[:] /= math.sqrt(Numeric.dot(col, Numeric.dot(job.hessian, col)))
+            jacobian.append(Numeric.ravel(pd))
+            #jacobian.append(Numeric.compress(self.internal_mask, Numeric.ravel(pd)))
+        jacobian = Numeric.transpose(Numeric.array(jacobian))
+        hessian = job.hessian.copy()
+        #hessian = Numeric.compress(self.internal_mask, hessian, 0)
+        #hessian = Numeric.compress(self.internal_mask, hessian, 1)
         
-        coupling = Numeric.dot(Numeric.transpose(normalized_full_jacobian), Numeric.dot(job.hessian, normalized_full_jacobian))
-        return coupling
+        normalized_jacobian = jacobian.copy()
+        for col in Numeric.transpose(normalized_jacobian):
+            col[:] /= math.sqrt(Numeric.dot(col, Numeric.dot(hessian, col)))
+        coupling = Numeric.dot(Numeric.transpose(normalized_jacobian), Numeric.dot(hessian, normalized_jacobian))
+        
+        normalized_jacobian = jacobian.copy()
+        for col in Numeric.transpose(normalized_jacobian):
+            col[:] /= math.sqrt(Numeric.dot(col, col))
+        eigenvals, eigenvectors = LinearAlgebra.eigenvectors(hessian)
+        dots = Numeric.dot(Numeric.transpose(normalized_jacobian), eigenvectors)
+        return coupling, dots
         
