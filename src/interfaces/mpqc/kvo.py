@@ -80,6 +80,8 @@ def create_optimize_kv(molecule, charge, method, basis, functional=''):
             ('molecule', molecule_kvo),
             ('mpqc', KeyValObject(named_items=[
                 ('optimize', 1),
+                ('checkpoint', 0),
+                ('restart', 0),
                 ('mole', mole_kvo),
                 ('opt', KeyValObject('QNewtonOpt', named_items=[
                     ('function', mole_kvo),

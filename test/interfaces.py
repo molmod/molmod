@@ -23,7 +23,8 @@ from pychem.interfaces.base import reload_job
 from pychem.interfaces.mpqc.simple import SimpleMpqcJobSinglePoint, SimpleMpqcJobOptimize
 from pychem.interfaces.mpqc.oo import OOMpqcJob
 from pychem.interfaces.mpqc.kvo import create_single_point_kv, create_optimize_kv
-from pychem.interfaces.mpqc.file_parsers import MolecularEnergiesParser, GradientsParser, OutputMoleculesParser
+from pychem.interfaces.mpqc.keyval import KeyValObject
+from pychem.interfaces.mpqc.file_parsers import MolecularEnergiesParser, OutputMoleculesParser, GradientsParser, HessianParser
 from pychem.interfaces.output_parsers.base import OutputParser
 from pychem.molecules import molecule_from_xyz_filename
 
@@ -145,6 +146,18 @@ class OOMpqcInterface(unittest.TestCase):
         validate()
 
     def test_optimize(self):
+        expected_hessian = Numeric.array(
+            [[ 3.63678513e-01,  6.70000000e-11,  0.00000000e+00, -1.21861040e-05,  1.04000000e-10,  5.54935045e-01, -1.81834491e-01, -7.40000000e-11, -2.17037315e-01],
+             [ 6.70000000e-11,  1.75803790e-01, -6.00000000e-11, -0.00000000e+00, -9.20000000e-11,  6.60000000e-11,  0.00000000e+00, -1.42787283e-01, -7.80000000e-11],
+             [ 0.00000000e+00, -6.00000000e-11, -2.77471968e-01,  1.79917084e-01,  9.20000000e-11,  3.13407303e-01, -1.81844023e-01,  7.00000000e-12,  2.17049501e-01],
+             [-1.21861040e-05, -0.00000000e+00,  1.79917084e-01,  6.03070050e-03, -6.00000000e-12, -3.71298014e-02,  1.75813322e-01, -7.00000000e-12, -0.00000000e+00],
+             [ 1.04000000e-10, -9.20000000e-11,  9.20000000e-11, -6.00000000e-12, -1.20000000e-11,  8.00000000e-12, -0.00000000e+00, -1.40000000e-11, -1.00000000e-12],
+             [ 5.54935045e-01,  6.60000000e-11,  3.13407303e-01, -3.71298014e-02,  8.00000000e-12,  0.00000000e+00,  1.42799469e-01, -2.50000000e-11, -2.77463077e-01],
+             [-1.81834491e-01,  0.00000000e+00, -1.81844023e-01,  1.75813322e-01, -0.00000000e+00,  1.42799469e-01,  3.71202306e-02,  0.00000000e+00, -3.59353350e-02],
+             [-7.40000000e-11, -1.42787283e-01,  7.00000000e-12, -7.00000000e-12, -1.40000000e-11, -2.50000000e-11,  0.00000000e+00, -1.79919700e-01,  2.50000000e-11],
+             [-2.17037315e-01, -7.80000000e-11,  2.17049501e-01, -0.00000000e+00, -1.00000000e-12, -2.77463077e-01, -3.59353350e-02,  2.50000000e-11,  3.13398412e-01]]
+        )
+    
         def validate():
             self.assert_(job.completed)
             self.assertAlmostEqual(job.energies[-1], -75.973963163199997, 8)
@@ -155,6 +168,7 @@ class OOMpqcInterface(unittest.TestCase):
             self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 3)
             delta = coordinates[1]-coordinates[2]
             self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 2.96668446577, 3)
+            self.assertAlmostEqual(sum(Numeric.ravel(job.hessian - expected_hessian)**2), 0.0, 3)
         
         water = molecule_from_xyz_filename("input/water.xyz")
         keyval = create_optimize_kv(
@@ -164,13 +178,17 @@ class OOMpqcInterface(unittest.TestCase):
             basis="3-21G*",
             functional="B3LYP"
         )
+        keyval['mpqc']['freq'] = KeyValObject('MolecularFrequencies', named_items=[
+            ('molecule', keyval['molecule'])
+        ])
         job = OOMpqcJob(
             prefix="output/water_oo_opt",
             title="Water single point berekening", 
             keyval=keyval,
             output_parser=OutputParser([
                 MolecularEnergiesParser('energies'),
-                OutputMoleculesParser('output_molecules')
+                OutputMoleculesParser('output_molecules'),
+                HessianParser('hessian')
             ])
         )
         job.run(user_overwrite=True)

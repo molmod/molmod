@@ -36,9 +36,9 @@ class ScfEnergiesParser(FileParser):
         self.energies = []
         
     def parse(self, line):
-        match_object = self.re.search(line)
-        if match_object != None:
-            self.energies.append(float(match_object.group("energy")))
+        match = self.re.search(line)
+        if match != None:
+            self.energies.append(float(match.group("energy")))
         
     def result(self):
         return self.energies
@@ -55,9 +55,9 @@ class MolecularEnergiesParser(FileParser):
         self.energies = []
         
     def parse(self, line):
-        match_object = self.re.search(line)
-        if match_object != None:
-            self.energies.append(float(match_object.group("energy")))
+        match = self.re.search(line)
+        if match != None:
+            self.energies.append(float(match.group("energy")))
         
     def result(self):
         return self.energies
@@ -75,8 +75,8 @@ class WarningParser(FileParser):
         
     def parse(self, line):
         if not self.warnings:
-            match_object = self.re.search(line)
-            if match_object != None:
+            match = self.re.search(line)
+            if match != None:
                 self.warnings = True
         
     def result(self):
@@ -95,8 +95,8 @@ class OptimizationConvergedParser(FileParser):
         
     def parse(self, line):
         if not self.converged:
-            match_object = self.re.search(line)
-            if match_object != None:
+            match = self.re.search(line)
+            if match != None:
                 self.converged = True
         
     def result(self):
@@ -143,19 +143,19 @@ class OutputMoleculesParser(MultiLineParser):
         self.re = re.compile(r"(?P<symbol>\S+)\s*\[\s*(?P<x>\S+)\s*(?P<y>\S+)\s*(?P<z>\S+)\s*\]")
         
     def reset(self):
+        MultiLineParser.reset(self)
         self.molecules = []
-        self.active = False
         
     def start_collecting(self):
         self.current_atoms = []
 
     def collect(self, line):
-        match_object = self.re.search(line)
+        match = self.re.search(line)
         self.current_atoms.append([
-            periodic.reverse_symbol_lookup(match_object.group("symbol")),
-            float(match_object.group("x")),
-            float(match_object.group("y")),
-            float(match_object.group("z"))
+            periodic.reverse_symbol_lookup(match.group("symbol")),
+            float(match.group("x")),
+            float(match.group("y")),
+            float(match.group("z"))
         ])
 
     def stop_collecting(self):
@@ -176,15 +176,15 @@ class GradientsParser(MultiLineParser):
         self.re = re.compile(r"\d+\s+(?P<gradient>\S+)")
         
     def reset(self):
+        MultiLineParser.reset(self)
         self.gradients = []
-        self.active = False
         
     def start_collecting(self):
         self.current_gradient = []
 
     def collect(self, line):
-        match_object = self.re.search(line)
-        self.current_gradient.append(float(match_object.group("gradient")))
+        match = self.re.search(line)
+        self.current_gradient.append(float(match.group("gradient")))
         
     def stop_collecting(self):
         gradient = Numeric.array(self.current_gradient, Numeric.Float)
@@ -194,3 +194,46 @@ class GradientsParser(MultiLineParser):
 
     def result(self):
         return self.gradients
+
+
+class HessianParser(FileParser):
+    extension="hess"
+
+    def __init__(self, label, condition=None):
+        FileParser.__init__(self, label, condition)
+        self.re_num_atoms = re.compile(r"(?P<num_atoms>\d+)\s+atoms")
+        
+    def reset(self):
+        self.num_atoms = None
+        self.begin_line = None
+        self.end_line = None
+        self.current_line = 0
+        self.hessian_elements = []
+        
+    def parse(self, line):
+        if self.num_atoms == None:
+            match = self.re_num_atoms.search(line)
+            if match != None:
+                self.num_atoms = int(match.group("num_atoms"))
+                num_elements = self.num_atoms*3 * (self.num_atoms*3 + 1) / 2
+                num_lines = num_elements / 5
+                if num_elements % 5 > 0: num_lines += 1
+                self.begin_line = self.num_atoms + 2
+                self.end_line = self.begin_line + num_lines
+        elif (self.current_line >= self.begin_line) and (self.current_line < self.end_line):
+            self.hessian_elements.extend(float(word) for word in line.split())
+            #print line
+            #print [float(word) for word in line.split()]
+        self.current_line += 1
+
+    def result(self):
+        result = Numeric.zeros((self.num_atoms*3, self.num_atoms*3), Numeric.Float)
+        counter = 0
+        for i in xrange(self.num_atoms*3):
+            result[i,i] = self.hessian_elements[counter]
+            counter += 1
+            for j in xrange(i+1, self.num_atoms*3):
+                result[i,j] = self.hessian_elements[counter]
+                result[j,i] = self.hessian_elements[counter]
+                counter += 1
+        return result
