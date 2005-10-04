@@ -172,7 +172,7 @@ class ExampleGraphs(unittest.TestCase):
             self.assert_(len(unsatisfied) == 0, message())
 
 
-class OneToOne(unittest.TestCase):
+class GraphHelpers(unittest.TestCase):
     def test_multiplication(self):
         A = OneToOne([(1, "a"), (4, "z"), (2, "b")])
         B = OneToOne([("a", 7), ("z", 2), ("b", 0)])
