@@ -44,7 +44,7 @@ class OOMpqcJob(Job):
             os.remove(temp_filename)
 
     def determine_completed(self):
-        self.completed = (os.system("grep \"End Time\" %s.out" % self.filename) == 0)
+        self.completed = (os.system("grep \"End Time\" %s.out &> /dev/null" % self.filename) == 0)
         
     def read_output(self):
         self.__dict__.update(self.output_parser.parse(self.filename))

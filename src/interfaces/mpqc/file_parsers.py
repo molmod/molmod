@@ -21,8 +21,9 @@
 
 from pychem.interfaces.output_parsers.base import FileParser
 from pychem.moldata import periodic
+from pychem.molecules import Molecule
 
-import re
+import re, Numeric
 
 class ScfEnergiesParser(FileParser):
     extension="out"
@@ -48,7 +49,7 @@ class MolecularEnergiesParser(FileParser):
 
     def __init__(self, label, condition=None):
         FileParser.__init__(self, label, condition)
-        self.re = re.compile(r"Value of the MolecularEnergy:\s(?P<energy>\S+)")
+        self.re = re.compile(r"Value of the MolecularEnergy:\s+(?P<energy>\S+)")
         
     def reset(self):
         self.energies = []
@@ -139,7 +140,7 @@ class OutputMoleculesParser(MultiLineParser):
         activator = re.compile(r"n\s+atoms\s+geometry")
         deactivator = re.compile(r"}$")
         MultiLineParser.__init__(self, label, activator, deactivator, condition)
-        self.re = re.compile(r"(?P<symbol>\S+)\s*[\s*(?P<x>\S+)\s*(?P<y>\S+)\s*(?P<z>\S+)\s*]")
+        self.re = re.compile(r"(?P<symbol>\S+)\s*\[\s*(?P<x>\S+)\s*(?P<y>\S+)\s*(?P<z>\S+)\s*\]")
         
     def reset(self):
         self.molecules = []

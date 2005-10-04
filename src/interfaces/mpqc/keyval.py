@@ -25,44 +25,75 @@ class KeyValError(Exception):
 
 
 class KeyVal(object):
-    def __init__(self, items={}):
-        self.items = items
+    def __init__(self, named_items=[]):
+        self.names = [pair[0] for pair in named_items]
+        self.dict_items = dict(named_items)
+        
+    def __getitem__(self, name):
+        return self.dict_items[name]
+        
+    def __setitem__(self, name, item):
+        if name not in self.dict_items:
+            self.names.append(name)
+        self.dict_items[name] = item
+        
+    def write_list(self, f, l, indent='', noindent=False):
+        if not isinstance(l, list):
+            f.write("%s\n" % l)
+        elif reduce(lambda x, y: x or y, (isinstance(item, list) for item in l), False):
+            if noindent:
+                f.write("[\n")
+            else:
+                f.write(indent+"[\n")
+            for item in l:
+                self.write_list(f, item, indent + '  ')
+            f.write(indent+"]\n")
+        else:
+            if noindent:
+                f.write('[%s' % l[0])
+            else:
+                f.write(indent+'[%s' % l[0])
+            for item in l[1:]:
+                f.write(" %s" % item)
+            f.write("]\n")
     
-    def write_stream(self, f, indent='', location='$:'):
-        if location == '$:':
+    def write_stream(self, f, indent='', location='$'):
+        if location == '$':
             self.clear_locations()
-        for name, item in self.items.iteritems():
+        for name in self.names:
+            item = self.dict_items[name]
             if isinstance(item, int) or isinstance(item, float) or isinstance(item, str) or isinstance(item, list):
-                print >> f, "%s%s=%s" % (indent, name, item)
+                f.write("%s%s=" % (indent, name))
+                self.write_list(f, item, indent, True)
             elif isinstance(item, KeyValObject):
-                print >> f, "%s%s" % (indent, name), 
+                f.write("%s%s" % (indent, name)) 
                 item.write_stream(f, indent, location+':'+name)
             elif item!=None:
                 raise KeyValError, "Object not supported %s=%s" % (name, item)
 
     def clear_locations(self):
-        for item in self.items.itervalues():
+        for item in self.dict_items.itervalues():
             if isinstance(item, KeyValObject):
                 item.clear_locations()
 
 
 class KeyValObject(KeyVal):
-    def __init__(self, class_name='', items={}):
-        KeyVal.__init__(self, items)
+    def __init__(self, class_name='', named_items=[]):
+        KeyVal.__init__(self, named_items)
         self.class_name = class_name
         self.location = None
 
-    def write_stream(self, f, indent='', location='$:'):
-        if location == None:
+    def write_stream(self, f, indent='', location='$'):
+        if self.location == None:
             if self.class_name != '':
-                print >> f, "<%s>:(" % self.class_name
+                f.write("<%s>:(\n" % self.class_name)
             else:
-                print >> f, ":("
-            KeyVal.write_stream(self, f, indent+'  ')
-            print >> f, ")"
+                f.write(":(\n")
+            KeyVal.write_stream(self, f, indent+'  ', location)
+            f.write(indent+")\n")
             self.location = location
         else:
-            print >> f, "=%s" % self.location
+            f.write("=%s\n" % self.location)
             
     def clear_locations(self):
         self.location = None
