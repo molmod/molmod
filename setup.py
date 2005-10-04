@@ -36,7 +36,7 @@ setup(name='PyChem',
           ('share/pychem/%s/moldata' % version, glob.glob('src/moldata/*.csv')),
           ('share/pychem/%s/interfaces/awk' % version, glob.glob('src/interfaces/awk/*.awk'))
       ],
-      packages=['pychem', 'pychem.moldata', 'pychem.interfaces'],
+      packages=['pychem', 'pychem.moldata', 'pychem.interfaces', 'pychem.interfaces.mpqc'],
       classifiers=['Development Status :: 3 - Alpha',
                    'Environment :: Console',
                    'Intended Audience :: Science/Research',
