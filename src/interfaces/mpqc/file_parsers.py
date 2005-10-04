@@ -19,7 +19,7 @@
 # 
 # --
 
-from pychem.interfaces.output_parsers.base import FileParser
+from pychem.interfaces.output_parsers import FileParser
 from pychem.moldata import periodic
 from pychem.molecules import Molecule
 
