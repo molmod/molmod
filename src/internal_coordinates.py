@@ -522,7 +522,10 @@ class Collection(object):
     def yield_related_internal_coordinates(self, tag1, tag2, order_related=2):
         for ic1 in self[tag1]:
             for ic2 in self[tag2]:
-                if len(set(ic1.id) & set(ic2.id)) >= order_related:
+                if tag1==tag2 and ic1 >= ic2:
+                    continue
+                num_common = len(set(ic1.id) & set(ic2.id))
+                if num_common >= order_related:
                     yield (ic1, ic2)
 
     def add_related_products(self, tag, tag1, tag2, order_related=2):
