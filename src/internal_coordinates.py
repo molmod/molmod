@@ -635,13 +635,16 @@ class JacobianSolver(object):
         
         normalized_jacobian = jacobian.copy()
         for col in Numeric.transpose(normalized_jacobian):
-            col[:] /= math.sqrt(Numeric.dot(col, Numeric.dot(hessian, col)))
-        coupling = Numeric.dot(Numeric.transpose(normalized_jacobian), Numeric.dot(hessian, normalized_jacobian))
-        
-        normalized_jacobian = jacobian.copy()
-        for col in Numeric.transpose(normalized_jacobian):
+            #col[:] /= math.sqrt(Numeric.dot(col, Numeric.dot(hessian, col)))
             col[:] /= math.sqrt(Numeric.dot(col, col))
-        eigenvals, eigenvectors = LinearAlgebra.eigenvectors(hessian)
-        dots = Numeric.dot(Numeric.transpose(normalized_jacobian), eigenvectors)
-        return coupling, dots
+        #coupling = Numeric.dot(Numeric.transpose(normalized_jacobian), Numeric.dot(hessian, normalized_jacobian))
+        coupling = Numeric.dot(Numeric.transpose(normalized_jacobian), normalized_jacobian)
+
+        diag = []
+        for col in Numeric.transpose(jacobian):
+            norm = math.sqrt(Numeric.dot(col, col))
+            temp = Numeric.dot(hessian, col)
+            norm_transf = math.sqrt(Numeric.dot(temp, temp))
+            diag.append(Numeric.dot(col, Numeric.dot(hessian, col))/(norm * norm_transf))
+        return coupling, diag
         
