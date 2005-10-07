@@ -24,7 +24,7 @@ from pychem.interfaces.mpqc.simple import SimpleMpqcJobSinglePoint, SimpleMpqcJo
 from pychem.interfaces.mpqc.oo import OOMpqcJob
 from pychem.interfaces.mpqc.kvo import create_single_point_kv, create_optimize_kv
 from pychem.interfaces.mpqc.keyval import KeyValObject
-from pychem.interfaces.mpqc.file_parsers import MolecularEnergiesParser, OutputMoleculesParser, GradientsParser, HessianParser
+from pychem.interfaces.mpqc.file_parsers import MolecularEnergiesParser, OutputMoleculesParser, GradientsParser, HessianParser, OptimizationConvergedParser
 from pychem.interfaces.output_parsers import OutputParser
 from pychem.molecules import molecule_from_xyz_filename
 
@@ -177,6 +177,7 @@ class OOMpqcInterface(unittest.TestCase):
             output_parser=OutputParser([
                 MolecularEnergiesParser('energies'),
                 OutputMoleculesParser('output_molecules'),
+                OptimizationConvergedParser('converged'),
                 HessianParser('hessian')
             ])
         )

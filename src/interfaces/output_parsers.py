@@ -20,6 +20,8 @@
 # --
 
 
+from os.path import isfile
+
 class OutputParser(object):
     def __init__(self, file_parsers=[]):
         self.file_parsers = {}
@@ -38,10 +40,12 @@ class OutputParser(object):
         for extension, file_parsers in self.file_parsers.iteritems():
             for file_parser in file_parsers:
                 file_parser.reset()
-            f = file("%s.%s" % (prefix, extension), 'r')
-            for line in f:
-                for file_parser in file_parsers:
-                    file_parser.conditioned_parse(line)
+            filename = "%s.%s" % (prefix, extension)
+            if isfile(filename):
+                f = file(filename, 'r')
+                for line in f:
+                    for file_parser in file_parsers:
+                        file_parser.conditioned_parse(line)
             f.close()
             for file_parser in file_parsers:
                 result[file_parser.label] = file_parser.result()
