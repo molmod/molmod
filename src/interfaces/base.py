@@ -76,7 +76,7 @@ class Job(object):
     def determine_completed(self):
         raise NotImplementedError
 
-    def run_external(self, overwrite=False):
+    def run_external(self, forcerun=False):
         """
         Call the external program.
 
@@ -84,7 +84,7 @@ class Job(object):
         unless overwrite == True
         """
         recycled = False
-        if (not self.output_file_exists()) or overwrite:
+        if (not self.output_file_exists()) or forcerun:
             os.system(self.external_command())
             self.remove_temporary_files()
         else:
@@ -95,15 +95,15 @@ class Job(object):
     def read_output(self):
         raise NotImplementedError
             
-    def run(self, user_overwrite=False):
+    def run(self, cleanup=False, forcerun=False):
         """Perform the complete calculation and analysis."""
-        if user_overwrite:
+        if cleanup:
             self.cleanup()
         self.create_job_file()
         self.create_input_file()
-        recycled = self.run_external(overwrite=user_overwrite)
+        recycled = self.run_external(forcerun=forcerun)
         if recycled and not self.completed:
-            recycled = self.run_external(overwrite=True)
+            recycled = self.run_external(forcerun=True)
         if not self.completed:
             raise ExternalError("External job could not be completed (%s)" % self.filename)
         self.read_output()

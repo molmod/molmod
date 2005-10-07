@@ -59,7 +59,9 @@ class SimpleMpqcInterface(unittest.TestCase):
             memory="100MB",
             do_gradient=True
         )
-        job.run(user_overwrite=True)
+        job.run(cleanup=True)
+        validate()
+        job.run(forcerun=True)
         validate()
         job.run()
         validate()
@@ -90,7 +92,9 @@ class SimpleMpqcInterface(unittest.TestCase):
             basis="3-21G*",
             memory="100MB"
         )
-        job.run(user_overwrite=True)
+        job.run(cleanup=True)
+        validate()
+        job.run(forcerun=True)
         validate()
         job.run()
         validate()
@@ -135,7 +139,9 @@ class OOMpqcInterface(unittest.TestCase):
                 GradientsParser('gradients')
             ])
         )
-        job.run(user_overwrite=True)
+        job.run(cleanup=True)
+        validate()
+        job.run(forcerun=True)
         validate()
         job.run()
         validate()
@@ -181,8 +187,12 @@ class OOMpqcInterface(unittest.TestCase):
                 HessianParser('hessian')
             ])
         )
-        #job.run(user_overwrite=True)
-        #validate()
+        job.run(cleanup=True)
+        validate()
+        if not job.converged:
+            # MPQC has a problem when a converged optimization is restarted
+            job.run(forcerun=True)
+            validate()
         job.run()
         validate()
         
