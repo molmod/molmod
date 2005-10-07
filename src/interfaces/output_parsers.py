@@ -46,7 +46,7 @@ class OutputParser(object):
                 for line in f:
                     for file_parser in file_parsers:
                         file_parser.conditioned_parse(line)
-            f.close()
+                f.close()
             for file_parser in file_parsers:
                 result[file_parser.label] = file_parser.result()
         return result
