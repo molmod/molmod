@@ -25,7 +25,7 @@ from pychem import context
 
 from StringIO import StringIO
 from pickle import load, dump
-import sha, os
+import sha, os, glob
 
 
 class ExternalError(Exception):
@@ -59,6 +59,10 @@ class Job(object):
         input_file = file(self.filename + ".in", 'w')
         input_file.write(self.input_string)
         input_file.close()
+        
+    def cleanup(self):
+        for temp_filename in glob.glob("%s*.*" % self.filename):
+            os.remove(temp_filename)        
 
     def output_file_exists(self):
         return os.path.isfile(self.filename + ".out")
@@ -93,6 +97,8 @@ class Job(object):
             
     def run(self, user_overwrite=False):
         """Perform the complete calculation and analysis."""
+        if user_overwrite:
+            self.cleanup()
         self.create_job_file()
         self.create_input_file()
         recycled = self.run_external(overwrite=user_overwrite)
