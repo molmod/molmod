@@ -63,6 +63,26 @@ class MolecularEnergiesParser(FileParser):
         return self.energies
 
 
+class EnergyAccuracyParser(FileParser):
+    extension="out"
+
+    def __init__(self, label='energy_accuracy', condition=None):
+        FileParser.__init__(self, label, condition)
+        self.re = re.compile(r"energy accuracy = (?P<energy_accuracy>\S+)")
+        
+    def reset(self):
+        self.energy_accuracy = None
+        
+    def parse(self, line):
+        if self.energy_accuracy == None:
+            match = self.re.search(line)
+            if match != None:
+                self.energy_accuracy = float(match.group("energy_accuracy"))
+        
+    def result(self):
+        return self.energy_accuracy
+
+
 class WarningParser(FileParser):
     extension="out"
 
@@ -196,7 +216,7 @@ class GradientsParser(MultiLineParser):
         return self.gradients
 
 
-class GradientAccuracyParser(MultiLineParser):
+class GradientAccuracyParser(FileParser):
     extension="out"
 
     def __init__(self, label='gradient_accuracy', condition=None):
