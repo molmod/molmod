@@ -196,6 +196,26 @@ class GradientsParser(MultiLineParser):
         return self.gradients
 
 
+class GradientAccuracyParser(MultiLineParser):
+    extension="out"
+
+    def __init__(self, label, condition=None):
+        FileParser.__init__(self, label, condition)
+        self.re = re.compile(r"gradient accuracy = (?P<gradient_accuracy>\S+)")
+        
+    def reset(self):
+        self.gradient_accuracy = None
+        
+    def parse(self, line):
+        if self.gradient_accuracy == None:
+            match = self.re.search(line)
+            if match != None:
+                self.gradient_accuracy = float(match.group("gradient_accuracy"))
+        
+    def result(self):
+        return self.gradient_accuracy
+
+
 class HessianParser(FileParser):
     extension="hess"
 

@@ -24,7 +24,7 @@ from pychem.interfaces.mpqc.simple import SimpleMpqcJobSinglePoint, SimpleMpqcJo
 from pychem.interfaces.mpqc.oo import OOMpqcJob
 from pychem.interfaces.mpqc.kvo import create_single_point_kv, create_optimize_kv
 from pychem.interfaces.mpqc.keyval import KeyValObject
-from pychem.interfaces.mpqc.file_parsers import MolecularEnergiesParser, OutputMoleculesParser, GradientsParser, HessianParser, OptimizationConvergedParser
+from pychem.interfaces.mpqc.file_parsers import MolecularEnergiesParser, OutputMoleculesParser, GradientsParser, GradientAccuracyParser, HessianParser, OptimizationConvergedParser
 from pychem.interfaces.output_parsers import OutputParser
 from pychem.molecules import molecule_from_xyz_filename
 
@@ -110,6 +110,7 @@ class OOMpqcInterface(unittest.TestCase):
             energy = job.energies[-1]
             gradient = job.gradients[-1]
             self.assert_(job.completed)
+            self.assert_(isinstance(job.gradient_accuracy, float))
             self.assertAlmostEqual(energy, -75.9734488121, 8)
             self.assertAlmostEqual(gradient[0,0],  0.01174361, 6)
             self.assertAlmostEqual(gradient[0,1],  0.0,        6)
@@ -136,7 +137,8 @@ class OOMpqcInterface(unittest.TestCase):
             keyval=keyval,
             output_parser=OutputParser([
                 MolecularEnergiesParser('energies'),
-                GradientsParser('gradients')
+                GradientsParser('gradients'),
+                GradientAccuracyParser('gradient_accuracy')
             ])
         )
         job.run(cleanup=True)
