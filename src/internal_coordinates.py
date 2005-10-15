@@ -271,7 +271,7 @@ class Collection(object):
         return len(self.user_coordinates)
         
     def __getitem__(self, key):
-        return self.user_coordinates.get(key)
+        return self.user_coordinates[key]
         
     def __iter__(self):
         return iter(self.user_coordinates)
