@@ -20,6 +20,7 @@
 # --
 
 from pychem.interfaces.base import Job
+from pychem.interfaces.output_parsers import OutputParser
 from pychem.interfaces.mpqc.keyval import KeyValObject
 from pychem.moldata import periodic
 
@@ -27,9 +28,12 @@ import os, glob
 
 
 class OOMpqcJob(Job):
-    def __init__(self, prefix, title, keyval, output_parser):
+    def __init__(self, prefix, title, keyval, output_parser=None):
         self.keyval = keyval
-        self.output_parser = output_parser
+        if output_parser == None:
+            self.output_parser = OutputParser()
+        else:
+            self.output_parser = output_parser
         Job.__init__(self, prefix, title)
         
     def write_input(self, f):
