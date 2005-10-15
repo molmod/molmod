@@ -28,7 +28,7 @@ import re, Numeric
 class ScfEnergiesParser(FileParser):
     extension="out"
 
-    def __init__(self, label, condition=None):
+    def __init__(self, label='scf_energies', condition=None):
         FileParser.__init__(self, label, condition)
         self.re = re.compile(r"total scf energy =\s(?P<energy>\S+)")
         
@@ -47,7 +47,7 @@ class ScfEnergiesParser(FileParser):
 class MolecularEnergiesParser(FileParser):
     extension="out"
 
-    def __init__(self, label, condition=None):
+    def __init__(self, label='molecular_energies', condition=None):
         FileParser.__init__(self, label, condition)
         self.re = re.compile(r"Value of the MolecularEnergy:\s+(?P<energy>\S+)")
         
@@ -66,7 +66,7 @@ class MolecularEnergiesParser(FileParser):
 class WarningParser(FileParser):
     extension="out"
 
-    def __init__(self, label, condition=None):
+    def __init__(self, label='warnings', condition=None):
         FileParser.__init__(self, label, condition)
         self.re = re.compile(r"WARNING:")
         
@@ -86,7 +86,7 @@ class WarningParser(FileParser):
 class OptimizationConvergedParser(FileParser):
     extension="out"
 
-    def __init__(self, label, condition=None):
+    def __init__(self, label='optimization_converged', condition=None):
         FileParser.__init__(self, label, condition)
         self.re = re.compile(r"The optimization has converged.")
         
@@ -136,7 +136,7 @@ class MultiLineParser(FileParser):
 class OutputMoleculesParser(MultiLineParser):
     extension="out"
 
-    def __init__(self, label, condition=None):
+    def __init__(self, label='output_molecules', condition=None):
         activator = re.compile(r"n\s+atoms\s+geometry")
         deactivator = re.compile(r"}$")
         MultiLineParser.__init__(self, label, activator, deactivator, condition)
@@ -169,7 +169,7 @@ class OutputMoleculesParser(MultiLineParser):
 class GradientsParser(MultiLineParser):
     extension="out"
 
-    def __init__(self, label, condition=None):
+    def __init__(self, label='gradients', condition=None):
         activator = re.compile(r"Gradient of the MolecularEnergy:")
         deactivator = re.compile(r"^$")
         MultiLineParser.__init__(self, label, activator, deactivator, condition)
@@ -199,7 +199,7 @@ class GradientsParser(MultiLineParser):
 class GradientAccuracyParser(MultiLineParser):
     extension="out"
 
-    def __init__(self, label, condition=None):
+    def __init__(self, label='gradient_accuracy', condition=None):
         FileParser.__init__(self, label, condition)
         self.re = re.compile(r"gradient accuracy = (?P<gradient_accuracy>\S+)")
         
@@ -219,7 +219,7 @@ class GradientAccuracyParser(MultiLineParser):
 class HessianParser(FileParser):
     extension="hess"
 
-    def __init__(self, label, condition=None):
+    def __init__(self, label='hessian', condition=None):
         FileParser.__init__(self, label, condition)
         self.re_num_atoms = re.compile(r"(?P<num_atoms>\d+)\s+atoms")
         

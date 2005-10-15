@@ -107,7 +107,7 @@ class SimpleMpqcInterface(unittest.TestCase):
 class OOMpqcInterface(unittest.TestCase):
     def test_single_point(self):
         def validate():
-            energy = job.energies[-1]
+            energy = job.molecular_energies[-1]
             gradient = job.gradients[-1]
             self.assert_(job.completed)
             self.assert_(isinstance(job.gradient_accuracy, float))
@@ -136,9 +136,9 @@ class OOMpqcInterface(unittest.TestCase):
             title="Water single point berekening", 
             keyval=keyval,
             output_parser=OutputParser([
-                MolecularEnergiesParser('energies'),
-                GradientsParser('gradients'),
-                GradientAccuracyParser('gradient_accuracy')
+                MolecularEnergiesParser(),
+                GradientsParser(),
+                GradientAccuracyParser()
             ])
         )
         job.run(cleanup=True)
@@ -156,7 +156,8 @@ class OOMpqcInterface(unittest.TestCase):
     def test_optimize(self):
         def validate():
             self.assert_(job.completed)
-            self.assertAlmostEqual(job.energies[-1], -75.973963163199997, 8)
+            self.assert_(job.optimization_converged)
+            self.assertAlmostEqual(job.molecular_energies[-1], -75.973963163199997, 8)
             coordinates = job.output_molecules[-1].coordinates
             delta = coordinates[0]-coordinates[1]
             self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 3)
@@ -183,15 +184,15 @@ class OOMpqcInterface(unittest.TestCase):
             title="Water single point berekening", 
             keyval=keyval,
             output_parser=OutputParser([
-                MolecularEnergiesParser('energies'),
-                OutputMoleculesParser('output_molecules'),
-                OptimizationConvergedParser('converged'),
-                HessianParser('hessian')
+                MolecularEnergiesParser(),
+                OutputMoleculesParser(),
+                OptimizationConvergedParser(),
+                HessianParser()
             ])
         )
         job.run(cleanup=True)
         validate()
-        if not job.converged:
+        if not job.optimization_converged:
             # MPQC has a problem when a converged optimization is restarted
             job.run(forcerun=True)
             validate()
