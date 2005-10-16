@@ -44,6 +44,7 @@ class GradientAnalysis(JacobianAnalysis):
         JacobianAnalysis.__init__(self, internal_coordinates, molecule)
         self.job = job
         self.energy = job.energy
+        self.energy_error = job.energy_accuracy
 
         self.V, self.S, self.Wt = LinearAlgebra.singular_value_decomposition(self.jacobian, True)
         self.W = Numeric.transpose(self.Wt)
@@ -51,13 +52,17 @@ class GradientAnalysis(JacobianAnalysis):
         self.S = self.S[:self.rank]
         self.V = self.V[:,:self.rank]
         
+        print self.W[:,:self.rank].shape, Numeric.transpose(self.V/self.S).shape
+        particular_transform = Numeric.dot(self.W[:,:self.rank], Numeric.transpose(self.V/self.S))
+        
         self.gradient = Numeric.ravel(job.gradient)
-        self.particular = Numeric.dot(self.W[:,:self.rank], Numeric.transpose(Numeric.transpose(Numeric.dot(self.gradient, self.V))/self.S))
+        self.particular = Numeric.dot(particular_transform, self.gradient)
+        self.gradient_error = Numeric.ones(self.gradient.shape, Numeric.Float)*job.gradient_accuracy
+        self.particular_error = Numeric.sqrt(Numeric.dot(particular_transform**2, self.gradient_error**2))
 
         if self.W.shape[1] > self.rank:
             self.nullspace = self.W[:,self.rank:]
-            # initial guess = solution with minimum norm
-            self.particular -= Numeric.dot(self.nullspace, Numeric.dot(self.particular, self.nullspace))
+
 
 
 class HessianAnalysis(JacobianAnalysis):
