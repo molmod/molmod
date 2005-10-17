@@ -52,7 +52,6 @@ class GradientAnalysis(JacobianAnalysis):
         self.S = self.S[:self.rank]
         self.V = self.V[:,:self.rank]
         
-        print self.W[:,:self.rank].shape, Numeric.transpose(self.V/self.S).shape
         particular_transform = Numeric.dot(self.W[:,:self.rank], Numeric.transpose(self.V/self.S))
         
         self.gradient = Numeric.ravel(job.gradient)
