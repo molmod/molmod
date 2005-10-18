@@ -24,14 +24,14 @@
 import Numeric, LinearAlgebra, math
 
 class JacobianAnalysis(object):
-    def __init__(self, internal_coordinates, molecule):
+    def __init__(self, internal_coordinates, carthesian_values):
         self.internal_coordinates = internal_coordinates
-        self.molecule = molecule
+        self.carthesian_values = carthesian_values
         
         jacobian = []
         values = []
         for internal_coordinate in self.internal_coordinates:
-            value, derivates = internal_coordinate(molecule.coordinates)
+            value, derivates = internal_coordinate(carthesian_values)
             values.append(value)
             jacobian.append(Numeric.ravel(derivates))
             
@@ -40,8 +40,8 @@ class JacobianAnalysis(object):
 
 
 class GradientAnalysis(JacobianAnalysis):
-    def __init__(self, internal_coordinates, molecule, job):
-        JacobianAnalysis.__init__(self, internal_coordinates, molecule)
+    def __init__(self, internal_coordinates, carthesian_values, job):
+        JacobianAnalysis.__init__(self, internal_coordinates, carthesian_values)
         self.job = job
         self.energy = job.energy
         self.energy_error = job.energy_accuracy
@@ -65,8 +65,8 @@ class GradientAnalysis(JacobianAnalysis):
 
 
 class HessianAnalysis(JacobianAnalysis):
-    def __init__(self, internal_coordinates, molecule, job):
-        JacobianAnalysis.__init__(self, internal_coordinates, molecule)
+    def __init__(self, internal_coordinates, carthesian_values, job):
+        JacobianAnalysis.__init__(self, internal_coordinates, carthesian_values)
         self.job = job
         self.hessian = job.hessian
         
