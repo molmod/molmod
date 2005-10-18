@@ -72,7 +72,7 @@ class InternalCoordinate(object):
     def __init__(self, **keyvals):
         self.__dict__.update(keyvals)
         
-    def symbol(self):
+    def description(self):
         temp = str(self.__class__)
         return temp[temp.rfind(".")+1:-2].lower()
         
@@ -96,7 +96,7 @@ class Select(InternalCoordinate):
         return coordinates[self.index], gradient
         
     def label(self):
-        return "%s(%i)" % (self.symbol(), self.index)
+        return "%s(%i)" % (self.description(), self.index)
 
 
 class Binary(InternalCoordinate):
@@ -112,7 +112,7 @@ class Binary(InternalCoordinate):
         self.iic2 = iic2
         
     def label(self):
-        return "%s(%s,%s)" % (self.symbol(), self.iic1.label(), self.iic2.label())
+        return "%s(%s,%s)" % (self.description(), self.iic1.label(), self.iic2.label())
 
 class Add(Binary):
     def __call__(self, coordinates):
@@ -195,7 +195,7 @@ class Unary(InternalCoordinate):
         self.iic = iic
         
     def label(self):
-        return "%s(%s)" % (self.symbol(), self.iic.label())
+        return "%s(%s)" % (self.description(), self.iic.label())
 
 
 class Distance(Unary):
@@ -348,7 +348,8 @@ class Collection(object):
                 Distance, 
                 e, 
                 name="long range distance %i-%i" % id,
-                id=id
+                id=id,
+                symbol="D%i.%i" % id
             )
             return d
 
@@ -373,7 +374,8 @@ class Collection(object):
                 Distance, 
                 e, 
                 name="bond length %i-%i" % id,
-                id=id
+                id=id,
+                symbol="D%i-%i" % id
             )
             self.add_internal_coordinate(tag, d)
             
@@ -397,7 +399,8 @@ class Collection(object):
                 d1,
                 d2, 
                 name="bend cos %i-%i-%i" % id,
-                id=id
+                id=id,
+                symbol="C%i-%i-%i" % id
             )
             self.add_internal_coordinate(tag, c)
         
@@ -416,7 +419,8 @@ class Collection(object):
                 Distance, 
                 e, 
                 name="bend span %i-%i-%i" % id,
-                id=id
+                id=id,
+                symbol="D%i^%i" % (id[0], id[2])
             )
             self.add_internal_coordinate(tag, d)
 
@@ -457,7 +461,8 @@ class Collection(object):
                 t, 
                 n,
                 name="dihedral cos %i-%i-%i-%i" % id,
-                id=id
+                id=id,
+                symbol="C%i-%i-%i-%i" % id
             )
             self.add_internal_coordinate(tag, dihedral_cos)
 
@@ -476,7 +481,8 @@ class Collection(object):
                 Distance, 
                 e, 
                 name="dihedral span %i-%i-%i-%i" % id,
-                id=id
+                id=id,
+                symbol="D%i~%i" % (id[0], id[3])
             )
             self.add_internal_coordinate(tag, d)
 
@@ -515,7 +521,8 @@ class Collection(object):
                 t,
                 n,
                 name="out of plane cos %i-%i (%i,%i)" % id,
-                id=id
+                id=id,
+                symbol="C%i-%i(%i,%i)" % id
             )
             self.add_internal_coordinate(tag, out_of_plane_cos) 
 
@@ -535,6 +542,7 @@ class Collection(object):
                 Mul,
                 ic1,
                 ic2,
-                name="%s x %s" % (ic1.name, ic2.name)
+                name="%s x %s" % (ic1.name, ic2.name),
+                symbol="%s*%s" % (ic1.symbol, ic2.symbol)
             )
             self.add_internal_coordinate(tag, product)
