@@ -48,7 +48,7 @@ class GradientAnalysis(JacobianAnalysis):
 
         self.V, self.S, self.Wt = LinearAlgebra.singular_value_decomposition(self.jacobian, True)
         self.W = Numeric.transpose(self.Wt)
-        self.rank = sum(self.S>(max(self.S)*1e-7))
+        self.rank = sum(abs(self.S)>(max(abs(self.S))*1e-7))
         self.S = self.S[:self.rank]
         self.V = self.V[:,:self.rank]
         
