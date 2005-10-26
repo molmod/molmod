@@ -19,7 +19,7 @@
 # 
 # --
 
-from pychem.internal_coordinates import Collection
+from pychem.internal_coordinates import InternalCoordinatesCache
 from pychem.molecular_graphs import BondSets, BendSets, DihedralSets, OutOfPlaneSets, CriteriaSet
 from pychem.molecules import molecule_from_xyz_filename
 from pychem.moldata import BOND_SINGLE
@@ -33,7 +33,7 @@ __all__ = ["InternalCoordinatesTPA", "Chainrule"]
 class InternalCoordinatesTPA(unittest.TestCase):        
     def setUp(self):
         self.molecule = molecule_from_xyz_filename("input/tpa_optimized.xyz")
-        self.collection = Collection(self.molecule)
+        self.ic_cache = InternalCoordinatesCache(self.molecule)
         
         
     def verify(self, expected_results, internal_coordinates, yield_alternatives):
@@ -67,7 +67,7 @@ class InternalCoordinatesTPA(unittest.TestCase):
         bond_sets = BondSets([
             CriteriaSet("All bonds", (None, None)),
         ])
-        self.collection.add_bond_lengths(bond_sets)
+        self.ic_cache.add_bond_lengths(bond_sets)
         expected_results = self.load_expected_results(
             "input/tpa_stretch.csv", 
             from_angstrom
@@ -80,7 +80,7 @@ class InternalCoordinatesTPA(unittest.TestCase):
                 
         self.verify(
             expected_results, 
-            self.collection["All bonds"], 
+            self.ic_cache["All bonds"], 
             yield_alternatives
         )
 
@@ -88,7 +88,7 @@ class InternalCoordinatesTPA(unittest.TestCase):
         bend_sets = BendSets([
             CriteriaSet("All bends", (None, None))
         ])
-        self.collection.add_bend_cosines(bend_sets)
+        self.ic_cache.add_bend_cosines(bend_sets)
         expected_results = self.load_expected_results(
             "input/tpa_bend.csv", 
             lambda x: math.cos(math.pi*x/180.0)
@@ -101,7 +101,7 @@ class InternalCoordinatesTPA(unittest.TestCase):
                 
         self.verify(
             expected_results, 
-            self.collection["All bends"], 
+            self.ic_cache["All bends"], 
             yield_alternatives
         )
 
@@ -109,7 +109,7 @@ class InternalCoordinatesTPA(unittest.TestCase):
         dihedral_sets = DihedralSets([
             CriteriaSet("All dihedrals", (None, None)),
         ])
-        self.collection.add_dihedral_cosines(dihedral_sets)
+        self.ic_cache.add_dihedral_cosines(dihedral_sets)
         expected_results = self.load_expected_results(
             "input/tpa_tors.csv", 
             lambda x: math.cos(math.pi*x/180.0)
@@ -121,7 +121,7 @@ class InternalCoordinatesTPA(unittest.TestCase):
                 
         self.verify(
             expected_results, 
-            self.collection["All dihedrals"], 
+            self.ic_cache["All dihedrals"], 
             yield_alternatives
         )     
             
@@ -131,7 +131,7 @@ class Chainrule(unittest.TestCase):
     def setUp(self):
         self.ethene = molecule_from_xyz_filename("input/ethene.xyz")
         # Define the two (buggy) internal coordinates.
-        self.collection = Collection(self.ethene)
+        self.ic_cache = InternalCoordinatesCache(self.ethene)
     
     def pair_test(self, internal_coordinate, ethene1, ethene2, expected_cos1, expected_cos2):
         test_cos1, gradient1 = internal_coordinate(ethene1.coordinates)
@@ -149,8 +149,8 @@ class Chainrule(unittest.TestCase):
             self.errors.append("Chain rule problem: delta_cos_estimate (%s) and delta_cos_test (%s) differ: %s" % (delta_cos_estimate, (test_cos2 - test_cos1), delta_cos_estimate - (test_cos2 - test_cos1)))
 
     def test_dihedral(self):
-        self.collection.add_dihedral_cosines(DihedralSets([CriteriaSet("HCCH", ((1, 6, 6, 1), None))]))
-        dihedral_cos = self.collection["HCCH"][0]
+        self.ic_cache.add_dihedral_cosines(DihedralSets([CriteriaSet("HCCH", ((1, 6, 6, 1), None))]))
+        dihedral_cos = self.ic_cache["HCCH"][0]
 
         self.errors = []
         
@@ -174,8 +174,8 @@ class Chainrule(unittest.TestCase):
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))
     
     def test_out_of_plane(self):
-        self.collection.add_out_of_plane_cosines(OutOfPlaneSets([CriteriaSet("CC(HCl)", ((6, 6, 1, 17), None))]))
-        out_of_plane_cos = self.collection["CC(HCl)"][0]
+        self.ic_cache.add_out_of_plane_cosines(OutOfPlaneSets([CriteriaSet("CC(HCl)", ((6, 6, 1, 17), None))]))
+        out_of_plane_cos = self.ic_cache["CC(HCl)"][0]
 
         self.errors = []
         

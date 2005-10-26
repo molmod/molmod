@@ -257,24 +257,19 @@ class ArcCos(Unary):
 # Tools for dealing with large sets of internal coordinates
 
 
-class Collection(object):
+class InternalCoordinatesCache(object):
     """
-    Collection has a twofold goal: (i) Ease the mass creation of internal 
-    coordinates and (ii) make sure an internal coordinate is only created once.
+    InternalCoordinatesCache has a twofold goal: (i) Ease the mass creation of 
+    internal coordinates and (ii) make sure an internal coordinate is only
+    created once.
     """
     def __init__(self, molecule):
         self.internal_coordinates = {}
         self.molecular_graph = MolecularGraph(molecule)
         self.user_coordinates = {}
         
-    def __len__(self):
-        return len(self.user_coordinates)
-        
     def __getitem__(self, key):
         return self.user_coordinates[key]
-        
-    def __iter__(self):
-        return iter(self.user_coordinates)
         
     def add(self, InternalCoordinateClass, *parameters, **keyvals):
         """
