@@ -23,61 +23,37 @@
 
 import Numeric, LinearAlgebra, math
 
-class JacobianAnalysis(object):
-    def __init__(self, internal_coordinates, carthesian_values):
-        self.internal_coordinates = internal_coordinates
-        self.carthesian_values = carthesian_values
-        
-        jacobian = []
-        values = []
-        for internal_coordinate in self.internal_coordinates:
-            value, derivates = internal_coordinate(carthesian_values)
-            values.append(value)
-            jacobian.append(Numeric.ravel(derivates))
-            
-        self.values = Numeric.array(values)
-        self.jacobian = Numeric.transpose(Numeric.array(jacobian))
-
-
-class GradientAnalysis(JacobianAnalysis):
-    def __init__(self, internal_coordinates, carthesian_values, job):
-        JacobianAnalysis.__init__(self, internal_coordinates, carthesian_values)
-        self.job = job
-        self.energy = job.energy
-        self.energy_error = job.energy_accuracy
-
-        self.V, self.S, self.Wt = LinearAlgebra.singular_value_decomposition(self.jacobian, True)
-        self.W = Numeric.transpose(self.Wt)
-        self.rank = sum(abs(self.S)>(max(abs(self.S))*1e-7))
-        self.S = self.S[:self.rank]
-        self.V = self.V[:,:self.rank]
-        
-        particular_transform = Numeric.dot(self.W[:,:self.rank], Numeric.transpose(self.V/self.S))
-        
-        self.gradient = Numeric.ravel(job.gradient)
-        self.particular = Numeric.dot(particular_transform, self.gradient)
-        self.gradient_error = Numeric.ones(self.gradient.shape, Numeric.Float)*job.gradient_accuracy
-        self.particular_error = Numeric.sqrt(Numeric.dot(particular_transform**2, self.gradient_error**2))
-
-        if self.W.shape[1] > self.rank:
-            self.nullspace = self.W[:,self.rank:]
-
-
-
-class HessianAnalysis(JacobianAnalysis):
-    def __init__(self, internal_coordinates, carthesian_values, job):
-        JacobianAnalysis.__init__(self, internal_coordinates, carthesian_values)
-        self.job = job
-        self.hessian = job.hessian
-        
-        self.normalized_jacobian = self.jacobian.copy()
-        for col in Numeric.transpose(self.normalized_jacobian):
-            col[:] /= math.sqrt(Numeric.dot(col, col))
-        self.overlap = Numeric.dot(Numeric.transpose(self.normalized_jacobian), self.normalized_jacobian)
-
-        self.diag = []
-        for col in Numeric.transpose(self.normalized_jacobian):
-            temp = Numeric.dot(self.hessian, col)
-            norm_transf = math.sqrt(Numeric.dot(temp, temp))
-            self.diag.append(Numeric.dot(col, temp)/norm_transf)
+def jacobian_analysis(configuration, internal_coordinates):
+    configuration.internal_coordinates = internal_coordinates
     
+    jacobian = []
+    values = []
+    for internal_coordinate in internal_coordinates:
+        value, tangent = internal_coordinate(configuration.carthesian_values)
+        values.append(value)
+        jacobian.append(Numeric.ravel(tangent))
+        
+    configuration.internal_values = Numeric.array(values)
+    configuration.jacobian = Numeric.transpose(Numeric.array(jacobian))
+
+
+def energy_analysis(configuration, internal_coordinates):
+    jacobian_analysis(configuration, internal_coordinates)
+    configuration.energy_error = configuration.energy_accuracy
+
+    V, S, Wt = LinearAlgebra.singular_value_decomposition(configuration.jacobian, True)
+    W = Numeric.transpose(Wt)
+    rank = sum(abs(S)>(max(abs(S))*1e-7))
+    configuration.rank = rank
+    S = S[:rank]
+    V = V[:,:rank]
+    
+    particular_transform = Numeric.dot(W[:,:rank], Numeric.transpose(V/S))
+    
+    configuration.gradient = Numeric.ravel(configuration.gradient)
+    configuration.particular = Numeric.dot(particular_transform, configuration.gradient)
+    configuration.gradient_error = Numeric.ones(configuration.gradient.shape, Numeric.Float)*configuration.gradient_accuracy
+    configuration.particular_error = Numeric.sqrt(Numeric.dot(particular_transform**2, configuration.gradient_error**2))
+
+    if W.shape[1] > rank:
+        configuration.nullspace = W[:,rank:]
