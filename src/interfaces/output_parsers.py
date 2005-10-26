@@ -24,8 +24,11 @@ from os.path import isfile
 
 class OutputParser(object):
     def __init__(self, file_parsers=[]):
-        self.file_parsers = {}
+        self.clear()
         self.add_parsers(file_parsers)
+        
+    def clear(self):
+        self.file_parsers = {}
         
     def add_parsers(self, file_parsers):
         for file_parser in file_parsers:

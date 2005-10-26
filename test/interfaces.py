@@ -24,7 +24,7 @@ from pychem.interfaces.mpqc.simple import SimpleMpqcJobSinglePoint, SimpleMpqcJo
 from pychem.interfaces.mpqc.oo import OOMpqcJob
 from pychem.interfaces.mpqc.kvo import create_single_point_kv, create_optimize_kv
 from pychem.interfaces.mpqc.keyval import KeyValObject
-from pychem.interfaces.mpqc.file_parsers import MolecularEnergiesParser, EnergyAccuracyParser, OutputMoleculesParser, GradientsParser, GradientAccuracyParser, HessianParser, OptimizationConvergedParser
+from pychem.interfaces.mpqc.file_parsers import MolecularEnergiesParser, EnergyAccuracyParser, OutputMoleculesParser, GradientsParser, GradientAccuracyParser, HessianParser, OptimizationConvergedParser, WarningParser
 from pychem.interfaces.output_parsers import OutputParser
 from pychem.molecules import molecule_from_xyz_filename
 
@@ -104,6 +104,15 @@ class SimpleMpqcInterface(unittest.TestCase):
         job.run()
         validate()
 
+
+class Converging(object):
+    def __init__(self, optimization_converged_parser):
+        self.optimization_converged_parser = optimization_converged_parser
+        
+    def __call__(self):
+        return not self.optimization_converged_parser.converged
+
+
 class OOMpqcInterface(unittest.TestCase):
     def test_single_point(self):
         def validate():
@@ -138,9 +147,10 @@ class OOMpqcInterface(unittest.TestCase):
             keyval=keyval,
             output_parser=OutputParser([
                 MolecularEnergiesParser(),
+                EnergyAccuracyParser(),
                 GradientsParser(),
                 GradientAccuracyParser(),
-                EnergyAccuracyParser()
+                WarningParser()
             ])
         )
         job.run(cleanup=True)
@@ -181,23 +191,28 @@ class OOMpqcInterface(unittest.TestCase):
         keyval['mpqc']['freq'] = KeyValObject('MolecularFrequencies', named_items=[
             ('molecule', keyval['molecule'])
         ])
+        ocp = OptimizationConvergedParser()
         job = OOMpqcJob(
             prefix="output/water_oo_opt",
             title="Water single point berekening", 
             keyval=keyval,
             output_parser=OutputParser([
                 MolecularEnergiesParser(),
+                EnergyAccuracyParser(),
+                GradientsParser(condition=Converging(ocp)),
+                GradientAccuracyParser(),
                 OutputMoleculesParser(),
-                OptimizationConvergedParser(),
-                HessianParser()
+                HessianParser(),
+                ocp,
+                WarningParser()
             ])
         )
-        job.run(cleanup=True)
-        validate()
-        if not job.optimization_converged:
+        #job.run(cleanup=True)
+        #validate()
+        #if not job.optimization_converged:
             # MPQC has a problem when a converged optimization is restarted
-            job.run(forcerun=True)
-            validate()
+        #    job.run(forcerun=True)
+        #    validate()
         job.run()
         validate()
         

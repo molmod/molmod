@@ -30,7 +30,7 @@ class ScfEnergiesParser(FileParser):
 
     def __init__(self, label='scf_energies', condition=None):
         FileParser.__init__(self, label, condition)
-        self.re = re.compile(r"total scf energy =\s(?P<energy>\S+)")
+        self.re = re.compile(r"total scf energy\s+=\s+(?P<energy>\S+)")
         
     def reset(self):
         self.energies = []
@@ -68,7 +68,7 @@ class EnergyAccuracyParser(FileParser):
 
     def __init__(self, label='energy_accuracy', condition=None):
         FileParser.__init__(self, label, condition)
-        self.re = re.compile(r"energy accuracy = (?P<energy_accuracy>\S+)")
+        self.re = re.compile(r"value_accuracy\s+=\s+(?P<energy_accuracy>\S+)")
         
     def reset(self):
         self.energy_accuracy = None
@@ -190,10 +190,10 @@ class GradientsParser(MultiLineParser):
     extension="out"
 
     def __init__(self, label='gradients', condition=None):
-        activator = re.compile(r"Gradient of the MolecularEnergy:")
+        activator = re.compile(r"Total Gradient")
         deactivator = re.compile(r"^$")
         MultiLineParser.__init__(self, label, activator, deactivator, condition)
-        self.re = re.compile(r"\d+\s+(?P<gradient>\S+)")
+        self.re = re.compile(r"\d+\s+\S+\s+(?P<gradient_x>\S+)\s+(?P<gradient_y>\S+)\s+(?P<gradient_z>\S+)")
         
     def reset(self):
         MultiLineParser.reset(self)
@@ -204,11 +204,15 @@ class GradientsParser(MultiLineParser):
 
     def collect(self, line):
         match = self.re.search(line)
-        self.current_gradient.append(float(match.group("gradient")))
+        if match != None:
+            self.current_gradient.append([
+                float(match.group("gradient_x")),
+                float(match.group("gradient_y")),
+                float(match.group("gradient_z"))
+            ])
         
     def stop_collecting(self):
         gradient = Numeric.array(self.current_gradient, Numeric.Float)
-        gradient.shape = (-1,3)
         self.gradients.append(gradient)
         del self.current_gradient
 
@@ -221,7 +225,7 @@ class GradientAccuracyParser(FileParser):
 
     def __init__(self, label='gradient_accuracy', condition=None):
         FileParser.__init__(self, label, condition)
-        self.re = re.compile(r"gradient accuracy = (?P<gradient_accuracy>\S+)")
+        self.re = re.compile(r"gradient_accuracy\s+=\s+(?P<gradient_accuracy>\S+)")
         
     def reset(self):
         self.gradient_accuracy = None
