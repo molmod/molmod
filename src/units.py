@@ -50,6 +50,7 @@ ATOMARY = measure_counter()
 LENGTH = measure_counter()
 ANGSTROM = unit_counter()
 NANOMETER = unit_counter()
+METER = unit_counter()
 
 ENERGY = measure_counter()
 JOULE = unit_counter()
@@ -69,6 +70,10 @@ ANGLE = measure_counter()
 RADIALS = unit_counter()
 DEGREES = unit_counter()
 
+TIME = measure_counter()
+SECONDS = unit_counter()
+
+
 suffices = {
     ATOMARY: "a.u.",
     ANGSTROM: "A",
@@ -83,7 +88,8 @@ suffices = {
     KG: "kg", 
     COULOMB: "C",
     RADIALS: "rad",
-    DEGREES: "°"
+    DEGREES: "°",
+    SECONDS: "s"
 }
 
 tex_suffices = {
@@ -100,7 +106,8 @@ tex_suffices = {
     KG: r"kg", 
     COULOMB: r"C",
     RADIALS: r"rad",
-    DEGREES: r"^{\circ}"
+    DEGREES: r"^{\circ}",
+    SECONDS: r"s"
 }
 
 measures = {
@@ -108,7 +115,8 @@ measures = {
     ENERGY: [ATOMARY, JOULE, CALORIE, KJMOL, KCALMOL, EV],
     MASS: [ATOMARY, UNIFIED, KG],
     CHARGE: [ATOMARY, COULOMB],
-    ANGLE: [RADIALS, DEGREES]
+    ANGLE: [RADIALS, DEGREES],
+    TIME: [SECONDS]
 }
 
 measure_names = {
@@ -116,7 +124,8 @@ measure_names = {
     ENERGY: "Energy",
     MASS: "Mass",
     CHARGE: "Charge",
-    ANGLE: "Angle"
+    ANGLE: "Angle",
+    TIME: "Time"
 }
 
 
@@ -186,6 +195,14 @@ degrees = 0.017453292519943295
 def to_degrees(x): return x * 57.295779513082323
 
 def from_degrees(x): return x * 0.017453292519943295
+
+# Time
+
+second = 41341373336561368.0
+
+def to_seconds(x): return x * 2.418884326505e-17
+
+def from_seconds(x): return x * 41341373336561368.0
 
 # In a dictionary
 
