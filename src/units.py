@@ -73,6 +73,7 @@ suffices = {
     ATOMARY: "a.u.",
     ANGSTROM: "A",
     NANOMETER: "nm",
+    METER: "m",
     JOULE: "J",
     CALORIE: "cal",
     KJMOL: "kJ/mol",
@@ -89,6 +90,7 @@ tex_suffices = {
     ATOMARY: r"a.u.",
     ANGSTROM: r"\AA",
     NANOMETER: r"nm",
+    METER: r"m",
     JOULE: r"J",
     CALORIE: r"cal",
     KJMOL: r"\frac{kJ}{mol}",
@@ -102,7 +104,7 @@ tex_suffices = {
 }
 
 measures = {
-    LENGTH: [ATOMARY, ANGSTROM, NANOMETER],
+    LENGTH: [ATOMARY, ANGSTROM, NANOMETER, METER],
     ENERGY: [ATOMARY, JOULE, CALORIE, KJMOL, KCALMOL, EV],
     MASS: [ATOMARY, UNIFIED, KG],
     CHARGE: [ATOMARY, COULOMB],
@@ -126,12 +128,15 @@ avogadro = 6.0221415e23
 
 angstrom = 1.8897261249
 nanometer = 18.897261249
+meter = 1.8897261249e10
 
 def to_angstrom(x): return x * 0.5291772108
 def to_nanometer(x): return x * 0.05291772108
+def to_meter(x): return x * 0.5291772108e-10
 
 def from_angstrom(x): return x * 1.8897261249
 def from_nanometer(x): return x * 18.897261249
+def from_meter(x): return x * 1.8897261249e10
 
 
 # Energy
@@ -190,6 +195,7 @@ unit = {
     ATOMARY: 1,
     ANGSTROM: angstrom,
     NANOMETER: nanometer,
+    METER: meter,
     JOULE: joule,
     CALORIE: calorie,
     KJMOL: kjmol,
@@ -205,6 +211,7 @@ to_unit = {
     ATOMARY: unity,
     ANGSTROM: to_angstrom,
     NANOMETER: to_nanometer,
+    METER: to_meter,
     JOULE: to_joule,
     CALORIE: to_calorie,
     KJMOL: to_kjmol,
@@ -220,6 +227,7 @@ from_unit = {
     ATOMARY: unity,
     ANGSTROM: from_angstrom,
     NANOMETER: from_nanometer,
+    METER: from_meter,
     JOULE: from_joule,
     CALORIE: from_calorie,
     KJMOL: from_kjmol,
