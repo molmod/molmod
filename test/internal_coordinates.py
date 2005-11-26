@@ -25,7 +25,7 @@ from pychem.molecules import molecule_from_xyz_filename
 from pychem.moldata import BOND_SINGLE
 from pychem.units import from_angstrom
 
-import unittest, math, copy, Numeric
+import unittest, math, copy, Numeric, RandomArray
 
 __all__ = ["InternalCoordinatesTPA", "Chainrule"]
 
@@ -151,9 +151,10 @@ class Chainrule(unittest.TestCase):
             Numeric.ravel(Numeric.dot(coordinates, z_rotation))
         ], Numeric.Float)
     
-    def check_sanity(self, coordinates, tangent):
+    def check_sanity(self, coordinates, tangent, internal_coordinate):
         external_basis = Numeric.transpose(self.create_external_basis(coordinates))
-        self.assert_(sum(Numeric.dot(Numeric.ravel(tangent), external_basis)**2) < 1e-10, "Chain rule problem: failed on sanity_check")
+        self.assert_(sum(Numeric.dot(Numeric.ravel(tangent), external_basis)**2) < 1e-10, "Chain rule problem: failed on sanity_check for internal coordinates %s" % internal_coordinate.tag)
+        #print internal_coordinate.tag, sum(Numeric.dot(Numeric.ravel(tangent), external_basis)**2)
             
     def pair_test(self, internal_coordinate, ethene1, ethene2, expected_cos1, expected_cos2):
         test_cos1, tangent1 = internal_coordinate(ethene1.coordinates)
@@ -175,8 +176,8 @@ class Chainrule(unittest.TestCase):
             self.errors.append("Chain rule problem: delta_cos_estimate (%s) and delta_cos_test (%s) differ: %s" % (delta_cos_estimate, (test_cos2 - test_cos1), delta_cos_estimate - (test_cos2 - test_cos1)))
 
         # sanity check on tangents
-        self.check_sanity(ethene1.coordinates, tangent1)
-        self.check_sanity(ethene2.coordinates, tangent2)
+        self.check_sanity(ethene1.coordinates, tangent1, internal_coordinate)
+        self.check_sanity(ethene2.coordinates, tangent2, internal_coordinate)
 
     def test_dihedral(self):
         self.ic_cache.add_dihedral_cosines(DihedralSets([CriteriaSet("HCCH", ((1, 6, 6, 1), None))]))
@@ -227,3 +228,22 @@ class Chainrule(unittest.TestCase):
         
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))            
 
+    def sanity_test(self, internal_coordinate, mod_ethene):
+        foo, tangent = internal_coordinate(mod_ethene.coordinates)
+        self.check_sanity(mod_ethene.coordinates, tangent, internal_coordinate)
+
+    def test_random_geometries(self):
+        self.ic_cache.add_out_of_plane_cosines(OutOfPlaneSets([CriteriaSet("CC(HCl)", ((6, 6, 1, 17), None))]))
+        self.ic_cache.add_dihedral_cosines(DihedralSets([CriteriaSet("HCCH", ((1, 6, 6, 1), None))]))
+        out_of_plane_cos = self.ic_cache["CC(HCl)"][0]
+        dihedral_cos = self.ic_cache["HCCH"][0]
+
+        def mutate_ethene():
+            result = copy.deepcopy(self.ethene)
+            result.coordinates += RandomArray.uniform(-3, 3, result.coordinates.shape)
+            return result
+        
+        for index in xrange(100):
+            mod_ethene = mutate_ethene()
+            self.sanity_test(out_of_plane_cos, mod_ethene)
+            self.sanity_test(dihedral_cos, mod_ethene)            
