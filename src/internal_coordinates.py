@@ -146,7 +146,7 @@ class Div(Binary):
     def __call__(self, coordinates):
         v1, gv1 = self.iic1(coordinates)
         v2, gv2 = self.iic2(coordinates)
-        return v1/v2, (v2*gv1+v1*gv2)/(v2*v2)
+        return v1/v2, (v2*gv1-v1*gv2)/(v2*v2)
 
 
 class Dot(Binary):
