@@ -151,13 +151,13 @@ class Chainrule(unittest.TestCase):
             Numeric.ravel(Numeric.dot(coordinates, z_rotation))
         ], Numeric.Float)
     
-    def check_sanity(self, coordinates, gradient):
+    def check_sanity(self, coordinates, tangent):
         external_basis = Numeric.transpose(self.create_external_basis(coordinates))
-        self.assert_(sum(Numeric.dot(Numeric.ravel(gradient), external_basis)**2) < 1e-10, "Chain rule problem: failed on sanity_check")
+        self.assert_(sum(Numeric.dot(Numeric.ravel(tangent), external_basis)**2) < 1e-10, "Chain rule problem: failed on sanity_check")
             
     def pair_test(self, internal_coordinate, ethene1, ethene2, expected_cos1, expected_cos2):
-        test_cos1, gradient1 = internal_coordinate(ethene1.coordinates)
-        test_cos2, gradient2 = internal_coordinate(ethene2.coordinates)
+        test_cos1, tangent1 = internal_coordinate(ethene1.coordinates)
+        test_cos2, tangent2 = internal_coordinate(ethene2.coordinates)
         
         # validate values
         if abs(test_cos1 - expected_cos1) > 1e-5:
@@ -165,18 +165,18 @@ class Chainrule(unittest.TestCase):
         if abs(test_cos2 - expected_cos2) > 1e-5:
             self.errors.append("Ethene2 problem: test cosine (%s) and expected cosine (%s) differ: %s" % (test_cos2, expected_cos2, test_cos2 - expected_cos2))
 
-        # validate gradients
+        # validate tangents
         delta = ethene2.coordinates - ethene1.coordinates
-        gradient = 0.5*(gradient1+gradient2)
-        delta_cos_estimate = Numeric.dot(Numeric.ravel(gradient), Numeric.ravel(delta))
+        tangent = 0.5*(tangent1+tangent2)
+        delta_cos_estimate = Numeric.dot(Numeric.ravel(tangent), Numeric.ravel(delta))
         if abs(delta_cos_estimate - (expected_cos2 - expected_cos1)) > 1e-4:
             self.errors.append("Chain rule problem: delta_cos_estimate (%s) and delta_cos_expected (%s) differ: %s" % (delta_cos_estimate, (expected_cos2 - expected_cos1), delta_cos_estimate - (expected_cos2 - expected_cos1)))
         if abs(delta_cos_estimate - (test_cos2 - test_cos1)) > 1e-4:
             self.errors.append("Chain rule problem: delta_cos_estimate (%s) and delta_cos_test (%s) differ: %s" % (delta_cos_estimate, (test_cos2 - test_cos1), delta_cos_estimate - (test_cos2 - test_cos1)))
 
-        # sanity check on gradients
-        self.check_sanity(ethene1.coordinates, gradient1)
-        self.check_sanity(ethene2.coordinates, gradient2)
+        # sanity check on tangents
+        self.check_sanity(ethene1.coordinates, tangent1)
+        self.check_sanity(ethene2.coordinates, tangent2)
 
     def test_dihedral(self):
         self.ic_cache.add_dihedral_cosines(DihedralSets([CriteriaSet("HCCH", ((1, 6, 6, 1), None))]))
