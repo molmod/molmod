@@ -19,7 +19,7 @@
 # 
 # --
 
-from pychem.internal_coordinates import InternalCoordinatesCache
+from pychem.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, DistanceSqr, Sqrt, Div, Sqr
 from pychem.molecular_graphs import BondSets, BendSets, DihedralSets, OutOfPlaneSets, CriteriaSet
 from pychem.molecules import molecule_from_xyz_filename
 from pychem.moldata import BOND_SINGLE
@@ -232,11 +232,62 @@ class Chainrule(unittest.TestCase):
         foo, tangent = internal_coordinate(mod_ethene.coordinates)
         self.check_sanity(mod_ethene.coordinates, tangent, internal_coordinate)
 
-    def test_random_geometries(self):
+    def load_internal_coordinates(self):
         self.ic_cache.add_out_of_plane_cosines(OutOfPlaneSets([CriteriaSet("CC(HCl)", ((6, 6, 1, 17), None))]))
         self.ic_cache.add_dihedral_cosines(DihedralSets([CriteriaSet("HCCH", ((1, 6, 6, 1), None))]))
-        out_of_plane_cos = self.ic_cache["CC(HCl)"][0]
-        dihedral_cos = self.ic_cache["HCCH"][0]
+        self.ic_cache.add_bond_lengths(BondSets([CriteriaSet("All bonds", (None, None))]))
+        
+        result = []
+        # a) test wether the source is ok
+        result.append(self.ic_cache["All bonds"][0])
+        d1, d2 = self.ic_cache["All bonds"][0:2]
+        s0 = self.ic_cache.add(Select, 0)
+        s1 = self.ic_cache.add(Select, 1)
+        s2 = self.ic_cache.add(Select, 2)
+        e1 = self.ic_cache.add(Delta, s1, s0)
+        e2 = self.ic_cache.add(Delta, s1, s2)        
+        # b) part tests
+        # b.1) unary, protocal A
+        ic = self.ic_cache.add(Sqrt, d1)
+        self.ic_cache.add_internal_coordinate("sqrt d1", ic)
+        result.append(ic)
+        ic = self.ic_cache.add(Sqr, d1)
+        self.ic_cache.add_internal_coordinate("sqr d1", ic)
+        result.append(ic)
+        # b.2) binary, protocal A
+        ic = self.ic_cache.add(Mul, d1, d2)
+        self.ic_cache.add_internal_coordinate("mul d1 d2", ic)
+        result.append(ic)
+        ic = self.ic_cache.add(Sub, d1, d2)
+        self.ic_cache.add_internal_coordinate("sub d1 d2", ic)
+        result.append(ic)
+        ic = self.ic_cache.add(Div, d1, d2)
+        self.ic_cache.add_internal_coordinate("div d1 d2", ic)
+        result.append(ic)
+        # b.3) unary, protocal B
+        ic = self.ic_cache.add(DistanceSqr, e1)
+        self.ic_cache.add_internal_coordinate("distance sqr e1", ic)
+        result.append(ic)
+        # b.4) binary, protocal B
+        temp_ic = self.ic_cache.add(Sub, e1, e2)
+        ic = self.ic_cache.add(DistanceSqr, temp_ic)
+        self.ic_cache.add_internal_coordinate("distance sqr sub e1 e2", ic)
+        result.append(ic)
+        ic = self.ic_cache.add(Dot, e1, e2)
+        self.ic_cache.add_internal_coordinate("dot e1 e2", ic)
+        result.append(ic)
+        # b.5) exotics
+        temp_ic = self.ic_cache.add(Mul, e1, d1)
+        ic = self.ic_cache.add(DistanceSqr, temp_ic)
+        self.ic_cache.add_internal_coordinate("distance sqr scale e1 d1", ic)
+        result.append(ic)
+        # c) application tests
+        result.append(self.ic_cache["CC(HCl)"][0])
+        result.append(self.ic_cache["HCCH"][0])
+        return result
+
+    def test_random_geometries(self):
+        internal_coordinates = self.load_internal_coordinates()
 
         def mutate_ethene():
             result = copy.deepcopy(self.ethene)
@@ -245,5 +296,6 @@ class Chainrule(unittest.TestCase):
         
         for index in xrange(100):
             mod_ethene = mutate_ethene()
-            self.sanity_test(out_of_plane_cos, mod_ethene)
-            self.sanity_test(dihedral_cos, mod_ethene)            
+            for internal_coordinate in internal_coordinates:
+                self.sanity_test(internal_coordinate, mod_ethene)
+
