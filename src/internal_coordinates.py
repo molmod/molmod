@@ -32,39 +32,30 @@ __all__ = [
 ]
 
 
-# Classes for calculating the partial derivates of the internal
+# Classes for calculating the partial derivatives of the internal
 # coordinates towards the carthesian coordinates
 
 class InternalCoordinate(object):
     """
-    This is the base class for the internal coordinates. The following
-    attributs are availlable for all internal coordinates. They are all used
-    for plotting purposes:
-        - name: a (latex) description for the internal coordinate
-        - unit: a (latex) description of the unit used for this internal
-        coordinate
-        - conversion: a conversion factor in case you like to convert this
-        variable to another unit
-        - ylim: the range for the partial derivate of the molecular energy
-        towards this internal coordinate (after conversion of ordinate unit)
-        
+    This is the base class for the internal coordinates.
+
     An instance of the InternalCoordinate class acts as a callable. It takes
     only one parameter:
         - coordinates: a set of molecular carthesian coordinates
     and returns a tuple with:
         - values: the values of the internal coordinate
-        - gradient: the partial derivates of the internal coordinates towards
+        - tangent: the partial derivatives of the internal coordinates towards
         the carthesian coordinates. This matrix has the same shape as
         coordinates
         
     For the return values there are two conventions:
         A) The returned value of the internal coordinate is one-dimensional.
-            This is the regular case. the gradient contains the regular
-            partial derivates.       
+            This is the regular case. the tangent contains the regular
+            partial derivatives.       
         B) The returned value of the internal coordinate is three-dimensional.
             The i'th element of the returned internal coordinates is only 
             dependant on the i'th column of the given coordinates and the
-            i'th column of the gradient contains the partial derivates of the
+            i'th column of the tangent contains the partial derivatives of the
             i'th internal coordinate towards the given carthesian coordinates.
     Some Internal coordinate classes can handle both conventions (eg. Delta)
     """
@@ -91,9 +82,9 @@ class Select(InternalCoordinate):
         self.index = index
         
     def __call__(self, coordinates):
-        gradient = Numeric.zeros(coordinates.shape, Numeric.Float)
-        gradient[self.index,:] = 1
-        return coordinates[self.index], gradient
+        tangent = Numeric.zeros(coordinates.shape, Numeric.Float)
+        tangent[self.index,:] = 1
+        return coordinates[self.index], tangent
         
     def label(self):
         return "%s(%i)" % (self.description(), self.index)
@@ -116,47 +107,47 @@ class Binary(InternalCoordinate):
 
 class Add(Binary):
     def __call__(self, coordinates):
-        v1, gv1 = self.iic1(coordinates)
-        v2, gv2 = self.iic2(coordinates)
-        return v1 + v2, gv1 + gv2
+        v1, t1 = self.iic1(coordinates)
+        v2, t2 = self.iic2(coordinates)
+        return v1 + v2, t1 + t2
 
 
 class Sub(Binary):
     def __call__(self, coordinates):
-        v1, gv1 = self.iic1(coordinates)
-        v2, gv2 = self.iic2(coordinates)
-        return v1 - v2, gv1 - gv2
+        v1, t1 = self.iic1(coordinates)
+        v2, t2 = self.iic2(coordinates)
+        return v1 - v2, t1 - t2
 
 
 class Delta(Binary):
     def __call__(self, coordinates):
-        b, gb = self.iic1(coordinates)
-        e, ge = self.iic2(coordinates)
-        return e - b, ge - gb
+        b, tb = self.iic1(coordinates)
+        e, te = self.iic2(coordinates)
+        return e - b, te - tb
 
 
 class Mul(Binary):
     def __call__(self, coordinates):
-        v1, gv1 = self.iic1(coordinates)
-        v2, gv2 = self.iic2(coordinates)
-        return v1*v2, v2*gv1+v1*gv2
+        v1, t1 = self.iic1(coordinates)
+        v2, t2 = self.iic2(coordinates)
+        return v1*v2, v2*t1+v1*t2
         
 
 class Div(Binary):
     def __call__(self, coordinates):
-        v1, gv1 = self.iic1(coordinates)
-        v2, gv2 = self.iic2(coordinates)
-        return v1/v2, (v2*gv1-v1*gv2)/(v2*v2)
+        v1, t1 = self.iic1(coordinates)
+        v2, t2 = self.iic2(coordinates)
+        return v1/v2, (v2*t1-v1*t2)/(v2*v2)
 
 
 class Dot(Binary):
     def __call__(self, coordinates):
-        e1, ge1 = self.iic1(coordinates)
-        e2, ge2 = self.iic2(coordinates)
+        e1, t1 = self.iic1(coordinates)
+        e2, t2 = self.iic2(coordinates)
         dot = Numeric.dot(e1, e2)
         gdot = Numeric.zeros(coordinates.shape, Numeric.Float)
         for i in range(3):
-            gdot[:,i] = e2[i]*ge1[:,i] + e1[i]*ge2[:,i]
+            gdot[:,i] = e2[i]*t1[:,i] + e1[i]*t2[:,i]
         return dot,gdot
 
 
@@ -167,10 +158,10 @@ class Cos(Binary):
         Binary.__init__(self, distance1, distance2, **keyvals)
         
     def __call__(self, coordinates):
-        d1, gd1 = self.iic1(coordinates)
-        d2, gd2 = self.iic2(coordinates)
-        e1, ge1 = self.iic1.iic(coordinates)
-        e2, ge2 = self.iic2.iic(coordinates)
+        d1, td1 = self.iic1(coordinates)
+        d2, td2 = self.iic2(coordinates)
+        e1, te1 = self.iic1.iic(coordinates)
+        e2, te2 = self.iic2.iic(coordinates)
         edot = Numeric.dot(e1, e2)
         dprod = (d1*d2)
         ds1 = d1*d1
@@ -178,7 +169,7 @@ class Cos(Binary):
         cos = edot/dprod
         gcos = Numeric.zeros(coordinates.shape, Numeric.Float)
         for i in range(3):
-            gcos[:,i] = (e2[i] - edot*e1[i]/ds1)*ge1[:,i] + (e1[i] - edot*e2[i]/ds2)*ge2[:,i]
+            gcos[:,i] = (e2[i] - edot*e1[i]/ds1)*te1[:,i] + (e1[i] - edot*e2[i]/ds2)*te2[:,i]
         gcos /= dprod
         return cos,gcos        
 
@@ -206,12 +197,12 @@ class Distance(Unary):
     """
 
     def __call__(self, coordinates):
-        e, ge = self.iic(coordinates)
+        e, te = self.iic(coordinates)
         distance = math.sqrt(Numeric.dot(e, e))
-        gdistance = copy.deepcopy(ge)
+        tdistance = copy.deepcopy(te)
         for i in range(3):
-            gdistance[:,i] *= e[i]/distance
-        return distance, gdistance
+            tdistance[:,i] *= e[i]/distance
+        return distance, tdistance
 
 
 class DistanceSqr(Unary):
@@ -224,34 +215,28 @@ class DistanceSqr(Unary):
     def __call__(self, coordinates):
         e, ge = self.iic(coordinates)
         distancesqr = Numeric.dot(e, e)
-        gdistancesqr = copy.deepcopy(ge)
+        tdistancesqr = copy.deepcopy(ge)
         for i in range(3):
-            gdistancesqr[:,i] *= 2*e[i]
-        return distancesqr, gdistancesqr
+            tdistancesqr[:,i] *= 2*e[i]
+        return distancesqr, tdistancesqr
 
 
 class Sqr(Unary):
     def __call__(self, coordinates):
-        e, ge = self.iic(coordinates)
+        e, te = self.iic(coordinates)
         sqr = e*e
-        gsqr = copy.deepcopy(ge)
-        gsqr *= 2*e
-        return sqr, gsqr
+        tsqr = copy.deepcopy(te)
+        tsqr *= 2*e
+        return sqr, tsqr
 
 
 class Sqrt(Unary):
     def __call__(self, coordinates):
-        e, ge = self.iic(coordinates)
+        e, te = self.iic(coordinates)
         sqrt = math.sqrt(e)
-        gsqrt = copy.deepcopy(ge)
-        gsqrt /= 2*sqrt
-        return sqrt, gsqrt
-
-
-class ArcCos(Unary):
-    def __call__(self, coordinates):
-        cos, gcos = self.iic(self, coordinates)
-        return math.acos(cos), -1 / math.sqrt(1 - x*x)
+        tsqrt = copy.deepcopy(te)
+        tsqrt /= 2*sqrt
+        return sqrt, tsqrt
 
 
 # Tools for dealing with large sets of internal coordinates
