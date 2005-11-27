@@ -19,7 +19,7 @@
 # 
 # --
 
-from pychem.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
+from pychem.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Cos, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
 from pychem.molecular_graphs import BondSets, BendSets, DihedralSets, OutOfPlaneSets, CriteriaSet
 from pychem.molecules import molecule_from_xyz_filename
 from pychem.moldata import BOND_SINGLE
@@ -153,7 +153,8 @@ class Chainrule(unittest.TestCase):
     
     def check_sanity(self, coordinates, tangent, internal_coordinate):
         external_basis = Numeric.transpose(self.create_external_basis(coordinates))
-        self.assert_(sum(Numeric.dot(Numeric.ravel(tangent), external_basis)**2) < 1e-10, "Chain rule problem: failed on sanity_check for internal coordinates %s" % internal_coordinate.tag)
+        components = Numeric.dot(Numeric.ravel(tangent), external_basis)
+        self.assert_(sum(components**2) < 1e-10, "Chain rule problem: failed on sanity_check for '%s' (%s)" % (internal_coordinate.tag, components))
         #print internal_coordinate.tag, sum(Numeric.dot(Numeric.ravel(tangent), external_basis)**2)
             
     def pair_test(self, internal_coordinate, ethene1, ethene2, expected_cos1, expected_cos2):
@@ -272,6 +273,9 @@ class Chainrule(unittest.TestCase):
         ic = self.ic_cache.add(Dot, e1, e2)
         self.ic_cache.add_internal_coordinate("dot e1 e2", ic)
         result.append(ic)
+        ic = self.ic_cache.add(Cos, d1, d2)
+        self.ic_cache.add_internal_coordinate("cos d1 d2", ic)
+        result.append(ic)
         # b.5) exotics
         temp_ic = self.ic_cache.add(Scale, d1, e1)
         ic = self.ic_cache.add(DistanceSqr, temp_ic)
@@ -294,9 +298,9 @@ class Chainrule(unittest.TestCase):
             result.coordinates += RandomArray.uniform(-3, 3, result.coordinates.shape)
             return result
         
-        for index in xrange(100):
-            mod_ethene = mutate_ethene()
-            for internal_coordinate in internal_coordinates:
+        for internal_coordinate in internal_coordinates:
+            for index in xrange(100):
+                mod_ethene = mutate_ethene()
                 self.sanity_test(internal_coordinate, mod_ethene)
 
     def consistent_test(self, internal_coordinate, ethene1, ethene2):
@@ -307,7 +311,7 @@ class Chainrule(unittest.TestCase):
         delta = ethene2.coordinates - ethene1.coordinates
         tangent = 0.5*(tangent1+tangent2)
         delta_value_estimate = Numeric.dot(Numeric.ravel(tangent), Numeric.ravel(delta))
-        if abs(delta_value_estimate - (value2 - value1)) > 1e-5:
+        if abs(delta_value_estimate - (value2 - value1)) > 1e-10:
             self.errors.append(
                 "Chain rule problem: delta_value_estimate (%s) and value2 - value1 (%s) differ: %s" % (
                     delta_value_estimate, 
@@ -326,10 +330,10 @@ class Chainrule(unittest.TestCase):
         
         self.errors = []
         
-        for index in xrange(100):
-            mod1_ethene = mutate_ethene(3, self.ethene)
-            mod2_ethene = mutate_ethene(1e-7, mod1_ethene)
-            for internal_coordinate in internal_coordinates:
+        for internal_coordinate in internal_coordinates:
+            for index in xrange(100):
+                mod1_ethene = mutate_ethene(3, self.ethene)
+                mod2_ethene = mutate_ethene(1e-4, mod1_ethene)
                 self.consistent_test(internal_coordinate, mod1_ethene, mod2_ethene)
 
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))            

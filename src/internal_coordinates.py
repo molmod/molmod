@@ -173,7 +173,7 @@ class Dot(Binary):
         dot = Numeric.dot(e1, e2)
         gdot = Numeric.zeros(coordinates.shape, Numeric.Float)
         for i in range(3):
-            gdot += e2[i]*t1[:,i] + e1[i]*t2[:,i]
+            gdot += e2[i]*t1[:,:,i] + e1[i]*t2[:,:,i]
         return dot,gdot
 
 
@@ -195,7 +195,7 @@ class Cos(Binary):
         cos = edot/dprod
         gcos = Numeric.zeros(coordinates.shape, Numeric.Float)
         for i in range(3):
-            gcos[:,i] = (e2[i] - edot*e1[i]/ds1)*te1[:,i] + (e1[i] - edot*e2[i]/ds2)*te2[:,i]
+            gcos += (e2[i] - edot*e1[i]/ds1)*te1[:,:,i] + (e1[i] - edot*e2[i]/ds2)*te2[:,:,i]
         gcos /= dprod
         return cos,gcos        
 
