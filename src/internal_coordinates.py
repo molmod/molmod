@@ -35,6 +35,10 @@ __all__ = [
 # Classes for calculating the partial derivatives of the internal
 # coordinates towards the carthesian coordinates
 
+SCALAR = 0
+VECTOR = 2
+
+
 class InternalCoordinate(object):
     """
     This is the base class for the internal coordinates.
@@ -60,8 +64,9 @@ class InternalCoordinate(object):
     Some Internal coordinate classes can handle both conventions (eg. Delta)
     """
     
-    def __init__(self, **keyvals):
+    def __init__(self, output_style, **keyvals):
         self.__dict__.update(keyvals)
+        self.output_style = output_style
         
     def description(self):
         temp = str(self.__class__)
@@ -78,12 +83,14 @@ class Select(InternalCoordinate):
     """
 
     def __init__(self, index, **keyvals):
-        InternalCoordinate.__init__(self, **keyvals)
+        InternalCoordinate.__init__(self, VECTOR, **keyvals)
         self.index = index
         
     def __call__(self, coordinates):
-        tangent = Numeric.zeros(coordinates.shape, Numeric.Float)
-        tangent[self.index,:] = 1
+        tangent = Numeric.zeros((len(coordinates), 3, 3), Numeric.Float)
+        tangent[self.index, 0, 0] = 1
+        tangent[self.index, 1, 1] = 1
+        tangent[self.index, 2, 2] = 1
         return coordinates[self.index], tangent
         
     def label(self):
@@ -97,43 +104,57 @@ class Binary(InternalCoordinate):
     internal coordinate".
     """
        
-    def __init__(self, iic1, iic2, **keyvals):
-        InternalCoordinate.__init__(self, **keyvals)
+    def __init__(self, output_style, iic1, iic2, **keyvals):
+        InternalCoordinate.__init__(self, output_style, **keyvals)
         self.iic1 = iic1
         self.iic2 = iic2
         
     def label(self):
         return "%s(%s,%s)" % (self.description(), self.iic1.label(), self.iic2.label())
 
-class Add(Binary):
+
+class HybridBinary(Binary):
+    def __init__(self, iic1, iic2, **keyvals):
+        assert iic1.output_style == iic2.output_style
+        Binary.__init__(self, iic1.output_style, iic1, iic2, **keyvals)
+
+
+class Add(HybridBinary):
     def __call__(self, coordinates):
         v1, t1 = self.iic1(coordinates)
         v2, t2 = self.iic2(coordinates)
         return v1 + v2, t1 + t2
 
 
-class Sub(Binary):
+class Sub(HybridBinary):
     def __call__(self, coordinates):
         v1, t1 = self.iic1(coordinates)
         v2, t2 = self.iic2(coordinates)
         return v1 - v2, t1 - t2
 
 
-class Delta(Binary):
+class Delta(HybridBinary):
     def __call__(self, coordinates):
         b, tb = self.iic1(coordinates)
         e, te = self.iic2(coordinates)
         return e - b, te - tb
 
 
-class Mul(Binary):
+class ScalarBinary(Binary):
+    def __init__(self, iic1, iic2, **keyvals):
+        assert iic1.output_style == SCALAR
+        assert iic2.output_style == SCALAR
+        Binary.__init__(self, SCALAR, iic1, iic2, **keyvals)
+
+
+class Mul(ScalarBinary):
     def __call__(self, coordinates):
         v1, t1 = self.iic1(coordinates)
         v2, t2 = self.iic2(coordinates)
         return v1*v2, v2*t1+v1*t2
         
 
-class Div(Binary):
+class Div(ScalarBinary):
     def __call__(self, coordinates):
         v1, t1 = self.iic1(coordinates)
         v2, t2 = self.iic2(coordinates)
@@ -141,13 +162,18 @@ class Div(Binary):
 
 
 class Dot(Binary):
+    def __init__(self, iic1, iic2, **keyvals):
+        assert iic1.output_style == VECTOR
+        assert iic2.output_style == VECTOR
+        Binary.__init__(self, SCALAR, iic1, iic2, **keyvals)
+
     def __call__(self, coordinates):
         e1, t1 = self.iic1(coordinates)
         e2, t2 = self.iic2(coordinates)
         dot = Numeric.dot(e1, e2)
         gdot = Numeric.zeros(coordinates.shape, Numeric.Float)
         for i in range(3):
-            gdot[:,i] = e2[i]*t1[:,i] + e1[i]*t2[:,i]
+            gdot += e2[i]*t1[:,i] + e1[i]*t2[:,i]
         return dot,gdot
 
 
@@ -155,7 +181,7 @@ class Cos(Binary):
     def __init__(self, distance1, distance2, **keyvals):
         assert isinstance(distance1, Distance), "The first iic must be a distance."
         assert isinstance(distance2, Distance), "The second iic must be a distance."
-        Binary.__init__(self, distance1, distance2, **keyvals)
+        Binary.__init__(self, SCALAR, distance1, distance2, **keyvals)
         
     def __call__(self, coordinates):
         d1, td1 = self.iic1(coordinates)
@@ -174,6 +200,21 @@ class Cos(Binary):
         return cos,gcos        
 
         
+class Scale(Binary):
+    def __init__(self, iic1, iic2, **keyvals):
+        assert iic1.output_style == SCALAR
+        assert iic2.output_style == VECTOR
+        Binary.__init__(self, VECTOR, iic1, iic2, **keyvals)
+
+    def __call__(self, coordinates):
+        v1, t1 = self.iic1(coordinates)
+        v2, t2 = self.iic2(coordinates)
+        tscale = v1*t2
+        for i in xrange(3):
+            tscale[:,:,i] += v2[i]*t1
+        return v1*v2, tscale
+        
+
 class Unary(InternalCoordinate):
     """
     The base class for internal coordinates that take _one_ internal
@@ -181,15 +222,21 @@ class Unary(InternalCoordinate):
     internal coordinate".
     """
 
-    def __init__(self, iic, **keyvals):
-        InternalCoordinate.__init__(self, **keyvals)
+    def __init__(self, output_style, iic, **keyvals):
+        InternalCoordinate.__init__(self, output_style, **keyvals)
         self.iic = iic
         
     def label(self):
         return "%s(%s)" % (self.description(), self.iic.label())
 
 
-class Distance(Unary):
+class Measure(Unary):
+    def __init__(self, iic, **keyvals):
+        assert iic.output_style == VECTOR
+        Unary.__init__(self, SCALAR, iic, **keyvals)
+
+
+class Distance(Measure):
     """
     The Distance ic requires a input internal coordinate that follows
     convetion B. (See class InternalCoordinate for more information about
@@ -199,13 +246,13 @@ class Distance(Unary):
     def __call__(self, coordinates):
         e, te = self.iic(coordinates)
         distance = math.sqrt(Numeric.dot(e, e))
-        tdistance = copy.deepcopy(te)
+        tdistance = Numeric.zeros(coordinates.shape, Numeric.Float)
         for i in range(3):
-            tdistance[:,i] *= e[i]/distance
+            tdistance += te[:,:,i]*e[i]/distance
         return distance, tdistance
 
 
-class DistanceSqr(Unary):
+class DistanceSqr(Measure):
     """
     The DistanceSqr ic requires a input internal coordinate that follows
     convetion B. (See class InternalCoordinate for more information about
@@ -213,15 +260,21 @@ class DistanceSqr(Unary):
     """
 
     def __call__(self, coordinates):
-        e, ge = self.iic(coordinates)
+        e, te = self.iic(coordinates)
         distancesqr = Numeric.dot(e, e)
-        tdistancesqr = copy.deepcopy(ge)
+        tdistancesqr = Numeric.zeros(coordinates.shape, Numeric.Float)
         for i in range(3):
-            tdistancesqr[:,i] *= 2*e[i]
+            tdistancesqr += 2*te[:,:,i]*e[i]
         return distancesqr, tdistancesqr
 
 
-class Sqr(Unary):
+class ScalarUnary(Unary):
+    def __init__(self, iic, **keyvals):
+        assert iic.output_style == SCALAR
+        Unary.__init__(self, SCALAR, iic, **keyvals)
+
+
+class Sqr(ScalarUnary):
     def __call__(self, coordinates):
         e, te = self.iic(coordinates)
         sqr = e*e
@@ -230,7 +283,7 @@ class Sqr(Unary):
         return sqr, tsqr
 
 
-class Sqrt(Unary):
+class Sqrt(ScalarUnary):
     def __call__(self, coordinates):
         e, te = self.iic(coordinates)
         sqrt = math.sqrt(e)
@@ -483,13 +536,13 @@ class InternalCoordinatesCache(object):
             rb = self.add(Delta, s1, s3)
             dat = self.add(Dot, ra, rt)
             dbt = self.add(Dot, rb, rt)
-            dl = self.add(Mul, rb, dat)
-            dr = self.add(Mul, ra, dbt)
+            dl = self.add(Scale, dat, rb)
+            dr = self.add(Scale, dbt, ra)
             d = self.add(Sub, dl, dr)
             ddb = self.add(Dot, d, rb)
             dda = self.add(Dot, d, ra)
-            pl = self.add(Mul, ddb, ra)
-            pr = self.add(Mul, dda, rb)
+            pl = self.add(Scale, ddb, ra)
+            pr = self.add(Scale, dda, rb)
             p = self.add(Sub, pl, pr)
             t = self.add(Dot, p, rt)
             n1 = self.add(DistanceSqr, p)

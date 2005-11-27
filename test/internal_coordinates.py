@@ -19,7 +19,7 @@
 # 
 # --
 
-from pychem.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, DistanceSqr, Sqrt, Div, Sqr
+from pychem.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
 from pychem.molecular_graphs import BondSets, BendSets, DihedralSets, OutOfPlaneSets, CriteriaSet
 from pychem.molecules import molecule_from_xyz_filename
 from pychem.moldata import BOND_SINGLE
@@ -161,9 +161,9 @@ class Chainrule(unittest.TestCase):
         test_cos2, tangent2 = internal_coordinate(ethene2.coordinates)
         
         # validate values
-        if abs(test_cos1 - expected_cos1) > 1e-5:
+        if abs(test_cos1 - expected_cos1) > 1e-10:
             self.errors.append("Ethene1 problem: test cosine (%s) and expected cosine (%s) differ: %s" % (test_cos1, expected_cos1, test_cos1 - expected_cos1))
-        if abs(test_cos2 - expected_cos2) > 1e-5:
+        if abs(test_cos2 - expected_cos2) > 1e-10:
             self.errors.append("Ethene2 problem: test cosine (%s) and expected cosine (%s) differ: %s" % (test_cos2, expected_cos2, test_cos2 - expected_cos2))
 
         # validate tangents
@@ -228,10 +228,6 @@ class Chainrule(unittest.TestCase):
         
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))            
 
-    def sanity_test(self, internal_coordinate, mod_ethene):
-        foo, tangent = internal_coordinate(mod_ethene.coordinates)
-        self.check_sanity(mod_ethene.coordinates, tangent, internal_coordinate)
-
     def load_internal_coordinates(self):
         self.ic_cache.add_out_of_plane_cosines(OutOfPlaneSets([CriteriaSet("CC(HCl)", ((6, 6, 1, 17), None))]))
         self.ic_cache.add_dihedral_cosines(DihedralSets([CriteriaSet("HCCH", ((1, 6, 6, 1), None))]))
@@ -266,27 +262,31 @@ class Chainrule(unittest.TestCase):
         result.append(ic)
         # b.3) unary, protocal B
         ic = self.ic_cache.add(DistanceSqr, e1)
-        self.ic_cache.add_internal_coordinate("distance sqr e1", ic)
+        self.ic_cache.add_internal_coordinate("distance_sqr e1", ic)
         result.append(ic)
         # b.4) binary, protocal B
         temp_ic = self.ic_cache.add(Sub, e1, e2)
         ic = self.ic_cache.add(DistanceSqr, temp_ic)
-        self.ic_cache.add_internal_coordinate("distance sqr sub e1 e2", ic)
+        self.ic_cache.add_internal_coordinate("distance_sqr sub e1 e2", ic)
         result.append(ic)
         ic = self.ic_cache.add(Dot, e1, e2)
         self.ic_cache.add_internal_coordinate("dot e1 e2", ic)
         result.append(ic)
         # b.5) exotics
-        temp_ic = self.ic_cache.add(Mul, e1, d1)
+        temp_ic = self.ic_cache.add(Scale, d1, e1)
         ic = self.ic_cache.add(DistanceSqr, temp_ic)
-        self.ic_cache.add_internal_coordinate("distance sqr scale e1 d1", ic)
+        self.ic_cache.add_internal_coordinate("distance_sqr scale d1 e1", ic)
         result.append(ic)
         # c) application tests
         result.append(self.ic_cache["CC(HCl)"][0])
         result.append(self.ic_cache["HCCH"][0])
         return result
 
-    def test_random_geometries(self):
+    def sanity_test(self, internal_coordinate, mod_ethene):
+        foo, tangent = internal_coordinate(mod_ethene.coordinates)
+        self.check_sanity(mod_ethene.coordinates, tangent, internal_coordinate)
+
+    def test_sanity_random(self):
         internal_coordinates = self.load_internal_coordinates()
 
         def mutate_ethene():
@@ -299,3 +299,37 @@ class Chainrule(unittest.TestCase):
             for internal_coordinate in internal_coordinates:
                 self.sanity_test(internal_coordinate, mod_ethene)
 
+    def consistent_test(self, internal_coordinate, ethene1, ethene2):
+        value1, tangent1 = internal_coordinate(ethene1.coordinates)
+        value2, tangent2 = internal_coordinate(ethene2.coordinates)
+        
+        # validate tangents
+        delta = ethene2.coordinates - ethene1.coordinates
+        tangent = 0.5*(tangent1+tangent2)
+        delta_value_estimate = Numeric.dot(Numeric.ravel(tangent), Numeric.ravel(delta))
+        if abs(delta_value_estimate - (value2 - value1)) > 1e-5:
+            self.errors.append(
+                "Chain rule problem: delta_value_estimate (%s) and value2 - value1 (%s) differ: %s" % (
+                    delta_value_estimate, 
+                    (value2 - value1), 
+                    delta_value_estimate - (value2 - value1)
+                )
+            )
+
+    def test_random(self):
+        internal_coordinates = self.load_internal_coordinates()
+
+        def mutate_ethene(strength, ethene):
+            result = copy.deepcopy(ethene)
+            result.coordinates += RandomArray.uniform(-strength, strength, result.coordinates.shape)
+            return result
+        
+        self.errors = []
+        
+        for index in xrange(100):
+            mod1_ethene = mutate_ethene(3, self.ethene)
+            mod2_ethene = mutate_ethene(1e-7, mod1_ethene)
+            for internal_coordinate in internal_coordinates:
+                self.consistent_test(internal_coordinate, mod1_ethene, mod2_ethene)
+
+        self.assertEqual(len(self.errors), 0, "\n".join(self.errors))            
