@@ -44,11 +44,13 @@ setup(name='PyChem',
         'pychem.interfaces.cpmd',
         'pychem.interfaces.g98'
     ],
-    classifiers=['Development Status :: 3 - Alpha',
-                 'Environment :: Console',
-                 'Intended Audience :: Science/Research',
-                 'License :: OSI Approved :: GNU General Public License (GPL)',
-                 'Operating System :: POSIX :: Linux',
-                 'Programming Language :: Python',
-                 'Topic :: Science/Engineering :: Molecular Science'],
-    )
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Environment :: Console',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'Operating System :: POSIX :: Linux',
+        'Programming Language :: Python',
+        'Topic :: Science/Engineering :: Molecular Science'
+    ],
+)
