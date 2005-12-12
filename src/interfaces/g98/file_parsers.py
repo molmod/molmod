@@ -23,6 +23,7 @@
 from pychem.interfaces.output_parsers import FileParser, MultiLineParser
 from pychem.moldata import periodic
 from pychem.molecules import Molecule
+from pychem.units import from_angstrom
 
 import re, Numeric
 
@@ -175,9 +176,9 @@ class CoordinatesParser(ConfigurationParser):
         match = self.re.search(line)
         if match != None:
             self.current_coordinates.append([
-                float(match.group("x")),
-                float(match.group("y")),
-                float(match.group("z"))
+                from_angstrom(float(match.group("x"))),
+                from_angstrom(float(match.group("y"))),
+                from_angstrom(float(match.group("z")))
             ])
         
     def stop_collecting(self):
