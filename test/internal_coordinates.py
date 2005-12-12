@@ -311,7 +311,7 @@ class Chainrule(unittest.TestCase):
         delta = ethene2.coordinates - ethene1.coordinates
         tangent = 0.5*(tangent1+tangent2)
         delta_value_estimate = Numeric.dot(Numeric.ravel(tangent), Numeric.ravel(delta))
-        if abs(delta_value_estimate - (value2 - value1)) > 1e-10:
+        if abs(delta_value_estimate - (value2 - value1)) > 1e-8:
             self.errors.append(
                 "Chain rule problem: delta_value_estimate (%s) and value2 - value1 (%s) differ: %s" % (
                     delta_value_estimate, 

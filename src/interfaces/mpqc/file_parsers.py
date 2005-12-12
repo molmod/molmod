@@ -19,14 +19,14 @@
 # 
 # --
 
-from pychem.interfaces.output_parsers import FileParser
+from pychem.interfaces.output_parsers import FileParser, MultiLineParser
 from pychem.moldata import periodic
 from pychem.molecules import Molecule
 
 import re, Numeric
 
 class ScfEnergiesParser(FileParser):
-    extension="out"
+    extension = ".out"
 
     def __init__(self, label='scf_energies', condition=None):
         FileParser.__init__(self, label, condition)
@@ -45,7 +45,7 @@ class ScfEnergiesParser(FileParser):
 
 
 class MolecularEnergiesParser(FileParser):
-    extension="out"
+    extension = ".out"
 
     def __init__(self, label='molecular_energies', condition=None):
         FileParser.__init__(self, label, condition)
@@ -64,7 +64,7 @@ class MolecularEnergiesParser(FileParser):
 
 
 class EnergyAccuracyParser(FileParser):
-    extension="out"
+    extension = ".out"
 
     def __init__(self, label='energy_accuracy', condition=None):
         FileParser.__init__(self, label, condition)
@@ -84,7 +84,7 @@ class EnergyAccuracyParser(FileParser):
 
 
 class WarningParser(FileParser):
-    extension="out"
+    extension = ".out"
 
     def __init__(self, label='warnings', condition=None):
         FileParser.__init__(self, label, condition)
@@ -104,7 +104,7 @@ class WarningParser(FileParser):
 
 
 class OptimizationConvergedParser(FileParser):
-    extension="out"
+    extension = ".out"
 
     def __init__(self, label='optimization_converged', condition=None):
         FileParser.__init__(self, label, condition)
@@ -123,38 +123,8 @@ class OptimizationConvergedParser(FileParser):
         return self.converged
 
 
-class MultiLineParser(FileParser):
-    def __init__(self, label, activator, deactivator, condition=None):
-        FileParser.__init__(self, label, condition)
-        self.activator = activator
-        self.deactivator = deactivator
-
-    def reset(self):
-        self.active = False
-
-    def parse(self, line):
-        if self.active:
-            if self.deactivator.search(line) != None:
-                self.active = False
-                self.stop_collecting()
-            else:
-                self.collect(line)
-        elif self.activator.search(line) != None:
-            self.active = True
-            self.start_collecting()
-
-    def start_collecting(self):
-        raise NotImplementedError
-
-    def collect(self, line):
-        raise NotImplementedError
-
-    def stop_collecting(self):
-        raise NotImplementedError
-
-
 class OutputMoleculesParser(MultiLineParser):
-    extension="out"
+    extension = ".out"
 
     def __init__(self, label='output_molecules', condition=None):
         activator = re.compile(r"n\s+atoms\s+geometry")
@@ -187,7 +157,7 @@ class OutputMoleculesParser(MultiLineParser):
 
 
 class GradientsParser(MultiLineParser):
-    extension="out"
+    extension = ".out"
 
     def __init__(self, label='gradients', condition=None):
         activator = re.compile(r"Total Gradient")
@@ -221,7 +191,7 @@ class GradientsParser(MultiLineParser):
 
 
 class GradientAccuracyParser(FileParser):
-    extension="out"
+    extension = ".out"
 
     def __init__(self, label='gradient_accuracy', condition=None):
         FileParser.__init__(self, label, condition)
@@ -241,7 +211,7 @@ class GradientAccuracyParser(FileParser):
 
 
 class HessianParser(FileParser):
-    extension="hess"
+    extension = ".hess"
 
     def __init__(self, label='hessian', condition=None):
         FileParser.__init__(self, label, condition)

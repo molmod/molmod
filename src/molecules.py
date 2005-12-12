@@ -91,7 +91,7 @@ def molecule_from_xyz_stream(stream):
             num_atoms = int(words[0])
         elif len(words) == 4:
             atoms.append([
-                periodic.reverse_symbol_lookup(words[0]), 
+                periodic.symbol_lookup(words[0]), 
                 from_angstrom(float(words[1])), 
                 from_angstrom(float(words[2])),
                 from_angstrom(float(words[3]))

@@ -24,7 +24,7 @@ from pychem.interfaces.mpqc.simple import SimpleMpqcJobSinglePoint, SimpleMpqcJo
 from pychem.interfaces.mpqc.oo import OOMpqcJob
 from pychem.interfaces.mpqc.kvo import create_single_point_kv, create_optimize_kv
 from pychem.interfaces.mpqc.keyval import KeyValObject
-from pychem.interfaces.mpqc.file_parsers import MolecularEnergiesParser, EnergyAccuracyParser, OutputMoleculesParser, GradientsParser, GradientAccuracyParser, HessianParser, OptimizationConvergedParser, WarningParser
+from pychem.interfaces.mpqc.file_parsers import *
 from pychem.interfaces.output_parsers import OutputParser
 from pychem.molecules import molecule_from_xyz_filename
 
@@ -157,67 +157,6 @@ class OOMpqcInterface(unittest.TestCase):
         validate()
         job.run(forcerun=True)
         validate()
-        job.run()
-        validate()
-        
-        filename = job.filename
-        job = reload_job(filename + ".job")
-        job.run()
-        validate()
-
-    def test_optimize(self):
-        def validate():
-            self.assert_(job.completed)
-            self.assert_(job.optimization_converged)
-            self.assertAlmostEqual(job.molecular_energies[-1], -75.973963163199997, 8)
-            coordinates = job.output_molecules[-1].coordinates
-            delta = coordinates[0]-coordinates[1]
-            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 3)
-            delta = coordinates[0]-coordinates[2]
-            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 3)
-            delta = coordinates[1]-coordinates[2]
-            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 2.96668446577, 3)
-            evals = LinearAlgebra.eigenvalues(job.hessian)
-            self.assert_(min(evals) > -1e-6, "All eigenvalues of a hessian of an optimized molecule should be positive.\n%s" % str(evals))
-        
-        water = molecule_from_xyz_filename("input/water.xyz")
-        keyval = create_optimize_kv(
-            molecule=water,
-            charge=0,
-            method="CLKS",
-            basis="3-21G*",
-            functional="B3LYP"
-        )
-        keyval['mpqc']['freq'] = KeyValObject('MolecularFrequencies', named_items=[
-            ('molecule', keyval['molecule'])
-        ])
-        ocp = OptimizationConvergedParser()
-        job = OOMpqcJob(
-            prefix="output/water_oo_opt",
-            title="Water single point berekening", 
-            keyval=keyval,
-            output_parser=OutputParser([
-                MolecularEnergiesParser(),
-                EnergyAccuracyParser(),
-                GradientsParser(condition=Converging(ocp)),
-                GradientAccuracyParser(),
-                OutputMoleculesParser(),
-                HessianParser(),
-                ocp,
-                WarningParser()
-            ])
-        )
-        #job.run(cleanup=True)
-        #validate()
-        #if not job.optimization_converged:
-            # MPQC has a problem when a converged optimization is restarted
-        #    job.run(forcerun=True)
-        #    validate()
-        job.run()
-        validate()
-        
-        filename = job.filename
-        job = reload_job(filename + ".job")
         job.run()
         validate()
 

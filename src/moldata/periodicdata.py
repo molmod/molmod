@@ -70,7 +70,7 @@ class PeriodicData(object):
                 if cells[12] != "NA": self.color[n] = Numeric.array([float(cells[12]), float(cells[13]), float(cells[14]), 1.0])
         periodic_file.close()
         
-    def reverse_symbol_lookup(self, symbol):
+    def symbol_lookup(self, symbol):
         """Return the atom number of the given symbol (case insensitive)."""
         return self.symbol_reverse.get(symbol.lower())   
             

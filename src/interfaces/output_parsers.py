@@ -43,15 +43,16 @@ class OutputParser(object):
         for extension, file_parsers in self.file_parsers.iteritems():
             for file_parser in file_parsers:
                 file_parser.reset()
-            filename = "%s.%s" % (prefix, extension)
+            filename = "%s%s" % (prefix, extension)
             if isfile(filename):
                 f = file(filename, 'r')
                 for line in f:
+                    #print line[:-1]
                     for file_parser in file_parsers:
                         file_parser.conditioned_parse(line)
                 f.close()
-            for file_parser in file_parsers:
-                result[file_parser.label] = file_parser.result()
+                for file_parser in file_parsers:
+                    result[file_parser.label] = file_parser.result()
         return result
 
 
@@ -75,3 +76,37 @@ class FileParser(object):
 
     def result(self):
         raise NotImplementedError
+
+
+class MultiLineParser(FileParser):
+    def __init__(self, label, activator, deactivator, condition=None):
+        FileParser.__init__(self, label, condition)
+        self.activator = activator
+        self.deactivator = deactivator
+
+    def reset(self):
+        self.active = False
+
+    def parse(self, line):
+        if self.active:
+            if self.deactivator != None and self.deactivator.search(line) != None:
+                self.active = False
+                self.stop_collecting()
+            else:
+                self.collect(line)
+        elif self.activator != None and self.activator.search(line) != None:
+            self.active = True
+            self.start_collecting()
+        elif self.activator == None and self.deactivator == None:
+            self.collect(line)
+
+    def start_collecting(self):
+        raise NotImplementedError
+
+    def collect(self, line):
+        raise NotImplementedError
+
+    def stop_collecting(self):
+        raise NotImplementedError
+
+

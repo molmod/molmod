@@ -26,22 +26,29 @@ from distutils.core import setup
 version = '0.1.2'
 
 setup(name='PyChem',
-      version=version,
-      description='PyChem is a general chemistry oriented python package.',
-      author='Toon Verstraelen',
-      author_email='Toon.Verstraelen@UGent.be',
-      url='http://molmod.ugent.be/projects/pychem',
-      package_dir = {'pychem': 'src'},
-      data_files=[
-          ('share/pychem/%s/moldata' % version, glob.glob('src/moldata/*.csv')),
-          ('share/pychem/%s/interfaces/awk' % version, glob.glob('src/interfaces/awk/*.awk'))
-      ],
-      packages=['pychem', 'pychem.moldata', 'pychem.interfaces', 'pychem.interfaces.mpqc'],
-      classifiers=['Development Status :: 3 - Alpha',
-                   'Environment :: Console',
-                   'Intended Audience :: Science/Research',
-                   'License :: OSI Approved :: GNU General Public License (GPL)',
-                   'Operating System :: POSIX :: Linux',
-                   'Programming Language :: Python',
-                   'Topic :: Science/Engineering :: Molecular Science'],
-     )
+    version=version,
+    description='PyChem is a general chemistry oriented python package.',
+    author='Toon Verstraelen',
+    author_email='Toon.Verstraelen@UGent.be',
+    url='http://molmod.ugent.be/projects/pychem',
+    package_dir = {'pychem': 'src'},
+    data_files=[
+        ('share/pychem/%s/moldata' % version, glob.glob('src/moldata/*.csv')),
+        ('share/pychem/%s/interfaces/awk' % version, glob.glob('src/interfaces/awk/*.awk'))
+    ],
+    packages=[
+        'pychem', 
+        'pychem.moldata', 
+        'pychem.interfaces', 
+        'pychem.interfaces.mpqc', 
+        'pychem.interfaces.cpmd',
+        'pychem.interfaces.g98'
+    ],
+    classifiers=['Development Status :: 3 - Alpha',
+                 'Environment :: Console',
+                 'Intended Audience :: Science/Research',
+                 'License :: OSI Approved :: GNU General Public License (GPL)',
+                 'Operating System :: POSIX :: Linux',
+                 'Programming Language :: Python',
+                 'Topic :: Science/Engineering :: Molecular Science'],
+    )
