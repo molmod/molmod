@@ -50,15 +50,7 @@ class OutputParser(object):
                     file_parser_group.depends_on.append(dependency.group)
                     #dependency.group.works_for.append(file_parser_group)
 
-        print 
-        result = self.file_parser_groups.values()
-        for file_parser_group in result:
-            print file_parser_group.filename
-        print "---------"
         result.sort(FileParserGroup.compare)
-        for file_parser_group in result:
-            print file_parser_group.filename
-        print "========="
         return result
     
     def parse(self, directory, prefix):
