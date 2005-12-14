@@ -234,8 +234,8 @@ class EnergiesFileParser(FileParser):
     extionsion = False
     
     def __init__(self, num_steps_parser, label='energies_table', condition=None):
-        self.num_steps_parser = num_steps_parser
         FileParser.__init__(self, label, condition, [num_steps_parser])
+        self.num_steps_parser = num_steps_parser
         
     def reset(self):
         self.energies = Numeric.zeros((self.num_steps_parser.result(), 5), Numeric.Float)
@@ -247,4 +247,29 @@ class EnergiesFileParser(FileParser):
         
     def result(self):
         return self.energies
+
+
+class TrajectoryFileParser(FileParser):
+    filename = "TRAJECTORY"
+    extionsion = False
     
+    def __init__(self, num_steps_parser, elements_parser, label='trajectory_table', condition=None):
+        FileParser.__init__(self, label, condition, [num_steps_parser, elements_parser])
+        self.num_steps_parser = num_steps_parser
+        self.elements_parser = elements_parser
+        
+    def reset(self):
+        self.num_atoms = len(self.elements_parser.result())
+        self.trajectory = Numeric.zeros((self.num_steps_parser.result(), self.num_atoms, 6), Numeric.Float)
+        self.counter = 0
+        self.atom_counter = 0
+        
+    def parse(self, line):
+        self.trajectory[self.counter, self.atom_counter] = [float(word) for word in line.split()[1:7]]
+        self.atom_counter += 1
+        if self.atom_counter >= self.num_atoms:
+            self.atom_counter = 0
+            self.counter += 1
+        
+    def result(self):
+        return self.trajectory
