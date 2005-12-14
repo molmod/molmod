@@ -40,7 +40,7 @@ class NumStepsParser(FileParser):
     def parse(self, line):
         match = self.re.search(line)
         if match != None:
-            self.num_steps = float(match.group("num_steps"))
+            self.num_steps = int(match.group("num_steps"))
         
     def result(self):
         return self.num_steps
@@ -60,7 +60,7 @@ class NumEveryParser(FileParser):
     def parse(self, line):
         match = self.re.search(line)
         if match != None:
-            self.num_every = float(match.group("num_every"))
+            self.num_every = int(match.group("num_every"))
         
     def result(self):
         return self.num_every
@@ -126,7 +126,7 @@ class ElementsParser(MultiLineParser):
         return self.elements
 
 
-class TrajectoryParserMixin(object):
+class EveryParserMixin(object):
     filename = ".out"
     extension = True
     
@@ -136,20 +136,21 @@ class TrajectoryParserMixin(object):
         
     def allocate_if_necessary(self):
         return self.num_steps_parser.result() / self.num_every_parser.result()
-        
-        
-class CoordinatesGradientsParser(MultiLineParser, TrajectoryParserMixin):
+
+
+class CoordinatesGradientsParser(MultiLineParser, EveryParserMixin):
     filename = ".out"
     extension = True
     
     def __init__(self, num_steps_parser, num_every_parser, elements_parser, label='coor_grad', condition=None):
-        TrajectoryParserMixin.__init__(self, num_steps_parser, num_every_parser)
+        EveryParserMixin.__init__(self, num_steps_parser, num_every_parser)
         MultiLineParser.__init__(
             self,
             label,
             re.compile(r"ATOM\s+COORDINATES\s+GRADIENTS"),
             re.compile(r"^$"),
-            condition
+            condition,
+            [num_steps_parser, num_every_parser]
         )
         self.elements_parser = elements_parser
         self.re = re.compile(r"\d+\s+\S+\s+(?P<x>\S+)\s+(?P<y>\S+)\s+(?P<z>\S+)\s+(?P<gx>\S+)\s+(?P<gy>\S+)\s+(?P<gz>\S+)")
@@ -162,7 +163,7 @@ class CoordinatesGradientsParser(MultiLineParser, TrajectoryParserMixin):
         
     def allocate_if_necessary(self):
         if self.step_counter == None:
-            self.num_steps = TrajectoryParserMixin.allocate_if_necessary(self) + 1
+            self.num_steps = EveryParserMixin.allocate_if_necessary(self) + 1
             num_atoms = len(self.elements_parser.result())
             self.coordinates = Numeric.zeros((self.num_steps, num_atoms, 3), Numeric.Float)
             self.gradients = Numeric.zeros((self.num_steps, num_atoms, 3), Numeric.Float)
@@ -197,13 +198,13 @@ class CoordinatesGradientsParser(MultiLineParser, TrajectoryParserMixin):
         return self.coordinates, self.gradients
         
 
-class EnergiesParser(MultiLineParser, TrajectoryParserMixin):
+class EnergiesParser(MultiLineParser, EveryParserMixin):
     filename = ".out"
     extension = True
 
     def __init__(self, num_steps_parser, num_every_parser, energy_name='TOTAL ENERGY', label='energies', condition=None):
-        FileParser.__init__(self, label, condition)
-        TrajectoryParserMixin.__init__(self, num_steps_parser, num_every_parser)
+        FileParser.__init__(self, label, condition, [num_steps_parser, num_every_parser])
+        EveryParserMixin.__init__(self, num_steps_parser, num_every_parser)
         self.re = re.compile(r"%s =\s+(?P<energy>\S+)\s+A.U." % energy_name)
         
     def reset(self):
@@ -213,7 +214,7 @@ class EnergiesParser(MultiLineParser, TrajectoryParserMixin):
         
     def allocate_if_necessary(self):
         if self.step_counter == None:
-            self.num_steps = TrajectoryParserMixin.allocate_if_necessary(self)
+            self.num_steps = EveryParserMixin.allocate_if_necessary(self)
             self.energies = Numeric.zeros(self.num_steps, Numeric.Float)
             self.step_counter = 0
         
@@ -226,3 +227,24 @@ class EnergiesParser(MultiLineParser, TrajectoryParserMixin):
     def result(self):
         #assert self.step_counter == self.num_steps
         return self.energies
+
+
+class EnergiesFileParser(FileParser):
+    filename = "ENERGIES"
+    extionsion = False
+    
+    def __init__(self, num_steps_parser, label='energies_table', condition=None):
+        self.num_steps_parser = num_steps_parser
+        FileParser.__init__(self, label, condition, [num_steps_parser])
+        
+    def reset(self):
+        self.energies = Numeric.zeros((self.num_steps_parser.result(), 5), Numeric.Float)
+        self.counter = 0
+        
+    def parse(self, line):
+        self.energies[self.counter] = [float(word) for word in line.split()[1:6]]
+        self.counter += 1
+        
+    def result(self):
+        return self.energies
+    

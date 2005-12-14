@@ -32,8 +32,8 @@ class LinkParser(MultiLineParser):
     filename = ".log"
     extension = True
     
-    def __init__(self, link, label, activator=None, deactivator=None, condition=None):
-        MultiLineParser.__init__(self, label, activator, deactivator, condition)
+    def __init__(self, link, label, activator=None, deactivator=None, condition=None, depends_on=[]):
+        MultiLineParser.__init__(self, label, activator, deactivator, condition, depends_on)
         self.link = str(link)
 
     def reset(self):
@@ -51,8 +51,8 @@ class LinkParser(MultiLineParser):
 
 
 class ThermoChemParser(LinkParser):
-    def __init__(self, label, activator=None, deactivator=None, condition=None):
-        LinkParser.__init__(self, "716", label, activator, deactivator, condition)
+    def __init__(self, label, activator=None, deactivator=None, condition=None, depends_on=[]):
+        LinkParser.__init__(self, "716", label, activator, deactivator, condition, depends_on)
 
 
 class HessianParser(ThermoChemParser):
@@ -153,8 +153,8 @@ class MassParser(ThermoChemParser):
 
 
 class ConfigurationParser(LinkParser):
-    def __init__(self, label, activator=None, deactivator=None, condition=None):
-        LinkParser.__init__(self, "202", label, activator, deactivator, condition)
+    def __init__(self, label, activator=None, deactivator=None, condition=None, depends_on=[]):
+        LinkParser.__init__(self, "202", label, activator, deactivator, condition, depends_on)
 
 
 class CoordinatesParser(ConfigurationParser):
@@ -190,8 +190,8 @@ class CoordinatesParser(ConfigurationParser):
 
 
 class SCFParser(LinkParser):
-    def __init__(self, label, activator=None, deactivator=None, condition=None):
-        LinkParser.__init__(self, "502", label, activator, deactivator, condition)
+    def __init__(self, label, activator=None, deactivator=None, condition=None, depends_on=[]):
+        LinkParser.__init__(self, "502", label, activator, deactivator, condition, depends_on)
 
 
 class EnergyParser(SCFParser):

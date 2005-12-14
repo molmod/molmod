@@ -28,45 +28,92 @@ class OutputParser(object):
         self.add_parsers(file_parsers)
         
     def clear(self):
-        self.file_parsers = {}
+        self.file_parser_groups = {}
         
     def add_parsers(self, file_parsers):
         for file_parser in file_parsers:
             tag = (file_parser.filename, file_parser.extension)
-            existing_file_parsers = self.file_parsers.get(tag)
-            if existing_file_parsers == None:
-                self.file_parsers[tag] = [file_parser]
-            else:
-                existing_file_parsers.append(file_parser)
+            file_parser_group = self.file_parser_groups.get(tag)
+            if file_parser_group == None:
+                file_parser_group = FileParserGroup(file_parser.filename, file_parser.extension)
+                self.file_parser_groups[tag] = file_parser_group
+            file_parser_group.add_parser(file_parser)
+    
+    def sort_groups(self):
+        for file_parser_group in self.file_parser_groups.itervalues():
+            file_parser_group.depends_on = []
+            file_parser_group.works_for = []
             
+        for file_parser_group in self.file_parser_groups.itervalues():
+            for file_parser in file_parser_group.items:
+                for dependency in file_parser.depends_on:
+                    file_parser_group.depends_on.append(dependency.group)
+                    #dependency.group.works_for.append(file_parser_group)
+
+        print 
+        result = self.file_parser_groups.values()
+        for file_parser_group in result:
+            print file_parser_group.filename
+        print "---------"
+        result.sort(FileParserGroup.compare)
+        for file_parser_group in result:
+            print file_parser_group.filename
+        print "========="
+        return result
+    
     def parse(self, directory, prefix):
+        sorted_groups = self.sort_groups()
+    
         result = {}
-        for (filename, extension), file_parsers in self.file_parsers.iteritems():
-            for file_parser in file_parsers:
+        for file_parser_group in sorted_groups:
+            for file_parser in file_parser_group.items:
                 file_parser.reset()
-            if extension:
-                path = "%s/%s%s" % (directory, prefix, filename)
+            if file_parser_group.extension:
+                path = "%s/%s%s" % (directory, prefix, file_parser_group.filename)
             else:
-                path = "%s/%s" % (directory, filename)
+                path = "%s/%s" % (directory, file_parser_group.filename)
             if isfile(path):
                 f = file(path, 'r')
                 for line in f:
                     #print line[:-1]
-                    for file_parser in file_parsers:
+                    for file_parser in file_parser_group.items:
                         file_parser.conditioned_parse(line)
                 f.close()
-                for file_parser in file_parsers:
+                for file_parser in file_parser_group.items:
                     result[file_parser.label] = file_parser.result()
         return result
 
 
+class FileParserGroup(object):
+    def __init__(self, filename, extension):
+        self.items = []
+        self.depends_on = None
+        #self.works_for = None
+        self.filename = filename
+        self.extension = extension
+        
+    def compare(self, other):
+        if self == other:
+            return 0
+        if self in other.depends_on:
+            return -1
+        if other in self.depends_on:
+            return 1
+        return 0
+        
+    def add_parser(self, file_parser):
+        self.items.append(file_parser)
+        file_parser.group = self
+        
+
 class FileParser(object):
     extension = None
 
-    def __init__(self, label, condition=None):
+    def __init__(self, label, condition=None, depends_on=[]):
         self.label = label
         self.condition = condition
-        self.reset()
+        self.depends_on = depends_on
+        self.group = None
     
     def reset(self):
         raise NotImplementedError
@@ -83,8 +130,8 @@ class FileParser(object):
 
 
 class MultiLineParser(FileParser):
-    def __init__(self, label, activator, deactivator, condition=None):
-        FileParser.__init__(self, label, condition)
+    def __init__(self, label, activator, deactivator, condition=None, depends_on=[]):
+        FileParser.__init__(self, label, condition, depends_on)
         self.activator = activator
         self.deactivator = deactivator
 
