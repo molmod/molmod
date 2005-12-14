@@ -51,4 +51,7 @@ class OOMpqcJob(Job):
         self.completed = (os.system("grep \"End Time\" %s.out &> /dev/null" % self.filename) == 0)
         
     def read_output(self):
-        self.__dict__.update(self.output_parser.parse(self.filename))
+        slash_pos = self.filename.rfind("/")
+        directory = self.filename[:slash_pos]
+        prefix = self.filename[slash_pos+1:]
+        self.__dict__.update(self.output_parser.parse(directory, prefix))

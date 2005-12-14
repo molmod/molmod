@@ -29,7 +29,8 @@ import re, Numeric
 
 
 class LinkParser(MultiLineParser):
-    extension = ".log"
+    filename = ".log"
+    extension = True
     
     def __init__(self, link, label, activator=None, deactivator=None, condition=None):
         MultiLineParser.__init__(self, label, activator, deactivator, condition)

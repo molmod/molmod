@@ -27,7 +27,8 @@ from pychem.molecules import Molecule
 import re, Numeric
 
 class NumStepsParser(FileParser):
-    extension = ".out"
+    filename = ".out"
+    extension = True
 
     def __init__(self, label='num_steps', condition=None):
         FileParser.__init__(self, label, condition)
@@ -46,7 +47,8 @@ class NumStepsParser(FileParser):
 
 
 class NumEveryParser(FileParser):
-    extension = ".out"
+    filename = ".out"
+    extension = True
 
     def __init__(self, label='num_every', condition=None):
         FileParser.__init__(self, label, condition)
@@ -64,8 +66,35 @@ class NumEveryParser(FileParser):
         return self.num_every
 
 
+class TimeStepsParser(FileParser):
+    filename = ".out"
+    extension = True
+
+    def __init__(self, label='time_steps', condition=None):
+        FileParser.__init__(self, label, condition)
+        self.re = re.compile(r"TIME STEP FOR (?P<component>\S+):\s+(?P<time_step>\S+)")
+        
+    def reset(self):
+        self.time_step_electrons = None
+        self.time_step_ions = None
+        
+    def parse(self, line):
+        match = self.re.search(line)
+        if match != None:
+            component = match.group("component")
+            time_step = float(match.group("time_step"))
+            if component == "ELECTRONS":
+                self.time_step_electrons = time_step
+            elif component == "IONS":
+                self.time_step_ions = time_step
+        
+    def result(self):
+        return self.time_step_electrons, self.time_step_ions
+
+
 class ElementsParser(MultiLineParser):
-    extension = ".out"
+    filename = ".out"
+    extension = True
 
     def __init__(self, label='elements', condition=None):
         MultiLineParser.__init__(
@@ -98,7 +127,8 @@ class ElementsParser(MultiLineParser):
 
 
 class TrajectoryParserMixin(object):
-    extension = ".out"
+    filename = ".out"
+    extension = True
     
     def __init__(self, num_steps_parser, num_every_parser):
         self.num_steps_parser = num_steps_parser
@@ -109,7 +139,8 @@ class TrajectoryParserMixin(object):
         
         
 class CoordinatesGradientsParser(MultiLineParser, TrajectoryParserMixin):
-    extension = ".out"
+    filename = ".out"
+    extension = True
     
     def __init__(self, num_steps_parser, num_every_parser, elements_parser, label='coor_grad', condition=None):
         TrajectoryParserMixin.__init__(self, num_steps_parser, num_every_parser)
@@ -167,7 +198,8 @@ class CoordinatesGradientsParser(MultiLineParser, TrajectoryParserMixin):
         
 
 class EnergiesParser(MultiLineParser, TrajectoryParserMixin):
-    extension = ".out"
+    filename = ".out"
+    extension = True
 
     def __init__(self, num_steps_parser, num_every_parser, energy_name='TOTAL ENERGY', label='energies', condition=None):
         FileParser.__init__(self, label, condition)

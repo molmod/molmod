@@ -1,4 +1,4 @@
- # PyChem is a general chemistry oriented python package.
+# PyChem is a general chemistry oriented python package.
 # Copyright (C) 2005 Toon Verstraelen
 # 
 # This file is part of PyChem.
@@ -40,11 +40,17 @@ class CpmdInterface(unittest.TestCase):
             num_steps_parser,
             num_every_parser,
             elements_parser,
+            TimeStepsParser(),
             CoordinatesGradientsParser(num_steps_parser, num_every_parser, elements_parser),
             EnergiesParser(num_steps_parser, num_every_parser)
         ])
 
-        result = output_parser.parse("input/cpmd_md1")
+        result = output_parser.parse("input", "cpmd_md1")
+        
+        expected_keys = ['coor_grad', 'elements', 'energies', 'time_steps', 'num_steps', 'num_every']
+        for expected_key in expected_keys:
+            self.assert_(expected_key in result)
+
         #print "num_steps:", result["num_steps"]
         #print "num_every:", result["num_every"]
         #coordinates, gradients = result["coor_grad"]
@@ -52,4 +58,5 @@ class CpmdInterface(unittest.TestCase):
         #print "gradient:", gradients[0]
         #print "energy:", result["energies"][0]
         #print "elements:", result["elements"]
+        #print "time_steps", result["time_steps"]
         

@@ -32,20 +32,24 @@ class OutputParser(object):
         
     def add_parsers(self, file_parsers):
         for file_parser in file_parsers:
-            existing_file_parsers = self.file_parsers.get(file_parser.extension)
+            tag = (file_parser.filename, file_parser.extension)
+            existing_file_parsers = self.file_parsers.get(tag)
             if existing_file_parsers == None:
-                self.file_parsers[file_parser.extension] = [file_parser]
+                self.file_parsers[tag] = [file_parser]
             else:
                 existing_file_parsers.append(file_parser)
             
-    def parse(self, prefix):
+    def parse(self, directory, prefix):
         result = {}
-        for extension, file_parsers in self.file_parsers.iteritems():
+        for (filename, extension), file_parsers in self.file_parsers.iteritems():
             for file_parser in file_parsers:
                 file_parser.reset()
-            filename = "%s%s" % (prefix, extension)
-            if isfile(filename):
-                f = file(filename, 'r')
+            if extension:
+                path = "%s/%s%s" % (directory, prefix, filename)
+            else:
+                path = "%s/%s" % (directory, filename)
+            if isfile(path):
+                f = file(path, 'r')
                 for line in f:
                     #print line[:-1]
                     for file_parser in file_parsers:

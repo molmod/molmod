@@ -31,7 +31,7 @@ __all__ = ["G98Interface"]
 
 
 class G98Interface(unittest.TestCase):
-    def test_md_parser(self):
+    def test_parser(self):
         output_parser = OutputParser([
             HessianParser(),
             MassParser(),
@@ -41,7 +41,12 @@ class G98Interface(unittest.TestCase):
             SelectedFrequenciesParser(),
         ])
 
-        result = output_parser.parse("input/g98_1")
+        result = output_parser.parse("input", "g98_1")
+
+        expected_keys = ['energies', 'masses', 'coordinates', 'low_frequencies', 'selected_frequencies', 'hessian']
+        for expected_key in expected_keys:
+            self.assert_(expected_key in result)
+
         #print "hessian:", result["hessian"]
         #print "masses:", result["masses"]
         #print "coordinates:", result["coordinates"]
