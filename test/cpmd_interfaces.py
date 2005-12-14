@@ -49,7 +49,7 @@ class CpmdInterface(unittest.TestCase):
 
         result = output_parser.parse("input/cpmd", "2TOH.md")
         
-        expected_keys = ['coor_grad', 'elements', 'energies', 'time_steps', 'num_steps', 'num_every', 'energies_table', 'trajectory_table']
+        expected_keys = ['coor_grad', 'elements', 'energies', 'time_steps', 'num_steps', 'num_every', 'energies_table', 'coor_velo']
         for expected_key in expected_keys:
             self.assert_(expected_key in result)
 
@@ -62,5 +62,7 @@ class CpmdInterface(unittest.TestCase):
         #print "elements:", result["elements"]
         #print "time_steps", result["time_steps"]
         #print result["energies_table"][:10]
-        print result["trajectory_table"][:10]
+        coordinates, velocities = result["coor_velo"]
+        print "coordinates:", coordinates[0:2]
+        print "velocities:", velocities[0:2]
         

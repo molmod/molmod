@@ -49,7 +49,8 @@ class OutputParser(object):
                 for dependency in file_parser.depends_on:
                     file_parser_group.depends_on.append(dependency.group)
                     #dependency.group.works_for.append(file_parser_group)
-
+        
+        result = self.file_parser_groups.values()
         result.sort(FileParserGroup.compare)
         return result
     

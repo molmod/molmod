@@ -253,23 +253,26 @@ class TrajectoryFileParser(FileParser):
     filename = "TRAJECTORY"
     extionsion = False
     
-    def __init__(self, num_steps_parser, elements_parser, label='trajectory_table', condition=None):
+    def __init__(self, num_steps_parser, elements_parser, label='coor_velo', condition=None):
         FileParser.__init__(self, label, condition, [num_steps_parser, elements_parser])
         self.num_steps_parser = num_steps_parser
         self.elements_parser = elements_parser
         
     def reset(self):
         self.num_atoms = len(self.elements_parser.result())
-        self.trajectory = Numeric.zeros((self.num_steps_parser.result(), self.num_atoms, 6), Numeric.Float)
+        self.coordinates = Numeric.zeros((self.num_steps_parser.result(), self.num_atoms, 3), Numeric.Float)
+        self.velocities = Numeric.zeros((self.num_steps_parser.result(), self.num_atoms, 3), Numeric.Float)
         self.counter = 0
         self.atom_counter = 0
         
     def parse(self, line):
-        self.trajectory[self.counter, self.atom_counter] = [float(word) for word in line.split()[1:7]]
+        data = [float(word) for word in line.split()[1:7]]
+        self.coordinates[self.counter, self.atom_counter] = data[0:3]
+        self.velocities[self.counter, self.atom_counter] = data[3:6]
         self.atom_counter += 1
         if self.atom_counter >= self.num_atoms:
             self.atom_counter = 0
             self.counter += 1
         
     def result(self):
-        return self.trajectory
+        return self.coordinates, self.velocities
