@@ -23,6 +23,7 @@
 from pychem.interfaces.output_parsers import FileParser, MultiLineParser
 from pychem.moldata import periodic
 from pychem.molecules import Molecule
+from pychem.units import from_unified
 
 import re, Numeric
 
@@ -124,6 +125,42 @@ class ElementsParser(MultiLineParser):
 
     def result(self):
         return self.elements
+
+
+class MassesParser(MultiLineParser):
+    filename = ".out"
+    extension = True
+
+    def __init__(self, label='masses', condition=None):
+        MultiLineParser.__init__(
+            self,
+            label,
+            re.compile(r"ATOM\s+MASS\s+RAGGIO\s+NLCC\s+PSEUDOPOTENTIAL"),
+            re.compile(r"^$"),
+            condition
+        )
+        self.re = re.compile(r"\*\s+(?P<symbol>\S+)\s+(?P<mass>\S+)\s+\S+\s+\S+\s+\S+\s+\*")
+        
+    def reset(self):
+        MultiLineParser.reset(self)
+        self.done = False
+        
+    def start_collecting(self):
+        self.masses = {}
+
+    def collect(self, line):
+        if not self.done:
+            match = self.re.search(line)
+            if match != None:
+                number = periodic.symbol_lookup(match.group("symbol"))
+                mass = from_unified(float(match.group("mass")))
+                self.masses[number] = mass
+        
+    def stop_collecting(self):
+        self.done = True
+
+    def result(self):
+        return self.masses
 
 
 class EveryParserMixin(object):
