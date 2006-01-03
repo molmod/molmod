@@ -23,7 +23,7 @@
 import init_files
 
 from pychem import context
-context.share_path = "pychem/"
+context.share_path = "../share/"
 
 import unittest
 

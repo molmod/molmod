@@ -142,7 +142,7 @@ class AwkJob(IOJob):
         Return the sumary file interpreted as a python expression.
         """
         os.system(
-            "gawk -f %sinterfaces/awk/%s.awk < %s.out > %s.out.smr" % (
+            "gawk -f %sawk/%s.awk < %s.out > %s.out.smr" % (
                 context.share_path, self.awk_scriptname(),
                 self.filename, self.filename
             )
@@ -159,6 +159,12 @@ class AwkJob(IOJob):
     def process_output_summary(self):
         """Process the attributes taken from the summary file and assigned to self."""
         raise NotImplementedError
+
+
+#class TemplateJob(Job):
+#    def __init__(self, prefix, title):
+#        Job.__init__(self, prefix, title):
+#        self.prefix_dir = prefix[:prefix.rfind("/")]
 
 
 def reload_job(job_filename):

@@ -33,8 +33,8 @@ setup(name='PyChem',
     url='http://molmod.ugent.be/projects/pychem',
     package_dir = {'pychem': 'src'},
     data_files=[
-        ('share/pychem/%s/moldata' % version, glob.glob('src/moldata/*.csv')),
-        ('share/pychem/%s/interfaces/awk' % version, glob.glob('src/interfaces/awk/*.awk'))
+        ('share/pychem/%s/moldata' % version, glob.glob('share/moldata/*.csv')),
+        ('share/pychem/%s/awk' % version, glob.glob('share/awk/*.awk'))
     ],
     packages=[
         'pychem', 
