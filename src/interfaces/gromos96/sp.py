@@ -31,7 +31,7 @@ __all__ = ["Gromos96SP"]
 
 class Gromos96SP(TemplateJob):
     output_filenames = ["FORCES", "sxmd2.dat", "rxmd2.dat", "omd.out", "ogmt.out", "mta1.dat"]
-    template_filenames = ["igmt.dat", "sxmd1.dat", "imd.dat"]
+    template_filenames = ["ifpZEO.dat", "igmt.dat", "sxmd1.dat", "imd.dat"]
     template = "gromos96_sp"
     scripts = ["jgmt.sh", "jmd.sh"]
     

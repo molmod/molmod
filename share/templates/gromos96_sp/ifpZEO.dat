@@ -197,13 +197,13 @@ BONDTYPECODE
 50  1.0000e+06   0.100000
 # dummy bond
 #
-51  1.0700e+06   0.163980
+51  ${bs_coef_51}   ${bs_rest_51}
 # ZSI   -   ZOSS         578
 #
-52  1.0400e+06   0.164470
+52  ${bs_coef_52}   ${bs_rest_52}
 # ZSI   -   ZOSH         561
 #
-53  1.4300e+07   0.095890
+53  ${bs_coef_53}   ${bs_rest_53}
 # ZOSH  -   ZHO         2637
 #
 END
@@ -371,19 +371,19 @@ BONDANGLETYPECOD
 50    100.00   100.00
 # dummy bond
 #
-51    458.00   136.30
+51    ${ba_coef_51}   ${ba_rest_51}
 # ZSI    - ZOSS  - ZSI
 #
-52   2206.00   108.09
+52    ${ba_coef_52}   ${ba_rest_52}
 # ZOSS   - ZSI   - ZOSS
 #
-53    268.00   116.89
+53    ${ba_coef_53}   ${ba_rest_53}
 # ZSI    - ZOSH  - ZHO
 #
-54    897.00   109.06
+54    ${ba_coef_54}   ${ba_rest_54}
 # ZOSS   - ZSI   - ZOSH
 #
-55    935.00   106.36
+55    ${ba_coef_55}   ${ba_rest_55}
 # ZOSH   - ZSI   - ZOSH
 #
 END

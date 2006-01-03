@@ -36,8 +36,27 @@ class Gromos96Interface(unittest.TestCase):
     def test_single_point(self):
         def validate():
             self.assert_(job.completed)
-            print job.forces1
-            print job.forces2
+            #print job.forces1
+            #print job.forces2
+        
+        parameters = {
+            "bs_coef_51": 1.0700e+6,
+            "bs_rest_51": 0.163980,
+            "bs_coef_52": 1.0400e+6,
+            "bs_rest_52": 0.164470,
+            "bs_coef_53": 1.430e+7,
+            "bs_rest_53": 0.09589,
+            "ba_coef_51": 458,
+            "ba_rest_51": 136.30,
+            "ba_coef_52": 2206,
+            "ba_rest_52": 108.09,
+            "ba_coef_53": 268,
+            "ba_rest_53": 116.89,
+            "ba_coef_54": 897,
+            "ba_rest_54": 109.06,
+            "ba_coef_55": 935,
+            "ba_rest_55": 106.36
+        }
         
         cluster = molecule_from_xyz_filename("input/2TOH.xyz")
         os.system("rm -rf output/gromos96")
@@ -46,7 +65,7 @@ class Gromos96Interface(unittest.TestCase):
             prefix="output/gromos96/",
             title="Zeolite cluster 2TOH", 
             input_molecule=cluster, 
-            parameters={}, 
+            parameters=parameters, 
             topology="2TOH", 
             box_size=from_angstrom(15.0),
             output_parser=OutputParser([
