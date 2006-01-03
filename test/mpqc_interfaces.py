@@ -20,7 +20,7 @@
 # --
 
 from pychem.interfaces.base import reload_job
-from pychem.interfaces.mpqc.simple import SimpleMpqcJobSinglePoint, SimpleMpqcJobOptimize
+from pychem.interfaces.mpqc.awk import AwkMpqcJobSinglePoint, AwkMpqcJobOptimize
 from pychem.interfaces.mpqc.oo import OOMpqcJob
 from pychem.interfaces.mpqc.kvo import create_single_point_kv, create_optimize_kv
 from pychem.interfaces.mpqc.keyval import KeyValObject
@@ -31,10 +31,10 @@ from pychem.molecules import molecule_from_xyz_filename
 import math, Numeric, LinearAlgebra
 import unittest
 
-__all__ = ["SimpleMpqcInterface", "OOMpqcInterface"]
+__all__ = ["AwkMpqcInterface", "OOMpqcInterface"]
 
 
-class SimpleMpqcInterface(unittest.TestCase):
+class AwkMpqcInterface(unittest.TestCase):
     def test_single_point(self):
         def validate():
             self.assert_(job.completed)
@@ -50,7 +50,7 @@ class SimpleMpqcInterface(unittest.TestCase):
             self.assertAlmostEqual(job.gradient[2,2],  0.01381411, 6)
             
         water = molecule_from_xyz_filename("input/water.xyz")
-        job = SimpleMpqcJobSinglePoint(
+        job = AwkMpqcJobSinglePoint(
             prefix="output/water_sp",
             title="Water single point berekening", 
             input_molecule=water,
@@ -84,7 +84,7 @@ class SimpleMpqcInterface(unittest.TestCase):
             self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 2.96668446577, 6)
         
         water = molecule_from_xyz_filename("input/water.xyz")
-        job = SimpleMpqcJobOptimize(
+        job = AwkMpqcJobOptimize(
             prefix="output/water_opt",
             title="Water single point berekening", 
             input_molecule=water,

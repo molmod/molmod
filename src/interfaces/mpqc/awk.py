@@ -19,7 +19,7 @@
 # 
 # --
 
-from pychem.interfaces.base import SimpleJob
+from pychem.interfaces.base import AwkJob
 from pychem.moldata import periodic
 from pychem.units import to_angstrom, from_angstrom
 from pychem.molecules import molecule_from_xyz_string
@@ -29,16 +29,16 @@ import Numeric
 
 
 __all__ = [
-    "SimpleMpqcJob", "SimpleMpqcJobSinglePoint", "SimpleMpqcJobOptimize"
+    "AwkMpqcJob", "AwkMpqcJobSinglePoint", "AwkMpqcJobOptimize"
 ]
 
 
-class SimpleMpqcJob(SimpleJob):
-    """MPQC jobs that use the simple input format."""
+class AwkMpqcJob(AwkJob):
+    """MPQC jobs that use the Awk input format."""
     
     def __init__(self, prefix, title, input_molecule, method, basis, charge=0, multiplicity=1, memory=None):
         """
-        Initialize a SimpleMpqcJob instance.
+        Initialize a AwkMpqcJob instance.
         
         New arguments:
         method -- The type of approximation for the many body electron
@@ -51,7 +51,7 @@ class SimpleMpqcJob(SimpleJob):
         self.charge = charge
         self.multiplicity = multiplicity
         self.memory = memory
-        SimpleJob.__init__(self, prefix, title)
+        AwkJob.__init__(self, prefix, title)
         
     def write_input(self, f):
         print >> f, "% " + self.title
@@ -73,7 +73,7 @@ class SimpleMpqcJob(SimpleJob):
             os.remove(temp_filename)
 
     def summarize_output(self):
-        SimpleJob.summarize_output(self)
+        AwkJob.summarize_output(self)
         self.assign_fields(["accuracy_warnings"])
 
 
@@ -83,25 +83,25 @@ def yesno(value):
     else:
         return "no"
 
-class SimpleMpqcJobSinglePoint(SimpleMpqcJob):
+class AwkMpqcJobSinglePoint(AwkMpqcJob):
     """
-    Simple MPQC jobs that doesn't change the geometry of the molecule.
+    Awk MPQC jobs that doesn't change the geometry of the molecule.
     Only one SCF iteration is performed, with eventual post analysis.
     """
     def __init__(self, prefix, title, input_molecule, method, basis, charge=0, multiplicity=1, memory=None, do_gradient=False):
         """
-        Initialize a SimpleMpqcJobSinglePoint instance.
+        Initialize a AwkMpqcJobSinglePoint instance.
         
         Extra arguments:
         do_gradient -- wether calculate the gradient of the energy
         """
         self.do_gradient = do_gradient
-        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, charge, multiplicity, memory)
+        AwkMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, charge, multiplicity, memory)
         self.energy = None
         self.gradient = None
         
     def write_input(self, f):
-        SimpleMpqcJob.write_input(self, f)
+        AwkMpqcJob.write_input(self, f)
         print >> f, "optimize: no"
         print >> f, "gradient: " + yesno(self.do_gradient)
 
@@ -113,20 +113,20 @@ class SimpleMpqcJobSinglePoint(SimpleMpqcJob):
                 self.gradient = Numeric.array(gradient, Numeric.Float)
 
 
-class SimpleMpqcJobOptimize(SimpleMpqcJob):
+class AwkMpqcJobOptimize(AwkMpqcJob):
     """
-    A Simple MPQC job that optimizes the geometry of the molecule towards
+    A Awk MPQC job that optimizes the geometry of the molecule towards
     lower energies. The default MPQC optimization scheme is used.
     """
     def __init__(self, prefix, title, input_molecule, method, basis, charge=0, multiplicity=1, memory=None):
-        """Initialize a SimpleMpqcJobOptimize instance."""
-        SimpleMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, charge, multiplicity, memory)
+        """Initialize a AwkMpqcJobOptimize instance."""
+        AwkMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, charge, multiplicity, memory)
         self.energies = []
         self.output_molecule = None
         self.gradient = None
         
     def write_input(self, f):
-        SimpleMpqcJob.write_input(self, f)
+        AwkMpqcJob.write_input(self, f)
         print >> f, "optimize: yes"
         
     def process_output_summary(self):

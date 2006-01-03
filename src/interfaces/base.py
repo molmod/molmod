@@ -36,7 +36,7 @@ class ExternalError(Exception):
     pass
 
 
-class Job(object):
+class IOJob(object):
     def __init__(self, prefix, title):
         self.prefix = prefix
         self.title = title
@@ -111,9 +111,9 @@ class Job(object):
         return recycled
 
 
-class SimpleJob(Job):
+class AwkJob(IOJob):
     def __init__(self, prefix, title):
-        Job.__init__(self, prefix, title)
+        IOJob.__init__(self, prefix, title)
         self.summary = {}
 
     def determine_completed(self):
