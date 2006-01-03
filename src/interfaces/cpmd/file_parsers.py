@@ -207,28 +207,31 @@ class CoordinatesGradientsParser(MultiLineParser, EveryParserMixin):
             self.step_counter = 0
         
     def start_collecting(self):
-        self.current_gradient = []
-        self.current_coordinates = []
         self.allocate_if_necessary()
+        if self.step_counter < self.num_steps:
+            self.current_gradient = []
+            self.current_coordinates = []
         
     def collect(self, line):
-        match = self.re.search(line)
-        if match != None:
-            self.current_coordinates.append([
-                float(match.group("x")),
-                float(match.group("y")),
-                float(match.group("z"))
-            ])
-            self.current_gradient.append([
-                float(match.group("gx")),
-                float(match.group("gy")),
-                float(match.group("gz"))
-            ])
+        if self.step_counter < self.num_steps:
+            match = self.re.search(line)
+            if match != None:
+                self.current_coordinates.append([
+                    float(match.group("x")),
+                    float(match.group("y")),
+                    float(match.group("z"))
+                ])
+                self.current_gradient.append([
+                    float(match.group("gx")),
+                    float(match.group("gy")),
+                    float(match.group("gz"))
+                ])
 
     def stop_collecting(self):
-        self.coordinates[self.step_counter,:,:] = Numeric.array(self.current_coordinates)
-        self.gradients[self.step_counter,:,:] = Numeric.array(self.current_gradient)
-        self.step_counter += 1
+        if self.step_counter < self.num_steps:
+            self.coordinates[self.step_counter,:,:] = Numeric.array(self.current_coordinates)
+            self.gradients[self.step_counter,:,:] = Numeric.array(self.current_gradient)
+            self.step_counter += 1
 
     def result(self):
         #assert self.step_counter == self.num_steps
@@ -256,10 +259,11 @@ class EnergiesParser(MultiLineParser, EveryParserMixin):
             self.step_counter = 0
         
     def parse(self, line):
-        match = self.re.search(line)
-        if match != None:
-            self.allocate_if_necessary()
-            self.energies[self.step_counter] = float(match.group("energy"))
+        if (self.step_counter == None) or (self.step_counter < self.num_steps):
+            match = self.re.search(line)
+            if match != None:
+                self.allocate_if_necessary()
+                self.energies[self.step_counter] = float(match.group("energy"))
         
     def result(self):
         #assert self.step_counter == self.num_steps
@@ -275,12 +279,14 @@ class EnergiesFileParser(FileParser):
         self.num_steps_parser = num_steps_parser
         
     def reset(self):
-        self.energies = Numeric.zeros((self.num_steps_parser.result(), 5), Numeric.Float)
+        self.num_steps = self.num_steps_parser.result()
+        self.energies = Numeric.zeros((self.num_steps, 5), Numeric.Float)
         self.counter = 0
         
     def parse(self, line):
-        self.energies[self.counter] = [float(word) for word in line.split()[1:6]]
-        self.counter += 1
+        if self.counter < self.num_steps:
+            self.energies[self.counter] = [float(word) for word in line.split()[1:6]]
+            self.counter += 1
         
     def result(self):
         return self.energies
@@ -297,19 +303,21 @@ class TrajectoryFileParser(FileParser):
         
     def reset(self):
         self.num_atoms = len(self.elements_parser.result())
-        self.coordinates = Numeric.zeros((self.num_steps_parser.result(), self.num_atoms, 3), Numeric.Float)
-        self.velocities = Numeric.zeros((self.num_steps_parser.result(), self.num_atoms, 3), Numeric.Float)
+        self.num_steps = self.num_steps_parser.result()
+        self.coordinates = Numeric.zeros((self.num_steps, self.num_atoms, 3), Numeric.Float)
+        self.velocities = Numeric.zeros((self.num_steps, self.num_atoms, 3), Numeric.Float)
         self.counter = 0
         self.atom_counter = 0
         
     def parse(self, line):
-        data = [float(word) for word in line.split()[1:7]]
-        self.coordinates[self.counter, self.atom_counter] = data[0:3]
-        self.velocities[self.counter, self.atom_counter] = data[3:6]
-        self.atom_counter += 1
-        if self.atom_counter >= self.num_atoms:
-            self.atom_counter = 0
-            self.counter += 1
+        if self.counter < self.num_steps:
+            data = [float(word) for word in line.split()[1:7]]
+            self.coordinates[self.counter, self.atom_counter] = data[0:3]
+            self.velocities[self.counter, self.atom_counter] = data[3:6]
+            self.atom_counter += 1
+            if self.atom_counter >= self.num_atoms:
+                self.atom_counter = 0
+                self.counter += 1
         
     def result(self):
         return self.coordinates, self.velocities
