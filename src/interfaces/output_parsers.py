@@ -22,6 +22,7 @@
 
 from os.path import isfile
 
+
 class OutputParser(object):
     def __init__(self, file_parsers=[]):
         self.clear()

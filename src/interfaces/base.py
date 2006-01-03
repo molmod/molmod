@@ -188,7 +188,8 @@ class TemplateJob(Job):
         os.rmdir(self.directory)
 
     def create_input(self):
-        os.mkdir(self.directory)
+        if not os.path.isdir(self.directory):
+            os.mkdir(self.directory)
         for filename in glob.glob(context.share_path + "templates/" + self.template + "/*.*"):
             shutil.copy(filename, self.directory)
         for template_filename in self.template_filenames:

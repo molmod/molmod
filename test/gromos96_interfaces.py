@@ -34,6 +34,11 @@ __all__ = ["Gromos96Interface"]
 
 class Gromos96Interface(unittest.TestCase):
     def test_single_point(self):
+        def validate():
+            self.assert_(job.completed)
+            print job.forces1
+            print job.forces2
+        
         cluster = molecule_from_xyz_filename("input/2TOH.xyz")
         os.system("rm -rf output/gromos96")
         #os.mkdir("output/gromos96")
@@ -43,7 +48,13 @@ class Gromos96Interface(unittest.TestCase):
             input_molecule=cluster, 
             parameters={}, 
             topology="2TOH", 
-            box_size=from_angstrom(15.0)
+            box_size=from_angstrom(15.0),
+            output_parser=OutputParser([
+                Forces1Parser('forces1'),
+                Forces2Parser('forces2')
+            ])
         )
         job.run(cleanup=True)
-        
+        validate()
+        job.run()
+        validate()        
