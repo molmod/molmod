@@ -5,8 +5,9 @@ version 0.1.3
 -------------
 
 - interfaces to gaussian, lammps, gulp, ...
-- groms96_sp afwerken
+- groms96_sp
 - cleanup test directory
+- g98 -> gaussian98
 
 version 0.1.4
 ---------------
