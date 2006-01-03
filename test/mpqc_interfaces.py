@@ -66,8 +66,8 @@ class AwkMpqcInterface(unittest.TestCase):
         job.run()
         validate()
         
-        filename = job.filename
-        job = reload_job(filename + ".job")
+        prefix = job.prefix
+        job = reload_job(prefix + ".job")
         job.run()
         validate()
                   
@@ -99,8 +99,8 @@ class AwkMpqcInterface(unittest.TestCase):
         job.run()
         validate()
         
-        filename = job.filename
-        job = reload_job(filename + ".job")
+        prefix = job.prefix
+        job = reload_job(prefix + ".job")
         job.run()
         validate()
 
