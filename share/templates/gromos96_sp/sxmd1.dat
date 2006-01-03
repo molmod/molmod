@@ -1,0 +1,10 @@
+TITLE
+INITIAL GEOMETRY, ${title}
+END
+POSITION
+# first 24 chars ignored
+${coordinates}
+END
+BOX
+  ${box_size} ${box_size} ${box_size}
+END

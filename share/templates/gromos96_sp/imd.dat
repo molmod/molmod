@@ -1,0 +1,222 @@
+#$Id: imd.dat $
+TITLE
+MOLECULAR DYNAMICS ${title} 
+END
+#MINIMISE
+#     NTEM    NCYC    DELE    DX0     DXM
+#        1      20     0.1   0.01    0.05
+#END
+#STOCHASTIC
+#NTFR
+#0 = set to zero
+#1 = set to CFRIC
+#2 = set to CFRIC*GAM
+#3 = calculate using SUBR. FRIC
+#     NTFR     NSFR     NBREF  RCUTF    CFRIC    TEMPSD
+#        3      300         6   0.3      91.0     300.0
+#END
+SYSTEM
+#      NPM      NSM 
+         1      0 
+END
+START
+# values for INIT -- starting procedures in RUNMD.f
+#  INIT
+#     shake X
+#            shake V
+# centre of mass motion removal if NTCM=1
+#     1   yes    yes   yes
+#     2    no    yes   yes
+#     3    no     no   yes
+#     4    no     no    no
+#      NTX     INIT      IG     TEMPI      HEAT  NTXO   BOLTZ
+         1        1  210185       0.0     0.000     1   8.31441E-3
+END
+STEP
+#   NSTLIM         T        DT
+         3       0.0        0.00012094
+END
+BOUNDARY
+#      NTB    BOX(1)    BOX(2)    BOX(3)      BETA  NRDBOX
+         1    ${box_size} ${box_size} ${box_size} 90.0       0 
+END
+SUBMOLECULES
+#     NSPM  NSP(1.. NSPM)
+         1  15 
+END
+TCOUPLE
+#      NTT     TEMP0      TAUT
+         0     300.0     0.100
+         0     300.0     0.100
+         0     300.0     0.100
+END
+PCOUPLE
+#      NTP     PRES0      COMP      TAUP  
+         0  0.061020  4.575E-4   0.50000
+END
+CENTREOFMASS
+#   NDFMIN      NTCM      NSCM
+         3         1     50000
+END
+PRINT
+#NTPR: print out energies, etc. every NTPR steps
+#NTPL: print out C.O.M motion and total energy fitting every NTPL steps
+#NTPP: =1 perform dihedral angle transition monitoring
+#     NTPR      NTPL      NTPP
+        10        10         1
+END
+WRITE
+# NTPW = 0 : binary
+# NTPW = 1 : formatted
+# NTWSE = configuration selection parameter
+# =0: write normal trajectory
+# >0: chose min energy for writing configurations
+#     NTWX     NTWSE      NTWV      NTWE      NTWG      NTPW
+         1         0         0         0         0         1
+END
+SHAKE
+#      NTC       TOL
+         1   0.00010
+END
+FORCE
+#      NTF array
+# bonds    angles    imp.     dihe     charge nonbonded
+# H        H         H        H
+  1  1     1  1      1  1     1  1     1  1
+# NEGR    NRE(1)    NRE(2)    ...      NRE(NEGR)
+     1       15 
+END
+PLIST
+#     NTNB      NSNB     RCUTP     RCUTL
+         1         5       0.4       0.4  
+END
+LONGRANGE
+# EPSRF     APPAK      RCRF
+   54.0       0.0      0.3 
+END
+#
+POSREST
+#     values for NTR
+#     0: no position re(con)straining
+#     1: use CHO
+#     2: use CHO/ ATOMIC B-FACTORS
+#     3: position constraining
+#      NTR       CHO   NRDRX
+         0     2.5E4       1
+END
+#
+#DISTREST
+#     NTDR
+#     0 : no distance restraining
+#     -1,1 : use CDIS
+#     -2,2:  use W0*CDIS
+#     NTDR < 0 : time averaging
+#     NTDR > 0 : no time averaging
+# NRDDR = 1: read in time averaged distances (for continuation run)
+# NRDDR = 0: don't read them in, recalc from scratch
+#     NTDR      CDIS       DR0     TAUDR     NRDDR
+#        0    1000.0   1.00000      10.0         0
+#END
+#DIHEREST
+# values for NTDLR
+# 0: no dihedral angle restraining
+# 1: use CDLR
+# 2: use CDLR * CPLR
+#    NTDLR      CDLR
+#        0       0.1
+#END
+#J-VAL
+# values for NTJR
+#     0: no J-value restraining
+#     -1,1: use CJR*(a*cos^^2 + b*cos + c)
+#     -2,2: use CJR*CPJR*(a*cos^^2 + b*cos + c)
+#     NTJR < 0: time averaging
+#     NTJR > 0: no time averaging
+#---
+# values for NTJRH
+#    0: use half harmonic potential
+#    1: use harmonic potential
+# values for NRDJR
+#    0: start from initial values
+#    1: read in time averages (for continuation run)
+#     NTJR     NTJRH       CJR     TAUJR     NRDJR
+#        0         1      10.0      10.0         0 
+#END
+#---------
+#LOCALELEVATION
+# NTLE
+# 0: off
+# 1: gaussian potential energy function
+# 2: inverse quadratic energy fuction
+#--
+# NRDLE
+# 0: don't read in memory
+# 1: read in memory (for continuation run)
+#   NTLE   CWLE  NRDLE
+#      0    2.5      0
+#END
+#---------
+#FOURDIM
+#  NT4DIM	meaning
+#	0	perform 3D simulation
+#	>0	perform 4D simulation
+#	1	use CW4DA
+#	2	use CW4DA*C4D
+#---
+# NT4XI determines initial coordinates and
+# velocities in the 4'th dimension
+#		init coords	init velocities
+#	1	0		max dist
+#	2	boltz		set to 0
+#	3	read coords	max dist
+#	4	read coords and velocities from unit 'XVI' (for continuation run)
+#---
+# NT4XO : 1 write out 4'th dimensional data to trajectory
+#       : 0 write out only 3 dimensions to trajectory
+#---
+#  NT4DIM	CW4DA	TEMP4I	NDFMI4   NT4XI NT4XO
+#       0      5000.0     30.0	     0       1     0
+#------
+# temperature coupling in the 4'th dimension
+#    NTT4      TEMP04	  TAUT4
+#       1        30.0   0.10000
+# NTCW4D 0: constant reference temperature and using CW4DA as force constant
+# 1: reference temperature is linearly changed from TEMP04 to TEMP0B,
+#    force constant is changed from CW4DA to CW4DB over NSTLIM steps.
+#  NTCW4D	CW4DB    TEMP0B
+#       0        10.0     300.0
+# NTF4: 4D force terms: 0 = perform in 3D, 1 = perform in 4D
+#     	bond/shake
+#               bond angle
+#                       dihedral
+#                               non-bonded
+#                                   	dist rest
+#                                      		4d harm osc
+#       0       0       0       1       0       1
+#END
+#PERTURB
+# NTG: 0 no perturbation is applied
+#    : 1 calculate dV/dRLAM perturbation
+#    : 2 calculate dV/dRMU perturbation
+#    : 3 calculate both derivatives
+#      NTG     NRDGL     RLAM     DLAMT        RMU   DMUT
+#        0         0      0.5   0.00000    0.00000   0.00
+#   ALPHLJ     ALPHC     NLAM       MMU
+#      2.0      25.0        1         1
+#END
+#-------
+#PATHINT
+# restrictions for PI
+# topology must contain bead information
+# pathint in 4D is disabled
+# pathint and perturbation not allowed
+# a warning is written out if the temperature at discretization
+# is not the same as the MD run is performed at.
+#
+# values or NTPI
+#     0: no path integral calculation
+#     1: path integral calculation
+#---
+# NTPI
+#    0
+#END

@@ -25,7 +25,7 @@ from pychem import context
 
 from StringIO import StringIO
 from pickle import load, dump
-import sha, os, glob
+import sha, os, glob, shutil, string
 
 
 class ExternalError(Exception):
@@ -38,17 +38,17 @@ class ExternalError(Exception):
 
 class Job(object):
     def __init__(self, prefix, title):
-        self.filename = prefix
+        self.prefix = prefix
         self.title = title
         self.ran = False
 
     def create_job_file(self):
-        f = file(self.filename + ".job", 'w')
+        f = file(self.prefix + ".job", 'w')
         dump(self, f)
         f.close()
         
     def cleanup(self):
-        for temp_filename in glob.glob("%s*.*" % self.filename):
+        for temp_filename in glob.glob("%s*.*" % self.prefix):
             os.remove(temp_filename)
 
     def create_input(self):
@@ -89,13 +89,13 @@ class Job(object):
         """Perform the complete calculation and analysis."""
         if cleanup:
             self.cleanup()
-        self.create_job_file()
         self.create_input()
+        self.create_job_file()
         recycled = self.run_external(forcerun=forcerun)
         if recycled and not self.completed:
             recycled = self.run_external(forcerun=True)
         if not self.completed:
-            raise ExternalError("External job could not be completed (%s)" % self.filename)
+            raise ExternalError("External job could not be completed (%s)" % self.prefix)
         self.read_output()
         self.ran = True
         return recycled
@@ -108,18 +108,18 @@ class IOJob(Job):
         self.write_input(input_string_io)
         self.input_string = input_string_io.getvalue()
         input_string_io.close()
-        self.filename = "%s_%s" % (prefix, sha.new(self.input_string).hexdigest())
+        self.prefix = "%s_%s" % (prefix, sha.new(self.input_string).hexdigest())
         
     def write_input(self, f):
         raise NotImplementedError
     
     def create_input(self):
-        input_file = file(self.filename + ".in", 'w')
+        input_file = file(self.prefix + ".in", 'w')
         input_file.write(self.input_string)
         input_file.close()
 
     def output_exists(self):
-        return os.path.isfile(self.filename + ".out")
+        return os.path.isfile(self.prefix + ".out")
 
 class AwkJob(IOJob):
     def __init__(self, prefix, title):
@@ -154,10 +154,10 @@ class AwkJob(IOJob):
         os.system(
             "gawk -f %sawk/%s.awk < %s.out > %s.out.smr" % (
                 context.share_path, self.awk_scriptname(),
-                self.filename, self.filename
+                self.prefix, self.prefix
             )
         )
-        smr = file("%s.out.smr" % self.filename)
+        smr = file("%s.out.smr" % self.prefix)
         self.summary.update(eval(''.join(smr)))
         smr.close()
         self.assign_fields(["completed"])
@@ -172,9 +172,55 @@ class AwkJob(IOJob):
 
 
 class TemplateJob(Job):
-    def __init__(self, prefix, title):
+    output_filenames = []
+    template_filenames = []
+    template = None
+    scripts = []
+    temporary_filenames = []
+
+    def __init__(self, prefix, title, mapping):
         Job.__init__(self, prefix, title)
-        self.prefix_dir = prefix[:prefix.rfind("/")+1]
+        self.directory = prefix[:prefix.rfind("/")+1]
+        self.mapping = mapping
+
+    def clean_up(self):
+        TemplateJob.cleanup(self)
+        os.rmdir(self.directory)
+
+    def create_input(self):
+        os.mkdir(self.directory)
+        for filename in glob.glob(context.share_path + "templates/" + self.template + "/*.*"):
+            shutil.copy(filename, self.directory)
+        for template_filename in self.template_filenames:
+            f_in = file(self.directory + template_filename, 'r')
+            f_tmp = file(self.directory + template_filename + ".tmp", 'w')
+            for line in f_in:
+                t = string.Template(line)
+                f_tmp.write(t.safe_substitute(self.mapping))
+            f_in.close()
+            f_tmp.close()
+            os.remove(self.directory + template_filename)
+            os.rename(self.directory + template_filename + ".tmp", self.directory + template_filename)
+
+    def output_exists(self):
+        for output_filename in self.output_filenames:
+            if not os.path.isfile(self.directory + output_filename):
+                return False
+        return True
+
+    def external_command(self):
+        cwd = os.getcwd()
+        return ("cd %s;" % self.directory) + "; ".join("./"+script for script in self.scripts) + ("; cd %s" % cwd)
+        
+    def remove_temporary_files(self):
+        for temporary_filename in self.temporary_filenames:
+            os.remove(self.directory + temp_filename)
+        
+    def determine_completed(self):
+        raise NotImplementedError
+
+    def read_output(self):
+        raise NotImplementedError
 
 
 def reload_job(job_filename):

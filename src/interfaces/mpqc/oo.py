@@ -30,10 +30,7 @@ import os, glob
 class OOMpqcJob(IOJob):
     def __init__(self, prefix, title, keyval, output_parser=None):
         self.keyval = keyval
-        if output_parser == None:
-            self.output_parser = OutputParser()
-        else:
-            self.output_parser = output_parser
+        self.output_parser = output_parser
         IOJob.__init__(self, prefix, title)
         
     def write_input(self, f):
@@ -41,17 +38,18 @@ class OOMpqcJob(IOJob):
         self.keyval.write_stream(f)
 
     def external_command(self):
-        return "mpqc -o %s.out %s.in" % (self.filename, self.filename)
+        return "mpqc -o %s.out %s.in" % (self.prefix, self.prefix)
         
     def remove_temporary_files(self):
-        for temp_filename in glob.glob("%s*.tmp" % self.filename):
+        for temp_filename in glob.glob("%s*.tmp" % self.prefix):
             os.remove(temp_filename)
 
     def determine_completed(self):
-        self.completed = (os.system("grep \"End Time\" %s.out &> /dev/null" % self.filename) == 0)
+        self.completed = (os.system("grep \"End Time\" %s.out &> /dev/null" % self.prefix) == 0)
         
     def read_output(self):
-        slash_pos = self.filename.rfind("/")
-        directory = self.filename[:slash_pos]
-        prefix = self.filename[slash_pos+1:]
-        self.__dict__.update(self.output_parser.parse(directory, prefix))
+        if self.output_parser != None:
+            slash_pos = self.prefix.rfind("/")
+            directory = self.prefix[:slash_pos]
+            prefix = self.prefix[slash_pos+1:]
+            self.__dict__.update(self.output_parser.parse(directory, prefix))

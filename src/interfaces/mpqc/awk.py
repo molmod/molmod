@@ -66,10 +66,10 @@ class AwkMpqcJob(AwkJob):
             print >> f, "   %2s  % 10.7f  % 10.7f  % 10.7f" % (periodic.symbol[number], x, y, z)
 
     def external_command(self):
-        return "mpqc -o %s.out %s.in" % (self.filename, self.filename)
+        return "mpqc -o %s.out %s.in" % (self.prefix, self.prefix)
         
     def remove_temporary_files(self):
-        for temp_filename in glob.glob("%s.wfn.*.tmp" % self.filename):
+        for temp_filename in glob.glob("%s.wfn.*.tmp" % self.prefix):
             os.remove(temp_filename)
 
     def summarize_output(self):

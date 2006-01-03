@@ -1,0 +1,145 @@
+#$Id: igmt.dat$
+TITLE
+MOLECULAR TOPOLOGY, ${title} 
+END
+#
+PROGMT
+#
+#number of building blocks, heme, separate molecules, chains
+#NRAA   NHEME    NMOL   NRAA0
+    0       0       1       0 
+#
+#building block names
+#AANM[1..NRAA+NHEME+NMOL]
+${topology}
+#
+#number of disulfide bridges
+#NRSS 
+  0   
+#
+#sequence numbers of cys1 and cys2 residues involved
+#NMSS[1..NRSS,1..2]
+#
+#number of atoms to be deleted from the head of the first building block
+#NZAT
+0 
+#
+#number of atoms to be changed at the head of first building block
+#NACH[1]
+0
+#
+#name, mass code, integer atom code, charge, charge group code
+#ANMC  MASSC   IACC   CGC      ICGC[1..NACH[1],1]
+#
+#number of atoms to be changed at the tail of the last building block
+#NACH[2]
+0
+#
+#name, mass code, integer atom code, charge, charge group code
+#ANMC  MASSC   IACC   CGC      ICGC[1..NACH[2],2]
+#
+#number of atoms to be added to the head of the chain(s)
+#NEAT[1]
+0
+#
+#name, mass code, integer atom code, charge, charge group code, 
+#number exclusions, excluded atoms
+#ANMT  MASST IACT CGT   ICGT  MAET  MSAET[1..MAET][1..NEAT[1],1]
+#
+#number of bonds to be added at the head of the chain(s)
+#NBT[1]
+0
+#
+#atom sequence numbers plus bond type code
+#MBT[1..2,1..NBT[1],1]   MCBLT[1..NBT[1],1]
+#
+#number of bond angles to be added at the head of the chain(s)
+#NBAT[1]
+0
+#
+#atom sequence numbers plus bond angle type code
+#MBAT[1..3,1..NBAT[1],1]     MCBAT[1..NBAT[1],1]
+#
+#number of improper dihedrals to be added at the head of the chain(s)
+#NIDAT[1]
+0
+#
+#atom sequence numbers plus improper dihedral type code
+#MIDAT[1..4,1..NIDAT[1],1]   MCIAT[1..NIDAT[1],1]
+#
+#
+#number of dihedrals to be added to the head of the chain(s)
+#NDAT[1]
+0
+#
+#atom sequence numbers plus dihedral type code
+#MDAT[1..4,1..NDAT[1],1]     MCDAT[1..NDAT[1],1]
+#
+#number of atoms to be added to the tail of the chain(s) (> 0 if NRAA > 0)
+#NEAT[2]
+0
+#
+#number of exclusions, excluded atoms of second (or further) preceding atom(s)
+#MAET[1..NRNE-1,2]   MSAET[1..MAET,1..NRNE-1,2]
+#
+#charge group code, number of exclusions, excluded atoms of preceding atom
+#ICGT[1,2]  MAET[NRNE,2]  MSAET[1..MAET,NRNE,2]
+#
+#atom name, mass code, integer atom code, charge, charge group code,
+#number of exclusions, excluded atoms of all but last added atoms
+#ANMT  MASST IACT CGT[1..NEAT[2]-1,2] ICGT[2..NEAT[2],2],
+#MAET[NRNE+1..NEAT[2]+NRNE-1,2]  MSAET[1..MAET,NRNE+1..NEAT[2]+NRNE-1,2]
+#
+#atom name, mass code, integer atom code, charge of last added atom
+#ANMT  MASST IACT CGT[NEAT[2],2]
+#
+#number of bonds to be added to the tail of the chain(s)
+#NBT[2]
+0
+#
+#atom sequence numbers plus bond type code
+#MBT[1..2,1..NBT[2],2]   MCBLT[1..NBT[2],2]
+#
+#number of bond angles to be added at the tail of the chain(s)        
+#NBAT[2]
+0
+#
+#atom sequence numbers plus bond angle type code
+#MBAT[1..3,1..NBAT[2],2]    MCBAT[1..NBAT[2],2]
+#
+#number of improper dihedrals to be added at the tail of the chain(s)
+#NIDAT[2]
+0
+#
+#atom sequence numbers plus improper dihedral type code
+#MIDAT[1..4,1..NIDAT[2],2]   MCIAT[1..NIDAT[2],2]
+#
+#number of dihedrals to be added to the tail of the chain(s)
+#NDAT[2]
+0
+#
+#atom sequence numbers plus dihedral type code
+#MDAT[1..4,1..NDAT[2],2]      MCDAT[1..NDAT[2],2]
+#
+#solvent building block name
+H2O
+#
+#control switch for printing
+#NTPR
+0
+#
+#control switch for coordinate reading
+#NTX
+0
+#
+#control switch for periodic box (NTB), box lengths, angle
+#NTB   BOX[1..3]           BETAA
+1      ${box_size} ${box_size} ${box_size}   90.0
+#
+END
+#
+
+
+
+
+
