@@ -5,6 +5,9 @@ version 0.1.3
 -------------
 
 - interfaces to gaussian, lammps, gulp, ...
+- awk scripts naar share verhuizen
+- groms96_sp afwerken
+- cleanup test directory
 
 version 0.1.4
 ---------------
