@@ -190,7 +190,7 @@ class CoordinatesGradientsParser(MultiLineParser, EveryParserMixin):
             [num_steps_parser, num_every_parser]
         )
         self.elements_parser = elements_parser
-        self.re = re.compile(r"\d+\s+\S+\s+(?P<x>\S+)\s+(?P<y>\S+)\s+(?P<z>\S+)\s+(?P<gx>\S+)\s+(?P<gy>\S+)\s+(?P<gz>\S+)")
+        self.re = re.compile(r"\d+\s+\S+(?P<x>.{8})(?P<y>.{8})(?P<z>.{8}) (?P<gx>.{11})(?P<gy>.{11})(?P<gz>.{11})")
         
     def reset(self):
         MultiLineParser.reset(self)
