@@ -40,7 +40,7 @@ class Molecule:
     - carthesian coordinates
     """
 
-    def __init__(self, atoms):
+    def __init__(self, atoms=[]):
         """
         Initialiaze a Molecule instance.
         
