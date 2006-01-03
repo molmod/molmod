@@ -36,36 +36,26 @@ class ExternalError(Exception):
     pass
 
 
-class IOJob(object):
+class Job(object):
     def __init__(self, prefix, title):
-        self.prefix = prefix
+        self.filename = prefix
         self.title = title
         self.ran = False
-        input_string_io = StringIO()
-        self.write_input(input_string_io)
-        self.input_string = input_string_io.getvalue()
-        input_string_io.close()
-        self.filename = "%s_%s" % (self.prefix, sha.new(self.input_string).hexdigest())
-        
-    def write_input(self, f):
-        raise NotImplementedError
-    
+
     def create_job_file(self):
         f = file(self.filename + ".job", 'w')
         dump(self, f)
         f.close()
-    
-    def create_input_file(self):
-        input_file = file(self.filename + ".in", 'w')
-        input_file.write(self.input_string)
-        input_file.close()
         
     def cleanup(self):
         for temp_filename in glob.glob("%s*.*" % self.filename):
-            os.remove(temp_filename)        
+            os.remove(temp_filename)
 
-    def output_file_exists(self):
-        return os.path.isfile(self.filename + ".out")
+    def create_input(self):
+        raise NotImplementedError
+
+    def output_exists(self):
+        raise NotImplementedError
 
     def external_command(self):
         raise NotImplementedError
@@ -84,7 +74,7 @@ class IOJob(object):
         unless overwrite == True
         """
         recycled = False
-        if (not self.output_file_exists()) or forcerun:
+        if (not self.output_exists()) or forcerun:
             os.system(self.external_command())
             self.remove_temporary_files()
         else:
@@ -100,7 +90,7 @@ class IOJob(object):
         if cleanup:
             self.cleanup()
         self.create_job_file()
-        self.create_input_file()
+        self.create_input()
         recycled = self.run_external(forcerun=forcerun)
         if recycled and not self.completed:
             recycled = self.run_external(forcerun=True)
@@ -110,6 +100,26 @@ class IOJob(object):
         self.ran = True
         return recycled
 
+
+class IOJob(Job):
+    def __init__(self, prefix, title):
+        Job.__init__(self, prefix, title)
+        input_string_io = StringIO()
+        self.write_input(input_string_io)
+        self.input_string = input_string_io.getvalue()
+        input_string_io.close()
+        self.filename = "%s_%s" % (prefix, sha.new(self.input_string).hexdigest())
+        
+    def write_input(self, f):
+        raise NotImplementedError
+    
+    def create_input(self):
+        input_file = file(self.filename + ".in", 'w')
+        input_file.write(self.input_string)
+        input_file.close()
+
+    def output_exists(self):
+        return os.path.isfile(self.filename + ".out")
 
 class AwkJob(IOJob):
     def __init__(self, prefix, title):
@@ -161,10 +171,10 @@ class AwkJob(IOJob):
         raise NotImplementedError
 
 
-#class TemplateJob(Job):
-#    def __init__(self, prefix, title):
-#        Job.__init__(self, prefix, title):
-#        self.prefix_dir = prefix[:prefix.rfind("/")]
+class TemplateJob(Job):
+    def __init__(self, prefix, title):
+        Job.__init__(self, prefix, title)
+        self.prefix_dir = prefix[:prefix.rfind("/")+1]
 
 
 def reload_job(job_filename):
