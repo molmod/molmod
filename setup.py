@@ -34,6 +34,7 @@ setup(name='PyChem',
     package_dir = {'pychem': 'src'},
     data_files=[
         ('share/pychem/%s/moldata' % version, glob.glob('share/moldata/*.csv')),
+        ('share/pychem/%s/templates/gromos96_sp/' % version, glob.glob('share/templates/gromos96_sp/*.*')),
         ('share/pychem/%s/awk' % version, glob.glob('share/awk/*.awk'))
     ],
     packages=[
