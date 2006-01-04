@@ -45,7 +45,8 @@ class CpmdInterface(unittest.TestCase):
             CoordinatesGradientsParser(num_steps_parser, num_every_parser, elements_parser),
             EnergiesParser(num_steps_parser, num_every_parser),
             EnergiesFileParser(num_steps_parser),
-            TrajectoryFileParser(num_steps_parser, elements_parser)
+            TrajectoryFileParser(num_steps_parser, elements_parser),
+            CellDimensionParser()
         ])
 
         result = output_parser.parse("input/cpmd", "2TOH.md")
@@ -67,4 +68,5 @@ class CpmdInterface(unittest.TestCase):
         #print "coordinates:", coordinates[0:2]
         #print "velocities:", velocities[0:2]
         #print "masses", result["masses"]
+        #print "cell_dimension", result["cell_dimension"]
         

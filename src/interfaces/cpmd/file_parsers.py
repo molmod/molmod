@@ -321,3 +321,25 @@ class TrajectoryFileParser(FileParser):
         
     def result(self):
         return self.coordinates, self.velocities
+
+
+
+class CellDimensionParser(FileParser):
+    filename = ".out"
+    extension = True
+
+    def __init__(self, label='cell_dimension', condition=None):
+        FileParser.__init__(self, label, condition)
+        
+    def reset(self):
+        self.cell_dimension = None
+        
+    def parse(self, line):
+        if line[0:16] == " CELL DIMENSION:":
+            words = line[16:].split()
+            self.cell_dimension = [float(word) for word in words]
+        
+    def result(self):
+        return self.cell_dimension
+
+
