@@ -43,7 +43,8 @@ setup(name='PyChem',
         'pychem.interfaces', 
         'pychem.interfaces.mpqc', 
         'pychem.interfaces.cpmd',
-        'pychem.interfaces.g98'
+        'pychem.interfaces.g98',
+        'pychem.interfaces.gromos96'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
