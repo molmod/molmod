@@ -19,7 +19,7 @@
 # 
 # --
 
-from pychem.interfaces.g98.file_parsers import *
+from pychem.interfaces.gaussian98.file_parsers import *
 from pychem.interfaces.output_parsers import OutputParser
 
 
@@ -27,10 +27,10 @@ import math, Numeric, LinearAlgebra
 import unittest
 
 
-__all__ = ["G98Interface"]
+__all__ = ["Gaussian98Interface"]
 
 
-class G98Interface(unittest.TestCase):
+class Gaussian98Interface(unittest.TestCase):
     def test_parser(self):
         output_parser = OutputParser([
             HessianParser(),

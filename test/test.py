@@ -32,7 +32,7 @@ from binning import *
 from graphs import *
 from mpqc_interfaces import *
 from cpmd_interfaces import *
-from g98_interfaces import *
+from gaussian98_interfaces import *
 from gromos96_interfaces import *
 from molecular_graphs import *
 from internal_coordinates import *
