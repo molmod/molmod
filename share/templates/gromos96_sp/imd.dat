@@ -42,7 +42,7 @@ BOUNDARY
 END
 SUBMOLECULES
 #     NSPM  NSP(1.. NSPM)
-         1  15 
+         1  ${num_atoms} 
 END
 TCOUPLE
 #      NTT     TEMP0      TAUT
@@ -84,7 +84,7 @@ FORCE
 # H        H         H        H
   1  1     1  1      1  1     1  1     1  1
 # NEGR    NRE(1)    NRE(2)    ...      NRE(NEGR)
-     1       15 
+     1       ${num_atoms}
 END
 PLIST
 #     NTNB      NSNB     RCUTP     RCUTL

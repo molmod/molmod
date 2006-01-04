@@ -40,6 +40,7 @@ class Gromos96SP(TemplateJob):
         mapping['topology'] = topology
         mapping['box_size'] = str(to_nanometer(box_size)) # cubic boxes only
         mapping['coordinates'] = "\n".join([" "*24 + " %f %f %f" % tuple(coordinate) for coordinate in to_nanometer(input_molecule.coordinates)])
+        mapping['num_atoms'] = str(len(input_molecule.coordinates))
         mapping['gromos_root'] = gromos_root
         TemplateJob.__init__(self, prefix, title, mapping)
         self.output_parser = output_parser
