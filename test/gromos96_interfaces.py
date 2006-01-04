@@ -38,6 +38,7 @@ class Gromos96Interface(unittest.TestCase):
             self.assert_(job.completed)
             #print job.forces1
             #print job.forces2
+            print job.potential_energy
         
         parameters = {
             "bs_coef_51": 1.0700e+6,
@@ -70,7 +71,15 @@ class Gromos96Interface(unittest.TestCase):
             box_size=from_angstrom(15.0),
             output_parser=OutputParser([
                 Forces1Parser('forces1'),
-                Forces2Parser('forces2')
+                Forces2Parser('forces2'),
+                MDOutDataParser(
+                    section=' 6. D A T A   P E R   S T E P',
+                    subsection='       ENERGY        TOTAL      KINETIC    POTENTIAL',
+                    row='E-TOT',
+                    col=3,
+                    conversion=1,
+                    label='potential_energy'
+                )
             ])
         )
         job.run(cleanup=True)

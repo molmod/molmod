@@ -65,3 +65,36 @@ class Forces2Parser(ForcesParser):
             deactivator=re.compile(r"^ ---$"), 
             condition=condition
         )
+
+
+class MDOutDataParser(FileParser):
+    filename = "omd.out"
+    extension = False
+
+    def __init__(self, section, subsection, row, col, conversion=1, label='data', condition=None):
+        FileParser.__init__(self, label, condition)
+        self.section = section
+        self.subsection = subsection
+        self.row = row
+        self.col = col
+        self.conversion = conversion
+        
+    def reset(self):
+        self.data = 0
+        self.progress = 0
+        
+    def parse(self, line):
+        if self.progress == 0:
+            if line[:-1] == self.section:
+                self.progress = 1
+        elif self.progress == 1:
+            if line[:-1] == self.subsection:
+                self.progress = 2
+        elif self.progress == 2:
+            words = line.split()
+            if words[0] == self.row:
+                self.data = float(words[self.col])
+                self.progress = 3
+        
+    def result(self):
+        return self.data * self.conversion
