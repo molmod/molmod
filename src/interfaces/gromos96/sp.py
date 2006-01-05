@@ -31,12 +31,13 @@ __all__ = ["Gromos96SP"]
 
 class Gromos96SP(TemplateJob):
     output_filenames = ["FORCES", "sxmd2.dat", "rxmd2.dat", "omd.out", "ogmt.out", "mta1.dat"]
-    template_filenames = ["ifpZEO.dat", "igmt.dat", "sxmd1.dat", "imd.dat"]
+    template_filenames = ["ifpZEO.dat", "igmt.dat", "sxmd1.dat", "imd.dat", "jgmt.sh", "jmd.sh"]
     template = "gromos96_sp"
     scripts = ["jgmt.sh", "jmd.sh"]
     
     def __init__(self, prefix, title, input_molecule, parameters, topology, box_size, gromos_root="/usr/local/gromos96", output_parser=None):
         mapping = dict((key, str(value)) for key, value in parameters.iteritems())
+        mapping['title'] = title
         mapping['topology'] = topology
         mapping['box_size'] = str(to_nanometer(box_size)) # cubic boxes only
         mapping['coordinates'] = "\n".join([" "*24 + " %f %f %f" % tuple(coordinate) for coordinate in to_nanometer(input_molecule.coordinates)])

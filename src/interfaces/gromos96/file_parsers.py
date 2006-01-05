@@ -21,6 +21,7 @@
 
 
 from pychem.interfaces.output_parsers import FileParser, MultiLineParser
+from pychem.units import angstrom, meter, second, unified
 
 import re, Numeric
 
@@ -42,7 +43,7 @@ class ForcesParser(MultiLineParser):
         self.forces.append(float(line))
 
     def stop_collecting(self):
-        self.forces = Numeric.array(self.forces)
+        self.forces = Numeric.array(self.forces)*((1e-9*meter*unified)/(1e-12*second*1e-12*second))
         self.forces.shape = (-1, 3)
          
     def result(self):

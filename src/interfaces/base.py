@@ -25,7 +25,7 @@ from pychem import context
 
 from StringIO import StringIO
 from pickle import load, dump
-import sha, os, glob, shutil, string
+import sha, os, glob, shutil, string, stat
 
 
 class ExternalError(Exception):
@@ -202,6 +202,9 @@ class TemplateJob(Job):
             f_tmp.close()
             os.remove(self.directory + template_filename)
             os.rename(self.directory + template_filename + ".tmp", self.directory + template_filename)
+        for script_name in self.scripts:
+            current_mode = os.stat(self.directory + script_name).st_mode
+            os.chmod (self.directory + script_name, current_mode | stat.S_IXUSR)
 
     def output_exists(self):
         for output_filename in self.output_filenames:
