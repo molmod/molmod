@@ -264,6 +264,7 @@ class EnergiesParser(MultiLineParser, EveryParserMixin):
             if match != None:
                 self.allocate_if_necessary()
                 self.energies[self.step_counter] = float(match.group("energy"))
+                self.step_counter += 1
         
     def result(self):
         #assert self.step_counter == self.num_steps
@@ -321,7 +322,6 @@ class TrajectoryFileParser(FileParser):
         
     def result(self):
         return self.coordinates, self.velocities
-
 
 
 class CellDimensionParser(FileParser):
