@@ -30,7 +30,10 @@ import os, glob
 class OOMpqcJob(IOJob):
     def __init__(self, prefix, title, keyval, output_parser=None):
         self.keyval = keyval
-        self.output_parser = output_parser
+        if output_parser == None:
+            self.output_parser = OutputParser()
+        else:
+            self.output_parser = output_parser
         IOJob.__init__(self, prefix, title)
         
     def write_input(self, f):
