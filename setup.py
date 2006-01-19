@@ -44,6 +44,7 @@ setup(name='PyChem',
         'pychem.interfaces.mpqc', 
         'pychem.interfaces.cpmd',
         'pychem.interfaces.gaussian98',
+        'pychem.interfaces.gaussian03',
         'pychem.interfaces.gromos96'
     ],
     classifiers=[
