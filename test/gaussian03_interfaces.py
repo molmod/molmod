@@ -19,7 +19,7 @@
 # 
 # --
 
-from pychem.interfaces.gaussian98.file_parsers import *
+from pychem.interfaces.gaussian03.file_parsers import *
 from pychem.interfaces.output_parsers import OutputParser
 
 
@@ -27,10 +27,10 @@ import math, Numeric, LinearAlgebra
 import unittest
 
 
-__all__ = ["Gaussian98Interface"]
+__all__ = ["Gaussian03Interface"]
 
 
-class Gaussian98Interface(unittest.TestCase):
+class Gaussian03Interface(unittest.TestCase):
     def test_parser(self):
         output_parser = OutputParser([
             HessianParser(),
@@ -42,7 +42,7 @@ class Gaussian98Interface(unittest.TestCase):
             GradientParser(),
         ])
 
-        result = output_parser.parse("input", "g98_1")
+        result = output_parser.parse("input", "g03_1")
 
         expected_keys = ['energies', 'masses', 'coordinates_list', 'low_frequencies', 'selected_frequencies', 'hessian', 'gradient_list']
         for expected_key in expected_keys:
@@ -66,4 +66,4 @@ class Gaussian98Interface(unittest.TestCase):
         #print "DOF masses: % 3i" % (len(masses)*3)
         #for coordinates in coordinates_list:
         #    print "DOF coords: % 3i" % (len(coordinates)*3)
-        
+

@@ -18,25 +18,3 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 # 
 # --
-
-
-import init_files
-
-from pychem import context
-context.share_path = "../share/"
-
-import unittest
-
-
-from binning import *
-from graphs import *
-from mpqc_interfaces import *
-from cpmd_interfaces import *
-from gaussian98_interfaces import *
-from gaussian03_interfaces import *
-from gromos96_interfaces import *
-from molecular_graphs import *
-from internal_coordinates import *
-
-unittest.main()
-
