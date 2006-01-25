@@ -29,7 +29,7 @@ def jacobian_analysis(configuration, internal_coordinates):
     jacobian = []
     values = []
     for internal_coordinate in internal_coordinates:
-        value, tangent = internal_coordinate(configuration.carthesian_values)
+        value, tangent = internal_coordinate.value_tangent(configuration.carthesian_values)
         values.append(value)
         jacobian.append(Numeric.ravel(tangent))
         
