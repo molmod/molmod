@@ -37,7 +37,7 @@ __all__ = [
 class Molecule:
     """
     A Molecule instance describes a molecule in the following representation:
-    - carthesian coordinates
+    - cartesian coordinates
     """
 
     def __init__(self, atoms=[]):
