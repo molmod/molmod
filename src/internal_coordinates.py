@@ -28,7 +28,7 @@ __all__ = [
     "InternalCoordinate", "Select", 
     "Binary", "Add", "Sub", "Delta", "Mul", "Div", "Dot", "Cos", 
     "Unary", "Distance", "DistanceSqr", "Sqr", "Sqrt", "ArcCos",
-    "Configuration", "JacobianSolver"
+    "InternalCoordinatesCache"
 ]
 
 
@@ -40,30 +40,6 @@ VECTOR = 2
 
 
 class InternalCoordinate(object):
-    """
-    This is the base class for the internal coordinates.
-
-    An instance of the InternalCoordinate class acts as a callable. It takes
-    only one parameter:
-        - coordinates: a set of molecular carthesian coordinates
-    and returns a tuple with:
-        - values: the values of the internal coordinate
-        - tangent: the partial derivatives of the internal coordinates towards
-        the carthesian coordinates. This matrix has the same shape as
-        coordinates
-        
-    For the return values there are two conventions:
-        A) The returned value of the internal coordinate is one-dimensional.
-            This is the regular case. the tangent contains the regular
-            partial derivatives.       
-        B) The returned value of the internal coordinate is three-dimensional.
-            The i'th element of the returned internal coordinates is only 
-            dependant on the i'th column of the given coordinates and the
-            i'th column of the tangent contains the partial derivatives of the
-            i'th internal coordinate towards the given carthesian coordinates.
-    Some Internal coordinate classes can handle both conventions (eg. Delta)
-    """
-    
     def __init__(self, output_style, **keyvals):
         self.__dict__.update(keyvals)
         self.output_style = output_style
@@ -74,6 +50,22 @@ class InternalCoordinate(object):
         
     def label(self):
         raise NotImplementedError
+
+    def value_tangent(self, coordinates):
+        raise NotImplementedError
+        # interpretation of tangent:
+        #    - In case the returned value is a vector (as a function of the coordinates)
+        #         array[i, k, m] = partial derivative of result[m] towards coordinate k of atom i
+        #    - In case the returned value is a scalar (...)
+        #         array[i, k] = partial derivative of result towards coordinate k of atom i
+
+    def curvature(self, coordinates):
+        raise NotImplementedError
+        # interpretation of tangent:
+        #    - In case the returned value is a vector (as a function of the coordinates)
+        #         array[i, k, j, l, m] = second order partial derivative of result[m] towards coordinate k of atom i and coordinate l of atom j
+        #    - In case the returned value is a scalar (...)
+        #         array[i, k, j, l] = second order partial derivative of result towards coordinate k of atom i and coordinate l of atom j
 
 
 class Select(InternalCoordinate):
@@ -86,12 +78,16 @@ class Select(InternalCoordinate):
         InternalCoordinate.__init__(self, VECTOR, **keyvals)
         self.index = index
         
-    def __call__(self, coordinates):
+    def value_tangent(self, coordinates):
         tangent = Numeric.zeros((len(coordinates), 3, 3), Numeric.Float)
         tangent[self.index, 0, 0] = 1
         tangent[self.index, 1, 1] = 1
         tangent[self.index, 2, 2] = 1
         return coordinates[self.index], tangent
+
+    def curvature(self, coordinates):
+        curvature = Numeric.zeros((len(coordinates), 3, len(coordinates), 3, 3), Numeric.Float)
+        return curvature
         
     def label(self):
         return "%s(%i)" % (self.description(), self.index)
@@ -120,24 +116,39 @@ class HybridBinary(Binary):
 
 
 class Add(HybridBinary):
-    def __call__(self, coordinates):
-        v1, t1 = self.iic1(coordinates)
-        v2, t2 = self.iic2(coordinates)
+    def value_tangent(self, coordinates):
+        v1, t1 = self.iic1.value_tangent(coordinates)
+        v2, t2 = self.iic2.value_tangent(coordinates)
         return v1 + v2, t1 + t2
+
+    def curvature(self, coordinates):
+        c1 = self.iic1.curvature(coordinates)
+        c2 = self.iic2.curvature(coordinates)
+        return c1 + c2
 
 
 class Sub(HybridBinary):
-    def __call__(self, coordinates):
-        v1, t1 = self.iic1(coordinates)
-        v2, t2 = self.iic2(coordinates)
+    def value_tangent(self, coordinates):
+        v1, t1 = self.iic1.value_tangent(coordinates)
+        v2, t2 = self.iic2.value_tangent(coordinates)
         return v1 - v2, t1 - t2
+
+    def curvature(self, coordinates):
+        c1 = self.iic1.curvature(coordinates)
+        c2 = self.iic2.curvature(coordinates)
+        return c1 - c2
 
 
 class Delta(HybridBinary):
-    def __call__(self, coordinates):
-        b, tb = self.iic1(coordinates)
-        e, te = self.iic2(coordinates)
+    def value_tangent(self, coordinates):
+        b, tb = self.iic1.value_tangent(coordinates)
+        e, te = self.iic2.value_tangent(coordinates)
         return e - b, te - tb
+
+    def curvature(self, coordinates):
+        b = self.iic1.curvature(coordinates)
+        e = self.iic2.curvature(coordinates)
+        return e - b
 
 
 class ScalarBinary(Binary):
@@ -148,18 +159,37 @@ class ScalarBinary(Binary):
 
 
 class Mul(ScalarBinary):
-    def __call__(self, coordinates):
-        v1, t1 = self.iic1(coordinates)
-        v2, t2 = self.iic2(coordinates)
+    def value_tangent(self, coordinates):
+        v1, t1 = self.iic1.value_tangent(coordinates)
+        v2, t2 = self.iic2.value_tangent(coordinates)
         return v1*v2, v2*t1+v1*t2
+
+    def curvature(self, coordinates):
+        v1, t1 = self.iic1.value_tangent(coordinates)
+        v2, t2 = self.iic2.value_tangent(coordinates)
+        c1 = self.iic1.curvature(coordinates)
+        c2 = self.iic2.curvature(coordinates)
+        return v1*c2 + v2*c1 + Numeric.multiply.outer(t1, t2) + Numeric.multiply.outer(t2, t1)
         
 
 class Div(ScalarBinary):
-    def __call__(self, coordinates):
-        v1, t1 = self.iic1(coordinates)
-        v2, t2 = self.iic2(coordinates)
+    def value_tangent(self, coordinates):
+        v1, t1 = self.iic1.value_tangent(coordinates)
+        v2, t2 = self.iic2.value_tangent(coordinates)
         return v1/v2, (v2*t1-v1*t2)/(v2*v2)
 
+    def curvature(self, coordinates):
+        v1, t1 = self.iic1.value_tangent(coordinates)
+        v2, t2 = self.iic2.value_tangent(coordinates)
+        c1 = self.iic1.curvature(coordinates)
+        c2 = self.iic2.curvature(coordinates)
+        return (c1 - (
+            Numeric.multiply.outer(t1, t2)
+            + Numeric.multiply.outer(t2, t1)
+            + v1*c2
+            - 2*v1*Numeric.multiply.outer(t2, t2)/v2
+        )/v2)/v2
+        
 
 class Dot(Binary):
     def __init__(self, iic1, iic2, **keyvals):
@@ -167,53 +197,50 @@ class Dot(Binary):
         assert iic2.output_style == VECTOR
         Binary.__init__(self, SCALAR, iic1, iic2, **keyvals)
 
-    def __call__(self, coordinates):
-        e1, t1 = self.iic1(coordinates)
-        e2, t2 = self.iic2(coordinates)
+    def value_tangent(self, coordinates):
+        e1, t1 = self.iic1.value_tangent(coordinates)
+        e2, t2 = self.iic2.value_tangent(coordinates)
         dot = Numeric.dot(e1, e2)
-        gdot = Numeric.zeros(coordinates.shape, Numeric.Float)
+        tdot = Numeric.zeros(coordinates.shape, Numeric.Float)
         for i in range(3):
-            gdot += e2[i]*t1[:,:,i] + e1[i]*t2[:,:,i]
-        return dot,gdot
+            tdot += e2[i]*t1[:,:,i] + e1[i]*t2[:,:,i]
+        return dot, tdot
 
-
-class Cos(Binary):
-    def __init__(self, distance1, distance2, **keyvals):
-        assert isinstance(distance1, Distance), "The first iic must be a distance."
-        assert isinstance(distance2, Distance), "The second iic must be a distance."
-        Binary.__init__(self, SCALAR, distance1, distance2, **keyvals)
-        
-    def __call__(self, coordinates):
-        d1, td1 = self.iic1(coordinates)
-        d2, td2 = self.iic2(coordinates)
-        e1, te1 = self.iic1.iic(coordinates)
-        e2, te2 = self.iic2.iic(coordinates)
-        edot = Numeric.dot(e1, e2)
-        dprod = (d1*d2)
-        ds1 = d1*d1
-        ds2 = d2*d2
-        cos = edot/dprod
-        gcos = Numeric.zeros(coordinates.shape, Numeric.Float)
+    def curvature(self, coordinates):
+        e1, t1 = self.iic1.value_tangent(coordinates)
+        e2, t2 = self.iic2.value_tangent(coordinates)
+        c1 = self.iic1.curvature(coordinates)
+        c2 = self.iic2.curvature(coordinates)
+        cdot = Numeric.zeros(coordinates.shape + coordinates.shape, Numeric.Float)
         for i in range(3):
-            gcos += (e2[i] - edot*e1[i]/ds1)*te1[:,:,i] + (e1[i] - edot*e2[i]/ds2)*te2[:,:,i]
-        gcos /= dprod
-        return cos,gcos        
-
+            cdot += e1[i]*c2[:,:,:,:,i] + Numeric.multiply.outer(t1[:,:,i], t2[:,:,i]) + Numeric.multiply.outer(t2[:,:,i], t1[:,:,i]) + e2[i]*c1[:,:,:,:,i]
+        return cdot
         
+
 class Scale(Binary):
     def __init__(self, iic1, iic2, **keyvals):
         assert iic1.output_style == SCALAR
         assert iic2.output_style == VECTOR
         Binary.__init__(self, VECTOR, iic1, iic2, **keyvals)
 
-    def __call__(self, coordinates):
-        v1, t1 = self.iic1(coordinates)
-        v2, t2 = self.iic2(coordinates)
+    def value_tangent(self, coordinates):
+        v1, t1 = self.iic1.value_tangent(coordinates)
+        e2, t2 = self.iic2.value_tangent(coordinates)
         tscale = v1*t2
         for i in xrange(3):
-            tscale[:,:,i] += v2[i]*t1
-        return v1*v2, tscale
+            tscale[:,:,i] += e2[i]*t1
+        return v1*e2, tscale
         
+    def curvature(self, coordinates):
+        v1, t1 = self.iic1.value_tangent(coordinates)
+        e2, t2 = self.iic2.value_tangent(coordinates)
+        c1 = self.iic1.curvature(coordinates)
+        c2 = self.iic2.curvature(coordinates)
+        cscale = v1*c2
+        for i in range(3):
+            cscale[:,:,:,:,i] = c1*e2[i] + Numeric.multiply.outer(t1, t2[:,:,i]) + Numeric.multiply.outer(t2[:,:,i], t1)
+        return cscale
+
 
 class Unary(InternalCoordinate):
     """
@@ -243,13 +270,25 @@ class Distance(Measure):
     these conventions.)
     """
 
-    def __call__(self, coordinates):
-        e, te = self.iic(coordinates)
+    def value_tangent(self, coordinates):
+        e, te = self.iic.value_tangent(coordinates)
         distance = math.sqrt(Numeric.dot(e, e))
         tdistance = Numeric.zeros(coordinates.shape, Numeric.Float)
         for i in range(3):
             tdistance += te[:,:,i]*e[i]/distance
         return distance, tdistance
+
+    def curvature(self, coordinates):
+        e, t = self.iic.value_tangent(coordinates)
+        c = self.iic.curvature(coordinates)
+        d2 = Numeric.dot(e, e)
+        d = math.sqrt(d2)
+        cd = Numeric.zeros(coordinates.shape + coordinates.shape, Numeric.Float)
+        for i in range(3):
+            cd += (Numeric.multiply.outer(t[:,:,i], t[:,:,i]) + e[i]*c[:,:,:,:,i])/d
+            for j in range(3):
+                cd -= (Numeric.multiply.outer(t[:,:,i], t[:,:,j])*e[i]*e[j])/(d*d2)
+        return cd
 
 
 class DistanceSqr(Measure):
@@ -259,13 +298,21 @@ class DistanceSqr(Measure):
     these conventions.)
     """
 
-    def __call__(self, coordinates):
-        e, te = self.iic(coordinates)
+    def value_tangent(self, coordinates):
+        e, te = self.iic.value_tangent(coordinates)
         distancesqr = Numeric.dot(e, e)
         tdistancesqr = Numeric.zeros(coordinates.shape, Numeric.Float)
         for i in range(3):
             tdistancesqr += 2*te[:,:,i]*e[i]
         return distancesqr, tdistancesqr
+
+    def curvature(self, coordinates):
+        e, t = self.iic.value_tangent(coordinates)
+        c = self.iic.curvature(coordinates)
+        cd2 = Numeric.zeros(coordinates.shape + coordinates.shape, Numeric.Float)
+        for i in range(3):
+            cd2 += 2*(Numeric.multiply.outer(t[:,:,i], t[:,:,i]) + e[i]*c[:,:,:,:,i])
+        return cd2
 
 
 class ScalarUnary(Unary):
@@ -275,21 +322,27 @@ class ScalarUnary(Unary):
 
 
 class Sqr(ScalarUnary):
-    def __call__(self, coordinates):
-        e, te = self.iic(coordinates)
-        sqr = e*e
-        tsqr = copy.deepcopy(te)
-        tsqr *= 2*e
-        return sqr, tsqr
+    def value_tangent(self, coordinates):
+        v, t = self.iic.value_tangent(coordinates)
+        return v*v, 2*v*t
+
+    def curvature(self, coordinates):
+        v, t = self.iic.value_tangent(coordinates)
+        c = self.iic.curvature(coordinates)
+        return 2*(Numeric.multiply.outer(t, t) + v*c)
 
 
 class Sqrt(ScalarUnary):
-    def __call__(self, coordinates):
-        e, te = self.iic(coordinates)
-        sqrt = math.sqrt(e)
-        tsqrt = copy.deepcopy(te)
-        tsqrt /= 2*sqrt
-        return sqrt, tsqrt
+    def value_tangent(self, coordinates):
+        v, t = self.iic.value_tangent(coordinates)
+        sqrt = math.sqrt(v)
+        return sqrt, t/(2*sqrt)
+
+    def curvature(self, coordinates):
+        v, t = self.iic.value_tangent(coordinates)
+        sqrt = math.sqrt(v)
+        c = self.iic.curvature(coordinates)
+        return 0.5*c/sqrt - 0.25*Numeric.multiply.outer(t, t)/(v*sqrt)
 
 
 # Tools for dealing with large sets of internal coordinates
@@ -427,10 +480,12 @@ class InternalCoordinatesCache(object):
             e2 = self.add(Delta, s1, s2)
             d1 = self.add(Distance, e1)
             d2 = self.add(Distance, e2)
+            dot = self.add(Dot, e1, e2)
+            dd = self.add(Mul, d1, d2)
             c = self.add(
-                Cos, 
-                d1,
-                d2, 
+                Div, 
+                dot,
+                dd, 
                 name="bend cos %i-%i-%i" % id,
                 id=id,
                 symbol="C%i-%i-%i" % id

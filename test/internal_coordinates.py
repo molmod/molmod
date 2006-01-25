@@ -19,13 +19,13 @@
 # 
 # --
 
-from pychem.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Cos, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
+from pychem.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
 from pychem.molecular_graphs import BondSets, BendSets, DihedralSets, OutOfPlaneSets, CriteriaSet
 from pychem.molecules import molecule_from_xyz_filename
 from pychem.moldata import BOND_SINGLE
 from pychem.units import from_angstrom
 
-import unittest, math, copy, Numeric, RandomArray
+import unittest, math, copy, Numeric, RandomArray, sys
 
 __all__ = ["InternalCoordinatesTPA", "Chainrule"]
 
@@ -38,7 +38,7 @@ class InternalCoordinatesTPA(unittest.TestCase):
         
     def verify(self, expected_results, internal_coordinates, yield_alternatives):
         for internal_coordinate in internal_coordinates:
-            value, derivates = internal_coordinate(self.molecule.coordinates)
+            value, derivates = internal_coordinate.value_tangent(self.molecule.coordinates)
             id = None
             for id in yield_alternatives(internal_coordinate.id):
                 expected_value = expected_results.get(id)
@@ -158,8 +158,8 @@ class Chainrule(unittest.TestCase):
         #print internal_coordinate.tag, sum(Numeric.dot(Numeric.ravel(tangent), external_basis)**2)
             
     def pair_test(self, internal_coordinate, ethene1, ethene2, expected_cos1, expected_cos2):
-        test_cos1, tangent1 = internal_coordinate(ethene1.coordinates)
-        test_cos2, tangent2 = internal_coordinate(ethene2.coordinates)
+        test_cos1, tangent1 = internal_coordinate.value_tangent(ethene1.coordinates)
+        test_cos2, tangent2 = internal_coordinate.value_tangent(ethene2.coordinates)
         
         # validate values
         if abs(test_cos1 - expected_cos1) > 1e-10:
@@ -245,6 +245,9 @@ class Chainrule(unittest.TestCase):
         e2 = self.ic_cache.add(Delta, s1, s2)        
         # b) part tests
         # b.1) unary, protocal A
+        ic = self.ic_cache.add(DistanceSqr, e1)
+        self.ic_cache.add_internal_coordinate("e1*e1", ic)
+        result.append(ic)
         ic = self.ic_cache.add(Sqrt, d1)
         self.ic_cache.add_internal_coordinate("sqrt d1", ic)
         result.append(ic)
@@ -273,9 +276,6 @@ class Chainrule(unittest.TestCase):
         ic = self.ic_cache.add(Dot, e1, e2)
         self.ic_cache.add_internal_coordinate("dot e1 e2", ic)
         result.append(ic)
-        ic = self.ic_cache.add(Cos, d1, d2)
-        self.ic_cache.add_internal_coordinate("cos d1 d2", ic)
-        result.append(ic)
         # b.5) exotics
         temp_ic = self.ic_cache.add(Scale, d1, e1)
         ic = self.ic_cache.add(DistanceSqr, temp_ic)
@@ -287,7 +287,7 @@ class Chainrule(unittest.TestCase):
         return result
 
     def sanity_test(self, internal_coordinate, mod_ethene):
-        foo, tangent = internal_coordinate(mod_ethene.coordinates)
+        foo, tangent = internal_coordinate.value_tangent(mod_ethene.coordinates)
         self.check_sanity(mod_ethene.coordinates, tangent, internal_coordinate)
 
     def test_sanity_random(self):
@@ -303,20 +303,92 @@ class Chainrule(unittest.TestCase):
                 mod_ethene = mutate_ethene()
                 self.sanity_test(internal_coordinate, mod_ethene)
 
-    def consistent_test(self, internal_coordinate, ethene1, ethene2):
-        value1, tangent1 = internal_coordinate(ethene1.coordinates)
-        value2, tangent2 = internal_coordinate(ethene2.coordinates)
+    def tangent_test(self, icn, index, largest, internal_coordinate, ethene1, ethene2):
+        dof = len(ethene1.coordinates)*3
+        value1, tangent1 = internal_coordinate.value_tangent(ethene1.coordinates)
+        value2, tangent2 = internal_coordinate.value_tangent(ethene2.coordinates)
+        tangent1.shape = (dof,)
+        tangent2.shape = (dof,)
+        
+        delta = ethene2.coordinates - ethene1.coordinates
+        delta.shape = (dof,)
+        tangent = 0.5*(tangent1 + tangent2)
         
         # validate tangents
-        delta = ethene2.coordinates - ethene1.coordinates
-        tangent = 0.5*(tangent1+tangent2)
-        delta_value_estimate = Numeric.dot(Numeric.ravel(tangent), Numeric.ravel(delta))
-        if abs(delta_value_estimate - (value2 - value1)) > 1e-8:
+        delta_value_estimate = Numeric.dot(tangent, delta)
+        error = abs(delta_value_estimate - (value2 - value1))
+        if error > 1e-8:
             self.errors.append(
-                "Chain rule problem: delta_value_estimate (%s) and value2 - value1 (%s) differ: %s" % (
-                    delta_value_estimate, 
+                "%2i  %2i/%2i %s Chain rule problem: delta_value_estimate1 (%10.5f) and value2 - value1 (%10.5f) differ: % 3.2e" % (
+                    icn, index, largest,
+                    internal_coordinate.label(), 
+                    delta_value_estimate1, 
                     (value2 - value1), 
-                    delta_value_estimate - (value2 - value1)
+                    error
+                )
+            )
+    
+    def curvature_test(self, icn, index, largest, internal_coordinate, ethene):
+        dof = len(ethene.coordinates)*3
+        value, tangent = internal_coordinate.value_tangent(ethene.coordinates)
+        tangent.shape = (dof,)
+        curvature = internal_coordinate.curvature(ethene.coordinates)
+        curvature.shape = (dof, dof)
+        
+        def str_matrix(matrix):
+            result = ""
+            for row in matrix:
+                for element in row:
+                    if element == 0.0:
+                        result += " ."
+                    else:
+                        log10_element = int(math.log10(abs(element)))
+                        if log10_element >= 10:
+                            result += "XX"
+                        elif log10_element <= -10:
+                            result += ",,"
+                        else:
+                            result += "%+2i" % log10_element
+                result += "\n"
+            return result
+        
+        epsilon = 1e-5
+        numeric_curvature = Numeric.zeros(curvature.shape, Numeric.Float)
+        #print internal_coordinate.label()
+        for i in xrange(dof):
+            excenter_coordinates = ethene.coordinates.copy()
+            excenter_coordinates[i/3, i%3] += epsilon
+            excenter_value, excenter_tangent = internal_coordinate.value_tangent(excenter_coordinates)
+            excenter_tangent.shape = (dof,)
+            numeric_curvature[i,:] += 0.5*(excenter_tangent - tangent)/epsilon
+            numeric_curvature[:,i] += 0.5*(excenter_tangent - tangent)/epsilon
+            
+        #print str_matrix(abs(curvature - numeric_curvature))
+        
+        #print "analytic symmetric:", sum(Numeric.ravel(curvature - Numeric.transpose(curvature))**2)
+        #print "numeric  symmetric:", sum(Numeric.ravel(numeric_curvature - Numeric.transpose(numeric_curvature))**2)
+        #print "% 3.2e (% 3.2e, % 3.2e)" % (error, scale, nscale)
+        
+        #symmetry_error = sum(Numeric.ravel(numeric_curvature - Numeric.transpose(numeric_curvature))**2)
+        #if symmetry_error > 1e-5:
+        #    self.errors.append(
+        #        "%2i/%2i %s Chain rule symmetry_error: % 3.2e" % (
+        #            index, largest,
+        #            internal_coordinate.label(), 
+        #            symmetry_error
+        #        )
+        #    )
+        
+        curvature_error = sum(Numeric.ravel(curvature - numeric_curvature)**2)
+        curvature_scale = sum(Numeric.ravel(curvature)**2)
+        ncurvature_scale = sum(Numeric.ravel(numeric_curvature)**2)
+        if curvature_error > 1e-6 and curvature_error * 1e6 > curvature_scale:
+            self.errors.append(
+                "%2i  %2i/%2i %s Chain rule curvature_error: % 3.2e (% 3.2e)\n%s" % (
+                    icn, index, largest,
+                    internal_coordinate.label(), 
+                    curvature_error, curvature_scale,
+                    str_matrix(curvature - numeric_curvature)
                 )
             )
 
@@ -330,10 +402,11 @@ class Chainrule(unittest.TestCase):
         
         self.errors = []
         
-        for internal_coordinate in internal_coordinates:
+        for icn, internal_coordinate in enumerate(internal_coordinates):
             for index in xrange(100):
                 mod1_ethene = mutate_ethene(3, self.ethene)
-                mod2_ethene = mutate_ethene(1e-4, mod1_ethene)
-                self.consistent_test(internal_coordinate, mod1_ethene, mod2_ethene)
+                mod2_ethene = mutate_ethene(1e-5, mod1_ethene)
+                self.tangent_test(icn, index, 99, internal_coordinate, mod1_ethene, mod2_ethene)
+                self.curvature_test(icn, index, 99, internal_coordinate, mod1_ethene)
 
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))            
