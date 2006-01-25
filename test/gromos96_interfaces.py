@@ -38,7 +38,7 @@ class Gromos96Interface(unittest.TestCase):
             self.assert_(job.completed)
             #print job.forces1
             #print job.forces2
-            print job.potential_energy
+            #print job.potential_energy
         
         parameters = {
             "bs_coef_51": 1.0700e+6,

@@ -154,7 +154,7 @@ class MassParser(ThermoChemParser):
 class GradientParser(ThermoChemParser):
     def __init__(self, label="gradient_list", condition=None):
         ThermoChemParser.__init__(self, label,
-            activator=re.compile("***** Axes restored to original set *****"), 
+            activator=re.compile("\*\*\*\*\* Axes restored to original set \*\*\*\*\*"), 
             deactivator=re.compile("Cartesian Forces:"), 
             condition=condition
         )

@@ -160,3 +160,56 @@ class OOMpqcInterface(unittest.TestCase):
         job.run()
         validate()
 
+        prefix = job.prefix
+        job = reload_job(prefix + ".job")
+        job.run()
+        validate()
+
+    def test_optimize(self):
+        def validate():
+            #self.assert_(job.completed)
+            self.assertAlmostEqual(job.energies[-1], -75.973963163199997, 8)
+            coordinates = job.output_molecules[-1].coordinates
+            delta = coordinates[0]-coordinates[1]
+            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 3)
+            delta = coordinates[0]-coordinates[2]
+            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 3)
+            delta = coordinates[1]-coordinates[2]
+            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 2.96668446577, 3)
+            evals = LinearAlgebra.eigenvalues(job.hessian)
+            self.assert_(min(evals) > -1e-6, "All eigenvalues of a hessian of an optimized molecule should be positive.\n%s" % str(evals))
+        
+        water = molecule_from_xyz_filename("input/water.xyz")
+        keyval = create_optimize_kv(
+            molecule=water,
+            charge=0,
+            method="CLKS",
+            basis="3-21G*",
+            functional="B3LYP"
+        )
+        keyval['mpqc']['freq'] = KeyValObject('MolecularFrequencies', named_items=[
+            ('molecule', keyval['molecule'])
+        ])
+        job = OOMpqcJob(
+            prefix="output/water_oo_opt",
+            title="Water single point berekening", 
+            keyval=keyval,
+            output_parser=OutputParser([
+                MolecularEnergiesParser('energies'),
+                OutputMoleculesParser('output_molecules'),
+                OptimizationConvergedParser('converged'),
+                HessianParser('hessian')
+            ])
+        )
+        job.run(cleanup=True)
+        validate()
+        if not job.completed:
+            job.run(forcerun=True)
+            validate()
+        job.run()
+        validate()
+
+        prefix = job.prefix
+        job = reload_job(prefix + ".job")
+        job.run()
+        validate()
