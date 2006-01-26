@@ -33,7 +33,7 @@ __all__ = [
 
 
 # Classes for calculating the partial derivatives of the internal
-# coordinates towards the carthesian coordinates
+# coordinates towards the cartesian coordinates
 
 SCALAR = 0
 VECTOR = 2
