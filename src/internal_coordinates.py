@@ -26,8 +26,8 @@ import Numeric
 
 __all__ = [
     "InternalCoordinate", "Select", 
-    "Binary", "Add", "Sub", "Delta", "Mul", "Div", "Dot", "Cos", 
-    "Unary", "Distance", "DistanceSqr", "Sqr", "Sqrt", "ArcCos",
+    "Binary", "Add", "Sub", "Delta", "Mul", "Div", "Dot",
+    "Unary", "Distance", "DistanceSqr", "Sqr", "Sqrt",
     "InternalCoordinatesCache"
 ]
 
