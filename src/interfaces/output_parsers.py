@@ -23,6 +23,10 @@
 from os.path import isfile
 
 
+class Error(Exception):
+    pass
+
+
 class OutputParser(object):
     def __init__(self, file_parsers=[]):
         self.clear()
@@ -75,6 +79,8 @@ class OutputParser(object):
                 f.close()
                 for file_parser in file_parser_group.items:
                     result[file_parser.label] = file_parser.result()
+            else:
+                raise Error("File %s not found" % path)
         return result
 
 
