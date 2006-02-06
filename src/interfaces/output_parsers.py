@@ -141,11 +141,13 @@ class MultiLineParser(FileParser):
     def parse(self, line):
         if self.active:
             if self.deactivator != None and self.deactivator.search(line) != None:
+                #print "Deactivated on line: %s" % line[:-1]
                 self.active = False
                 self.stop_collecting()
             else:
                 self.collect(line)
         elif self.activator != None and self.activator.search(line) != None:
+            #print "Activated on line:   %s" % line[:-1]
             self.active = True
             self.start_collecting()
         elif self.activator == None and self.deactivator == None:

@@ -58,7 +58,7 @@ class HessianParser(ThermoChemParser):
     def __init__(self, label="hessian", condition=None):
         ThermoChemParser.__init__(self, label,
             activator=re.compile("Force constants in Cartesian coordinates:"), 
-            deactivator=re.compile("Force constants in internal coordinates:"), 
+            deactivator=re.compile(r"^\s*\b[^0-9+\-]"), 
             condition=condition
         )
     
