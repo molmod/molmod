@@ -47,19 +47,12 @@ class Gaussian98Interface(unittest.TestCase):
         expected_keys = ['energies', 'masses', 'coordinates_list', 'low_frequencies', 'selected_frequencies', 'hessian', 'gradient_list']
         for expected_key in expected_keys:
             self.assert_(expected_key in result)
+            #print "'%s': %s" % (expected_key, results[expected_key])
 
-        hessian = result["hessian"]
-        masses = result["masses"]
-        coordinates_list = result["coordinates_list"]
+        #hessian = result["hessian"]
+        #masses = result["masses"]
+        #coordinates_list = result["coordinates_list"]
 
-        #print "hessian:", hessian
-        #print "masses:", masses
-        #print "coordinates_list:", coordinates_list
-        #print "energies:", result["energies"]
-        #print "low frequencies:", result["low_frequencies"]
-        #print "selected frequencies:", result["selected_frequencies"]
-        #print "gradient_list", result["gradient_list"]
-        
         #print "symmetry hessian:", sum(Numeric.ravel(hessian - Numeric.transpose(hessian))**2)
         
         #print "DOF hess:   % 3i, % 3i" % (hessian.shape[0], hessian.shape[1])

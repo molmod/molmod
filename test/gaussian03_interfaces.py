@@ -40,25 +40,20 @@ class Gaussian03Interface(unittest.TestCase):
             LowFrequenciesParser(),
             SelectedFrequenciesParser(),
             GradientParser(),
+            IsOptimizedParser(),
+            OptimizedCoordinatesParser(),
         ])
 
         result = output_parser.parse("input", "g03_1")
 
-        expected_keys = ['energies', 'masses', 'coordinates_list', 'low_frequencies', 'selected_frequencies', 'hessian', 'gradient_list']
+        expected_keys = ['energies', 'masses', 'coordinates_list', 'low_frequencies', 'selected_frequencies', 'hessian', 'gradient_list', 'optimized', 'optimized_coordinates']
         for expected_key in expected_keys:
             self.assert_(expected_key in result)
-
-        hessian = result["hessian"]
-        masses = result["masses"]
-        coordinates_list = result["coordinates_list"]
-
-        #print "hessian:", hessian
-        #print "masses:", masses
-        #print "coordinates_list:", coordinates_list
-        #print "energies:", result["energies"]
-        #print "low frequencies:", result["low_frequencies"]
-        #print "selected frequencies:", result["selected_frequencies"]
-        #print "gradient_list", result["gradient_list"]
+            #print "'%s': %s" % (expected_key, result[expected_key])
+        
+        #hessian = result["hessian"]
+        #masses = result["masses"]
+        #coordinates_list = result["coordinates_list"]
         
         #print "symmetry hessian:", sum(Numeric.ravel(hessian - Numeric.transpose(hessian))**2)
         

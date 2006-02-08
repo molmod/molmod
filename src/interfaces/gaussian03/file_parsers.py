@@ -220,6 +220,61 @@ class CoordinatesParser(ConfigurationParser):
         return self.coordinates
 
 
+class OptimizedParser(LinkParser):
+    def __init__(self, label, activator=None, deactivator=None, condition=None, depends_on=[]):
+        LinkParser.__init__(self, "103", label, activator, deactivator, condition, depends_on)
+
+
+class IsOptimizedParser(OptimizedParser):
+    def __init__(self, label="optimized", condition=None):
+        OptimizedParser.__init__(self, label, None, None, condition)
+        self.re = re.compile("-- Stationary point found\.")
+
+    def reset(self):
+        OptimizedParser.reset(self)
+        self.optimized = False
+    
+    def collect(self, line):
+        if not self.optimized and self.re.search(line) != None:
+            self.optimized = True
+            
+    def result(self):
+        return self.optimized
+
+
+class OptimizedCoordinatesParser(OptimizedParser):
+    def __init__(self, label="optimized_coordinates", condition=None):
+        OptimizedParser.__init__(self, label,
+            re.compile("Optimized Parameters"), 
+            re.compile("GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad"), 
+            condition
+        )
+        self.re = re.compile("\S+\s+R\(\d+,-\d\)\s+(?P<coordinate>\S+)\s+-DE/DX")
+    
+    def reset(self):
+        OptimizedParser.reset(self)
+        self.completed = False
+    
+    def start_collecting(self):
+        if not self.completed:
+            self.optimized_coordinates = []
+        
+    def collect(self, line):
+        if not self.completed:
+            match = self.re.search(line)
+            if match != None:
+                self.optimized_coordinates.append(from_angstrom(float(match.group("coordinate"))))
+        
+    def stop_collecting(self):
+        if not self.completed:
+            self.optimized_coordinates = Numeric.array(self.optimized_coordinates, Numeric.Float)
+            self.optimized_coordinates.shape = (-1, 3)
+            self.completed = True
+        
+    def result(self):
+        return self.optimized_coordinates
+
+
 class SCFParser(LinkParser):
     def __init__(self, label, activator=None, deactivator=None, condition=None, depends_on=[]):
         LinkParser.__init__(self, "502", label, activator, deactivator, condition, depends_on)
