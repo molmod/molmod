@@ -1,4 +1,5 @@
 include COPYING
 include README
-include src/moldata/*.csv
-include src/moldata/*.sxc
+include share/awk/*.awk
+include share/moldata/*.csv
+include share/templates/gromos96_sp/*
