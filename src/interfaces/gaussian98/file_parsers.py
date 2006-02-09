@@ -23,7 +23,7 @@
 from pychem.interfaces.output_parsers import FileParser, MultiLineParser
 from pychem.moldata import periodic
 from pychem.molecules import Molecule
-from pychem.units import from_angstrom
+from pychem.units import from_angstrom, from_unified
 
 import re, Numeric
 
@@ -142,7 +142,7 @@ class MassParser(ThermoChemParser):
     def collect(self, line):
         match = self.re.search(line)
         if match != None:
-            self.masses.append(float(match.group("mass")))
+            self.masses.append(from_unified(float(match.group("mass"))))
 
     def stop_collecting(self):
         self.masses = Numeric.array(self.masses, Numeric.Float)
