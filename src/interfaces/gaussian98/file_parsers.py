@@ -71,7 +71,7 @@ class HessianParser(ThermoChemParser):
     
     def collect(self, line):
         words = line.split()
-        if words[1].find("D") >= 0:
+        if (len(words) > 1) and (words[1].find("D") >= 0):
             row_number = int(words[0])
             if row_number > len(self.hessian):
                 row = []
