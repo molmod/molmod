@@ -22,7 +22,7 @@
 from pychem.molecular_graphs import MolecularGraph
 
 import math, copy
-import Numeric
+import numpy
 
 __all__ = [
     "InternalCoordinate", "Select", 
@@ -79,14 +79,14 @@ class Select(InternalCoordinate):
         self.index = index
         
     def value_tangent(self, coordinates):
-        tangent = Numeric.zeros((len(coordinates), 3, 3), Numeric.Float)
+        tangent = numpy.zeros((len(coordinates), 3, 3), float)
         tangent[self.index, 0, 0] = 1
         tangent[self.index, 1, 1] = 1
         tangent[self.index, 2, 2] = 1
         return coordinates[self.index], tangent
 
     def curvature(self, coordinates):
-        curvature = Numeric.zeros((len(coordinates), 3, len(coordinates), 3, 3), Numeric.Float)
+        curvature = numpy.zeros((len(coordinates), 3, len(coordinates), 3, 3), float)
         return curvature
         
     def label(self):
@@ -169,7 +169,7 @@ class Mul(ScalarBinary):
         v2, t2 = self.iic2.value_tangent(coordinates)
         c1 = self.iic1.curvature(coordinates)
         c2 = self.iic2.curvature(coordinates)
-        return v1*c2 + v2*c1 + Numeric.multiply.outer(t1, t2) + Numeric.multiply.outer(t2, t1)
+        return v1*c2 + v2*c1 + numpy.multiply.outer(t1, t2) + numpy.multiply.outer(t2, t1)
         
 
 class Div(ScalarBinary):
@@ -184,10 +184,10 @@ class Div(ScalarBinary):
         c1 = self.iic1.curvature(coordinates)
         c2 = self.iic2.curvature(coordinates)
         return (c1 - (
-            Numeric.multiply.outer(t1, t2)
-            + Numeric.multiply.outer(t2, t1)
+            numpy.multiply.outer(t1, t2)
+            + numpy.multiply.outer(t2, t1)
             + v1*c2
-            - 2*v1*Numeric.multiply.outer(t2, t2)/v2
+            - 2*v1*numpy.multiply.outer(t2, t2)/v2
         )/v2)/v2
         
 
@@ -200,8 +200,8 @@ class Dot(Binary):
     def value_tangent(self, coordinates):
         e1, t1 = self.iic1.value_tangent(coordinates)
         e2, t2 = self.iic2.value_tangent(coordinates)
-        dot = Numeric.dot(e1, e2)
-        tdot = Numeric.zeros(coordinates.shape, Numeric.Float)
+        dot = numpy.dot(e1, e2)
+        tdot = numpy.zeros(coordinates.shape, float)
         for i in range(3):
             tdot += e2[i]*t1[:,:,i] + e1[i]*t2[:,:,i]
         return dot, tdot
@@ -211,9 +211,9 @@ class Dot(Binary):
         e2, t2 = self.iic2.value_tangent(coordinates)
         c1 = self.iic1.curvature(coordinates)
         c2 = self.iic2.curvature(coordinates)
-        cdot = Numeric.zeros(coordinates.shape + coordinates.shape, Numeric.Float)
+        cdot = numpy.zeros(coordinates.shape + coordinates.shape, float)
         for i in range(3):
-            cdot += e1[i]*c2[:,:,:,:,i] + Numeric.multiply.outer(t1[:,:,i], t2[:,:,i]) + Numeric.multiply.outer(t2[:,:,i], t1[:,:,i]) + e2[i]*c1[:,:,:,:,i]
+            cdot += e1[i]*c2[:,:,:,:,i] + numpy.multiply.outer(t1[:,:,i], t2[:,:,i]) + numpy.multiply.outer(t2[:,:,i], t1[:,:,i]) + e2[i]*c1[:,:,:,:,i]
         return cdot
         
 
@@ -238,7 +238,7 @@ class Scale(Binary):
         c2 = self.iic2.curvature(coordinates)
         cscale = v1*c2
         for i in range(3):
-            cscale[:,:,:,:,i] = c1*e2[i] + Numeric.multiply.outer(t1, t2[:,:,i]) + Numeric.multiply.outer(t2[:,:,i], t1)
+            cscale[:,:,:,:,i] = c1*e2[i] + numpy.multiply.outer(t1, t2[:,:,i]) + numpy.multiply.outer(t2[:,:,i], t1)
         return cscale
 
 
@@ -272,8 +272,8 @@ class Distance(Measure):
 
     def value_tangent(self, coordinates):
         e, te = self.iic.value_tangent(coordinates)
-        distance = math.sqrt(Numeric.dot(e, e))
-        tdistance = Numeric.zeros(coordinates.shape, Numeric.Float)
+        distance = math.sqrt(numpy.dot(e, e))
+        tdistance = numpy.zeros(coordinates.shape, float)
         for i in range(3):
             tdistance += te[:,:,i]*e[i]/distance
         return distance, tdistance
@@ -281,13 +281,13 @@ class Distance(Measure):
     def curvature(self, coordinates):
         e, t = self.iic.value_tangent(coordinates)
         c = self.iic.curvature(coordinates)
-        d2 = Numeric.dot(e, e)
+        d2 = numpy.dot(e, e)
         d = math.sqrt(d2)
-        cd = Numeric.zeros(coordinates.shape + coordinates.shape, Numeric.Float)
+        cd = numpy.zeros(coordinates.shape + coordinates.shape, float)
         for i in range(3):
-            cd += (Numeric.multiply.outer(t[:,:,i], t[:,:,i]) + e[i]*c[:,:,:,:,i])/d
+            cd += (numpy.multiply.outer(t[:,:,i], t[:,:,i]) + e[i]*c[:,:,:,:,i])/d
             for j in range(3):
-                cd -= (Numeric.multiply.outer(t[:,:,i], t[:,:,j])*e[i]*e[j])/(d*d2)
+                cd -= (numpy.multiply.outer(t[:,:,i], t[:,:,j])*e[i]*e[j])/(d*d2)
         return cd
 
 
@@ -300,8 +300,8 @@ class DistanceSqr(Measure):
 
     def value_tangent(self, coordinates):
         e, te = self.iic.value_tangent(coordinates)
-        distancesqr = Numeric.dot(e, e)
-        tdistancesqr = Numeric.zeros(coordinates.shape, Numeric.Float)
+        distancesqr = numpy.dot(e, e)
+        tdistancesqr = numpy.zeros(coordinates.shape, float)
         for i in range(3):
             tdistancesqr += 2*te[:,:,i]*e[i]
         return distancesqr, tdistancesqr
@@ -309,9 +309,9 @@ class DistanceSqr(Measure):
     def curvature(self, coordinates):
         e, t = self.iic.value_tangent(coordinates)
         c = self.iic.curvature(coordinates)
-        cd2 = Numeric.zeros(coordinates.shape + coordinates.shape, Numeric.Float)
+        cd2 = numpy.zeros(coordinates.shape + coordinates.shape, float)
         for i in range(3):
-            cd2 += 2*(Numeric.multiply.outer(t[:,:,i], t[:,:,i]) + e[i]*c[:,:,:,:,i])
+            cd2 += 2*(numpy.multiply.outer(t[:,:,i], t[:,:,i]) + e[i]*c[:,:,:,:,i])
         return cd2
 
 
@@ -329,7 +329,7 @@ class Sqr(ScalarUnary):
     def curvature(self, coordinates):
         v, t = self.iic.value_tangent(coordinates)
         c = self.iic.curvature(coordinates)
-        return 2*(Numeric.multiply.outer(t, t) + v*c)
+        return 2*(numpy.multiply.outer(t, t) + v*c)
 
 
 class Sqrt(ScalarUnary):
@@ -342,7 +342,7 @@ class Sqrt(ScalarUnary):
         v, t = self.iic.value_tangent(coordinates)
         sqrt = math.sqrt(v)
         c = self.iic.curvature(coordinates)
-        return 0.5*c/sqrt - 0.25*Numeric.multiply.outer(t, t)/(v*sqrt)
+        return 0.5*c/sqrt - 0.25*numpy.multiply.outer(t, t)/(v*sqrt)
 
 
 # Tools for dealing with large sets of internal coordinates

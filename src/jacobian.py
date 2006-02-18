@@ -21,7 +21,7 @@
 
 # Tools related to solving the jacobian system
 
-import Numeric, LinearAlgebra, math
+import numpy, numpy.linalg, math
 
 def jacobian_analysis(configuration, internal_coordinates):
     configuration.internal_coordinates = internal_coordinates
@@ -31,29 +31,29 @@ def jacobian_analysis(configuration, internal_coordinates):
     for internal_coordinate in internal_coordinates:
         value, tangent = internal_coordinate.value_tangent(configuration.cartesian_values)
         values.append(value)
-        jacobian.append(Numeric.ravel(tangent))
+        jacobian.append(numpy.ravel(tangent))
         
-    configuration.internal_values = Numeric.array(values)
-    configuration.jacobian = Numeric.transpose(Numeric.array(jacobian))
+    configuration.internal_values = numpy.array(values)
+    configuration.jacobian = numpy.transpose(numpy.array(jacobian))
 
 
 def energy_analysis(configuration, internal_coordinates):
     jacobian_analysis(configuration, internal_coordinates)
     configuration.energy_error = configuration.energy_accuracy
 
-    V, S, Wt = LinearAlgebra.singular_value_decomposition(configuration.jacobian, True)
-    W = Numeric.transpose(Wt)
+    V, S, Wt = numpy.linalg.svd(configuration.jacobian, True)
+    W = numpy.transpose(Wt)
     rank = sum(abs(S)>(max(abs(S))*1e-7))
     configuration.rank = rank
     S = S[:rank]
     V = V[:,:rank]
     
-    particular_transform = Numeric.dot(W[:,:rank], Numeric.transpose(V/S))
+    particular_transform = numpy.dot(W[:,:rank], numpy.transpose(V/S))
     
-    configuration.gradient = Numeric.ravel(configuration.gradient)
-    configuration.particular = Numeric.dot(particular_transform, configuration.gradient)
-    configuration.gradient_error = Numeric.ones(configuration.gradient.shape, Numeric.Float)*configuration.gradient_accuracy
-    configuration.particular_error = Numeric.sqrt(Numeric.dot(particular_transform**2, configuration.gradient_error**2))
+    configuration.gradient = numpy.ravel(configuration.gradient)
+    configuration.particular = numpy.dot(particular_transform, configuration.gradient)
+    configuration.gradient_error = numpy.ones(configuration.gradient.shape, float)*configuration.gradient_accuracy
+    configuration.particular_error = numpy.sqrt(numpy.dot(particular_transform**2, configuration.gradient_error**2))
 
     if W.shape[1] > rank:
         configuration.nullspace = W[:,rank:]

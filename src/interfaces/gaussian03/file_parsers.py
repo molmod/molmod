@@ -25,7 +25,7 @@ from pychem.moldata import periodic
 from pychem.molecules import Molecule
 from pychem.units import from_angstrom, from_unified
 
-import re, Numeric
+import re, numpy
 
 
 class LinkParser(MultiLineParser):
@@ -82,7 +82,7 @@ class HessianParser(ThermoChemParser):
                 row.append(float(word.replace("D", "e")))
 
     def stop_collecting(self):
-        hessian = Numeric.zeros((len(self.hessian), len(self.hessian)), Numeric.Float)
+        hessian = numpy.zeros((len(self.hessian), len(self.hessian)), float)
         for row_index, row in enumerate(self.hessian):
             for col_index, value in enumerate(row):
                 hessian[row_index, col_index] = value
@@ -110,7 +110,7 @@ class FrequenciesParser(ThermoChemParser):
             self.frequencies.extend(float(word) for word in words)
     
     def result(self):
-        return Numeric.array(self.frequencies)
+        return numpy.array(self.frequencies)
 
         
 class LowFrequenciesParser(FrequenciesParser):
@@ -145,7 +145,7 @@ class MassParser(ThermoChemParser):
             self.masses.append(from_unified(float(match.group("mass"))))
 
     def stop_collecting(self):
-        self.masses = Numeric.array(self.masses, Numeric.Float)
+        self.masses = numpy.array(self.masses, float)
         
     def result(self):
         return self.masses
@@ -177,7 +177,7 @@ class GradientParser(ThermoChemParser):
             ])
 
     def stop_collecting(self):
-        self.gradient_list.append(Numeric.array(self.gradient, Numeric.Float))
+        self.gradient_list.append(numpy.array(self.gradient, float))
         
     def result(self):
         return self.gradient_list
@@ -214,7 +214,7 @@ class CoordinatesParser(ConfigurationParser):
             ])
         
     def stop_collecting(self):
-        self.coordinates.append(Numeric.array(self.current_coordinates, Numeric.Float))
+        self.coordinates.append(numpy.array(self.current_coordinates, float))
         
     def result(self):
         return self.coordinates
@@ -267,7 +267,7 @@ class OptimizedCoordinatesParser(OptimizedParser):
         
     def stop_collecting(self):
         if not self.completed:
-            self.optimized_coordinates = Numeric.array(self.optimized_coordinates, Numeric.Float)
+            self.optimized_coordinates = numpy.array(self.optimized_coordinates, float)
             self.optimized_coordinates.shape = (-1, 3)
             self.completed = True
         
@@ -295,4 +295,4 @@ class EnergyParser(SCFParser):
             self.energies.append(float(match.group("energy")))
 
     def result(self):
-        return Numeric.array(self.energies)
+        return numpy.array(self.energies)

@@ -23,7 +23,7 @@ from pychem.interfaces.gaussian03.file_parsers import *
 from pychem.interfaces.output_parsers import OutputParser
 
 
-import math, Numeric, LinearAlgebra
+import math, numpy, numpy.linalg
 import unittest
 
 
@@ -55,7 +55,7 @@ class Gaussian03Interface(unittest.TestCase):
         #masses = result["masses"]
         #coordinates_list = result["coordinates_list"]
         
-        #print "symmetry hessian:", sum(Numeric.ravel(hessian - Numeric.transpose(hessian))**2)
+        #print "symmetry hessian:", sum(numpy.ravel(hessian - numpy.transpose(hessian))**2)
         
         #print "DOF hess:   % 3i, % 3i" % (hessian.shape[0], hessian.shape[1])
         #print "DOF masses: % 3i" % (len(masses)*3)

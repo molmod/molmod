@@ -22,7 +22,7 @@
 
 from pychem.binning import InterAnalyseNeighbouringObjects, IntraAnalyseNeighbouringObjects, PositionedObject, SparseBinnedObjects
 
-import math, Numeric
+import math, numpy
 import unittest
 
 __all__ = ["Distances"]
@@ -46,7 +46,7 @@ class Distances(unittest.TestCase):
         wrong_distances = []
         for (reference1, coord1), (reference2, coord2) in yield_pairs():
             delta = coord2 - coord1
-            distance = math.sqrt(Numeric.dot(delta, delta))
+            distance = math.sqrt(numpy.dot(delta, delta))
             if distance < self.gridsize:
                 identifier = frozenset([reference1, reference2])
                 fast_distance = distances.get(identifier)
@@ -89,7 +89,7 @@ class Distances(unittest.TestCase):
 
     def compare_function(self, atom1, atom2, position1, position2):
         delta = position2 - position1
-        distance = math.sqrt(Numeric.dot(delta, delta))
+        distance = math.sqrt(numpy.dot(delta, delta))
         if distance < self.gridsize:
             return distance
         

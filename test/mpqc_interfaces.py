@@ -28,7 +28,7 @@ from pychem.interfaces.mpqc.file_parsers import *
 from pychem.interfaces.output_parsers import OutputParser
 from pychem.molecules import molecule_from_xyz_filename
 
-import math, Numeric, LinearAlgebra
+import math, numpy, numpy.linalg
 import unittest
 
 __all__ = ["AwkMpqcInterface", "OOMpqcInterface", "MpqcRawGridInterface"]
@@ -77,11 +77,11 @@ class AwkMpqcInterface(unittest.TestCase):
             self.assertAlmostEqual(job.energies[-1], -75.973963163199997, 8)
             coordinates = job.output_molecule.coordinates
             delta = coordinates[0]-coordinates[1]
-            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 6)
+            self.assertAlmostEqual(math.sqrt(numpy.dot(delta, delta)), 1.88335259871, 6)
             delta = coordinates[0]-coordinates[2]
-            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 6)
+            self.assertAlmostEqual(math.sqrt(numpy.dot(delta, delta)), 1.88335259871, 6)
             delta = coordinates[1]-coordinates[2]
-            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 2.96668446577, 6)
+            self.assertAlmostEqual(math.sqrt(numpy.dot(delta, delta)), 2.96668446577, 6)
         
         water = molecule_from_xyz_filename("input/water.xyz")
         job = AwkMpqcJobOptimize(
@@ -171,12 +171,12 @@ class OOMpqcInterface(unittest.TestCase):
             self.assertAlmostEqual(job.energies[-1], -75.973963163199997, 8)
             coordinates = job.output_molecules[-1].coordinates
             delta = coordinates[0]-coordinates[1]
-            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 3)
+            self.assertAlmostEqual(math.sqrt(numpy.dot(delta, delta)), 1.88335259871, 3)
             delta = coordinates[0]-coordinates[2]
-            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 1.88335259871, 3)
+            self.assertAlmostEqual(math.sqrt(numpy.dot(delta, delta)), 1.88335259871, 3)
             delta = coordinates[1]-coordinates[2]
-            self.assertAlmostEqual(math.sqrt(Numeric.dot(delta, delta)), 2.96668446577, 3)
-            evals = LinearAlgebra.eigenvalues(job.hessian)
+            self.assertAlmostEqual(math.sqrt(numpy.dot(delta, delta)), 2.96668446577, 3)
+            evals = numpy.linalg.eigenvalues(job.hessian)
             self.assert_(min(evals) > -1e-6, "All eigenvalues of a hessian of an optimized molecule should be positive.\n%s" % str(evals))
         
         water = molecule_from_xyz_filename("input/water.xyz")

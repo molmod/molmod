@@ -25,7 +25,7 @@ from pychem.molecules import molecule_from_xyz_filename
 from pychem.moldata import BOND_SINGLE
 from pychem.units import from_angstrom
 
-import unittest, math, copy, Numeric, RandomArray, sys
+import unittest, math, copy, numpy, RandomArray, sys
 
 __all__ = ["InternalCoordinatesTPA", "Chainrule"]
 
@@ -133,29 +133,29 @@ class Chainrule(unittest.TestCase):
         self.ic_cache = InternalCoordinatesCache(self.ethene)
 
     def create_external_basis(self, coordinates):
-        x_rotation = Numeric.zeros((3,3), Numeric.Float)
+        x_rotation = numpy.zeros((3,3), float)
         x_rotation[1,2] = -1
         x_rotation[2,1] = 1
-        y_rotation = Numeric.zeros((3,3), Numeric.Float)
+        y_rotation = numpy.zeros((3,3), float)
         y_rotation[2,0] = -1
         y_rotation[0,2] = 1
-        z_rotation = Numeric.zeros((3,3), Numeric.Float)
+        z_rotation = numpy.zeros((3,3), float)
         z_rotation[0,1] = -1
         z_rotation[1,0] = 1
-        return Numeric.array([
+        return numpy.array([
             [1, 0, 0]*len(coordinates),
             [0, 1, 0]*len(coordinates),
             [0, 0, 1]*len(coordinates),
-            Numeric.ravel(Numeric.dot(coordinates, x_rotation)),
-            Numeric.ravel(Numeric.dot(coordinates, y_rotation)),
-            Numeric.ravel(Numeric.dot(coordinates, z_rotation))
-        ], Numeric.Float)
+            numpy.ravel(numpy.dot(coordinates, x_rotation)),
+            numpy.ravel(numpy.dot(coordinates, y_rotation)),
+            numpy.ravel(numpy.dot(coordinates, z_rotation))
+        ], float)
     
     def check_sanity(self, coordinates, tangent, internal_coordinate):
-        external_basis = Numeric.transpose(self.create_external_basis(coordinates))
-        components = Numeric.dot(Numeric.ravel(tangent), external_basis)
+        external_basis = numpy.transpose(self.create_external_basis(coordinates))
+        components = numpy.dot(numpy.ravel(tangent), external_basis)
         self.assert_(sum(components**2) < 1e-10, "Chain rule problem: failed on sanity_check for '%s' (%s)" % (internal_coordinate.tag, components))
-        #print internal_coordinate.tag, sum(Numeric.dot(Numeric.ravel(tangent), external_basis)**2)
+        #print internal_coordinate.tag, sum(numpy.dot(numpy.ravel(tangent), external_basis)**2)
             
     def pair_test(self, internal_coordinate, ethene1, ethene2, expected_cos1, expected_cos2):
         test_cos1, tangent1 = internal_coordinate.value_tangent(ethene1.coordinates)
@@ -170,7 +170,7 @@ class Chainrule(unittest.TestCase):
         # validate tangents
         delta = ethene2.coordinates - ethene1.coordinates
         tangent = 0.5*(tangent1+tangent2)
-        delta_cos_estimate = Numeric.dot(Numeric.ravel(tangent), Numeric.ravel(delta))
+        delta_cos_estimate = numpy.dot(numpy.ravel(tangent), numpy.ravel(delta))
         if abs(delta_cos_estimate - (expected_cos2 - expected_cos1)) > 1e-4:
             self.errors.append("Chain rule problem: delta_cos_estimate (%s) and delta_cos_expected (%s) differ: %s" % (delta_cos_estimate, (expected_cos2 - expected_cos1), delta_cos_estimate - (expected_cos2 - expected_cos1)))
         if abs(delta_cos_estimate - (test_cos2 - test_cos1)) > 1e-4:
@@ -315,7 +315,7 @@ class Chainrule(unittest.TestCase):
         tangent = 0.5*(tangent1 + tangent2)
         
         # validate tangents
-        delta_value_estimate = Numeric.dot(tangent, delta)
+        delta_value_estimate = numpy.dot(tangent, delta)
         error = abs(delta_value_estimate - (value2 - value1))
         if error > 1e-8:
             self.errors.append(
@@ -353,7 +353,7 @@ class Chainrule(unittest.TestCase):
             return result
         
         epsilon = 1e-5
-        numeric_curvature = Numeric.zeros(curvature.shape, Numeric.Float)
+        numeric_curvature = numpy.zeros(curvature.shape, float)
         #print internal_coordinate.label()
         for i in xrange(dof):
             excenter_coordinates = ethene.coordinates.copy()
@@ -365,11 +365,11 @@ class Chainrule(unittest.TestCase):
             
         #print str_matrix(abs(curvature - numeric_curvature))
         
-        #print "analytic symmetric:", sum(Numeric.ravel(curvature - Numeric.transpose(curvature))**2)
-        #print "numeric  symmetric:", sum(Numeric.ravel(numeric_curvature - Numeric.transpose(numeric_curvature))**2)
+        #print "analytic symmetric:", sum(numpy.ravel(curvature - numpy.transpose(curvature))**2)
+        #print "numeric  symmetric:", sum(numpy.ravel(numeric_curvature - numpy.transpose(numeric_curvature))**2)
         #print "% 3.2e (% 3.2e, % 3.2e)" % (error, scale, nscale)
         
-        #symmetry_error = sum(Numeric.ravel(numeric_curvature - Numeric.transpose(numeric_curvature))**2)
+        #symmetry_error = sum(numpy.ravel(numeric_curvature - numpy.transpose(numeric_curvature))**2)
         #if symmetry_error > 1e-5:
         #    self.errors.append(
         #        "%2i/%2i %s Chain rule symmetry_error: % 3.2e" % (
@@ -379,9 +379,9 @@ class Chainrule(unittest.TestCase):
         #        )
         #    )
         
-        curvature_error = sum(Numeric.ravel(curvature - numeric_curvature)**2)
-        curvature_scale = sum(Numeric.ravel(curvature)**2)
-        ncurvature_scale = sum(Numeric.ravel(numeric_curvature)**2)
+        curvature_error = sum(numpy.ravel(curvature - numeric_curvature)**2)
+        curvature_scale = sum(numpy.ravel(curvature)**2)
+        ncurvature_scale = sum(numpy.ravel(numeric_curvature)**2)
         if curvature_error > 1e-6 and curvature_error * 1e6 > curvature_scale:
             self.errors.append(
                 "%2i  %2i/%2i %s Chain rule curvature_error: % 3.2e (% 3.2e)\n%s" % (

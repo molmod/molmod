@@ -24,7 +24,7 @@ from pychem.graphs import Graph, SymmetricGraph, MatchFilterParameterized, Crite
 from pychem.binning import IntraAnalyseNeighbouringObjects, PositionedObject, SparseBinnedObjects
 from pychem.moldata import bonds
 
-import math, Numeric
+import math, numpy
 
 __all__ = [
     "MolecularCriterium",
@@ -238,7 +238,7 @@ class MolecularGraph(object):
         
         def compare_function(index1, index2, position1, position2):
             delta = position2 - position1
-            distance = math.sqrt(Numeric.dot(delta, delta))
+            distance = math.sqrt(numpy.dot(delta, delta))
             if distance < binned_atoms.gridsize:
                 return bonds.bonded(self.molecule.numbers[index1], self.molecule.numbers[index2], distance)
         

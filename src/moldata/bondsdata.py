@@ -19,7 +19,7 @@
 # 
 # --
 
-import string, Numeric
+import string, numpy
 
 __all__ = [
     "BondData", "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "bond_types"

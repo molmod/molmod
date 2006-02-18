@@ -23,7 +23,7 @@ from pychem.interfaces.output_parsers import FileParser, MultiLineParser
 from pychem.moldata import periodic
 from pychem.molecules import Molecule
 
-import re, Numeric
+import re, numpy
 
 class ScfEnergiesParser(FileParser):
     filename = ".out"
@@ -189,7 +189,7 @@ class GradientsParser(MultiLineParser):
             ])
         
     def stop_collecting(self):
-        gradient = Numeric.array(self.current_gradient, Numeric.Float)
+        gradient = numpy.array(self.current_gradient, float)
         self.gradients.append(gradient)
         del self.current_gradient
 
@@ -251,7 +251,7 @@ class HessianParser(FileParser):
 
     def result(self):
         if self.num_atoms != None:
-            result = Numeric.zeros((self.num_atoms*3, self.num_atoms*3), Numeric.Float)
+            result = numpy.zeros((self.num_atoms*3, self.num_atoms*3), float)
             counter = 0
             for i in xrange(self.num_atoms*3):
                 for j in xrange(0, i):
@@ -275,10 +275,10 @@ class RawGridParser(FileParser):
         self.counter = 0
         
     def parse(self, line):
-        if self.grid == None:
+        if self.grid is None:
             if line[:21] == "# Number of records: ":
                 num = int(line[21:])
-                self.grid = Numeric.zeros((num, 4), Numeric.Float)
+                self.grid = numpy.zeros((num, 4), float)
         else:
             words = line.split()
             self.grid[self.counter, 0] = float(words[0])

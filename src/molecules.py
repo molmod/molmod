@@ -24,7 +24,7 @@ from pychem.units import from_angstrom
 
 from StringIO import StringIO
 
-import Numeric, math
+import numpy, math
 
 
 __all__ = [
@@ -47,8 +47,8 @@ class Molecule:
         arguments:
         atoms -- [[number, x, y, z], ...]
         """
-        self.numbers = Numeric.zeros(len(atoms), Numeric.Int)
-        self.coordinates = Numeric.zeros((len(atoms), 3), Numeric.Float)
+        self.numbers = numpy.zeros(len(atoms), int)
+        self.coordinates = numpy.zeros((len(atoms), 3), float)
         for index, line in enumerate(atoms):
             self.numbers[index] = line[0]
             self.coordinates[index] = line[1:4]
@@ -64,21 +64,21 @@ class Molecule:
         # then rotate the molecule so that the second atom lies on the positive x-axis
         # and the third atom lies in the xy-plane with positive y.
         new_x = self.coordinates[1].copy()
-        new_x /= math.sqrt(Numeric.dot(new_x, new_x))
+        new_x /= math.sqrt(numpy.dot(new_x, new_x))
         third = self.coordinates[2].copy()
-        new_z = Numeric.array([
+        new_z = numpy.array([
             new_x[1]*third[2]-third[1]*new_x[2],
             new_x[2]*third[0]-third[2]*new_x[0],
             new_x[0]*third[1]-third[0]*new_x[1]
         ])
-        new_z /= math.sqrt(Numeric.dot(new_z, new_z))
-        new_y = Numeric.array([
+        new_z /= math.sqrt(numpy.dot(new_z, new_z))
+        new_y = numpy.array([
             new_z[1]*new_x[2]-new_x[1]*new_z[2],
             new_z[2]*new_x[0]-new_x[2]*new_z[0],
             new_z[0]*new_x[1]-new_x[0]*new_z[1]
         ])
-        rotation = Numeric.transpose(Numeric.array([new_x, new_y, new_z]))
-        self.coordinates = Numeric.dot(self.coordinates, rotation)
+        rotation = numpy.transpose(numpy.array([new_x, new_y, new_z]))
+        self.coordinates = numpy.dot(self.coordinates, rotation)
 
 
 def molecule_from_xyz_stream(stream):

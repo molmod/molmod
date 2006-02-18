@@ -26,7 +26,7 @@ from pychem.interfaces.output_parsers import OutputParser
 from pychem.molecules import molecule_from_xyz_filename
 from pychem.units import from_angstrom
 
-import math, Numeric, LinearAlgebra, os
+import math, numpy, numpy.linalg, os
 import unittest
 
 __all__ = ["Gromos96Interface"]

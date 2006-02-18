@@ -25,7 +25,7 @@ from pychem.moldata import periodic
 from pychem.molecules import Molecule
 from pychem.units import from_unified
 
-import re, Numeric
+import re, numpy
 
 class NumStepsParser(FileParser):
     filename = ".out"
@@ -202,8 +202,8 @@ class CoordinatesGradientsParser(MultiLineParser, EveryParserMixin):
         if self.step_counter == None:
             self.num_steps = EveryParserMixin.allocate_if_necessary(self) + 1
             num_atoms = len(self.elements_parser.result())
-            self.coordinates = Numeric.zeros((self.num_steps, num_atoms, 3), Numeric.Float)
-            self.gradients = Numeric.zeros((self.num_steps, num_atoms, 3), Numeric.Float)
+            self.coordinates = numpy.zeros((self.num_steps, num_atoms, 3), float)
+            self.gradients = numpy.zeros((self.num_steps, num_atoms, 3), float)
             self.step_counter = 0
         
     def start_collecting(self):
@@ -229,8 +229,8 @@ class CoordinatesGradientsParser(MultiLineParser, EveryParserMixin):
 
     def stop_collecting(self):
         if self.step_counter < self.num_steps:
-            self.coordinates[self.step_counter,:,:] = Numeric.array(self.current_coordinates)
-            self.gradients[self.step_counter,:,:] = Numeric.array(self.current_gradient)
+            self.coordinates[self.step_counter,:,:] = numpy.array(self.current_coordinates)
+            self.gradients[self.step_counter,:,:] = numpy.array(self.current_gradient)
             self.step_counter += 1
 
     def result(self):
@@ -255,7 +255,7 @@ class EnergiesParser(MultiLineParser, EveryParserMixin):
     def allocate_if_necessary(self):
         if self.step_counter == None:
             self.num_steps = EveryParserMixin.allocate_if_necessary(self)
-            self.energies = Numeric.zeros(self.num_steps, Numeric.Float)
+            self.energies = numpy.zeros(self.num_steps, float)
             self.step_counter = 0
         
     def parse(self, line):
@@ -281,7 +281,7 @@ class EnergiesFileParser(FileParser):
         
     def reset(self):
         self.num_steps = self.num_steps_parser.result()
-        self.energies = Numeric.zeros((self.num_steps, 5), Numeric.Float)
+        self.energies = numpy.zeros((self.num_steps, 5), float)
         self.counter = 0
         
     def parse(self, line):
@@ -305,8 +305,8 @@ class TrajectoryFileParser(FileParser):
     def reset(self):
         self.num_atoms = len(self.elements_parser.result())
         self.num_steps = self.num_steps_parser.result()
-        self.coordinates = Numeric.zeros((self.num_steps, self.num_atoms, 3), Numeric.Float)
-        self.velocities = Numeric.zeros((self.num_steps, self.num_atoms, 3), Numeric.Float)
+        self.coordinates = numpy.zeros((self.num_steps, self.num_atoms, 3), float)
+        self.velocities = numpy.zeros((self.num_steps, self.num_atoms, 3), float)
         self.counter = 0
         self.atom_counter = 0
         

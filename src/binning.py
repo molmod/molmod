@@ -30,7 +30,7 @@ cutoff. The algorithm consists of two major steps:
 
 from pychem.moldata import periodic
 
-import math, Numeric, copy
+import math, numpy, copy
 
 __all__ = ["PositionedObject", "SparseBinnedObjects",
            "AnalyseNeighbouringObjects", "IntraAnalyseNeighbouringObjects",
@@ -50,7 +50,7 @@ class PositionedObject(object):
         
         Arguments:
         reference -- A user defined reference that is associated with the point.
-        point -- A Numeric array with shape (3,)
+        point -- A numpy array with shape (3,)
         """
         self.reference = reference
         self.point = point
@@ -83,7 +83,7 @@ class SparseBinnedObjects(object):
         self.bins = {}
             
         for positioned_object in yield_positioned_objects():
-            i, j, k = Numeric.floor(positioned_object.point*self.reciproke).astype(Numeric.Int)
+            i, j, k = numpy.floor(positioned_object.point*self.reciproke).astype(int)
             bin_x = self.bins.get(i)
             if bin_x != None:
                 bin_y = bin_x.get(j)
@@ -114,7 +114,7 @@ class SparseBinnedObjects(object):
         Iterate over all objects in the bins that surround the bin that
         contains vector r.
         """
-        center_indices = Numeric.floor(r*self.reciproke).astype(Numeric.Int)
+        center_indices = numpy.floor(r*self.reciproke).astype(int)
         for i in [-1, 0, 1]:
             for j in [-1, 0, 1]:
                 for k in [-1, 0, 1]:
@@ -133,14 +133,14 @@ class AnalyseNeighbouringObjects(object):
     AnalyseNeighbouringObjects is the base class for 'comparing' points between
     neigbouring bins.
     """
-    corners = (Numeric.array([0, 0, 0], Numeric.Int),
-               Numeric.array([1, 0, 0], Numeric.Int),
-               Numeric.array([0, 1, 0], Numeric.Int),
-               Numeric.array([0, 0, 1], Numeric.Int),
-               Numeric.array([0, 1, 1], Numeric.Int),
-               Numeric.array([1, 0, 1], Numeric.Int),
-               Numeric.array([1, 1, 0], Numeric.Int),
-               Numeric.array([1, 1, 1], Numeric.Int))
+    corners = (numpy.array([0, 0, 0], int),
+               numpy.array([1, 0, 0], int),
+               numpy.array([0, 1, 0], int),
+               numpy.array([0, 0, 1], int),
+               numpy.array([0, 1, 1], int),
+               numpy.array([1, 0, 1], int),
+               numpy.array([1, 1, 0], int),
+               numpy.array([1, 1, 1], int))
 
     def __init__(self, compare_function):
         """

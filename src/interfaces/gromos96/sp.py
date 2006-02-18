@@ -23,7 +23,7 @@ from pychem.interfaces.base import TemplateJob
 from pychem.units import to_nanometer
 
 import os, copy, glob
-import Numeric
+import numpy
 
 
 __all__ = ["Gromos96SP"]

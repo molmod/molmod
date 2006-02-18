@@ -25,7 +25,7 @@ from pychem.units import to_angstrom, from_angstrom
 from pychem.molecules import molecule_from_xyz_string
 
 import os, copy, glob
-import Numeric
+import numpy
 
 
 __all__ = [
@@ -109,8 +109,8 @@ class AwkMpqcJobSinglePoint(AwkMpqcJob):
         if not self.accuracy_warnings:
             self.assign_fields(["energy"])
             gradient = self.summary.get("gradient")
-            if gradient != None:
-                self.gradient = Numeric.array(gradient, Numeric.Float)
+            if not (gradient is None):
+                self.gradient = numpy.array(gradient, float)
 
 
 class AwkMpqcJobOptimize(AwkMpqcJob):
@@ -133,4 +133,4 @@ class AwkMpqcJobOptimize(AwkMpqcJob):
         if not self.accuracy_warnings:
             self.assign_fields(["energies"])
             self.output_molecule = copy.deepcopy(self.input_molecule)
-            self.output_molecule.coordinates = from_angstrom(Numeric.array(self.summary["output_coordinates"], Numeric.Float))
+            self.output_molecule.coordinates = from_angstrom(numpy.array(self.summary["output_coordinates"], float))

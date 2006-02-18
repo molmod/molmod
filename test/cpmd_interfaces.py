@@ -23,7 +23,7 @@ from pychem.interfaces.cpmd.file_parsers import *
 from pychem.interfaces.output_parsers import OutputParser
 
 
-import math, Numeric, LinearAlgebra
+import math, numpy, numpy.linalg
 import unittest
 
 

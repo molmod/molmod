@@ -21,7 +21,7 @@
 
 from pychem.units import from_unified
 
-import string, Numeric, copy
+import string, numpy, copy
 
 __all__ = ["PeriodicData"]
 
@@ -67,7 +67,7 @@ class PeriodicData(object):
                 if cells[9] != "NA": self.valence[n] = int(cells[9])
                 if cells[10] != "NA": self.lonepairs[n] = int(cells[10])
                 self.artificial[n] = int(cells[11])
-                if cells[12] != "NA": self.color[n] = Numeric.array([float(cells[12]), float(cells[13]), float(cells[14]), 1.0])
+                if cells[12] != "NA": self.color[n] = numpy.array([float(cells[12]), float(cells[13]), float(cells[14]), 1.0])
         periodic_file.close()
         
     def symbol_lookup(self, symbol):
