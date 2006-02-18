@@ -261,3 +261,31 @@ class HessianParser(FileParser):
                 result[i,i] = self.hessian_elements[counter]
                 counter += 1
             return result
+
+
+class RawGridParser(FileParser):
+    filename = ""
+    extension = True
+
+    def __init__(self, label='grid', condition=None):
+        FileParser.__init__(self, label, condition)
+
+    def reset(self):
+        self.grid = None
+        self.counter = 0
+        
+    def parse(self, line):
+        if self.grid == None:
+            if line[:21] == "# Number of records: ":
+                num = int(line[21:])
+                self.grid = Numeric.zeros((num, 4), Numeric.Float)
+        else:
+            words = line.split()
+            self.grid[self.counter, 0] = float(words[0])
+            self.grid[self.counter, 1] = float(words[1])
+            self.grid[self.counter, 2] = float(words[2])
+            self.grid[self.counter, 3] = float(words[3])
+            self.counter += 1
+
+    def result(self):
+        return self.grid

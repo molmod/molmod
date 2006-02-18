@@ -31,7 +31,7 @@ from pychem.molecules import molecule_from_xyz_filename
 import math, Numeric, LinearAlgebra
 import unittest
 
-__all__ = ["AwkMpqcInterface", "OOMpqcInterface"]
+__all__ = ["AwkMpqcInterface", "OOMpqcInterface", "MpqcRawGridInterface"]
 
 
 class AwkMpqcInterface(unittest.TestCase):
@@ -213,3 +213,12 @@ class OOMpqcInterface(unittest.TestCase):
         job = reload_job(prefix + ".job")
         job.run()
         validate()
+
+
+class MpqcRawGridInterface(unittest.TestCase):
+    def test_grid(self):
+        output_parser = OutputParser([
+            RawGridParser(),
+        ])
+        result = output_parser.parse("input", "mpqc_raw.grid")
+
