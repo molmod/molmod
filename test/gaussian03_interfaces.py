@@ -35,18 +35,33 @@ class Gaussian03Interface(unittest.TestCase):
         output_parser = OutputParser([
             HessianParser(),
             MassParser(),
-            CoordinatesParser(),
+            StandardOrientationCoordinatesParser(),
+            InputOrientationCoordinatesParser(),
             EnergyParser(),
             LowFrequenciesParser(),
             SelectedFrequenciesParser(),
-            GradientParser(),
+            StandardOrientationGradientParser(),
+            InputOrientationGradientParser(),
             IsOptimizedParser(),
             OptimizedCoordinatesParser(),
         ])
 
         result = output_parser.parse("input", "g03_1")
 
-        expected_keys = ['energies', 'masses', 'coordinates_list', 'low_frequencies', 'selected_frequencies', 'hessian', 'gradient_list', 'optimized', 'optimized_coordinates']
+        expected_keys = [
+            'energies', 
+            'masses', 
+            'so_coordinates_list', 
+            'io_coordinates_list', 
+            'low_frequencies', 
+            'selected_frequencies', 
+            'hessian', 
+            'so_gradient_list', 
+            'io_gradient_list', 
+            'optimized', 
+            'optimized_coordinates'
+        ]
+        
         for expected_key in expected_keys:
             self.assert_(expected_key in result)
             #print "'%s': %s" % (expected_key, result[expected_key])

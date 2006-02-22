@@ -152,12 +152,8 @@ class MassParser(ThermoChemParser):
 
 
 class GradientParser(ThermoChemParser):
-    def __init__(self, label="gradient_list", condition=None):
-        ThermoChemParser.__init__(self, label,
-            activator=re.compile("\*\*\*\*\* Axes restored to original set \*\*\*\*\*"), 
-            deactivator=re.compile("Cartesian Forces:"), 
-            condition=condition
-        )
+    def __init__(self, label, activator, deactivator, condition=None):
+        ThermoChemParser.__init__(self, label, activator, deactivator, condition)
         self.re = re.compile("\d+\s+\d+\s+(?P<fx>\S+)\s+(?P<fy>\S+)\s+(?P<fz>\S+)")
     
     def reset(self):
@@ -183,18 +179,32 @@ class GradientParser(ThermoChemParser):
         return self.gradient_list
 
 
+class InputOrientationGradientParser(GradientParser):
+    def __init__(self, label="io_gradient_list", condition=None):
+        GradientParser.__init__(self, label,
+            activator=re.compile("\*\*\*\*\* Axes restored to original set \*\*\*\*\*"), 
+            deactivator=re.compile("Cartesian Forces:"), 
+            condition=condition
+        )
+    
+
+class StandardOrientationGradientParser(GradientParser):
+    def __init__(self, label="so_gradient_list", condition=None):
+        GradientParser.__init__(self, label,
+            activator=re.compile("Forces in standard orientation"), 
+            deactivator=re.compile("\*\*\*\*\* Axes restored to original set \*\*\*\*\*"), 
+            condition=condition
+        )
+    
+
 class ConfigurationParser(LinkParser):
     def __init__(self, label, activator=None, deactivator=None, condition=None, depends_on=[]):
         LinkParser.__init__(self, "202", label, activator, deactivator, condition, depends_on)
 
 
 class CoordinatesParser(ConfigurationParser):
-    def __init__(self, label="coordinates_list", condition=None):
-        ConfigurationParser.__init__(self, label,
-            re.compile("Input orientation:"), 
-            re.compile("Distance matrix \(angstroms\):"), 
-            condition
-        )
+    def __init__(self, label, activator, deactivator, condition=None):
+        ConfigurationParser.__init__(self, label, activator, deactivator, condition)
         self.re = re.compile("\d+\s+\d+\s+\d+\s+(?P<x>\S+)\s+(?P<y>\S+)\s+(?P<z>\S+)")
     
     def reset(self):
@@ -218,6 +228,24 @@ class CoordinatesParser(ConfigurationParser):
         
     def result(self):
         return self.coordinates
+
+
+class StandardOrientationCoordinatesParser(CoordinatesParser):
+    def __init__(self, label="so_coordinates_list", condition=None):
+        CoordinatesParser.__init__(self, label,
+            re.compile("Standard orientation:"), 
+            re.compile("Distance matrix \(angstroms\):"), 
+            condition
+        )
+
+
+class InputOrientationCoordinatesParser(CoordinatesParser):
+    def __init__(self, label="io_coordinates_list", condition=None):
+        CoordinatesParser.__init__(self, label,
+            re.compile("Input orientation:"), 
+            re.compile("Distance matrix \(angstroms\):"), 
+            condition
+        )
 
 
 class OptimizedParser(LinkParser):
