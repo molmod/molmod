@@ -130,8 +130,8 @@ class MassParser(ThermoChemParser):
             deactivator=re.compile("Molecular mass:\s+\S+\s+amu."), 
             condition=condition
         )
-        self.re = re.compile("Atom\s+\d+\s+has atomic number\s+\d+\s+and mass\s+(?P<mass>\S+)")
-    
+        self.re = re.compile("Atom\s*\d+\s+has atomic number\s+\d+\s+and mass\s+(?P<mass>\S+)")
+        
     def reset(self):
         ThermoChemParser.reset(self)
         self.masses = []
@@ -233,8 +233,8 @@ class CoordinatesParser(ConfigurationParser):
 class StandardOrientationCoordinatesParser(CoordinatesParser):
     def __init__(self, label="so_coordinates_list", condition=None):
         CoordinatesParser.__init__(self, label,
-            re.compile("Standard orientation:"), 
-            re.compile("Distance matrix \(angstroms\):"), 
+            re.compile("Standard orientation"), 
+            re.compile("Rotational constants"),
             condition
         )
 
@@ -242,8 +242,8 @@ class StandardOrientationCoordinatesParser(CoordinatesParser):
 class InputOrientationCoordinatesParser(CoordinatesParser):
     def __init__(self, label="io_coordinates_list", condition=None):
         CoordinatesParser.__init__(self, label,
-            re.compile("Input orientation:"), 
-            re.compile("Distance matrix \(angstroms\):"), 
+            re.compile("Input orientation"), 
+            re.compile("Standard orientation"),
             condition
         )
 
