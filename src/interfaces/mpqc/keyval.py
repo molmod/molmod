@@ -24,77 +24,109 @@ class KeyValError(Exception):
     pass
 
 
-class KeyVal(object):
-    def __init__(self, named_items=[]):
-        self.names = [pair[0] for pair in named_items]
-        self.dict_items = dict(named_items)
+class KeyValWriter(object):
+    def __init__(self, f, root, indent_step='  '):
+        self.f = f
+        self.root = root
+        self.indent_step = indent_step
+        self.locations = {} # map of objects to location strings
         
-    def __getitem__(self, name):
-        return self.dict_items[name]
+        # First decide where each object should be written and where references
+        # should be used.
+        for name, kvo in root.yield_attributes():
+            assert isinstance(kvo, KeyValObject)
+            self.locate_object(name, kvo, "$")
         
-    def __setitem__(self, name, item):
-        if name not in self.dict_items:
-            self.names.append(name)
-        self.dict_items[name] = item
-        
-    def write_list(self, f, l, indent='', noindent=False):
-        if not isinstance(l, list):
-            f.write("%s\n" % l)
-        elif reduce(lambda x, y: x or y, (isinstance(item, list) for item in l), False):
-            if noindent:
-                f.write("[\n")
-            else:
-                f.write(indent+"[\n")
-            for item in l:
-                self.write_list(f, item, indent + '  ')
-            f.write(indent+"]\n")
-        else:
-            if noindent:
-                f.write('[%s' % l[0])
-            else:
-                f.write(indent+'[%s' % l[0])
-            for item in l[1:]:
-                f.write(" %s" % item)
-            f.write("]\n")
+        # then write the output file.
+        for name, kvo in root.yield_attributes():
+            assert isinstance(kvo, KeyValObject)
+            self.write_dispatch(name, kvo, "$", indent='')
     
-    def write_stream(self, f, indent='', location='$'):
-        if location == '$':
-            self.clear_locations()
-        for name in self.names:
-            item = self.dict_items[name]
-            if isinstance(item, int) or isinstance(item, float) or isinstance(item, str) or isinstance(item, list):
-                f.write("%s%s=" % (indent, name))
-                self.write_list(f, item, indent, True)
-            elif isinstance(item, KeyValObject):
-                f.write("%s%s" % (indent, name)) 
-                item.write_stream(f, indent, location+':'+name)
-            elif item!=None:
-                raise KeyValError, "Object not supported %s=%s" % (name, item)
-
-    def clear_locations(self):
-        for item in self.dict_items.itervalues():
-            if isinstance(item, KeyValObject):
-                item.clear_locations()
-
-
-class KeyValObject(KeyVal):
-    def __init__(self, class_name='', named_items=[]):
-        KeyVal.__init__(self, named_items)
-        self.class_name = class_name
-        self.location = None
-
-    def write_stream(self, f, indent='', location='$'):
-        if self.location == None:
-            if self.class_name != '':
-                f.write("<%s>:(\n" % self.class_name)
-            else:
-                f.write(":(\n")
-            KeyVal.write_stream(self, f, indent+'  ', location)
-            f.write(indent+")\n")
-            self.location = location
-        else:
-            f.write("=%s\n" % self.location)
+    def locate_object(self, name, kvo, parent_location):
+        def count_colons(s):
+            return sum(1 for c in s if c==":")
             
-    def clear_locations(self):
-        self.location = None
-        KeyVal.clear_locations(self)
+        location = "%s:%s" % (parent_location, name)
+        existing_location = self.locations.get(kvo)
+        if existing_location == None or \
+           count_colons(existing_location) > count_colons(location):
+            self.locations[kvo] = location
+        
+        for child_name, child_kvo in kvo.yield_attributes():
+            if isinstance(child_kvo, KeyValObject):
+                self.locate_object(child_name, child_kvo, location)
+    
+    def write_object(self, name, kvo, parent_location, indent):
+        assert kvo.class_name != '' or name != ''
+
+        reference_location = self.locations.get(kvo)
+        if parent_location != None and name != '':
+            location = "%s:%s" % (parent_location, name)
+        else:
+            location = None
+
+        if reference_location == None or reference_location == location:
+            if kvo.class_name == '':
+                self.f.write("%s%s:(\n" % (indent, name))
+            else:
+                self.f.write("%s%s<%s>:(\n" % (indent, name, kvo.class_name))
+            for name, value in kvo.yield_attributes():
+                self.write_dispatch(name, value, location, indent+self.indent_step)
+            self.f.write("%s)\n" % indent)
+        else:
+            self.f.write("%s%s = %s\n" % (indent, name, reference_location))
+            
+    def write_dispatch(self, name, value, parent_location, indent):
+        if isinstance(value, list):
+            self.write_list(name, value, parent_location, indent)
+        elif isinstance(value, KeyValObject):
+            self.write_object(name, value, parent_location, indent)
+        else:
+            self.write_atom(name, value, parent_location, indent)
+            
+    def write_list(self, name, sequence, parent_location, indent):
+        contains_kvo = reduce(lambda x,y: x or y, [isinstance(value, KeyValObject) for value in sequence], False)
+        only_atoms = reduce(lambda x,y: x and y, [not isinstance(value, (KeyValObject, list)) for value in sequence], True)
+        if name=='':
+            if only_atoms:
+              self.f.write("%s[ " % (indent))
+            else:
+              self.f.write("%s[\n" % (indent))
+        else:
+            if contains_kvo:
+                symbol = ":"
+            else:
+                symbol = " ="
+            if only_atoms:
+                self.f.write("%s%s%s [ " % (indent, name, symbol))
+            else:
+                self.f.write("%s%s%s [\n" % (indent, name, symbol))
+        for value in sequence:
+            self.write_dispatch('', value, None, indent+self.indent_step)
+        if only_atoms:
+            self.f.write("]\n")
+        else:
+            self.f.write("%s]\n" % indent)
+
+    def write_atom(self, name, value, parent_location, indent):
+        if isinstance(value, basestring):
+            formatted_value = '"%s"' % value
+        else:
+            formatted_value = str(value)
+    
+        if name=='':
+            self.f.write("%s " % formatted_value)
+        else:
+            self.f.write("%s%s = %s\n" % (indent, name, formatted_value))
+
+
+class KeyValObject(object):
+    def __init__(self, class_name='', attributes={}):
+        self.__dict__.update(attributes)
+        self.class_name = class_name
+        
+    def yield_attributes(self):
+        for name, value in self.__dict__.iteritems():
+            if name != 'class_name':
+                yield name, value
+

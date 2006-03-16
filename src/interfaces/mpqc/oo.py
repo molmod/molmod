@@ -21,13 +21,15 @@
 
 from pychem.interfaces.base import IOJob
 from pychem.interfaces.output_parsers import OutputParser
-from pychem.interfaces.mpqc.keyval import KeyValObject
+from pychem.interfaces.mpqc.keyval import KeyValWriter
 from pychem.moldata import periodic
 
 import os, glob
 
 
 class OOMpqcJob(IOJob):
+    binary = "mpqc"
+
     def __init__(self, prefix, title, keyval, output_parser=None):
         self.keyval = keyval
         if output_parser == None:
@@ -38,10 +40,10 @@ class OOMpqcJob(IOJob):
         
     def write_input(self, f):
         print >> f, "%% %s" % self.title
-        self.keyval.write_stream(f)
+        KeyValWriter(f, self.keyval)
 
     def external_command(self):
-        return "mpqc -o %s.out %s.in" % (self.prefix, self.prefix)
+        return "%s -o %s.out %s.in" % (self.binary, self.prefix, self.prefix)
         
     def remove_temporary_files(self):
         for temp_filename in glob.glob("%s*.tmp" % self.prefix):

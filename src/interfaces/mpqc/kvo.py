@@ -19,75 +19,80 @@
 # 
 # --
 
-from keyval import KeyVal, KeyValObject
+from keyval import KeyValObject
 
 from pychem.moldata import periodic
 
-def create_molecule_kvo(molecule):
+
+def create_molecule(molecule):
     return KeyValObject(
         'Molecule',
-        named_items=[
-            ('atoms', [periodic.symbol[number] for number in molecule.numbers]),
-            ('geometry', molecule.coordinates.tolist())
-        ]
+        {
+            'atoms': [periodic.symbol[number] for number in molecule.numbers],
+            'geometry': molecule.coordinates.tolist()
+        }
     )
-    
-def create_std_functional_kvo(functional):
+
+  
+def create_std_functional(functional):
     if functional != None:
         return KeyValObject(
             'StdDenFunctional', 
-            named_items=[('name', functional)]
+            {'name': functional}
         )
 
-def create_guess_kvo(molecule_kvo, charge, method="CLHF"):
-    return KeyValObject(method, named_items=[
-        ('molecule', molecule_kvo),
-        ('total_charge', charge),
-        ('basis', KeyValObject("GaussianBasisSet", named_items=[
-            ('molecule', molecule_kvo),
-            ('name', 'STO-3G')
-        ]))
-    ])
+
+def create_guess_mole(molecule_kvo, charge, method="CLHF"):
+    return KeyValObject(method, {
+        'molecule': molecule_kvo,
+        'total_charge': charge,
+        'basis': KeyValObject("GaussianBasisSet", {
+            'molecule': molecule_kvo,
+            'name': 'STO-3G'
+        })
+    })
+
     
-def create_mole_kvo(molecule_kvo, charge, method, basis, functional=''):
-    return KeyValObject(method, named_items=[
-        ('molecule', molecule_kvo),
-        ('total_charge', charge),
-        ('basis', KeyValObject('GaussianBasisSet', named_items=[
-            ('molecule', molecule_kvo),
-            ('name', basis)
-        ])),
-        ('functional', create_std_functional_kvo(functional)),
-        ('guess_wavefunction', create_guess_kvo(molecule_kvo, charge))
-    ])
+def create_mole(molecule_kvo, charge, method, basis, functional=''):
+    return KeyValObject(method, {
+        'molecule': molecule_kvo,
+        'total_charge': charge,
+        'basis': KeyValObject('GaussianBasisSet', {
+            'molecule': molecule_kvo,
+            'name': basis
+        }),
+        'functional': create_std_functional(functional),
+        'guess_wavefunction': create_guess_mole(molecule_kvo, charge)
+    })
 
-def create_single_point_kv(molecule, charge, method, basis, functional=''):        
-        molecule_kvo = create_molecule_kvo(molecule)
+
+def create_single_point(molecule, charge, method, basis, functional=''):        
+        molecule_kvo = create_molecule(molecule)
         
-        return KeyVal(named_items=[
-            ('molecule', molecule_kvo),
-            ('mpqc', KeyValObject(named_items=[
-                ('mole', create_mole_kvo(molecule_kvo, charge, method, basis, functional))
-            ]))
-        ])       
+        return KeyValObject(attributes={
+            'molecule': molecule_kvo,
+            'mpqc': KeyValObject(attributes={
+                'mole': create_mole(molecule_kvo, charge, method, basis, functional)
+            })
+        })
 
 
-def create_optimize_kv(molecule, charge, method, basis, functional=''):        
-        molecule_kvo = create_molecule_kvo(molecule)
-        mole_kvo = create_mole_kvo(molecule_kvo, charge, method, basis, functional)
+def create_optimize(molecule, charge, method, basis, functional=''):        
+        molecule_kvo = create_molecule(molecule)
+        mole_kvo = create_mole(molecule_kvo, charge, method, basis, functional)
         
-        return KeyVal(named_items=[
-            ('molecule', molecule_kvo),
-            ('mpqc', KeyValObject(named_items=[
-                ('optimize', 1),
-                ('mole', mole_kvo),
-                ('opt', KeyValObject('QNewtonOpt', named_items=[
-                    ('function', mole_kvo),
-                    ('update', KeyValObject('BFGSUpdate')),
-                    ('convergence', KeyValObject('MolEnergyConvergence', named_items=[
-                        ('cartesian', 1),
-                        ('energy', mole_kvo)
-                    ]))
-                ]))
-            ]))
-        ])
+        return KeyValObject(attributes={
+            'molecule': molecule_kvo,
+            'mpqc': KeyValObject(attributes={
+                'optimize': 1,
+                'mole': mole_kvo,
+                'opt': KeyValObject('QNewtonOpt', {
+                    'function': mole_kvo,
+                    'update': KeyValObject('BFGSUpdate'),
+                    'convergence': KeyValObject('MolEnergyConvergence', {
+                        'cartesian': 1,
+                        'energy': mole_kvo
+                    })
+                })
+            })
+        })
