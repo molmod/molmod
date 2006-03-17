@@ -264,28 +264,32 @@ class HessianParser(FileParser):
 
 
 class RawGridParser(FileParser):
-    filename = ""
+    filename = ".out"
     extension = True
 
-    def __init__(self, label='grid', condition=None):
+    def __init__(self, label='grid', trigger=None, condition=None):
+        self.trigger = trigger
         FileParser.__init__(self, label, condition)
 
     def reset(self):
-        self.grid = None
-        self.counter = 0
+        self.grid = []
+        self.active = (self.trigger == None)
         
     def parse(self, line):
-        if self.grid is None:
-            if line[:21] == "# Number of records: ":
-                num = int(line[21:])
-                self.grid = numpy.zeros((num, 4), float)
-        else:
+        if self.active:
             words = line.split()
-            self.grid[self.counter, 0] = float(words[0])
-            self.grid[self.counter, 1] = float(words[1])
-            self.grid[self.counter, 2] = float(words[2])
-            self.grid[self.counter, 3] = float(words[3])
-            self.counter += 1
+            if len(words) == 4:
+                try:
+                    self.grid.append([
+                        float(words[0]), float(words[1]),
+                        float(words[2]), float(words[3])
+                    ])
+                except ValueError:
+                    self.active = False
+            else:
+                self.active = False
+        elif len(self.grid) == 0:
+            if line == self.trigger: self.active = True
 
     def result(self):
-        return self.grid
+        return numpy.array(self.grid, float)
