@@ -20,7 +20,7 @@
 # --
 
 from pychem.moldata import periodic
-from pychem.units import from_angstrom
+from pychem.units import from_angstrom, to_angstrom
 
 from StringIO import StringIO
 
@@ -79,6 +79,23 @@ class Molecule:
         ])
         rotation = numpy.transpose(numpy.array([new_x, new_y, new_z]))
         self.coordinates = numpy.dot(self.coordinates, rotation)
+        
+    def write_to_xyz_stream(self, stream):
+        print >> stream, "%5i" % len(self.numbers)
+        print >> stream
+        for number, coordinate in zip(self.numbers, to_angstrom(self.coordinates)):
+            print >> stream, "%2s%12.6f%12.6f%12.6f" % (
+                periodic.symbol[number],
+                coordinate[0],
+                coordinate[1],
+                coordinate[2]
+            )
+        print >> stream
+
+    def write_to_xyz_filename(self, filename):
+        f = file(filename, 'w')
+        self.write_to_xyz_stream(f)
+        f.close()
 
 
 def molecule_from_xyz_stream(stream):
