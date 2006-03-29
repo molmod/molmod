@@ -84,8 +84,11 @@ class Molecule:
         print >> stream, "%5i" % len(self.numbers)
         print >> stream
         for number, coordinate in zip(self.numbers, to_angstrom(self.coordinates)):
+            symbol = periodic.symbol.get(number)
+            if symbol == None:
+                symbol = 'X'
             print >> stream, "%2s%12.6f%12.6f%12.6f" % (
-                periodic.symbol[number],
+                symbol,
                 coordinate[0],
                 coordinate[1],
                 coordinate[2]
