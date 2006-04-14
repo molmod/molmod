@@ -22,7 +22,7 @@
 from pychem.interfaces.base import reload_job
 from pychem.interfaces.mpqc.awk import AwkMpqcJobSinglePoint, AwkMpqcJobOptimize
 from pychem.interfaces.mpqc.oo import OOMpqcJob
-from pychem.interfaces.mpqc.kvo import create_single_point_kv, create_optimize_kv
+from pychem.interfaces.mpqc.kvo import create_single_point, create_optimize
 from pychem.interfaces.mpqc.keyval import KeyValObject
 from pychem.interfaces.mpqc.file_parsers import *
 from pychem.interfaces.output_parsers import OutputParser
@@ -31,7 +31,7 @@ from pychem.molecules import molecule_from_xyz_filename
 import math, numpy, numpy.linalg
 import unittest
 
-__all__ = ["AwkMpqcInterface", "OOMpqcInterface", "MpqcRawGridInterface"]
+__all__ = ["AwkMpqcInterface", "OOMpqcInterface"]
 
 
 class AwkMpqcInterface(unittest.TestCase):
@@ -133,14 +133,14 @@ class OOMpqcInterface(unittest.TestCase):
             self.assertAlmostEqual(gradient[2,2],  0.01381411, 6)
             
         water = molecule_from_xyz_filename("input/water.xyz")
-        keyval = create_single_point_kv(
+        keyval = create_single_point(
             molecule=water,
             charge=0,
             method="CLKS",
             basis="3-21G*",
             functional="B3LYP"
         )
-        keyval['mpqc']['do_gradient'] = 'yes'
+        keyval.mpqc.do_gradient = 'yes'
         job = OOMpqcJob(
             prefix="output/water_oo_sp",
             title="Water single point berekening", 
@@ -180,15 +180,15 @@ class OOMpqcInterface(unittest.TestCase):
             self.assert_(min(evals) > -1e-6, "All eigenvalues of a hessian of an optimized molecule should be positive.\n%s" % str(evals))
         
         water = molecule_from_xyz_filename("input/water.xyz")
-        keyval = create_optimize_kv(
+        keyval = create_optimize(
             molecule=water,
             charge=0,
             method="CLKS",
             basis="3-21G*",
             functional="B3LYP"
         )
-        keyval['mpqc']['freq'] = KeyValObject('MolecularFrequencies', named_items=[
-            ('molecule', keyval['molecule'])
+        keyval.mpqc.freq = KeyValObject('MolecularFrequencies', [
+            ('molecule', keyval.molecule)
         ])
         job = OOMpqcJob(
             prefix="output/water_oo_opt",
@@ -213,12 +213,3 @@ class OOMpqcInterface(unittest.TestCase):
         job = reload_job(prefix + ".job")
         job.run()
         validate()
-
-
-class MpqcRawGridInterface(unittest.TestCase):
-    def test_grid(self):
-        output_parser = OutputParser([
-            RawGridParser(),
-        ])
-        result = output_parser.parse("input", "mpqc_raw.grid")
-
