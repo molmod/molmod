@@ -33,7 +33,7 @@ __all__ = [
     "BondTypeCriterium", "BondTypeRequire", "BondTypeRefuse",
     "NumNeighboursCriterium", "NumNeighboursRequire", "NumNeighboursRefuse",
     "CriteriaSets", "CriteriaSet", "BondSets", "BendSets", "DihedralSets",
-    "OutOfPlaneSets", "LongRangePairSets",
+    "OutOfPlaneAngleSets", "OutOfPlaneDistanceSets", "LongRangePairSets",
     "MolecularGraph", 
 ]
 
@@ -125,9 +125,9 @@ class NumNeighboursRefuse(NumNeighboursCriterium):
 
 class CriteriaSets(object):
     def __init__(self, subpairs, initiator, calculation_tags, sets):
-        self.subpairs = subpairs
-        self.initiator = initiator
-        self.calculation_tags = calculation_tags
+        self.subpairs = subpairs   # pairs of bonded atoms
+        self.initiator = initiator # the central ellement, the one that is transformed onto itself by most of the symmetries
+        self.calculation_tags = calculation_tags # tags that indicate which atoms are similar due to symmetrie in the topology, not atom labels taken into account
         self.sets = sets
             
     def yield_criteria(self):
@@ -182,9 +182,14 @@ class DihedralSets(CriteriaSets):
         CriteriaSets.__init__(self, [(0, 1), (1, 2), (2, 3)], 1, {0: 0, 1: 1, 2: 1, 3: 0}, sets)
 
 
-class OutOfPlaneSets(CriteriaSets):
+class OutOfPlaneAngleSets(CriteriaSets):
     def __init__(self, sets):
         CriteriaSets.__init__(self, [(1, 0), (1, 2), (1, 3)], 1, {0: 0, 1: 1, 2: 2, 3: 2}, sets)
+
+
+class OutOfPlaneDistanceSets(CriteriaSets):
+    def __init__(self, sets):
+        CriteriaSets.__init__(self, [(0, 1), (0, 2), (0, 3)], 0, {0: 0, 1: 1, 2: 1, 3: 1}, sets)
 
 
 class LongRangePairSets(CriteriaSets):

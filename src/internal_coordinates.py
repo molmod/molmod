@@ -257,6 +257,22 @@ class Unary(InternalCoordinate):
         return "%s(%s)" % (self.description(), self.iic.label())
 
 
+class Factor(Unary):
+    def __init__(self, factor, iic, **keyvals):
+        Unary.__init__(self, iic.output_style, iic, **keyvals)
+        self.factor = factor
+        
+    def value_tangent(self, coordinates):
+        e, t = self.iic.value_tangent(coordinates)
+        return self.factor*e, self.factor*t
+        
+    def curvature(self, coordinates):
+        return self.factor*self.iic.curvature(coordinates)
+
+    def label(self):
+        return "(%s*%s)" % (self.factor, self.iic.label())
+
+
 class Measure(Unary):
     def __init__(self, iic, **keyvals):
         assert iic.output_style == VECTOR
@@ -613,6 +629,46 @@ class InternalCoordinatesCache(object):
                 symbol="C%i-%i(%i,%i)" % id
             )
             self.add_internal_coordinate(tag, out_of_plane_cos) 
+
+
+    def add_out_of_plane_distances(self, criteria_sets):
+        """
+        Adds the out of plane cosines described in criteria_sets to the
+        collection.
+        """
+        result = dict((tag, []) for tag in criteria_sets.yield_tags())
+        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
+            id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
+            s0 = self.add(Select, id[0])
+            s1 = self.add(Select, id[1])
+            s2 = self.add(Select, id[2])
+            s3 = self.add(Select, id[3])
+            ra = self.add(Delta, s1, s2)
+            rb = self.add(Delta, s1, s3)
+            rc = self.add(Delta, s1, s0)
+            daa = self.add(DistanceSqr, ra)
+            dbb = self.add(DistanceSqr, rb)
+            dcc = self.add(DistanceSqr, rc)
+            dab = self.add(Dot, ra, rb)
+            dac = self.add(Dot, ra, rc)
+            dbc = self.add(Dot, rb, rc)
+            paabb = self.add(Mul, daa, dbb)
+            pab2 = self.add(Sqr, dab)
+            dnn = self.add(Sub, paabb, pab2)
+            rt1 = self.add(Scale, dac, rb)
+            rt2 = self.add(Scale, dbc, ra)
+            re = self.add(Sub, rt1, rt2)
+            dee = self.add(DistanceSqr, re)
+            t3 = self.add(Div, dee, dnn)
+            dout2 = self.add(Sub, dcc, t3)
+            out_of_plane_distance = self.add(
+                Sqrt,
+                dout2,
+                name="out of plane distance %i-(%i,%i,%i)" % id,
+                id=id,
+                symbol="D%i-(%i,%i,%i)" % id
+            )
+            self.add_internal_coordinate(tag, out_of_plane_distance) 
 
     def yield_related_internal_coordinates(self, tag1, tag2, order_related=2):
         for ic1 in self[tag1]:

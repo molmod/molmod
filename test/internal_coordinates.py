@@ -20,7 +20,7 @@
 # --
 
 from pychem.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
-from pychem.molecular_graphs import BondSets, BendSets, DihedralSets, OutOfPlaneSets, CriteriaSet
+from pychem.molecular_graphs import BondSets, BendSets, DihedralSets, OutOfPlaneAngleSets, OutOfPlaneDistanceSets, CriteriaSet
 from pychem.molecules import molecule_from_xyz_filename
 from pychem.moldata import BOND_SINGLE
 from pychem.units import from_angstrom
@@ -157,24 +157,24 @@ class Chainrule(unittest.TestCase):
         self.assert_(sum(components**2) < 1e-10, "Chain rule problem: failed on sanity_check for '%s' (%s)" % (internal_coordinate.tag, components))
         #print internal_coordinate.tag, sum(numpy.dot(numpy.ravel(tangent), external_basis)**2)
             
-    def pair_test(self, internal_coordinate, ethene1, ethene2, expected_cos1, expected_cos2):
-        test_cos1, tangent1 = internal_coordinate.value_tangent(ethene1.coordinates)
-        test_cos2, tangent2 = internal_coordinate.value_tangent(ethene2.coordinates)
+    def pair_test(self, internal_coordinate, ethene1, ethene2, expected_value1, expected_value2):
+        test_value1, tangent1 = internal_coordinate.value_tangent(ethene1.coordinates)
+        test_value2, tangent2 = internal_coordinate.value_tangent(ethene2.coordinates)
         
         # validate values
-        if abs(test_cos1 - expected_cos1) > 1e-10:
-            self.errors.append("Ethene1 problem: test cosine (%s) and expected cosine (%s) differ: %s" % (test_cos1, expected_cos1, test_cos1 - expected_cos1))
-        if abs(test_cos2 - expected_cos2) > 1e-10:
-            self.errors.append("Ethene2 problem: test cosine (%s) and expected cosine (%s) differ: %s" % (test_cos2, expected_cos2, test_cos2 - expected_cos2))
+        if abs(test_value1 - expected_value1) > 1e-10:
+            self.errors.append("Ethene1 problem: test value (%s) and expected value (%s) differ: %s" % (test_value1, expected_value1, test_value1 - expected_value1))
+        if abs(test_value2 - expected_value2) > 1e-10:
+            self.errors.append("Ethene2 problem: test value (%s) and expected value (%s) differ: %s" % (test_value2, expected_value2, test_value2 - expected_value2))
 
         # validate tangents
         delta = ethene2.coordinates - ethene1.coordinates
         tangent = 0.5*(tangent1+tangent2)
-        delta_cos_estimate = numpy.dot(numpy.ravel(tangent), numpy.ravel(delta))
-        if abs(delta_cos_estimate - (expected_cos2 - expected_cos1)) > 1e-4:
-            self.errors.append("Chain rule problem: delta_cos_estimate (%s) and delta_cos_expected (%s) differ: %s" % (delta_cos_estimate, (expected_cos2 - expected_cos1), delta_cos_estimate - (expected_cos2 - expected_cos1)))
-        if abs(delta_cos_estimate - (test_cos2 - test_cos1)) > 1e-4:
-            self.errors.append("Chain rule problem: delta_cos_estimate (%s) and delta_cos_test (%s) differ: %s" % (delta_cos_estimate, (test_cos2 - test_cos1), delta_cos_estimate - (test_cos2 - test_cos1)))
+        delta_value_estimate = numpy.dot(numpy.ravel(tangent), numpy.ravel(delta))
+        if abs(delta_value_estimate - (expected_value2 - expected_value1)) > 1e-4:
+            self.errors.append("Chain rule problem: delta_value_estimate (%s) and delta_value_expected (%s) differ: %s" % (delta_value_estimate, (expected_value2 - expected_value1), delta_value_estimate - (expected_value2 - expected_value1)))
+        if abs(delta_value_estimate - (test_value2 - test_value1)) > 1e-4:
+            self.errors.append("Chain rule problem: delta_value_estimate (%s) and delta_value_test (%s) differ: %s" % (delta_value_estimate, (test_value2 - test_value1), delta_value_estimate - (test_value2 - test_value1)))
 
         # sanity check on tangents
         self.check_sanity(ethene1.coordinates, tangent1, internal_coordinate)
@@ -205,8 +205,8 @@ class Chainrule(unittest.TestCase):
         
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))
     
-    def test_out_of_plane(self):
-        self.ic_cache.add_out_of_plane_cosines(OutOfPlaneSets([CriteriaSet("CC(HCl)", ((6, 6, 1, 17), None))]))
+    def test_out_of_plane_cosine(self):
+        self.ic_cache.add_out_of_plane_cosines(OutOfPlaneAngleSets([CriteriaSet("CC(HCl)", ((6, 6, 1, 17), None))]))
         out_of_plane_cos = self.ic_cache["CC(HCl)"][0]
 
         self.errors = []
@@ -229,8 +229,29 @@ class Chainrule(unittest.TestCase):
         
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))            
 
+    def test_out_of_plane_distance(self):
+        self.ic_cache.add_out_of_plane_distances(OutOfPlaneDistanceSets([CriteriaSet("C(CHCl)", ((6, 6, 1, 17), None))]))
+        out_of_plane_distance = self.ic_cache["C(CHCl)"][0]
+
+        self.errors = []
+        
+        def mutate_ethene(distance):
+            result = copy.deepcopy(self.ethene)
+            result.coordinates[0,2] = distance
+            return result
+        
+        number = 50
+        for index in xrange(number):
+            distance1 = float(index+0.1)/number
+            distance2 = float(index+0.3)/number
+            ethene1 = mutate_ethene(distance1)
+            ethene2 = mutate_ethene(distance2)
+            self.pair_test(out_of_plane_distance, ethene1, ethene2, distance1, distance2)
+        
+        self.assertEqual(len(self.errors), 0, "\n".join(self.errors))            
+
     def load_internal_coordinates(self):
-        self.ic_cache.add_out_of_plane_cosines(OutOfPlaneSets([CriteriaSet("CC(HCl)", ((6, 6, 1, 17), None))]))
+        self.ic_cache.add_out_of_plane_cosines(OutOfPlaneAngleSets([CriteriaSet("CC(HCl)", ((6, 6, 1, 17), None))]))
         self.ic_cache.add_dihedral_cosines(DihedralSets([CriteriaSet("HCCH", ((1, 6, 6, 1), None))]))
         self.ic_cache.add_bond_lengths(BondSets([CriteriaSet("All bonds", (None, None))]))
         
