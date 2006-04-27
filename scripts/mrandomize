@@ -26,7 +26,7 @@ import sys, copy, random, math, numpy.random
 
 from pychem.molecules import molecule_from_xyz_filename
 from pychem.molecular_graphs import MolecularGraph
-from pychem.units import from_angstrom, from_kjmol, to_angstrom
+from pychem.units import from_angstrom, to_angstrom
 from pychem.moldata import periodic
 from pychem.transformations import Rotation
 
@@ -49,8 +49,7 @@ def half_molecule(graph, atom1, atom2):
     return atom1_part
 
 
-def rotational_randomize(molecule):
-    mgraph = MolecularGraph(molecule)
+def rotational_randomize(molecule, mgraph):
     for (atom1, atom2), order in mgraph.bonds.iteritems():
         if order != 1: continue
         if len(mgraph.graph.neighbours[atom1]) < 2: continue
@@ -73,22 +72,25 @@ def displacement_randomize(molecule, average_displacement):
         molecule.coordinates[index] += numpy.random.normal(0.0, average_displacement, 3)
         
 
-def coarse_energy(molecule):
+def coarse_energy(molecule, mgraph):
     energy = 0.0
     radii = numpy.array([periodic.radius[number] for number in molecule.numbers], float)
     #print "begin energy"
     for index1 in xrange(len(molecule.numbers)):
         for index2 in xrange(index1+1, len(molecule.numbers)):
             delta = molecule.coordinates[index1] - molecule.coordinates[index2]
-            distance2 = numpy.dot(delta, delta)
+            distance = math.sqrt(numpy.dot(delta, delta))
             #print "%2i %2i: %5.3f, %5.3e" % (
             #    molecule.numbers[index1], 
             #    molecule.numbers[index2], 
             #    to_angstrom(math.sqrt(distance2)),
             #    (distance2/(radii[index1]+radii[index2])**2)**(-6)
             #)
-            energy += (distance2/(radii[index1]+radii[index2])**2)**(-6)
-    print "total energy %5.3e" % to_kjmol(energy)
+            radius = radii[index1]+radii[index2]
+            energy += (distance/radius)**(-12)
+            if frozenset([index1, index2]) in mgraph.bonds:
+                energy += 1e-7*(distance-0.97*radius)**2
+    print "total energy %5.3e" % energy
     return energy
         
 help_message = """Usage: mrandomize filename number [avdisp]
@@ -129,12 +131,15 @@ if __name__ == "__main__":
     output_filename_template = "%s_%0" + str(max_number_len) + "i.xyz"
 
     input_molecule =  molecule_from_xyz_filename(filename)
+    mgraph = MolecularGraph(input_molecule)
     for index in xrange(number):
         accepted = False
         while not accepted:
             randomized_molecule = copy.deepcopy(input_molecule)
-            rotational_randomize(randomized_molecule)
+            rotational_randomize(randomized_molecule, mgraph)
             displacement_randomize(randomized_molecule, average_displacement)
-            accepted = coarse_energy(randomized_molecule) < from_kjmol(100)
-        randomized_molecule.write_to_xyz_filename(output_filename_template % (filename[:-4], index))
+            accepted = coarse_energy(randomized_molecule, mgraph) < 1e-5
+	output_filename = output_filename_template % (filename[:-4], index)
+        randomized_molecule.write_to_xyz_filename(output_filename)
+	print "Written to %s." % output_filename
         
