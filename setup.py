@@ -47,6 +47,7 @@ setup(name='PyChem',
         'pychem.interfaces.gaussian03',
         'pychem.interfaces.gromos96'
     ],
+    scripts=['scripts/mrandomize'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',

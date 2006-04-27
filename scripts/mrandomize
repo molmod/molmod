@@ -1,0 +1,140 @@
+#!/usr/bin/env python
+# PyChem is a general chemistry oriented python package.
+# Copyright (C) 2005 Toon Verstraelen
+# 
+# This file is part of PyChem.
+# 
+# PyChem is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+# 
+# --
+
+
+
+import sys, copy, random, math, numpy.random
+
+from pychem.molecules import molecule_from_xyz_filename
+from pychem.molecular_graphs import MolecularGraph
+from pychem.units import from_angstrom, from_kjmol, to_angstrom
+from pychem.moldata import periodic
+from pychem.transformations import Rotation
+
+
+
+def half_molecule(graph, atom1, atom2):
+    atom1_new = set(graph.neighbours[atom1])
+    atom1_new.discard(atom2)
+    atom1_part = set([atom1])
+    
+    while len(atom1_new) > 0:
+        pivot = atom1_new.pop()
+        if pivot == atom2: return
+        pivot_neighbours = set(graph.neighbours[pivot])
+        pivot_neighbours -= atom1_part
+        pivot_neighbours.discard(atom1)
+        atom1_new |= pivot_neighbours
+        atom1_part.add(pivot)
+    
+    return atom1_part
+
+
+def rotational_randomize(molecule):
+    mgraph = MolecularGraph(molecule)
+    for (atom1, atom2), order in mgraph.bonds.iteritems():
+        if order != 1: continue
+        if len(mgraph.graph.neighbours[atom1]) < 2: continue
+        if len(mgraph.graph.neighbours[atom2]) < 2: continue
+        atom1_part = half_molecule(mgraph.graph, atom1, atom2)
+        if atom1_part is None: continue
+        
+        axis = molecule.coordinates[atom1] - molecule.coordinates[atom2]
+        center = molecule.coordinates[atom1]
+        angle = random.random()*math.pi*2
+        
+        transf = Rotation(angle, axis, center)
+        
+        for index in atom1_part:
+            molecule.coordinates[index] = transf.apply(molecule.coordinates[index])
+
+
+def displacement_randomize(molecule, average_displacement):
+    for index in xrange(len(molecule.numbers)):
+        molecule.coordinates[index] += numpy.random.normal(0.0, average_displacement, 3)
+        
+
+def coarse_energy(molecule):
+    energy = 0.0
+    radii = numpy.array([periodic.radius[number] for number in molecule.numbers], float)
+    #print "begin energy"
+    for index1 in xrange(len(molecule.numbers)):
+        for index2 in xrange(index1+1, len(molecule.numbers)):
+            delta = molecule.coordinates[index1] - molecule.coordinates[index2]
+            distance2 = numpy.dot(delta, delta)
+            #print "%2i %2i: %5.3f, %5.3e" % (
+            #    molecule.numbers[index1], 
+            #    molecule.numbers[index2], 
+            #    to_angstrom(math.sqrt(distance2)),
+            #    (distance2/(radii[index1]+radii[index2])**2)**(-6)
+            #)
+            energy += (distance2/(radii[index1]+radii[index2])**2)**(-6)
+    print "total energy %5.3e" % to_kjmol(energy)
+    return energy
+        
+help_message = """Usage: mrandomize filename number [avdisp]
+Randomize molecular geometries, avoiding unphysical configurations.
+
+Options:
+    filename     The filename of the input xyz file that contains a molecular
+                 geometry. It is sugested to use only geometries of single
+                 optimized molecules.
+    number       The number of randomized geometries.
+    avdisp       The average displacemnt in angstrom, used by the displacement
+                 randomizer. The default value is 0.05 Angstrom.
+    
+Details:
+    For each randomized molecule, these steps are taken:
+       - The program starts with the input geometry.
+       - First random internal rotations are performed around all bonds that are
+         not part of a cyclic substructure
+       - Secondly all the atoms are randomly displaced with an given avarege
+         displacement.
+       - Finally a rough estimate of the Pauli repulsion is calculated. If this
+         value is too high, the random geometry is rejected."""
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3 or len(sys.argv) > 4:
+        print help_message
+        sys.exit()
+
+    filename = sys.argv[1]
+    number = int(sys.argv[2])
+    if len(sys.argv) > 3:
+        average_displacement = from_angstrom(float(sys.argv[3]))
+    else:
+        average_displacement = from_angstrom(0.05)
+
+
+    max_number_len = len(str(number-1))
+    output_filename_template = "%s_%0" + str(max_number_len) + "i.xyz"
+
+    input_molecule =  molecule_from_xyz_filename(filename)
+    for index in xrange(number):
+        accepted = False
+        while not accepted:
+            randomized_molecule = copy.deepcopy(input_molecule)
+            rotational_randomize(randomized_molecule)
+            displacement_randomize(randomized_molecule, average_displacement)
+            accepted = coarse_energy(randomized_molecule) < from_kjmol(100)
+        randomized_molecule.write_to_xyz_filename(output_filename_template % (filename[:-4], index))
+        
