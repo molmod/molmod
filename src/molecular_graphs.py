@@ -245,10 +245,15 @@ class MolecularGraph(object):
             delta = position2 - position1
             distance = math.sqrt(numpy.dot(delta, delta))
             if distance < binned_atoms.gridsize:
-                return bonds.bonded(self.molecule.numbers[index1], self.molecule.numbers[index2], distance)
+                bond_order = bonds.bonded(self.molecule.numbers[index1], self.molecule.numbers[index2], distance)
+                if bond_order != None:
+                    return bond_order, distance
         
-        self.bonds = dict(IntraAnalyseNeighbouringObjects(binned_atoms, compare_function)())
-        self.graph = Graph(self.bonds.keys())
+        bond_data = list(IntraAnalyseNeighbouringObjects(binned_atoms, compare_function)())
+        self.bonds = set(key for key, data in bond_data)
+        self.bond_orders = dict([(key, data[0]) for key, data in bond_data])
+        self.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
+        self.graph = Graph(self.bonds)
         
     def yield_subgraphs(self, criteria_sets):
         subgraph = SymmetricGraph(criteria_sets.subpairs, criteria_sets.initiator)

@@ -50,7 +50,8 @@ def half_molecule(graph, atom1, atom2):
 
 
 def rotational_randomize(molecule, mgraph):
-    for (atom1, atom2), order in mgraph.bonds.iteritems():
+    for (atom1, atom2), order in mgraph.bond_orders.iteritems():
+        #print (atom1, atom2), order
         if order != 1: continue
         if len(mgraph.graph.neighbours[atom1]) < 2: continue
         if len(mgraph.graph.neighbours[atom2]) < 2: continue
@@ -86,10 +87,12 @@ def coarse_energy(molecule, mgraph):
             #    to_angstrom(math.sqrt(distance2)),
             #    (distance2/(radii[index1]+radii[index2])**2)**(-6)
             #)
-            radius = radii[index1]+radii[index2]
-            energy += (distance/radius)**(-12)
-            if frozenset([index1, index2]) in mgraph.bonds:
-                energy += 1e-7*(distance-0.97*radius)**2
+            length = mgraph.bond_lengths.get(frozenset([index1, index2]))
+            if length == None:
+                radius = radii[index1]+radii[index2]
+                energy += (distance/radius)**(-12)
+            else:
+                energy += 0.002*(1-math.exp(-(distance-length)/(4*length)))**2
     print "total energy %5.3e" % energy
     return energy
         
@@ -132,6 +135,7 @@ if __name__ == "__main__":
 
     input_molecule =  molecule_from_xyz_filename(filename)
     mgraph = MolecularGraph(input_molecule)
+    
     for index in xrange(number):
         accepted = False
         while not accepted:
