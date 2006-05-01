@@ -68,9 +68,9 @@ def rotational_randomize(molecule, mgraph):
             molecule.coordinates[index] = transf.apply(molecule.coordinates[index])
 
 
-def displacement_randomize(molecule, average_displacement):
+def displacement_randomize(molecule, max_displacement):
     for index in xrange(len(molecule.numbers)):
-        molecule.coordinates[index] += numpy.random.normal(0.0, average_displacement, 3)
+        molecule.coordinates[index] += (numpy.random.beta(2, 2, 3)*2-1)*max_displacement
         
 
 def coarse_energy(molecule, mgraph):
@@ -92,11 +92,11 @@ def coarse_energy(molecule, mgraph):
                 radius = radii[index1]+radii[index2]
                 energy += (distance/radius)**(-12)
             else:
-                energy += 0.002*(1-math.exp(-(distance-length)/(4*length)))**2
+                energy += 0.005*(1-math.exp(-(distance-length)/(4*length)))**2
     print "total energy %5.3e" % energy
     return energy
         
-help_message = """Usage: mrandomize filename number [avdisp]
+help_message = """Usage: mrandomize filename number [maxdisp]
 Randomize molecular geometries, avoiding unphysical configurations.
 
 Options:
@@ -104,7 +104,7 @@ Options:
                  geometry. It is sugested to use only geometries of single
                  optimized molecules.
     number       The number of randomized geometries.
-    avdisp       The average displacemnt in angstrom, used by the displacement
+    maxdisp      The average displacemnt in angstrom, used by the displacement
                  randomizer. The default value is 0.05 Angstrom.
     
 Details:
@@ -125,9 +125,9 @@ if __name__ == "__main__":
     filename = sys.argv[1]
     number = int(sys.argv[2])
     if len(sys.argv) > 3:
-        average_displacement = from_angstrom(float(sys.argv[3]))
+        max_displacement = from_angstrom(float(sys.argv[3]))
     else:
-        average_displacement = from_angstrom(0.05)
+        max_displacement = from_angstrom(0.05)
 
 
     max_number_len = len(str(number-1))
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         while not accepted:
             randomized_molecule = copy.deepcopy(input_molecule)
             rotational_randomize(randomized_molecule, mgraph)
-            displacement_randomize(randomized_molecule, average_displacement)
+            displacement_randomize(randomized_molecule, max_displacement)
             accepted = coarse_energy(randomized_molecule, mgraph) < 1e-5
 	output_filename = output_filename_template % (filename[:-4], index)
         randomized_molecule.write_to_xyz_filename(output_filename)
