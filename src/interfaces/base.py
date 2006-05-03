@@ -231,4 +231,5 @@ def reload_job(job_filename):
     f = file(job_filename, 'r')
     job = load(f)
     f.close()
+    job.prefix = job_filename[:-4]
     return job
