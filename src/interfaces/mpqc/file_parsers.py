@@ -293,3 +293,23 @@ class RawGridParser(FileParser):
 
     def result(self):
         return numpy.array(self.grid, float)
+
+
+class TotalChargeParser(FileParser):
+    filename = ".out"
+    extension = True
+
+    def __init__(self, label='total_charge', condition=None):
+        FileParser.__init__(self, label, condition)
+        self.re = re.compile(r"total charge =\s+(?P<total_charge>\S+)")
+        
+    def reset(self):
+        self.total_charge = None
+        
+    def parse(self, line):
+        match = self.re.search(line)
+        if match != None:
+            self.total_charge = float(match.group("total_charge"))
+        
+    def result(self):
+        return self.total_charge
