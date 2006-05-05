@@ -35,51 +35,42 @@ def create_molecule(molecule):
 
   
 def create_std_functional(functional):
-    if functional != None:
-        return KeyValObject(
-            'StdDenFunctional', 
-            {'name': functional}
-        )
+    return KeyValObject(
+        'StdDenFunctional', 
+        {'name': functional}
+    )
 
 
-def create_guess_mole(molecule_kvo, charge, method="CLHF"):
-    return KeyValObject(method, {
-        'molecule': molecule_kvo,
-        'total_charge': charge,
-        'basis': KeyValObject("GaussianBasisSet", {
-            'molecule': molecule_kvo,
-            'name': 'STO-3G'
-        })
-    })
-
-    
-def create_mole(molecule_kvo, charge, method, basis, functional=''):
-    return KeyValObject(method, {
+def create_mole(molecule_kvo, charge, method, basis, functional=None, guess=True):
+    result = KeyValObject(method, {
         'molecule': molecule_kvo,
         'total_charge': charge,
         'basis': KeyValObject('GaussianBasisSet', {
             'molecule': molecule_kvo,
             'name': basis
-        }),
-        'functional': create_std_functional(functional),
-        'guess_wavefunction': create_guess_mole(molecule_kvo, charge)
+        })
     })
+    if functional != None:
+        result.functional = create_std_functional(functional)
+    if guess:
+        result.guess_wavefunction = create_mole(molecule_kvo, charge, "CLHF", basis="STO-3G", guess=False)
+    return result
 
 
-def create_single_point(molecule, charge, method, basis, functional=''):        
+def create_single_point(molecule, charge, method, basis, functional=None, guess=True):        
         molecule_kvo = create_molecule(molecule)
         
         return KeyValObject(attributes={
             'molecule': molecule_kvo,
             'mpqc': KeyValObject(attributes={
-                'mole': create_mole(molecule_kvo, charge, method, basis, functional)
+                'mole': create_mole(molecule_kvo, charge, method, basis, functional, guess)
             })
         })
 
 
-def create_optimize(molecule, charge, method, basis, functional=''):        
+def create_optimize(molecule, charge, method, basis, functional=None, guess=True):        
         molecule_kvo = create_molecule(molecule)
-        mole_kvo = create_mole(molecule_kvo, charge, method, basis, functional)
+        mole_kvo = create_mole(molecule_kvo, charge, method, basis, functional, guess)
         
         return KeyValObject(attributes={
             'molecule': molecule_kvo,
