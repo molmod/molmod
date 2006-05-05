@@ -313,3 +313,28 @@ class TotalChargeParser(FileParser):
         
     def result(self):
         return self.total_charge
+
+
+class NPAParser(MultiLineParser):
+    filename = ".out"
+    extension = True
+
+    def __init__(self, label='npa_charges', condition=None):
+        activator = re.compile(r"Natural Population Analysis:")
+        deactivator = re.compile(r"^$")
+        MultiLineParser.__init__(self, label, activator, deactivator, condition)
+        self.re = re.compile(r"^\s+\d+\s+\S+\s+(?P<npa_charge>\S+)")
+        
+    def start_collecting(self):
+        self.npa_charges = []
+
+    def collect(self, line):
+        match = self.re.search(line)
+        if match != None:
+            self.npa_charges.append(float(match.group("npa_charge")))
+
+    def stop_collecting(self):
+        pass
+
+    def result(self):
+        return numpy.array(self.npa_charges)
