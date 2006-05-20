@@ -272,27 +272,39 @@ class RawGridParser(FileParser):
         FileParser.__init__(self, label, condition)
 
     def reset(self):
-        self.grid = []
+        self.grid = None
         self.active = (self.trigger == None)
+        self.read_nrecords = (self.trigger == None)
         
     def parse(self, line):
         if self.active:
             words = line.split()
             if len(words) == 4:
                 try:
-                    self.grid.append([
-                        float(words[0]), float(words[1]),
-                        float(words[2]), float(words[3])
-                    ])
+                    self.grid[self.counter, 0] = float(words[0])
+                    self.grid[self.counter, 1] = float(words[1])
+                    self.grid[self.counter, 2] = float(words[2])
+                    self.grid[self.counter, 3] = float(words[3])
                 except ValueError:
                     self.active = False
             else:
                 self.active = False
-        elif len(self.grid) == 0:
-            if line == self.trigger: self.active = True
+            self.counter += 1
+            if self.counter >= self.nrecords:
+                self.active = False
+        elif self.read_nrecords:
+            assert line.startswith("# Number of records:")
+            words = line.split()
+            self.nrecords = int(words[-1])
+            self.grid = numpy.zeros((self.nrecords, 4), float)
+            self.counter = 0
+            self.active = True
+            self.read_nrecords = False
+        elif self.grid == None:
+            if line == self.trigger: self.read_nrecords = True
 
     def result(self):
-        return numpy.array(self.grid, float)
+        return self.grid
 
 
 class TotalChargeParser(FileParser):
