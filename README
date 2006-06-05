@@ -10,13 +10,13 @@ DOCUMENTATION and SUPPORT
 -------------------------
 
 If you have problems with using or installing MolMod, consult
-the online documentation and support at http://molmod.UGent.be/code/pychem/
+the online documentation and support at http://molmod.UGent.be/code/molmod/
 
 Most of the source code is self-documented. For example the documentation
-about pychem.moldata can be read using the python interpreter with the following
+about molmod.moldata can be read using the python interpreter with the following
 two commands:
->>> import pychem.moldata
->>> help(pychem.moldata)
+>>> import molmod.moldata
+>>> help(molmod.moldata)
 
 INSTALLING
 ----------

@@ -19,8 +19,8 @@
 # 
 # --
 
-from pychem.interfaces.gaussian03.file_parsers import *
-from pychem.interfaces.output_parsers import OutputParser
+from molmod.interfaces.gaussian03.file_parsers import *
+from molmod.interfaces.output_parsers import OutputParser
 
 
 import math, numpy, numpy.linalg

@@ -20,16 +20,16 @@
 # --
 """ 
 periodic is an instance of the PeriodicData class in the module 
-pychem.moldata.periodicdata. It represents the data in periodic.csv.
+molmod.moldata.periodicdata. It represents the data in periodic.csv.
 
 bonds is an instance of the BondsData class in the module 
-pychem.moldata.bondsdata. It represents the data in bonds.csv.
+molmod.moldata.bondsdata. It represents the data in bonds.csv.
 """
 
 from periodicdata import PeriodicData
 from bondsdata import BondData, BOND_SINGLE, BOND_DOUBLE, BOND_TRIPLE, bond_types
 
-from pychem import context
+from molmod import context
 
 __all__ = [
     "periodic", 

@@ -19,11 +19,11 @@
 # 
 # --
 
-from pychem.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
-from pychem.molecular_graphs import BondSets, BendSets, DihedralSets, OutOfPlaneAngleSets, OutOfPlaneDistanceSets, CriteriaSet
-from pychem.molecules import molecule_from_xyz_filename
-from pychem.moldata import BOND_SINGLE
-from pychem.units import from_angstrom
+from molmod.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
+from molmod.molecular_graphs import BondSets, BendSets, DihedralSets, OutOfPlaneAngleSets, OutOfPlaneDistanceSets, CriteriaSet
+from molmod.molecules import molecule_from_xyz_filename
+from molmod.moldata import BOND_SINGLE
+from molmod.units import from_angstrom
 
 import unittest, math, copy, numpy, RandomArray, sys
 

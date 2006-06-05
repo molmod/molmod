@@ -22,7 +22,7 @@
 
 import init_files
 
-from pychem import context
+from molmod import context
 context.share_path = "../share/"
 
 import unittest

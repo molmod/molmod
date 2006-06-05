@@ -19,8 +19,8 @@
 # 
 # --
 
-from pychem.interfaces.base import TemplateJob
-from pychem.units import to_nanometer
+from molmod.interfaces.base import TemplateJob
+from molmod.units import to_nanometer
 
 import os, copy, glob
 import numpy

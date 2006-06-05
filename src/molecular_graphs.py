@@ -20,9 +20,9 @@
 # --
 
 
-from pychem.graphs import Graph, SymmetricGraph, MatchFilterParameterized, Criterium
-from pychem.binning import IntraAnalyseNeighbouringObjects, PositionedObject, SparseBinnedObjects
-from pychem.moldata import bonds
+from molmod.graphs import Graph, SymmetricGraph, MatchFilterParameterized, Criterium
+from molmod.binning import IntraAnalyseNeighbouringObjects, PositionedObject, SparseBinnedObjects
+from molmod.moldata import bonds
 
 import math, numpy
 

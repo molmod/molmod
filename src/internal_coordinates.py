@@ -19,7 +19,7 @@
 # 
 # --
 
-from pychem.molecular_graphs import MolecularGraph
+from molmod.molecular_graphs import MolecularGraph
 
 import math, copy
 import numpy
@@ -464,7 +464,7 @@ class InternalCoordinatesCache(object):
         Adds the bond lengths described in criteria_sets to the collection.
         
         Arguments
-        criteria_sets -- see pychem.molecular_graphs
+        criteria_sets -- see molmod.molecular_graphs
         """
         result = dict((tag, []) for tag in criteria_sets.yield_tags())
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):

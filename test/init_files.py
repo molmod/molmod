@@ -23,7 +23,7 @@ import os.path, glob
 
 __all__ = []
 
-if not os.path.exists("pychem"):
-    os.symlink("../src", "pychem")
+if not os.path.exists("molmod"):
+    os.symlink("../src", "molmod")
 if not os.path.exists("output"):
     os.mkdir("output")

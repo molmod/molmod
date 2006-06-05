@@ -20,7 +20,7 @@
 # --
 
 
-from pychem.graphs import SymmetricGraph, OneToOne, Criterium
+from molmod.graphs import SymmetricGraph, OneToOne, Criterium
 
 import unittest, copy
 

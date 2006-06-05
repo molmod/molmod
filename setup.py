@@ -30,22 +30,22 @@ setup(name='MolMod',
     description='MolMod is a collection of molecular modelling tools for python.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
-    url='http://molmod.ugent.be/projects/pychem',
-    package_dir = {'pychem': 'src'},
+    url='http://molmod.ugent.be/projects/molmod',
+    package_dir = {'molmod': 'src'},
     data_files=[
-        ('share/pychem/%s/moldata' % version, glob.glob('share/moldata/*.csv')),
-        ('share/pychem/%s/templates/gromos96_sp/' % version, glob.glob('share/templates/gromos96_sp/*.*')),
-        ('share/pychem/%s/awk' % version, glob.glob('share/awk/*.awk'))
+        ('share/molmod/%s/moldata' % version, glob.glob('share/moldata/*.csv')),
+        ('share/molmod/%s/templates/gromos96_sp/' % version, glob.glob('share/templates/gromos96_sp/*.*')),
+        ('share/molmod/%s/awk' % version, glob.glob('share/awk/*.awk'))
     ],
     packages=[
-        'pychem', 
-        'pychem.moldata', 
-        'pychem.interfaces', 
-        'pychem.interfaces.mpqc', 
-        'pychem.interfaces.cpmd',
-        'pychem.interfaces.gaussian98',
-        'pychem.interfaces.gaussian03',
-        'pychem.interfaces.gromos96'
+        'molmod', 
+        'molmod.moldata', 
+        'molmod.interfaces', 
+        'molmod.interfaces.mpqc', 
+        'molmod.interfaces.cpmd',
+        'molmod.interfaces.gaussian98',
+        'molmod.interfaces.gaussian03',
+        'molmod.interfaces.gromos96'
     ],
     scripts=['scripts/mrandomize'],
     classifiers=[

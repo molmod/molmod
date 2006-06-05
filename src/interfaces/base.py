@@ -20,7 +20,7 @@
 # --
 
 
-from pychem import context
+from molmod import context
 
 
 from StringIO import StringIO

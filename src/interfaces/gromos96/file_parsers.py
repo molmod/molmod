@@ -20,8 +20,8 @@
 # --
 
 
-from pychem.interfaces.output_parsers import FileParser, MultiLineParser
-from pychem.units import angstrom, meter, second, unified
+from molmod.interfaces.output_parsers import FileParser, MultiLineParser
+from molmod.units import angstrom, meter, second, unified
 
 import re, numpy
 

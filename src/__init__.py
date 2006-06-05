@@ -26,6 +26,6 @@ class Context(object):
     def __init__(self):
         self.title = "MolMod"
         self.version = "0.1.2"
-        self.share_path = "/usr/share/pychem/%s/" % self.version
+        self.share_path = "/usr/share/molmod/%s/" % self.version
 
 context = Context()

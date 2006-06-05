@@ -19,14 +19,14 @@
 # 
 # --
 
-from pychem.interfaces.base import reload_job
-from pychem.interfaces.mpqc.awk import AwkMpqcJobSinglePoint, AwkMpqcJobOptimize
-from pychem.interfaces.mpqc.oo import OOMpqcJob
-from pychem.interfaces.mpqc.kvo import create_single_point, create_optimize
-from pychem.interfaces.mpqc.keyval import KeyValObject
-from pychem.interfaces.mpqc.file_parsers import *
-from pychem.interfaces.output_parsers import OutputParser
-from pychem.molecules import molecule_from_xyz_filename
+from molmod.interfaces.base import reload_job
+from molmod.interfaces.mpqc.awk import AwkMpqcJobSinglePoint, AwkMpqcJobOptimize
+from molmod.interfaces.mpqc.oo import OOMpqcJob
+from molmod.interfaces.mpqc.kvo import create_single_point, create_optimize
+from molmod.interfaces.mpqc.keyval import KeyValObject
+from molmod.interfaces.mpqc.file_parsers import *
+from molmod.interfaces.output_parsers import OutputParser
+from molmod.molecules import molecule_from_xyz_filename
 
 import math, numpy, numpy.linalg
 import unittest

@@ -20,7 +20,7 @@
 # --
 
 
-from pychem.binning import InterAnalyseNeighbouringObjects, IntraAnalyseNeighbouringObjects, PositionedObject, SparseBinnedObjects
+from molmod.binning import InterAnalyseNeighbouringObjects, IntraAnalyseNeighbouringObjects, PositionedObject, SparseBinnedObjects
 
 import math, numpy
 import unittest
@@ -32,7 +32,7 @@ class Distances(unittest.TestCase):
     gridsize = 1.0
     
     def load_binned_atoms(self, filename):
-        from pychem.molecules import molecule_from_xyz_filename
+        from molmod.molecules import molecule_from_xyz_filename
         m = molecule_from_xyz_filename("input/"+filename)
         
         def yield_positioned_atoms():

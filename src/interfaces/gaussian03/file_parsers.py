@@ -20,10 +20,10 @@
 # --
 
 
-from pychem.interfaces.output_parsers import FileParser, MultiLineParser
-from pychem.moldata import periodic
-from pychem.molecules import Molecule
-from pychem.units import from_angstrom, from_unified
+from molmod.interfaces.output_parsers import FileParser, MultiLineParser
+from molmod.moldata import periodic
+from molmod.molecules import Molecule
+from molmod.units import from_angstrom, from_unified
 
 import re, numpy
 

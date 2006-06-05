@@ -19,9 +19,9 @@
 # 
 # --
 
-from pychem.molecular_graphs import *
-from pychem.molecules import molecule_from_xyz_filename
-from pychem.moldata import BOND_SINGLE
+from molmod.molecular_graphs import *
+from molmod.molecules import molecule_from_xyz_filename
+from molmod.moldata import BOND_SINGLE
 
 import unittest, copy
 

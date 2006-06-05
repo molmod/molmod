@@ -19,10 +19,10 @@
 # 
 # --
 
-from pychem.interfaces.base import AwkJob
-from pychem.moldata import periodic
-from pychem.units import to_angstrom, from_angstrom
-from pychem.molecules import molecule_from_xyz_string
+from molmod.interfaces.base import AwkJob
+from molmod.moldata import periodic
+from molmod.units import to_angstrom, from_angstrom
+from molmod.molecules import molecule_from_xyz_string
 
 import os, copy, glob
 import numpy

@@ -19,12 +19,12 @@
 # 
 # --
 
-from pychem.interfaces.base import reload_job
-from pychem.interfaces.gromos96.sp import Gromos96SP
-from pychem.interfaces.gromos96.file_parsers import *
-from pychem.interfaces.output_parsers import OutputParser
-from pychem.molecules import molecule_from_xyz_filename
-from pychem.units import from_angstrom
+from molmod.interfaces.base import reload_job
+from molmod.interfaces.gromos96.sp import Gromos96SP
+from molmod.interfaces.gromos96.file_parsers import *
+from molmod.interfaces.output_parsers import OutputParser
+from molmod.molecules import molecule_from_xyz_filename
+from molmod.units import from_angstrom
 
 import math, numpy, numpy.linalg, os
 import unittest

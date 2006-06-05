@@ -24,11 +24,11 @@
 
 import sys, copy, random, math, numpy.random
 
-from pychem.molecules import molecule_from_xyz_filename
-from pychem.molecular_graphs import MolecularGraph
-from pychem.units import from_angstrom, to_angstrom
-from pychem.moldata import periodic
-from pychem.transformations import Rotation
+from molmod.molecules import molecule_from_xyz_filename
+from molmod.molecular_graphs import MolecularGraph
+from molmod.units import from_angstrom, to_angstrom
+from molmod.moldata import periodic
+from molmod.transformations import Rotation
 
 
 

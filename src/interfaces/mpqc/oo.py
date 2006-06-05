@@ -19,10 +19,10 @@
 # 
 # --
 
-from pychem.interfaces.base import IOJob
-from pychem.interfaces.output_parsers import OutputParser
-from pychem.interfaces.mpqc.keyval import KeyValWriter
-from pychem.moldata import periodic
+from molmod.interfaces.base import IOJob
+from molmod.interfaces.output_parsers import OutputParser
+from molmod.interfaces.mpqc.keyval import KeyValWriter
+from molmod.moldata import periodic
 
 import os, glob
 

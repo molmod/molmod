@@ -19,8 +19,8 @@
 # 
 # --
 
-from pychem.moldata import periodic
-from pychem.units import from_angstrom, to_angstrom
+from molmod.moldata import periodic
+from molmod.units import from_angstrom, to_angstrom
 
 from StringIO import StringIO
 

@@ -19,7 +19,7 @@
 # 
 # --
 
-from pychem.units import from_unified
+from molmod.units import from_unified
 
 import string, numpy, copy
 
