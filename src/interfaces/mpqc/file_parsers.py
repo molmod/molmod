@@ -350,3 +350,38 @@ class NPAParser(MultiLineParser):
 
     def result(self):
         return numpy.array(self.npa_charges)
+
+
+class MOParser(FileParser):
+    filename = ".out"
+    extension = True
+
+    def __init__(self, label, mo_type, condition=None):
+        FileParser.__init__(self, label, condition)
+        self.re = re.compile(r"%s is\s+(?P<level>\d+)\s+(?P<spin>\S)\s+=\s+(?P<energy>\S+)" % mo_type)
+        
+    def reset(self):
+        self.level = None
+        self.spin = None
+        self.energy = None
+        
+    def parse(self, line):
+        match = self.re.search(line)
+        if match != None:
+            self.level = int(match.group("level"))
+            self.spin = match.group("spin")
+            self.energy = float(match.group("energy"))
+        
+    def result(self):
+        return self.level, self.spin, self.energy
+
+
+class LUMOParser(MOParser):
+    def __init__(self, label="lumo", condition=None):
+        MOParser.__init__(self, label, "LUMO", condition)
+
+
+class HOMOParser(MOParser):
+    def __init__(self, label="homo", condition=None):
+        MOParser.__init__(self, label, "HOMO", condition)
+
