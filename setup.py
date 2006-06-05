@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-# PyChem is a general chemistry oriented python package.
+# MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2005 Toon Verstraelen
 # 
-# This file is part of PyChem.
+# This file is part of MolMod.
 # 
-# PyChem is free software; you can redistribute it and/or
+# MolMod is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
@@ -25,9 +25,9 @@ from distutils.core import setup
 
 version = '0.1.2'
 
-setup(name='PyChem',
+setup(name='MolMod',
     version=version,
-    description='PyChem is a general chemistry oriented python package.',
+    description='MolMod is a collection of molecular modelling tools for python.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
     url='http://molmod.ugent.be/projects/pychem',

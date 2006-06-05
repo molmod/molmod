@@ -3,13 +3,13 @@ Pychem 0.1.2 Readme
 LICENSE
 -------
 
-PyChem is distributed under the GNU GPL license.
+MolMod is distributed under the GNU GPL license.
 For details read the file COPYING.
 
 DOCUMENTATION and SUPPORT
 -------------------------
 
-If you have problems with using or installing PyChem, consult
+If you have problems with using or installing MolMod, consult
 the online documentation and support at http://molmod.UGent.be/code/pychem/
 
 Most of the source code is self-documented. For example the documentation
@@ -21,7 +21,7 @@ two commands:
 INSTALLING
 ----------
 
-PyChem depends on:
+MolMod depends on:
     - python 2.4
     - Numeric
     
