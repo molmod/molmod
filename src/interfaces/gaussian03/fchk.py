@@ -81,7 +81,6 @@ class FormattedCheckpoint(object):
         self.analyze()
         
     def analyze(self):
-        print self.fields.keys()
         self.molecule = Molecule()
         self.molecule.numbers = self.fields["Atomic numbers"]
         self.molecule.coordinates = numpy.reshape(self.fields["Current cartesian coordinates"], (-1,3))
