@@ -20,7 +20,7 @@
 # --
 
 
-from os.path import isfile
+import os.path
 
 
 class Error(Exception):
@@ -73,7 +73,7 @@ class OutputParser(object):
                 path = "%s/%s%s" % (directory, basename, file_parser_group.filename)
             else:
                 path = "%s/%s" % (directory, file_parser_group.filename)
-            if isfile(path):
+            if os.path.isfile(path):
                 f = file(path, 'r')
                 for line in f:
                     #print line[:-1]
