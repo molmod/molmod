@@ -20,6 +20,7 @@
 # --
 
 from molmod.interfaces.gaussian03.file_parsers import *
+from molmod.interfaces.gaussian03.fchk import FormattedCheckpoint
 from molmod.interfaces.output_parsers import OutputParser
 
 
@@ -76,4 +77,10 @@ class Gaussian03Interface(unittest.TestCase):
         #print "DOF masses: % 3i" % (len(masses)*3)
         #for coordinates in coordinates_list:
         #    print "DOF coords: % 3i" % (len(coordinates)*3)
+    
+    def test_fchk(self):
+        fchk = FormattedCheckpoint("input/1TOH.b3lyp.fchk")
+        print fchk.molecule.numbers
+        print fchk.molecule.coordinates
+        print fchk.optimization_coordinates()
 
