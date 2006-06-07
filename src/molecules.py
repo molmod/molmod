@@ -100,6 +100,24 @@ class Molecule:
         self.write_to_xyz_stream(f)
         f.close()
 
+    def surrounding_grid(self, grid_margin, grid_spacing):
+        bbox_low = numpy.array([dim.min() for dim in self.coordinates.transpose()], float) - grid_margin
+        bbox_high = numpy.array([dim.max() for dim in self.coordinates.transpose()], float) + grid_margin
+        bbox_size = bbox_high - bbox_low
+        bbox_num = numpy.array(numpy.floor(bbox_size/grid_spacing), int)
+        bbox_cor = 0.5*(bbox_size - bbox_num*grid_spacing)
+        bbox_low += bbox_cor
+        bbox_high -= bbox_cor
+        return (
+            bbox_low, 
+            bbox_num[0], 
+            numpy.array([grid_spacing, 0, 0], float),
+            bbox_num[1], 
+            numpy.array([0, grid_spacing, 0], float),
+            bbox_num[2], 
+            numpy.array([0, 0, grid_spacing], float)
+        )
+
 
 def molecule_from_xyz_stream(stream):
     num_atoms = None
