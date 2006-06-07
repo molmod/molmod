@@ -83,4 +83,5 @@ class Gaussian03Interface(unittest.TestCase):
         print fchk.molecule.numbers
         print fchk.molecule.coordinates
         print fchk.optimization_coordinates()
+        print fchk.optimized_molecule()
 

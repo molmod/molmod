@@ -19,7 +19,7 @@
 # 
 # --
 
-import numpy
+import numpy, copy
 
 from molmod.molecules import Molecule
 
@@ -86,6 +86,17 @@ class FormattedCheckpoint(object):
         self.molecule.coordinates = numpy.reshape(self.fields["Current cartesian coordinates"], (-1,3))
         
     def optimization_coordinates(self):
-        geom_array = self.fields.get("Opt point       1 Geometries")
-        assert geom_array is not None, "No optimization geometries found."
-        return numpy.reshape(geom_array, (-1, len(self.molecule.numbers), 3))
+        coor_array = self.fields.get("Opt point       1 Geometries")
+        if coor_array is None:
+            return []
+        else:
+            return numpy.reshape(coor_array, (-1, len(self.molecule.numbers), 3))
+
+    def optimized_molecule(self):
+        opt_coor = self.optimization_coordinates()
+        if len(opt_coor) == 0:
+            return None
+        else:
+            tmp = copy.deepcopy(self.molecule)
+            tmp.coordinates = opt_coor[-1]
+            return tmp
