@@ -79,23 +79,33 @@ class Molecule:
         ])
         rotation = numpy.transpose(numpy.array([new_x, new_y, new_z]))
         self.coordinates = numpy.dot(self.coordinates, rotation)
-        
-    def write_to_xyz_stream(self, stream):
-        print >> stream, "%5i" % len(self.numbers)
-        print >> stream
+
+    def write_atoms_to_stream(self, stream):
         for number, coordinate in zip(self.numbers, to_angstrom(self.coordinates)):
             symbol = periodic.symbol.get(number)
             if symbol == None:
                 symbol = 'X'
-            print >> stream, "%2s%12.6f%12.6f%12.6f" % (
+            print >> stream, "% 2s % 12.6f % 12.6f % 12.6f" % (
                 symbol,
                 coordinate[0],
                 coordinate[1],
                 coordinate[2]
             )
+
+    def write_atoms_to_string(self):
+        sio = StringIO()
+        self.write_atoms_to_stream(sio)
+        result = sio.getvalue()
+        sio.close()
+        return result
+
+    def write_xyz_to_stream(self, stream):
+        print >> stream, "%5i" % len(self.numbers)
+        print >> stream
+        self.write_atoms_to_stream(stream)
         print >> stream
 
-    def write_to_xyz_filename(self, filename):
+    def write_xyz_to_filename(self, filename):
         f = file(filename, 'w')
         self.write_to_xyz_stream(f)
         f.close()
@@ -119,7 +129,7 @@ class Molecule:
         )
 
 
-def molecule_from_xyz_stream(stream):
+def molecule_xyz_from_stream(stream):
     num_atoms = None
     atoms = []
     for line in stream:
@@ -137,16 +147,16 @@ def molecule_from_xyz_stream(stream):
     assert len(atoms) == num_atoms, "Inconsistent number of atoms."
     return Molecule(atoms)
 
-def molecule_from_xyz_filename(filename):
+def molecule_xyz_from_filename(filename):
     """Load an xyz file and return a Molecule instance."""
     f = file(filename)
-    result = molecule_from_xyz_stream(f)
+    result = molecule_xyz_from_stream(f)
     f.close()
     return result
 
-def molecule_from_xyz_string(string):
+def molecule_xyz_from_string(string):
     stream = StringIO(string)
-    result = molecule_from_xyz_stream(stream)
+    result = molecule_xyz_from_stream(stream)
     stream.close()
     return result
 
