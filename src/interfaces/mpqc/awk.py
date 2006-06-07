@@ -36,6 +36,8 @@ __all__ = [
 class AwkMpqcJob(AwkJob):
     """MPQC jobs that use the Awk input format."""
     
+    binary = "mpqc"
+    
     def __init__(self, prefix, title, input_molecule, method, basis, charge=0, multiplicity=1, memory=None):
         """
         Initialize a AwkMpqcJob instance.
@@ -66,7 +68,7 @@ class AwkMpqcJob(AwkJob):
             print >> f, "   %2s  % 10.7f  % 10.7f  % 10.7f" % (periodic.symbol[number], x, y, z)
 
     def external_command(self):
-        return "mpqc -o %s.out %s.in" % (self.prefix, self.prefix)
+        return "%s -o %s%s %s%s" % (self.binary, self.prefix, self.input_extension, self.prefix, self.output_extension)
         
     def remove_temporary_files(self):
         for temp_filename in glob.glob("%s.wfn.*.tmp" % self.prefix):
@@ -88,6 +90,7 @@ class AwkMpqcJobSinglePoint(AwkMpqcJob):
     Awk MPQC jobs that doesn't change the geometry of the molecule.
     Only one SCF iteration is performed, with eventual post analysis.
     """
+    
     def __init__(self, prefix, title, input_molecule, method, basis, charge=0, multiplicity=1, memory=None, do_gradient=False):
         """
         Initialize a AwkMpqcJobSinglePoint instance.
@@ -118,6 +121,7 @@ class AwkMpqcJobOptimize(AwkMpqcJob):
     A Awk MPQC job that optimizes the geometry of the molecule towards
     lower energies. The default MPQC optimization scheme is used.
     """
+    
     def __init__(self, prefix, title, input_molecule, method, basis, charge=0, multiplicity=1, memory=None):
         """Initialize a AwkMpqcJobOptimize instance."""
         AwkMpqcJob.__init__(self, prefix, title, input_molecule, method, basis, charge, multiplicity, memory)

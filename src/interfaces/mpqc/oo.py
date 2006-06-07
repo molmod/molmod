@@ -43,18 +43,15 @@ class OOMpqcJob(IOJob):
         KeyValWriter(f, self.keyval)
 
     def external_command(self):
-        return "%s -o %s.out %s.in" % (self.binary, self.prefix, self.prefix)
+        return "%s -o %s%s %s%s" % (self.binary, self.prefix, self.input_extension, self.prefix, self.output_extension)
         
     def remove_temporary_files(self):
         for temp_filename in glob.glob("%s*.tmp" % self.prefix):
             os.remove(temp_filename)
 
     def determine_completed(self):
-        self.completed = (os.system("grep \"End Time\" %s.out &> /dev/null" % self.prefix) == 0)
+        self.completed = (os.system("grep \"End Time\" %s% &> /dev/null" % (self.prefix, self.output_extension)) == 0)
         
     def read_output(self):
         if self.output_parser != None:
-            slash_pos = self.prefix.rfind("/")
-            directory = self.prefix[:slash_pos]
-            prefix = self.prefix[slash_pos+1:]
-            self.__dict__.update(self.output_parser.parse(directory, prefix))
+            self.__dict__.update(self.output_parser.parse(prefix))

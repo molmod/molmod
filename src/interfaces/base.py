@@ -102,24 +102,24 @@ class Job(object):
 
 
 class IOJob(Job):
+    input_extension = ".in"
+    output_extension = ".out"
+
     def __init__(self, prefix, title):
         Job.__init__(self, prefix, title)
-        input_string_io = StringIO()
-        self.write_input(input_string_io)
-        self.input_string = input_string_io.getvalue()
-        input_string_io.close()
-        self.prefix = "%s_%s" % (prefix, sha.new(self.input_string).hexdigest())
+        self.prefix = prefix
         
     def write_input(self, f):
         raise NotImplementedError
     
     def create_input(self):
-        input_file = file(self.prefix + ".in", 'w')
-        input_file.write(self.input_string)
+        input_file = file(self.prefix + self.input_extension, 'w')
+        self.write_input(input_file)
         input_file.close()
 
     def output_exists(self):
-        return os.path.isfile(self.prefix + ".out")
+        return os.path.isfile(self.prefix + self.output_extension)
+
 
 class AwkJob(IOJob):
     def __init__(self, prefix, title):

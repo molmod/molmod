@@ -59,15 +59,18 @@ class OutputParser(object):
         result.sort(FileParserGroup.compare)
         return result
     
-    def parse(self, directory, prefix):
+    def parse(self, prefix):
         sorted_groups = self.sort_groups()
+        
+        directory = os.path.dirname(prefix)
+        basename = os.path.basename(prefix)
     
         result = {}
         for file_parser_group in sorted_groups:
             for file_parser in file_parser_group.items:
                 file_parser.reset()
             if file_parser_group.extension:
-                path = "%s/%s%s" % (directory, prefix, file_parser_group.filename)
+                path = "%s/%s%s" % (directory, basename, file_parser_group.filename)
             else:
                 path = "%s/%s" % (directory, file_parser_group.filename)
             if isfile(path):
