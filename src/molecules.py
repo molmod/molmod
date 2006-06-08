@@ -107,7 +107,7 @@ class Molecule:
 
     def write_xyz_to_filename(self, filename):
         f = file(filename, 'w')
-        self.write_to_xyz_stream(f)
+        self.write_xyz_to_stream(f)
         f.close()
 
     def surrounding_grid(self, grid_margin, grid_spacing):

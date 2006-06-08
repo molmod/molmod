@@ -35,7 +35,7 @@ class Gromos96SP(TemplateJob):
     template = "gromos96_sp"
     scripts = ["jgmt.sh", "jmd.sh"]
     
-    def __init__(self, prefix, title, input_molecule, parameters, topology, box_size, gromos_root="/usr/local/gromos96", output_parser=None):
+    def __init__(self, prefix, title, input_molecule, parameters, topology, box_size, gromos_root="/usr/local/gromos96"):
         mapping = dict((key, str(value)) for key, value in parameters.iteritems())
         mapping['title'] = title
         mapping['topology'] = topology
@@ -44,7 +44,6 @@ class Gromos96SP(TemplateJob):
         mapping['num_atoms'] = str(len(input_molecule.coordinates))
         mapping['gromos_root'] = gromos_root
         TemplateJob.__init__(self, prefix, title, mapping)
-        self.output_parser = output_parser
 
     def determine_completed(self):
         self.completed = (
@@ -52,9 +51,3 @@ class Gromos96SP(TemplateJob):
             os.system("grep \"WRTOPO: OK!\" %sogmt.out &> /dev/null" % self.directory) == 0
         )
     
-    def read_output(self):
-        if self.output_parser != None:
-            slash_pos = self.prefix.rfind("/")
-            directory = self.prefix[:slash_pos]
-            prefix = self.prefix[slash_pos+1:]
-            self.__dict__.update(self.output_parser.parse(directory, prefix))        

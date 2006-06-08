@@ -20,7 +20,6 @@
 # --
 
 from molmod.interfaces.base import IOJob
-from molmod.interfaces.output_parsers import OutputParser
 from molmod.interfaces.mpqc.keyval import KeyValWriter
 from molmod.moldata import periodic
 
@@ -30,12 +29,8 @@ import os, glob
 class OOMpqcJob(IOJob):
     binary = "mpqc"
 
-    def __init__(self, prefix, title, keyval, output_parser=None):
+    def __init__(self, prefix, title, keyval):
         self.keyval = keyval
-        if output_parser == None:
-            self.output_parser = OutputParser()
-        else:
-            self.output_parser = output_parser
         IOJob.__init__(self, prefix, title)
         
     def write_input(self, f):
@@ -43,15 +38,12 @@ class OOMpqcJob(IOJob):
         KeyValWriter(f, self.keyval)
 
     def external_command(self):
-        return "%s -o %s%s %s%s" % (self.binary, self.prefix, self.input_extension, self.prefix, self.output_extension)
+        return "%s -o %s%s %s%s" % (self.binary, self.prefix, self.output_extension, self.prefix, self.input_extension)
         
     def remove_temporary_files(self):
         for temp_filename in glob.glob("%s*.tmp" % self.prefix):
             os.remove(temp_filename)
 
     def determine_completed(self):
-        self.completed = (os.system("grep \"End Time\" %s% &> /dev/null" % (self.prefix, self.output_extension)) == 0)
+        self.completed = (os.system("grep \"End Time\" %s%s &> /dev/null" % (self.prefix, self.output_extension)) == 0)
         
-    def read_output(self):
-        if self.output_parser != None:
-            self.__dict__.update(self.output_parser.parse(prefix))

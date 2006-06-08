@@ -84,6 +84,7 @@ class OutputParser(object):
                     result[file_parser.label] = file_parser.result()
             else:
                 raise Error("File %s not found" % path)
+
         return result
 
 

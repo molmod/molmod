@@ -82,9 +82,6 @@ class Job(object):
         self.determine_completed()
         return recycled
             
-    def read_output(self):
-        raise NotImplementedError
-            
     def run(self, cleanup=False, forcerun=False):
         """Perform the complete calculation and analysis."""
         if cleanup:
@@ -96,7 +93,6 @@ class Job(object):
             recycled = self.run_external(forcerun=True)
         if not self.completed:
             raise ExternalError("External job could not be completed (%s)" % self.prefix)
-        self.read_output()
         self.ran = True
         return recycled
 
@@ -128,9 +124,6 @@ class AwkJob(IOJob):
 
     def determine_completed(self):
         self.summarize_output()
-
-    def read_output(self):
-        self.process_output_summary()
 
     def awk_scriptname(self):
         """Translate the class name into a base name for the awk script filename."""
@@ -221,9 +214,6 @@ class TemplateJob(Job):
             os.remove(self.directory + temp_filename)
         
     def determine_completed(self):
-        raise NotImplementedError
-
-    def read_output(self):
         raise NotImplementedError
 
 
