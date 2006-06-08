@@ -20,6 +20,12 @@
 # --
 
 
+class Job(object):
+    # A empty job class. This is usefull when custom jobs are constructed,
+    # that are going to be pickled.
+    pass
+
+
 class Ensemble(object):
     def __init__(self, name):
         self.name = name
