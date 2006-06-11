@@ -63,6 +63,7 @@ class OutputParser(object):
         sorted_groups = self.sort_groups()
         
         directory = os.path.dirname(prefix)
+        if len(directory) > 0: directory += "/" 
         basename = os.path.basename(prefix)
     
         result = {}
@@ -70,9 +71,9 @@ class OutputParser(object):
             for file_parser in file_parser_group.items:
                 file_parser.reset()
             if file_parser_group.extension:
-                path = "%s/%s%s" % (directory, basename, file_parser_group.filename)
+                path = "%s%s%s" % (directory, basename, file_parser_group.filename)
             else:
-                path = "%s/%s" % (directory, file_parser_group.filename)
+                path = "%s%s" % (directory, file_parser_group.filename)
             if os.path.isfile(path):
                 f = file(path, 'r')
                 for line in f:

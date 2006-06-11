@@ -105,7 +105,7 @@ class Cube(object):
         for i in xrange(self.nx):
             for j in xrange(self.ny):
                 for k in xrange(self.nz):
-                    result[counter,0:3] = self.origin + self.nx*self.x + self.ny*self.y + self.nz*self.z
+                    result[counter,0:3] = self.origin + i*self.x + j*self.y + k*self.z
                     result[counter,3] = self.grid_data[i, j, k]
                     counter += 1
         return result
