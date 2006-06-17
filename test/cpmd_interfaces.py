@@ -49,7 +49,7 @@ class CpmdInterface(unittest.TestCase):
             CellDimensionParser()
         ])
 
-        result = output_parser.parse("input/cpmd", "2TOH.md")
+        result = output_parser.parse("input/cpmd/2TOH.md")
         
         expected_keys = ['coor_grad', 'elements', 'energies', 'time_steps', 'num_steps', 'num_every', 'energies_table', 'coor_velo', 'masses']
         for expected_key in expected_keys:

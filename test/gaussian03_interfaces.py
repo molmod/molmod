@@ -47,7 +47,7 @@ class Gaussian03Interface(unittest.TestCase):
             OptimizedCoordinatesParser(),
         ])
 
-        result = output_parser.parse("input", "g03_1")
+        result = output_parser.parse("input/g98_1")
 
         expected_keys = [
             'energies', 
@@ -80,8 +80,8 @@ class Gaussian03Interface(unittest.TestCase):
     
     def test_fchk(self):
         fchk = FormattedCheckpoint("input/1TOH.b3lyp.fchk")
-        print fchk.molecule.numbers
-        print fchk.molecule.coordinates
-        print fchk.optimization_coordinates()
-        print fchk.optimized_molecule()
+        #print fchk.molecule.numbers
+        #print fchk.molecule.coordinates
+        #print fchk.optimization_coordinates()
+        #print fchk.optimized_molecule()
 

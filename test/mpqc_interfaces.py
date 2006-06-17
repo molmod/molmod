@@ -116,6 +116,7 @@ class Converging(object):
 class OOMpqcInterface(unittest.TestCase):
     def test_single_point(self):
         def validate():
+            job.__dict__.update(output_parser.parse("output/water_oo_sp"))
             energy = job.molecular_energies[-1]
             gradient = job.gradients[-1]
             self.assert_(job.completed)
@@ -141,17 +142,20 @@ class OOMpqcInterface(unittest.TestCase):
             functional="B3LYP"
         )
         keyval.mpqc.do_gradient = 'yes'
+        
+        output_parser=OutputParser([
+            MolecularEnergiesParser(),
+            EnergyAccuracyParser(),
+            GradientsParser(),
+            GradientAccuracyParser(),
+            WarningParser()
+        ])
+
+        
         job = OOMpqcJob(
             prefix="output/water_oo_sp",
             title="Water single point berekening", 
             keyval=keyval,
-            output_parser=OutputParser([
-                MolecularEnergiesParser(),
-                EnergyAccuracyParser(),
-                GradientsParser(),
-                GradientAccuracyParser(),
-                WarningParser()
-            ])
         )
         job.run(cleanup=True)
         validate()
@@ -168,6 +172,7 @@ class OOMpqcInterface(unittest.TestCase):
     def test_optimize(self):
         def validate():
             #self.assert_(job.completed)
+            job.__dict__.update(output_parser.parse("output/water_oo_opt"))
             self.assertAlmostEqual(job.energies[-1], -75.973963163199997, 8)
             coordinates = job.output_molecules[-1].coordinates
             delta = coordinates[0]-coordinates[1]
@@ -190,16 +195,18 @@ class OOMpqcInterface(unittest.TestCase):
         keyval.mpqc.freq = KeyValObject('MolecularFrequencies', [
             ('molecule', keyval.molecule)
         ])
+        
+        output_parser=OutputParser([
+            MolecularEnergiesParser('energies'),
+            OutputMoleculesParser('output_molecules'),
+            OptimizationConvergedParser('converged'),
+            HessianParser('hessian')
+        ])
+        
         job = OOMpqcJob(
             prefix="output/water_oo_opt",
             title="Water single point berekening", 
             keyval=keyval,
-            output_parser=OutputParser([
-                MolecularEnergiesParser('energies'),
-                OutputMoleculesParser('output_molecules'),
-                OptimizationConvergedParser('converged'),
-                HessianParser('hessian')
-            ])
         )
         job.run(cleanup=True)
         validate()

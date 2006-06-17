@@ -25,7 +25,7 @@ from molmod.molecules import molecule_xyz_from_filename
 from molmod.moldata import BOND_SINGLE
 from molmod.units import from_angstrom
 
-import unittest, math, copy, numpy, RandomArray, sys
+import unittest, math, copy, numpy, sys
 
 __all__ = ["InternalCoordinatesTPA", "Chainrule"]
 
@@ -316,7 +316,7 @@ class Chainrule(unittest.TestCase):
 
         def mutate_ethene():
             result = copy.deepcopy(self.ethene)
-            result.coordinates += RandomArray.uniform(-3, 3, result.coordinates.shape)
+            result.coordinates += numpy.random.uniform(-3, 3, result.coordinates.shape)
             return result
         
         for internal_coordinate in internal_coordinates:
@@ -418,7 +418,7 @@ class Chainrule(unittest.TestCase):
 
         def mutate_ethene(strength, ethene):
             result = copy.deepcopy(ethene)
-            result.coordinates += RandomArray.uniform(-strength, strength, result.coordinates.shape)
+            result.coordinates += numpy.random.uniform(-strength, strength, result.coordinates.shape)
             return result
         
         self.errors = []

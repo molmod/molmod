@@ -36,6 +36,7 @@ class Gromos96Interface(unittest.TestCase):
     def test_single_point(self):
         def validate():
             self.assert_(job.completed)
+            job.__dict__.update(output_parser.parse("output/gromos96/"))
             #print job.forces1
             #print job.forces2
             #print job.potential_energy
@@ -62,6 +63,21 @@ class Gromos96Interface(unittest.TestCase):
         cluster = molecule_xyz_from_filename("input/2TOH.xyz")
         os.system("rm -rf output/gromos96")
         #os.mkdir("output/gromos96")
+        
+        output_parser=OutputParser([
+            Forces1Parser('forces1'),
+            Forces2Parser('forces2'),
+            MDOutDataParser(
+                section=' 6. D A T A   P E R   S T E P',
+                subsection='       ENERGY        TOTAL      KINETIC    POTENTIAL',
+                row='E-TOT',
+                col=3,
+                conversion=1,
+                label='potential_energy'
+            )
+        ])
+
+        
         job = Gromos96SP(
             prefix="output/gromos96/",
             title="Zeolite cluster 2TOH", 
@@ -69,18 +85,6 @@ class Gromos96Interface(unittest.TestCase):
             parameters=parameters, 
             topology="2TOH", 
             box_size=from_angstrom(15.0),
-            output_parser=OutputParser([
-                Forces1Parser('forces1'),
-                Forces2Parser('forces2'),
-                MDOutDataParser(
-                    section=' 6. D A T A   P E R   S T E P',
-                    subsection='       ENERGY        TOTAL      KINETIC    POTENTIAL',
-                    row='E-TOT',
-                    col=3,
-                    conversion=1,
-                    label='potential_energy'
-                )
-            ])
         )
         job.run(cleanup=True)
         validate()

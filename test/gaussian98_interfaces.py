@@ -42,7 +42,7 @@ class Gaussian98Interface(unittest.TestCase):
             GradientParser(),
         ])
 
-        result = output_parser.parse("input", "g98_1")
+        result = output_parser.parse("input/g98_1")
 
         expected_keys = ['energies', 'masses', 'coordinates_list', 'low_frequencies', 'selected_frequencies', 'hessian', 'gradient_list']
         for expected_key in expected_keys:
