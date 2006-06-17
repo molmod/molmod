@@ -32,8 +32,8 @@ class Distances(unittest.TestCase):
     gridsize = 1.0
     
     def load_binned_atoms(self, filename):
-        from molmod.molecules import molecule_from_xyz_filename
-        m = molecule_from_xyz_filename("input/"+filename)
+        from molmod.molecules import molecule_xyz_from_filename
+        m = molecule_xyz_from_filename("input/"+filename)
         
         def yield_positioned_atoms():
             for index in xrange(len(m.numbers)):

@@ -21,7 +21,7 @@
 
 from molmod.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
 from molmod.molecular_graphs import BondSets, BendSets, DihedralSets, OutOfPlaneAngleSets, OutOfPlaneDistanceSets, CriteriaSet
-from molmod.molecules import molecule_from_xyz_filename
+from molmod.molecules import molecule_xyz_from_filename
 from molmod.moldata import BOND_SINGLE
 from molmod.units import from_angstrom
 
@@ -32,7 +32,7 @@ __all__ = ["InternalCoordinatesTPA", "Chainrule"]
 
 class InternalCoordinatesTPA(unittest.TestCase):        
     def setUp(self):
-        self.molecule = molecule_from_xyz_filename("input/tpa_optimized.xyz")
+        self.molecule = molecule_xyz_from_filename("input/tpa_optimized.xyz")
         self.ic_cache = InternalCoordinatesCache(self.molecule)
         
         
@@ -129,7 +129,7 @@ class InternalCoordinatesTPA(unittest.TestCase):
 
 class Chainrule(unittest.TestCase):        
     def setUp(self):
-        self.ethene = molecule_from_xyz_filename("input/ethene.xyz")
+        self.ethene = molecule_xyz_from_filename("input/ethene.xyz")
         self.ic_cache = InternalCoordinatesCache(self.ethene)
 
     def create_external_basis(self, coordinates):

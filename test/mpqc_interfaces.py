@@ -26,7 +26,7 @@ from molmod.interfaces.mpqc.kvo import create_single_point, create_optimize
 from molmod.interfaces.mpqc.keyval import KeyValObject
 from molmod.interfaces.mpqc.file_parsers import *
 from molmod.interfaces.output_parsers import OutputParser
-from molmod.molecules import molecule_from_xyz_filename
+from molmod.molecules import molecule_xyz_from_filename
 
 import math, numpy, numpy.linalg
 import unittest
@@ -49,7 +49,7 @@ class AwkMpqcInterface(unittest.TestCase):
             self.assertAlmostEqual(job.gradient[2,1],  0.0,        6)
             self.assertAlmostEqual(job.gradient[2,2],  0.01381411, 6)
             
-        water = molecule_from_xyz_filename("input/water.xyz")
+        water = molecule_xyz_from_filename("input/water.xyz")
         job = AwkMpqcJobSinglePoint(
             prefix="output/water_sp",
             title="Water single point berekening", 
@@ -83,7 +83,7 @@ class AwkMpqcInterface(unittest.TestCase):
             delta = coordinates[1]-coordinates[2]
             self.assertAlmostEqual(math.sqrt(numpy.dot(delta, delta)), 2.96668446577, 6)
         
-        water = molecule_from_xyz_filename("input/water.xyz")
+        water = molecule_xyz_from_filename("input/water.xyz")
         job = AwkMpqcJobOptimize(
             prefix="output/water_opt",
             title="Water single point berekening", 
@@ -132,7 +132,7 @@ class OOMpqcInterface(unittest.TestCase):
             self.assertAlmostEqual(gradient[2,1],  0.0,        6)
             self.assertAlmostEqual(gradient[2,2],  0.01381411, 6)
             
-        water = molecule_from_xyz_filename("input/water.xyz")
+        water = molecule_xyz_from_filename("input/water.xyz")
         keyval = create_single_point(
             molecule=water,
             charge=0,
@@ -179,7 +179,7 @@ class OOMpqcInterface(unittest.TestCase):
             evals = numpy.linalg.eigenvalues(job.hessian)
             self.assert_(min(evals) > -1e-6, "All eigenvalues of a hessian of an optimized molecule should be positive.\n%s" % str(evals))
         
-        water = molecule_from_xyz_filename("input/water.xyz")
+        water = molecule_xyz_from_filename("input/water.xyz")
         keyval = create_optimize(
             molecule=water,
             charge=0,

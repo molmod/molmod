@@ -24,7 +24,7 @@
 
 import sys, copy, random, math, numpy.random
 
-from molmod.molecules import molecule_from_xyz_filename
+from molmod.molecules import molecule_xyz_from_filename
 from molmod.molecular_graphs import MolecularGraph
 from molmod.units import from_angstrom, to_angstrom
 from molmod.moldata import periodic
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     max_number_len = len(str(number-1))
     output_filename_template = "%s_%0" + str(max_number_len) + "i.xyz"
 
-    input_molecule =  molecule_from_xyz_filename(filename)
+    input_molecule =  molecule_xyz_from_filename(filename)
     mgraph = MolecularGraph(input_molecule)
     
     for index in xrange(number):

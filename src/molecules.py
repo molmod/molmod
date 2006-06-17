@@ -29,8 +29,8 @@ import numpy, math
 
 __all__ = [
     "Molecule", 
-    "molecule_from_xyz_stream", "molecule_from_xyz_str", 
-    "molecule_from_xyz_filename"
+    "molecule_xyz_from_stream", "molecule_xyz_from_str", 
+    "molecule_xyz_from_filename"
 ]
 
 

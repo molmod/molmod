@@ -23,7 +23,7 @@ from molmod.interfaces.base import reload_job
 from molmod.interfaces.gromos96.sp import Gromos96SP
 from molmod.interfaces.gromos96.file_parsers import *
 from molmod.interfaces.output_parsers import OutputParser
-from molmod.molecules import molecule_from_xyz_filename
+from molmod.molecules import molecule_xyz_from_filename
 from molmod.units import from_angstrom
 
 import math, numpy, numpy.linalg, os
@@ -59,7 +59,7 @@ class Gromos96Interface(unittest.TestCase):
             "ba_rest_55": 106.36
         }
         
-        cluster = molecule_from_xyz_filename("input/2TOH.xyz")
+        cluster = molecule_xyz_from_filename("input/2TOH.xyz")
         os.system("rm -rf output/gromos96")
         #os.mkdir("output/gromos96")
         job = Gromos96SP(
