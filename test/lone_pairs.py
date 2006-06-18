@@ -20,7 +20,7 @@
 # --
 
 
-from molmod.lone_pair import all_lone_pairs
+from molmod.lone_pairs import all_lone_pairs
 from molmod.molecules import molecule_xyz_from_filename
 
 import unittest
