@@ -19,6 +19,10 @@
 # 
 # --
 
+
+import sys
+
+
 __all__ = ["context"]
 
 
@@ -26,6 +30,6 @@ class Context(object):
     def __init__(self):
         self.title = "MolMod"
         self.version = "0.1.2"
-        self.share_path = "/usr/share/molmod/%s/" % self.version
+        self.share_path = "%s/share/molmod/%s/" % (sys.prefix, self.version)
 
 context = Context()
