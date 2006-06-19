@@ -42,7 +42,7 @@ def lone_pair_2(bond1, bond2, angle):
     lone2 -- ...
     """
 
-    in_plane = bond1 + bond2
+    in_plane = bond1/math.sqrt(numpy.dot(bond1, bond1)) + bond2/math.sqrt(numpy.dot(bond2, bond2))
     length = math.sqrt(numpy.dot(in_plane, in_plane))
     assert length > 0, "The two bonds opposite."
     in_plane /= -length
@@ -76,7 +76,11 @@ def lone_pair_1(bond1, bond2, bond3):
             lone pair
     """
     
-    lone = -(bond1 + bond2 + bond3)
+    lone = -(
+        bond1/math.sqrt(numpy.dot(bond1, bond1)) + 
+        bond2/math.sqrt(numpy.dot(bond2, bond2)) + 
+        bond3/math.sqrt(numpy.dot(bond3, bond3))
+    )
     length = math.sqrt(numpy.dot(lone, lone))
     assert length > 0, "The three bonds sum to zero."
     lone /= length
