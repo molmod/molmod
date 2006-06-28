@@ -19,10 +19,10 @@
 # 
 # --
 
-from molmod.molecular_graphs import MolecularGraph
 
 import math, copy
 import numpy
+
 
 __all__ = [
     "InternalCoordinate", "Select", 
@@ -370,9 +370,9 @@ class InternalCoordinatesCache(object):
     internal coordinates and (ii) make sure an internal coordinate is only
     created once.
     """
-    def __init__(self, molecule):
+    def __init__(self, molecular_graph):
         self.internal_coordinates = {}
-        self.molecular_graph = MolecularGraph(molecule)
+        self.molecular_graph = molecular_graph 
         self.user_coordinates = {}
         
     def __getitem__(self, key):
@@ -466,7 +466,6 @@ class InternalCoordinatesCache(object):
         Arguments
         criteria_sets -- see molmod.molecular_graphs
         """
-        result = dict((tag, []) for tag in criteria_sets.yield_tags())
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
             id = tuple([match.get_destination(source) for source in [0, 1]])
             s0 = self.add(Select, id[0])
@@ -486,7 +485,6 @@ class InternalCoordinatesCache(object):
         Adds the cosines of the bend angles described in criteria_sets to the 
         collection.
         """
-        result = dict((tag, []) for tag in criteria_sets.yield_tags())
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
             id = tuple([match.get_destination(source) for source in [0, 1, 2]])
             s0 = self.add(Select, id[0])
@@ -513,7 +511,6 @@ class InternalCoordinatesCache(object):
         Adds the distances that span the bend angles described in criteria_sets
         to the collection.
         """
-        result = dict((tag, []) for tag in criteria_sets.yield_tags())
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
             id = tuple([match.get_destination(source) for source in [0, 1, 2]])
             s0 = self.add(Select, id[0])
@@ -532,7 +529,6 @@ class InternalCoordinatesCache(object):
         """
         Adds the dihedral angles described in criteria_sets to the collection.
         """
-        result = dict((tag, []) for tag in criteria_sets.yield_tags())
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
@@ -575,7 +571,6 @@ class InternalCoordinatesCache(object):
         Adds the distances that span the dihedral angles described in
         criteria_sets to the collection.
         """
-        result = dict((tag, []) for tag in criteria_sets.yield_tags())
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
@@ -595,7 +590,6 @@ class InternalCoordinatesCache(object):
         Adds the out of plane cosines described in criteria_sets to the
         collection.
         """
-        result = dict((tag, []) for tag in criteria_sets.yield_tags())
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
@@ -636,7 +630,6 @@ class InternalCoordinatesCache(object):
         Adds the out of plane cosines described in criteria_sets to the
         collection.
         """
-        result = dict((tag, []) for tag in criteria_sets.yield_tags())
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
@@ -680,7 +673,6 @@ class InternalCoordinatesCache(object):
                     yield (ic1, ic2)
 
     def add_related_products(self, tag, tag1, tag2, order_related=2):
-        result = []
         for ic1, ic2 in self.yield_related_internal_coordinates(tag1, tag2, order_related):
             product = self.add(
                 Mul,

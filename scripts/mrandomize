@@ -144,6 +144,6 @@ if __name__ == "__main__":
             displacement_randomize(randomized_molecule, max_displacement)
             accepted = coarse_energy(randomized_molecule, mgraph) < 1e-5
 	output_filename = output_filename_template % (filename[:-4], index)
-        randomized_molecule.write_to_xyz_filename(output_filename)
+        randomized_molecule.write_xyz_to_filename(output_filename)
 	print "Written to %s." % output_filename
         
