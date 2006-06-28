@@ -29,11 +29,12 @@ class Job(object):
 class Ensemble(object):
     def __init__(self, name):
         self.name = name
+        self.jobs = []
 
     def add_job(self, job):
         # 1) assert that the jobs have the required attributes
         # 2) store the job in a sensible place
-        raise NotImplementedError
+        self.jobs.append(job)
 
     def finalize(self):
         # post process the jobs. (sorting, ...)
