@@ -38,6 +38,7 @@ from gromos96_interfaces import *
 from molecular_graphs import *
 from internal_coordinates import *
 from lone_pairs import *
+from springff import *
 
 unittest.main()
 
