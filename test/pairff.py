@@ -19,14 +19,14 @@
 # 
 # --
 
-from molmod.springff import CoulombFF
+from molmod.pairff import CoulombFF
 
 import unittest, numpy
 
-__all__ = ["SpringFF"]
+__all__ = ["PairFF"]
 
 
-class SpringFF(unittest.TestCase):
+class PairFF(unittest.TestCase):
     def test_coulombff(self):
         charges = numpy.array([0.3, 0.5, -0.8], float)
         coordinates = numpy.array([
@@ -50,26 +50,26 @@ class SpringFF(unittest.TestCase):
 
         delta = 1e-5
 
-        # 1) test the individual springs
+        # 1) test the individual pairs
 
         for index1 in xrange(numc):
             for index2 in xrange(numc):
                 if index1 == index2:
                     continue
-                # 1a) test the spring_gradient
-                e1 = ff.spring_energy(ff.distances[index1,index2], index1, index2)
-                e2 = ff.spring_energy(ff.distances[index1,index2]+delta, index1, index2)
-                g1 = ff.spring_gradient(ff.distances[index1,index2], index1, index2)
+                # 1a) test the pair_gradient
+                e1 = ff.pair_energy(ff.distances[index1,index2], index1, index2)
+                e2 = ff.pair_energy(ff.distances[index1,index2]+delta, index1, index2)
+                g1 = ff.pair_gradient(ff.distances[index1,index2], index1, index2)
                 error = (g1 - (e2-e1)/delta)**2
                 reference = ((e2-e1)/delta)**2
-                self.assertAlmostEqual(error, 0.0, 3, "1a) The spring gradient is wrong: % 12.8f / % 12.8f" % (error, reference))
+                self.assertAlmostEqual(error, 0.0, 3, "1a) The pair gradient is wrong: % 12.8f / % 12.8f" % (error, reference))
                 
-                # 1b) test the spring_hessian
-                g2 = ff.spring_gradient(ff.distances[index1,index2]+delta, index1, index2)
-                h1 = ff.spring_hessian(ff.distances[index1,index2], index1, index2)
+                # 1b) test the pair_hessian
+                g2 = ff.pair_gradient(ff.distances[index1,index2]+delta, index1, index2)
+                h1 = ff.pair_hessian(ff.distances[index1,index2], index1, index2)
                 error = (h1 - (g2-g1)/delta)**2
                 reference = ((g2-g1)/delta)**2
-                self.assertAlmostEqual(error, 0.0, 3, "1b) The spring hessian is wrong: % 12.8f / % 12.8f" % (error, reference))
+                self.assertAlmostEqual(error, 0.0, 3, "1b) The pair hessian is wrong: % 12.8f / % 12.8f" % (error, reference))
         
         
         # 2) test the cartesian gradient/hessian

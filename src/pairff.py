@@ -23,7 +23,7 @@
 import math, numpy
 
 
-class SpringFF(object):
+class PairFF(object):
     def __init__(self, coordinates):
         self.update_coordinates(coordinates)
 
@@ -40,20 +40,20 @@ class SpringFF(object):
                 if index1 != index2:
                     self.directions[index1, index2] = delta/distance
 
-    def spring_energy(self, distance, index1, index2):
+    def pair_energy(self, distance, index1, index2):
         raise NotImplementedError
 
-    def spring_gradient(self, distance, index1, index2):
+    def pair_gradient(self, distance, index1, index2):
         raise NotImplementedError
 
-    def spring_hessian(self, distance, index2):
+    def pair_hessian(self, distance, index2):
         raise NotImplementedError
 
     def energy(self):
         result = 0.0
         for index1 in xrange(self.numc):
             for index2 in xrange(index1):
-                result += self.spring_energy(self.distances[index1, index2], index1, index2)
+                result += self.pair_energy(self.distances[index1, index2], index1, index2)
         return result
 
     def gradient(self):
@@ -61,7 +61,7 @@ class SpringFF(object):
         for index1 in xrange(self.numc):
             for index2 in xrange(self.numc):
                 if index2 != index1:
-                    result[index1] += self.spring_gradient(self.distances[index1, index2], index1, index2)*self.directions[index1,index2]
+                    result[index1] += self.pair_gradient(self.distances[index1, index2], index1, index2)*self.directions[index1,index2]
         return result
 
     def hessian(self):
@@ -74,11 +74,11 @@ class SpringFF(object):
                             distance = self.distances[index1, index3]
                             result[index1, index1] += (
                                 (
-                                    self.spring_gradient(distance, index1, index3)
+                                    self.pair_gradient(distance, index1, index3)
                                     *(numpy.identity(3, float) - numpy.outer(self.directions[index1,index3], self.directions[index1,index3]))
                                     /distance
                                 ) + (
-                                    self.spring_hessian(distance, index1, index3)
+                                    self.pair_hessian(distance, index1, index3)
                                     *numpy.outer(self.directions[index1,index3], self.directions[index1,index3])
                                 )
                             )
@@ -86,11 +86,11 @@ class SpringFF(object):
                     distance = self.distances[index1, index2]
                     result[index1, index2] = -(
                         (
-                            self.spring_gradient(distance, index1, index2)
+                            self.pair_gradient(distance, index1, index2)
                             *(numpy.identity(3, float) - numpy.outer(self.directions[index1,index2], self.directions[index1,index2]))
                             /distance
                         ) + (
-                            self.spring_hessian(distance, index1, index2)
+                            self.pair_hessian(distance, index1, index2)
                             *numpy.outer(self.directions[index1,index2], self.directions[index1,index2])
                         )
                     )
@@ -108,33 +108,33 @@ class SpringFF(object):
         return result
                 
 
-class CoulombFF(SpringFF):
+class CoulombFF(PairFF):
     def __init__(self, coordinates, charges):
-        SpringFF.__init__(self, coordinates)
+        PairFF.__init__(self, coordinates)
         self.charges = charges
 
-    def spring_energy(self, distance, index1, index2):
+    def pair_energy(self, distance, index1, index2):
         return self.charges[index1]*self.charges[index2]/distance
 
-    def spring_gradient(self, distance, index1, index2):
+    def pair_gradient(self, distance, index1, index2):
         return -self.charges[index1]*self.charges[index2]*distance**(-2)
 
-    def spring_hessian(self, distance, index1, index2):
+    def pair_hessian(self, distance, index1, index2):
         return 2*self.charges[index1]*self.charges[index2]*distance**(-3)
 
 
-class DispersionFF(SpringFF):
+class DispersionFF(PairFF):
     def __init__(self, coordinates, strength_matrix):
-        SpringFF.__init__(self, coordinates)
+        PairFF.__init__(self, coordinates)
         self.strength_matrix = strength_matrix
 
-    def spring_energy(self, distance, index1, index2):
+    def pair_energy(self, distance, index1, index2):
         return self.strength_matrix[index1, index2]*distance**(-6)
 
-    def spring_gradient(self, distance, index1, index2):
+    def pair_gradient(self, distance, index1, index2):
         return (-7)*self.strength_matrix[index1, index2]*distance**(-7)
 
-    def spring_hessian(self, distance, index1, index2):
+    def pair_hessian(self, distance, index1, index2):
         return (42)*self.strength_matrix[index1, index2]*distance**(-8)
 
 
