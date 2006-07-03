@@ -397,6 +397,7 @@ class InternalCoordinatesCache(object):
             self.internal_coordinates[internal_coordinate.label()] = internal_coordinate
             return internal_coordinate
         else:
+            existing_internal_coordinate.__dict__.update(keyvals)
             return existing_internal_coordinate
     
     def add_internal_coordinate(self, tag, internal_coordinate):
