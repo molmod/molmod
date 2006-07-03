@@ -96,7 +96,7 @@ class PairFF(object):
                     )
         return result
 
-    def gradient_float(self):
+    def gradient_flat(self):
         return self.gradient().ravel()
 
     def hessian_flat(self):
@@ -109,18 +109,28 @@ class PairFF(object):
                 
 
 class CoulombFF(PairFF):
-    def __init__(self, coordinates, charges):
+    def __init__(self, coordinates, charges, neighbors):
         PairFF.__init__(self, coordinates)
         self.charges = charges
+        self.neighbors = neighbors
 
     def pair_energy(self, distance, index1, index2):
-        return self.charges[index1]*self.charges[index2]/distance
+        if not set([index1,index2]) in self.neighbors:
+            return self.charges[index1]*self.charges[index2]/distance
+        else:
+            return 0.0
 
     def pair_gradient(self, distance, index1, index2):
-        return -self.charges[index1]*self.charges[index2]*distance**(-2)
+        if not set([index1,index2]) in self.neighbors:
+            return -self.charges[index1]*self.charges[index2]*distance**(-2)
+        else:
+            return 0.0
 
     def pair_hessian(self, distance, index1, index2):
-        return 2*self.charges[index1]*self.charges[index2]*distance**(-3)
+        if not set([index1,index2]) in self.neighbors:
+            return 2*self.charges[index1]*self.charges[index2]*distance**(-3)
+        else:
+            return 0.0
 
 
 class DispersionFF(PairFF):

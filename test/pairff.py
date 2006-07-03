@@ -35,9 +35,10 @@ class PairFF(unittest.TestCase):
             [ 0.3, 0.9, 0.7]],
             float
         )
+        neighbours = [set([0,2]), set([0,1])]
         numc = len(coordinates)
 
-        ff = CoulombFF(coordinates, charges)
+        ff = CoulombFF(coordinates, charges, neighbours)
         energy = ff.energy()
         gradient = ff.gradient()
         hessian = ff.hessian()
