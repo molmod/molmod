@@ -166,8 +166,8 @@ class GradientsParser(MultiLineParser):
     filename = ".out"
     extension = True
 
-    def __init__(self, label='gradients', condition=None):
-        activator = re.compile(r"Total Gradient")
+    def __init__(self, label='gradients', filter='Total Gradient', condition=None):
+        activator = re.compile(filter)
         deactivator = re.compile(r"^$")
         MultiLineParser.__init__(self, label, activator, deactivator, condition)
         self.re = re.compile(r"\d+\s+\S+\s+(?P<gradient_x>\S+)\s+(?P<gradient_y>\S+)\s+(?P<gradient_z>\S+)")
@@ -187,6 +187,8 @@ class GradientsParser(MultiLineParser):
                 float(match.group("gradient_y")),
                 float(match.group("gradient_z"))
             ])
+        else:
+            return True
         
     def stop_collecting(self):
         gradient = numpy.array(self.current_gradient, float)
