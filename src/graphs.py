@@ -33,7 +33,7 @@ graph that are completely contained within self. This method requires the
 symmetries of the graph to be known, in order to avoid duplicates.
 """
 
-import copy
+import copy, numpy
 
 __all__ = ["OneToOne", "Permutation", "Graph",
            "SymmetricGraph", "Criterium",
@@ -191,7 +191,18 @@ class Graph(object):
         #print "="*50
         self.pairs = pairs # a list of 2-frozenset connecting nodes
         #print self.pairs
+        self.init_index()
         self.init_neighbours()
+
+    def init_index(self):
+        tmp = set([])
+        for pair in self.pairs:
+            a, b = pair
+            tmp.add(a)
+            tmp.add(b)
+        tmp = list(tmp)
+        tmp.sort()
+        self.index = dict((item, index) for index, item in enumerate(tmp))
 
     def init_neighbours(self):
         """Generate a neigbours-representation of the graph."""
@@ -208,8 +219,27 @@ class Graph(object):
             a, b = pair
             add_relation(a, b)
             add_relation(b, a)
-        
-        #print self.neighbours
+
+    def neighbour_matrix(self, max_order=None):
+        num_items = len(self.index)
+        if max_order is None:
+            max_order = num_items - 1
+        result = numpy.zeros((num_items, num_items), float)
+        for first, second in self.pairs:
+            result[self.index[first], self.index[second]] = 1
+            result[self.index[second], self.index[first]] = 1
+        num_mods = len(self.pairs)
+        current_order = 2
+        while num_mods > 0 and current_order <= max_order:
+            num_mods = 0
+            for i in xrange(num_items):
+                for j in xrange(i+1, num_items):
+                    if result[i, j] == 0 and (result[i] + result[:,j] == current_order).any():
+                        result[i, j] = current_order
+                        result[j, i] = current_order
+                        num_mods += 1
+            current_order += 1
+        return result
 
         
 class SymmetricGraph(Graph):
