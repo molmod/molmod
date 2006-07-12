@@ -73,6 +73,8 @@ DEGREES = unit_counter()
 TIME = measure_counter()
 SECONDS = unit_counter()
 
+DIPOLE = measure_counter()
+DEBYE = unit_counter()
 
 suffices = {
     ATOMARY: "a.u.",
@@ -89,7 +91,8 @@ suffices = {
     COULOMB: "C",
     RADIALS: "rad",
     DEGREES: "°",
-    SECONDS: "s"
+    SECONDS: "s",
+    DEBYE: "D",
 }
 
 tex_suffices = {
@@ -107,7 +110,8 @@ tex_suffices = {
     COULOMB: r"C",
     RADIALS: r"rad",
     DEGREES: r"^{\circ}",
-    SECONDS: r"s"
+    SECONDS: r"s",
+    DEBYE: r"D"
 }
 
 measures = {
@@ -116,7 +120,8 @@ measures = {
     MASS: [ATOMARY, UNIFIED, KG],
     CHARGE: [ATOMARY, COULOMB],
     ANGLE: [RADIALS, DEGREES],
-    TIME: [SECONDS]
+    TIME: [ATOMARY, SECONDS],
+    DIPOLE: [ATOMARY, DEBYE],
 }
 
 measure_names = {
@@ -125,7 +130,8 @@ measure_names = {
     MASS: "Mass",
     CHARGE: "Charge",
     ANGLE: "Angle",
-    TIME: "Time"
+    TIME: "Time",
+    DIPOLE: "Dipole",
 }
 
 
@@ -203,6 +209,14 @@ second = 41341373336561368.0
 def to_seconds(x): return x * 2.418884326505e-17
 
 def from_seconds(x): return x * 41341373336561368.0
+
+# dipole
+
+debye = 0.39343018283144093 # = 3.33564e-30*coulomb*meter
+
+def to_debye(x): return x * 2.541747033242832
+
+def from_debye(x): return x * 0.39343018283144093
 
 # In a dictionary
 
