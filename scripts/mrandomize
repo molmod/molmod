@@ -22,7 +22,7 @@
 
 
 
-import sys, copy, random, math, numpy.random
+import os, sys, copy, random, math, numpy.random, getopt
 
 from molmod.molecules import molecule_xyz_from_filename
 from molmod.molecular_graphs import MolecularGraph
@@ -118,32 +118,44 @@ Details:
          value is too high, the random geometry is rejected."""
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3 or len(sys.argv) > 4:
+    try:
+        opts, filenames = getopt.getopt(sys.argv[1:], "n:r:h?")
+    except GetoptError, e:
+        print e.msg
         print help_message
-        sys.exit()
+        sys.exit(2)
 
-    filename = sys.argv[1]
-    number = int(sys.argv[2])
-    if len(sys.argv) > 3:
-        max_displacement = from_angstrom(float(sys.argv[3]))
-    else:
-        max_displacement = from_angstrom(0.05)
-
+    number = 1
+    max_displacement = from_angstrom(0.05)
+    for opt, arg in opts:
+        if opt=="-n":
+            number = int(arg)
+        elif opt=="-r":
+            max_displacement = from_angstrom(float(sys.argv[3]))
+        elif opt=="-h" or opt=="-?":
+            print help_message
+            sys.exit(1)
+        else:
+            print help_message
+            sys.exit(2)
+    
 
     max_number_len = len(str(number-1))
-    output_filename_template = "%s_%0" + str(max_number_len) + "i.xyz"
+    for filename in filenames:
+        basename = os.path.basename(filename[:filename.rfind(".")])
+        output_filename_template = basename + "%0" + str(max_number_len) + "i.xyz"
 
-    input_molecule =  molecule_xyz_from_filename(filename)
-    mgraph = MolecularGraph(input_molecule)
-    
-    for index in xrange(number):
-        accepted = False
-        while not accepted:
-            randomized_molecule = copy.deepcopy(input_molecule)
-            rotational_randomize(randomized_molecule, mgraph)
-            displacement_randomize(randomized_molecule, max_displacement)
-            accepted = coarse_energy(randomized_molecule, mgraph) < 1e-5
-	output_filename = output_filename_template % (filename[:-4], index)
-        randomized_molecule.write_xyz_to_filename(output_filename)
-	print "Written to %s." % output_filename
+        input_molecule =  molecule_xyz_from_filename(filename)
+        mgraph = MolecularGraph(input_molecule)
+        
+        for index in xrange(number):
+            accepted = False
+            while not accepted:
+                randomized_molecule = copy.deepcopy(input_molecule)
+                rotational_randomize(randomized_molecule, mgraph)
+                displacement_randomize(randomized_molecule, max_displacement)
+                accepted = coarse_energy(randomized_molecule, mgraph) < 1e-5
+            output_filename = output_filename_template % index
+            randomized_molecule.write_xyz_to_filename(output_filename)
+            print "Written to %s." % output_filename
         
