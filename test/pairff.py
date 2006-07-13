@@ -19,61 +19,113 @@
 # 
 # --
 
-from molmod.pairff import CoulombFF
+import molmod.pairff
 
-import unittest, numpy
+import unittest, numpy, math
 
-__all__ = ["PairFF"]
+__all__ = ["PairFF", "CoulombFF"]
 
 
 class PairFF(unittest.TestCase):
-    def test_coulombff(self):
-        charges = numpy.array([0.3, 0.5, -0.8], float)
+    def make_coulombff(self, do_charges, do_dipoles, do_excludes):
         coordinates = numpy.array([
             [ 0.5, 2.5, 0.1],
             [-1.2, 0.4, 0.3],
-            [ 0.3, 0.9, 0.7]],
-            float
+            [ 0.3, 0.9, 0.7]], float
         )
-        neighbours = [set([0,2]), set([0,1])]
+
+        if do_charges:
+            charges = numpy.array([0.3, 0.5, -0.8], float)
+        else:
+            charges = None
+        
+        if do_dipoles:
+            dipoles = numpy.array([
+                [ 0.2, -0.1, -0.7],
+                [-0.8,  0.5,  0.3],
+                [ 0.0, -0.6, -0.1]], float
+            )
+        else:
+            dipoles = None
+        
+        if do_excludes:
+            exclude_pairs = [set([0,2]), set([0,1])]
+        else:
+            exclude_pairs = []
+        
+        return molmod.pairff.CoulombFF(coordinates, charges=charges, dipoles=dipoles, exclude_pairs=exclude_pairs)
+    
+    def make_dispersionff(self, do_excludes):
+        atom_strengths = numpy.array([0.3, 0.5, 0.8], float)
+        strengths = numpy.outer(atom_strengths, atom_strengths)
+        coordinates = numpy.array([
+            [ 0.5, 2.5, 0.1],
+            [-1.2, 0.4, 0.3],
+            [ 0.3, 0.9, 0.7]], float
+        )
+
+        if do_excludes:
+            exclude_pairs = [set([0,2]), set([0,1])]
+        else:
+            exclude_pairs = []
+        
+        return molmod.pairff.DispersionFF(coordinates, strengths, exclude_pairs=exclude_pairs)
+    
+    def test_coulombff_c(self):
+        self.ff_test(self.make_coulombff(do_charges=True,  do_dipoles=False, do_excludes=False))
+
+    def test_coulombff_d(self):
+        self.ff_test(self.make_coulombff(do_charges=False, do_dipoles=True,  do_excludes=False))
+
+    def test_coulombff_cd(self):
+        self.ff_test(self.make_coulombff(do_charges=True,  do_dipoles=True,  do_excludes=False))
+
+    #def test_coulombff_c_ex(self):
+    #    self.ff_test(self.make_coulombff(do_charges=True,  do_dipoles=False, do_excludes=True))
+
+    #def test_coulombff_d_ex(self):
+    #    self.ff_test(self.make_coulombff(do_charges=False, do_dipoles=True,  do_excludes=True))
+
+    #def test_coulombff_cd_ex(self):
+    #    self.ff_test(self.make_coulombff(do_charges=True,  do_dipoles=True,  do_excludes=True))
+
+    def test_dispersionff(self):
+        self.ff_test(self.make_dispersionff(do_excludes=False))
+
+    #def test_dispersionff_ex(self):
+    #    self.ff_test(self.make_dispersionff(do_excludes=True))
+
+    def ff_test(self, ff):
+        coordinates = ff.coordinates
         numc = len(coordinates)
 
-        ff = CoulombFF(coordinates, charges, neighbours)
         energy = ff.energy()
         gradient = ff.gradient()
         hessian = ff.hessian()
 
-        # 0) hessian should be symmetric
-        hessian_flat = ff.hessian_flat()
-        error = sum((hessian_flat - hessian_flat.transpose()).ravel()**2)
-        reference = sum(hessian_flat.ravel()**2)
-        self.assertAlmostEqual(error, 0.0, 3, "0) The hessian is not symmetric: % 12.8f / % 12.8f" % (error, reference))
-
-        delta = 1e-5
-
-        # 1) test the individual pairs
-
-        for index1 in xrange(numc):
-            for index2 in xrange(numc):
-                if index1 == index2:
-                    continue
-                # 1a) test the pair_gradient
-                e1 = ff.pair_energy(ff.distances[index1,index2], index1, index2)
-                e2 = ff.pair_energy(ff.distances[index1,index2]+delta, index1, index2)
-                g1 = ff.pair_gradient(ff.distances[index1,index2], index1, index2)
-                error = (g1 - (e2-e1)/delta)**2
-                reference = ((e2-e1)/delta)**2
-                self.assertAlmostEqual(error, 0.0, 3, "1a) The pair gradient is wrong: % 12.8f / % 12.8f" % (error, reference))
-                
-                # 1b) test the pair_hessian
-                g2 = ff.pair_gradient(ff.distances[index1,index2]+delta, index1, index2)
-                h1 = ff.pair_hessian(ff.distances[index1,index2], index1, index2)
-                error = (h1 - (g2-g1)/delta)**2
-                reference = ((g2-g1)/delta)**2
-                self.assertAlmostEqual(error, 0.0, 3, "1b) The pair hessian is wrong: % 12.8f / % 12.8f" % (error, reference))
+        #print ff.hessian_flat()
         
+        # 1) hessian should be symmetric
+        #hessian_flat = ff.hessian_flat()
+        #error = sum((hessian_flat - hessian_flat.transpose()).ravel()**2)
+        #reference = sum(hessian_flat.ravel()**2)
+        #self.assertAlmostEqual(error, 0.0, 3, "1) The hessian is not symmetric: % 12.8f / % 12.8f" % (error, reference))
         
+        # 1a) test the diagonal hessian blocks
+        for atom in xrange(numc):
+            error = sum((hessian[atom,atom] - hessian[atom,atom].transpose()).ravel()**2)
+            reference = sum(hessian[atom,atom].ravel()**2)
+            self.assertAlmostEqual(error, 0.0, 3, "1a) Diagonal hessian block %i is not symmetric: % 12.8f / % 12.8f" % (atom, error, reference))
+
+        # 1b) test the off-diagonal hessian blocks
+        for atom1 in xrange(numc):
+            for atom2 in xrange(atom1):
+                error = sum((hessian[atom1,atom2] - hessian[atom2,atom1].transpose()).ravel()**2)
+                reference = sum(hessian[atom1,atom2].ravel()**2)
+                self.assertAlmostEqual(error, 0.0, 3, "1a) Off-diagonal hessian block (%i,%i) is not symmetric: % 12.8f / % 12.8f" % (atom1, atom2, error, reference))
+
         # 2) test the cartesian gradient/hessian
+        delta = 1e-5
 
         # 2a) test the analytical gradient
         numerical_gradient = numpy.zeros(gradient.shape, float)
@@ -98,6 +150,7 @@ class PairFF(unittest.TestCase):
                         delta_coordinates[atom2,index2] += delta
                         ff.update_coordinates(delta_coordinates)
                         numerical_hessian[atom1,atom2,index1,index2] = (ff.energy() - energy - delta*numerical_gradient[atom1,index1] - delta*numerical_gradient[atom2,index2])/(delta*delta)
+        #print numerical_hessian - hessian
         error = sum((numerical_hessian - hessian).ravel()**2)
         reference = sum(numerical_hessian.ravel()**2)
         self.assertAlmostEqual(error, 0.0, 3, "2b) The analytical hessian is incorrect: % 12.8f / %12.8f" % (error, reference))
@@ -113,4 +166,63 @@ class PairFF(unittest.TestCase):
         error = sum((numerical_hessian - hessian).ravel()**2)
         reference = sum(numerical_hessian.ravel()**2)
         self.assertAlmostEqual(error, 0.0, 3, "2c) The analytical hessian is incorrect: % 12.8f / %12.8f" % (error, reference))
+
+
+class CoulombFF(unittest.TestCase):
+    def test_cc1(self):
+        coordinates = numpy.array([
+            [ 0.0,  0.0,  0.0],
+            [ 1.0,  0.0,  0.0]
+        ], float)
+        charges = numpy.array([-1, 1], float)
+        ff = molmod.pairff.CoulombFF(coordinates, charges)
+        self.assertAlmostEqual(ff.energy(), -1.0, 5, "Incorrect energy.")
+        
+    def test_cc2(self):
+        coordinates = numpy.array([
+            [-1.0,  0.0,  0.0],
+            [ 0.0,  0.0,  0.0],
+            [ 1.0,  0.0,  0.0]
+        ], float)
+        charges = numpy.array([1, -1, 1], float)
+        ff = molmod.pairff.CoulombFF(coordinates, charges)
+        self.assertAlmostEqual(ff.energy(), -1.5, 5, "Incorrect energy.")
+        
+    def test_cc3(self):
+        coordinates = numpy.array([
+            [ 0.0,  1.0,  0.0],
+            [ 0.0,  0.0,  0.0],
+            [ 1.0,  0.0,  0.0]
+        ], float)
+        charges = numpy.array([1, -1, 1], float)
+        ff = molmod.pairff.CoulombFF(coordinates, charges)
+        self.assertAlmostEqual(ff.energy(), -2.0 + 1/math.sqrt(2), 5, "Incorrect energy.")
+
+    def test_cd1(self):
+        coordinates = numpy.array([
+            [ 0.0,  0.0,  0.0],
+            [ 1.0,  0.0,  0.0]
+        ], float)
+        charges = numpy.array([ 0, 1], float)
+        dipoles = numpy.array([
+            [ 1.0,  0.0,  0.0],
+            [ 0.0,  0.0,  0.0]
+        ], float)
+        ff = molmod.pairff.CoulombFF(coordinates, charges, dipoles)
+        self.assertAlmostEqual(ff.energy(), 1.0, 5, "Incorrect energy.")
+        
+
+    def test_dd1(self):
+        coordinates = numpy.array([
+            [ 0.0,  0.0,  0.0],
+            [ 1.0,  0.0,  0.0]
+        ], float)
+        charges = numpy.array([ 0, 0], float)
+        dipoles = numpy.array([
+            [ 1.0,  0.0,  0.0],
+            [ 1.0,  0.0,  0.0]
+        ], float)
+        ff = molmod.pairff.CoulombFF(coordinates, charges, dipoles)
+        self.assertAlmostEqual(ff.energy(), -2.0, 5, "Incorrect energy.")
+        
 
