@@ -67,11 +67,14 @@ CHARGE = measure_counter()
 COULOMB = unit_counter()
 
 ANGLE = measure_counter()
-RADIALS = unit_counter()
-DEGREES = unit_counter()
+RADIAL = unit_counter()
+DEGREE = unit_counter()
 
 TIME = measure_counter()
-SECONDS = unit_counter()
+SECOND = unit_counter()
+NANOSECOND = unit_counter()
+PICOSECOND = unit_counter()
+FEMTOSECOND = unit_counter()
 
 DIPOLE = measure_counter()
 DEBYE = unit_counter()
@@ -89,9 +92,12 @@ suffices = {
     UNIFIED: "u",
     KG: "kg", 
     COULOMB: "C",
-    RADIALS: "rad",
-    DEGREES: "°",
-    SECONDS: "s",
+    RADIAL: "rad",
+    DEGREE: "°",
+    SECOND: "s",
+    NANOSECOND: "ns",
+    PICOSECOND: "ps",
+    FEMTOSECOND: "fs",
     DEBYE: "D",
 }
 
@@ -108,9 +114,12 @@ tex_suffices = {
     UNIFIED: r"u",
     KG: r"kg", 
     COULOMB: r"C",
-    RADIALS: r"rad",
-    DEGREES: r"^{\circ}",
-    SECONDS: r"s",
+    RADIAL: r"rad",
+    DEGREE: r"^{\circ}",
+    SECOND: r"s",
+    NANOSECOND: r"ns",
+    PICOSECOND: r"ps",
+    FEMTOSECOND: r"fs",
     DEBYE: r"D"
 }
 
@@ -119,8 +128,8 @@ measures = {
     ENERGY: [ATOMARY, JOULE, CALORIE, KJMOL, KCALMOL, EV],
     MASS: [ATOMARY, UNIFIED, KG],
     CHARGE: [ATOMARY, COULOMB],
-    ANGLE: [RADIALS, DEGREES],
-    TIME: [ATOMARY, SECONDS],
+    ANGLE: [RADIAL, DEGREE],
+    TIME: [ATOMARY, SECOND, NANOSECOND, PICOSECOND, FEMTOSECOND],
     DIPOLE: [ATOMARY, DEBYE],
 }
 
@@ -134,10 +143,6 @@ measure_names = {
     DIPOLE: "Dipole",
 }
 
-
-# Usefull constants
-
-avogadro = 6.0221415e23
 
 # Length
 
@@ -196,19 +201,28 @@ def from_coulomb(x): return x * 6.2415094796077179e18
 
 # Angles
 
-degrees = 0.017453292519943295
+degree = 0.017453292519943295
 
-def to_degrees(x): return x * 57.295779513082323
+def to_degree(x): return x * 57.295779513082323
 
-def from_degrees(x): return x * 0.017453292519943295
+def from_degree(x): return x * 0.017453292519943295
 
 # Time
 
 second = 41341373336561368.0
+nanosecond = 41341373.336561368
+picosecond = 41341.373336561368
+femtosecond = 41.341373336561368
 
-def to_seconds(x): return x * 2.418884326505e-17
+def to_second(x): return x * 2.418884326505e-17
+def to_nanosecond(x): return x * 2.418884326505e-8
+def to_picosecond(x): return x * 2.418884326505e-5
+def to_femtosecond(x): return x * 2.418884326505e-2
 
-def from_seconds(x): return x * 41341373336561368.0
+def from_second(x): return x * 41341373336561368.0
+def from_nanosecond(x): return x * 41341373.336561368
+def from_picosecond(x): return x * 41341.373336561368
+def from_femtosecond(x): return x * 41.341373336561368
 
 # dipole
 
@@ -234,8 +248,13 @@ unit = {
     EV: ev,
     UNIFIED: unified,
     COULOMB: coulomb,
-    RADIALS: 1,
-    DEGREES: degrees
+    RADIAL: 1,
+    DEGREE: degree,
+    SECOND: second,
+    NANOSECOND: nanosecond,
+    PICOSECOND: picosecond,
+    FEMTOSECOND: femtosecond,
+    DEBYE: debye,
 }
 
 to_unit = {
@@ -250,8 +269,13 @@ to_unit = {
     EV: to_ev,
     UNIFIED: to_unified,
     COULOMB: to_coulomb,
-    RADIALS: unity,
-    DEGREES: to_degrees
+    RADIAL: unity,
+    DEGREE: to_degree,
+    SECOND: to_second,
+    NANOSECOND: to_nanosecond,
+    PICOSECOND: to_picosecond,
+    FEMTOSECOND: to_femtosecond,
+    DEBYE: to_debye,
 }
 
 from_unit = {
@@ -266,6 +290,12 @@ from_unit = {
     EV: from_ev,
     UNIFIED: from_unified,
     COULOMB: from_coulomb,
-    RADIALS: unity,
-    DEGREES: from_degrees
+    RADIAL: unity,
+    DEGREE: from_degree,
+    SECOND: from_second,
+    NANOSECOND: from_nanosecond,
+    PICOSECOND: from_picosecond,
+    FEMTOSECOND: from_femtosecond,
+    DEBYE: from_debye,
 }
+
