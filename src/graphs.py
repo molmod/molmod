@@ -200,9 +200,9 @@ class Graph(object):
             a, b = pair
             tmp.add(a)
             tmp.add(b)
-        tmp = list(tmp)
-        tmp.sort()
-        self.index = dict((item, index) for index, item in enumerate(tmp))
+        self.items = list(tmp)
+        self.items.sort()
+        self.index = dict((item, index) for index, item in enumerate(self.items))
 
     def init_neighbours(self):
         """Generate a neigbours-representation of the graph."""
@@ -224,7 +224,7 @@ class Graph(object):
         num_items = len(self.index)
         if max_order is None:
             max_order = num_items - 1
-        result = numpy.zeros((num_items, num_items), float)
+        result = numpy.zeros((num_items, num_items), int)
         for first, second in self.pairs:
             result[self.index[first], self.index[second]] = 1
             result[self.index[second], self.index[first]] = 1
@@ -233,8 +233,8 @@ class Graph(object):
         while num_mods > 0 and current_order <= max_order:
             num_mods = 0
             for i in xrange(num_items):
-                for j in xrange(i+1, num_items):
-                    if result[i, j] == 0 and (result[i] + result[:,j] == current_order).any():
+                for j in xrange(i):
+                    if result[i, j] == 0 and ((result[i] + result[j] == current_order)*result[i]*result[j]).any():
                         result[i, j] = current_order
                         result[j, i] = current_order
                         num_mods += 1
