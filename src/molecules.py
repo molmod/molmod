@@ -110,9 +110,13 @@ class Molecule:
         self.write_xyz_to_stream(f)
         f.close()
 
+    def bounding_box(self, margin=0.0):
+        bbox_low = numpy.array([dim.min() for dim in self.coordinates.transpose()], float) - margin
+        bbox_high = numpy.array([dim.max() for dim in self.coordinates.transpose()], float) + margin
+        return bbox_low, bbox_high
+
     def surrounding_grid(self, grid_margin, grid_spacing):
-        bbox_low = numpy.array([dim.min() for dim in self.coordinates.transpose()], float) - grid_margin
-        bbox_high = numpy.array([dim.max() for dim in self.coordinates.transpose()], float) + grid_margin
+        bbox_low, bbox_high = self.bounding_box(grid_margin)
         bbox_size = bbox_high - bbox_low
         bbox_num = numpy.array(numpy.floor(bbox_size/grid_spacing), int)
         bbox_cor = 0.5*(bbox_size - bbox_num*grid_spacing)
