@@ -85,14 +85,14 @@ class FormattedCheckpoint(object):
         self.molecule.numbers = self.fields["Atomic numbers"]
         self.molecule.coordinates = numpy.reshape(self.fields["Current cartesian coordinates"], (-1,3))
         
-    def optimization_coordinates(self):
+    def get_optimization_coordinates(self):
         coor_array = self.fields.get("Opt point       1 Geometries")
         if coor_array is None:
             return []
         else:
             return numpy.reshape(coor_array, (-1, len(self.molecule.numbers), 3))
 
-    def optimized_molecule(self):
+    def get_optimized_molecule(self):
         opt_coor = self.optimization_coordinates()
         if len(opt_coor) == 0:
             return None
@@ -100,3 +100,17 @@ class FormattedCheckpoint(object):
             tmp = copy.deepcopy(self.molecule)
             tmp.coordinates = opt_coor[-1]
             return tmp
+
+    def get_npa_charges(self):
+        return self.fields.get("NPA Charges")
+        
+    def get_mulliken_charges(self):
+        return self.fields.get("Mullike Charges")
+        
+    def get_gradient(self):
+        tmp = self.fields.get("Cartesian Gradient")
+        if tmp is None:
+            return None
+        else:
+            return numpy.reshape(tmp, self.molecule.coordinates.shape)
+    
