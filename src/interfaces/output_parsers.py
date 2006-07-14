@@ -150,7 +150,9 @@ class MultiLineParser(FileParser):
                 self.active = False
                 self.stop_collecting()
             else:
-                self.collect(line)
+                if self.collect(line) is not None:
+                    self.active = False
+                    self.stop_collecting()
         elif self.activator != None and self.activator.search(line) != None:
             #print "Activated on line:   %s" % line[:-1]
             self.active = True

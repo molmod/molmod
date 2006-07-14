@@ -19,26 +19,7 @@
 # 
 # --
 
+# Some useful physicochemical constants in atomic units:
 
-import init_files
-
-from molmod import context
-context.share_path = "../share/"
-
-import unittest
-
-
-from binning import *
-from graphs import *
-from mpqc_interfaces import *
-from cpmd_interfaces import *
-from gaussian98_interfaces import *
-from gaussian03_interfaces import *
-from gromos96_interfaces import *
-from molecular_graphs import *
-from internal_coordinates import *
-from lone_pairs import *
-from pairff import *
-
-unittest.main()
-
+boltzman = 3.1668154051341965e-06
+avogadro = 6.0221415e23
