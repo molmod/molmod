@@ -19,7 +19,7 @@
 # 
 # --
 
-from molmod.moldata import periodic
+from molmod.data import periodic
 from molmod.units import from_angstrom, to_angstrom
 
 from StringIO import StringIO

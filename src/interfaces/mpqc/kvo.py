@@ -21,7 +21,7 @@
 
 from keyval import KeyValObject
 
-from molmod.moldata import periodic
+from molmod.data import periodic
 
 
 def create_molecule(molecule):

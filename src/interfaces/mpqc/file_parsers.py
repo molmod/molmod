@@ -20,7 +20,7 @@
 # --
 
 from molmod.interfaces.output_parsers import FileParser, MultiLineParser
-from molmod.moldata import periodic
+from molmod.data import periodic
 from molmod.molecules import Molecule
 
 import re, numpy

@@ -21,7 +21,7 @@
 
 from molmod.interfaces.base import IOJob
 from molmod.interfaces.mpqc.keyval import KeyValWriter
-from molmod.moldata import periodic
+from molmod.data import periodic
 
 import os, glob
 

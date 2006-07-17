@@ -20,10 +20,10 @@
 # --
 """ 
 periodic is an instance of the PeriodicData class in the module 
-molmod.moldata.periodicdata. It represents the data in periodic.csv.
+molmod.data.periodicdata. It represents the data in periodic.csv.
 
 bonds is an instance of the BondsData class in the module 
-molmod.moldata.bondsdata. It represents the data in bonds.csv.
+molmod.data.bondsdata. It represents the data in bonds.csv.
 """
 
 from periodicdata import PeriodicData
@@ -36,5 +36,5 @@ __all__ = [
     "bonds", "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "bond_types"
 ]
 
-periodic = PeriodicData(context.share_path + "moldata/periodic.csv")
-bonds = BondData(context.share_path + "moldata/bonds.csv", periodic)
+periodic = PeriodicData(context.share_path + "periodic.csv")
+bonds = BondData(context.share_path + "bonds.csv", periodic)

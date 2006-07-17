@@ -21,7 +21,7 @@
 
 from molmod.molecular_graphs import *
 from molmod.molecules import molecule_xyz_from_filename
-from molmod.moldata import BOND_SINGLE
+from molmod.data import BOND_SINGLE
 
 import unittest, copy
 

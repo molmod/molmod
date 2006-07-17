@@ -15,8 +15,8 @@ the online documentation and support at http://molmod.UGent.be/code/molmod/
 Most of the source code is self-documented. For example the documentation
 about molmod.moldata can be read using the python interpreter with the following
 two commands:
->>> import molmod.moldata
->>> help(molmod.moldata)
+>>> import molmod.data
+>>> help(molmod.data)
 
 INSTALLING
 ----------

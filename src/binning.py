@@ -28,7 +28,7 @@ cutoff. The algorithm consists of two major steps:
 """
 
 
-from molmod.moldata import periodic
+from molmod.data import periodic
 
 import math, numpy, copy
 

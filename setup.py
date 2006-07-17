@@ -33,13 +33,13 @@ setup(name='MolMod',
     url='http://molmod.ugent.be/projects/molmod',
     package_dir = {'molmod': 'src'},
     data_files=[
-        ('share/molmod/%s/moldata' % version, glob.glob('share/moldata/*.csv')),
+        ('share/molmod/%s' % version, glob.glob('share/*.csv')),
         ('share/molmod/%s/templates/gromos96_sp/' % version, glob.glob('share/templates/gromos96_sp/*.*')),
         ('share/molmod/%s/awk' % version, glob.glob('share/awk/*.awk'))
     ],
     packages=[
         'molmod', 
-        'molmod.moldata', 
+        'molmod.data', 
         'molmod.interfaces', 
         'molmod.interfaces.mpqc', 
         'molmod.interfaces.cpmd',

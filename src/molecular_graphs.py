@@ -22,7 +22,7 @@
 
 from molmod.graphs import Graph, SymmetricGraph, MatchFilterParameterized, Criterium
 from molmod.binning import IntraAnalyseNeighbouringObjects, PositionedObject, SparseBinnedObjects
-from molmod.moldata import bonds
+from molmod.data import bonds
 
 import math, numpy
 

@@ -20,7 +20,7 @@
 # --
 
 from molmod.interfaces.base import AwkJob
-from molmod.moldata import periodic
+from molmod.data import periodic
 from molmod.units import to_angstrom, from_angstrom
 from molmod.molecules import molecule_xyz_from_string
 

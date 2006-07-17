@@ -27,7 +27,7 @@ import os, sys, copy, random, math, numpy.random, getopt
 from molmod.molecules import molecule_xyz_from_filename
 from molmod.molecular_graphs import MolecularGraph
 from molmod.units import from_angstrom, to_angstrom
-from molmod.moldata import periodic
+from molmod.data import periodic
 from molmod.transformations import Rotation
 
 
