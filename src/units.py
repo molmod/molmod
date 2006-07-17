@@ -45,7 +45,7 @@ class Counter:
 measure_counter = Counter()
 unit_counter = Counter()
 
-ATOMARY = measure_counter()
+ATOMARY = unit_counter()
 
 LENGTH = measure_counter()
 ANGSTROM = unit_counter()
