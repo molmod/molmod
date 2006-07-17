@@ -108,7 +108,7 @@ def all_lone_pairs(molecule, singles=[7], doubles=[8], angle=1.910):
 
     for index, (number, coordinate) in enumerate(zip(molecule.numbers, molecule.coordinates)):
         if number in singles:
-            neighbours = mgraph.graph.neighbours[index]
+            neighbours = mgraph.neighbours[index]
             result.append((
                 index,
                 lone_pair_1(
@@ -118,7 +118,7 @@ def all_lone_pairs(molecule, singles=[7], doubles=[8], angle=1.910):
                 )
             ))
         elif number in doubles:
-            neighbours = mgraph.graph.neighbours[index]
+            neighbours = mgraph.neighbours[index]
             lone1, lone2 = lone_pair_2(
                 molecule.coordinates[neighbours[0]] - coordinate,
                 molecule.coordinates[neighbours[1]] - coordinate,

@@ -113,12 +113,12 @@ class NumNeighboursCriterium(MolecularCriterium):
         
 class NumNeighboursRequire(NumNeighboursCriterium):
     def __call__(self, index):
-        return len(self.molecular_graph.graph.neighbours[index]) == self.num_neighbours
+        return len(self.molecular_graph.neighbours[index]) == self.num_neighbours
 
 
 class NumNeighboursRefuse(NumNeighboursCriterium):
     def __call__(self, index):
-        return len(self.molecular_graph.graph.neighbours[index]) != self.num_neighbours
+        return len(self.molecular_graph.neighbours[index]) != self.num_neighbours
 
 
 # Predefined sets of criteria: bonds, angles, dihedrals
@@ -226,15 +226,10 @@ class LongRangePairSets(CriteriaSets):
 
 #     
 
-class MolecularGraph(object):
+class MolecularGraph(Graph):
     def __init__(self, molecule):
         self.molecule = molecule
-        self.graph = None
-        self.bonds = None
-        
-        self.update_graph()
-        
-    def update_graph(self):
+
         def yield_positioned_atoms():
             for index in xrange(len(self.molecule.numbers)):
                 yield PositionedObject(index, self.molecule.coordinates[index])
@@ -250,10 +245,10 @@ class MolecularGraph(object):
                     return bond_order, distance
         
         bond_data = list(IntraAnalyseNeighbouringObjects(binned_atoms, compare_function)())
-        self.bonds = set(key for key, data in bond_data)
+        pairs = set(key for key, data in bond_data)
         self.bond_orders = dict([(key, data[0]) for key, data in bond_data])
         self.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
-        self.graph = Graph(self.bonds)
+        Graph.__init__(pairs)
         
     def yield_subgraphs(self, criteria_sets):
         subgraph = SymmetricGraph(criteria_sets.subpairs, criteria_sets.initiator)
@@ -270,6 +265,6 @@ class MolecularGraph(object):
                 filter_tags
             )
         
-            for match in subgraph.yield_matching_subgraphs(self.graph):
+            for match in subgraph.yield_matching_subgraphs(self):
                 for parsed in graph_filter.parse(match):
                     yield tag, parsed

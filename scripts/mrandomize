@@ -53,9 +53,9 @@ def rotational_randomize(molecule, mgraph):
     for (atom1, atom2), order in mgraph.bond_orders.iteritems():
         #print (atom1, atom2), order
         if order != 1: continue
-        if len(mgraph.graph.neighbours[atom1]) < 2: continue
-        if len(mgraph.graph.neighbours[atom2]) < 2: continue
-        atom1_part = half_molecule(mgraph.graph, atom1, atom2)
+        if len(mgraph.neighbours[atom1]) < 2: continue
+        if len(mgraph.neighbours[atom2]) < 2: continue
+        atom1_part = half_molecule(mgraph, atom1, atom2)
         if atom1_part is None: continue
         
         axis = molecule.coordinates[atom1] - molecule.coordinates[atom2]
