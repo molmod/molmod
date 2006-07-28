@@ -39,9 +39,11 @@ def angle(a, b):
     return math.acos(cosine(a, b))
 
 
-normal_fns = [lambda a: numpy.array([0.0, -a[2], a[1]]), 
-              lambda a: numpy.array([a[2], 0.0, -a[0]]), 
-              lambda a: numpy.array([-a[1], a[0], 0.0])]
+normal_fns = [
+    lambda a: numpy.array([0.0, -a[2], a[1]]), 
+    lambda a: numpy.array([a[2], 0.0, -a[0]]), 
+    lambda a: numpy.array([-a[1], a[0], 0.0])
+]
         
 def random_orthonormal(normal):
     u = normal_fns[numpy.argmin(numpy.fabs(normal))](normal)
