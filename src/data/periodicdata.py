@@ -19,11 +19,21 @@
 # 
 # --
 
-from molmod.units import from_unified
+from molmod.units import from_unit, by_suffices
 
 import string, numpy, copy
 
 __all__ = ["PeriodicData"]
+
+
+class AtomInfo(object):
+    def __init__(self):
+        self.radius = None
+
+    def add_attribute(self, name, value):
+        if name.endswith("radius") and self.radius is None:
+            self.radius = value
+        self.__dict__[name] = value
 
 
 class PeriodicData(object):
@@ -31,46 +41,64 @@ class PeriodicData(object):
     Objects of the PeriodicData class centralize information about the 
     periodic system. The data is loaded during initialization.
     """
+
     def __init__(self, filename):
         # Initialize empty lists
-        self.name = {}
-        self.symbol = {}
-        self.symbol_reverse = {}
-        self.numbers = []
-        self.row = {}
-        self.col = {}    
-        self.mass = {}
-        self.radius = {}
-        self.valence = {}
-        self.lonepairs = {}
-        self.artificial = {}
-        self.color = {}
+        self.atoms_by_number = {}
+        self.atoms_by_symbol = {}
 
         self.max_radius = 0.0
         
-        periodic_file = file(filename)
-        for line in periodic_file:
-            cells = string.split(line)
-            if (len(cells) > 0) and (cells[0][0] != "#"):
-                n = int(cells[2])
-                self.name[n] = cells[0]
-                self.symbol[n] = cells[1]
-                self.symbol_reverse[cells[1].lower()] = n
-                self.numbers.append(n)
-                self.row[n] = int(cells[3])
-                self.col[n] = int(cells[4])
-                if cells[5] != "NA": self.mass[n] = from_unified(float(cells[5]))
-                if cells[7] != "NA": 
-                    radius = float(cells[7])
-                    if radius > self.max_radius: self.max_radius = radius
-                    self.radius[n] = radius
-                if cells[9] != "NA": self.valence[n] = int(cells[9])
-                if cells[10] != "NA": self.lonepairs[n] = int(cells[10])
-                self.artificial[n] = int(cells[11])
-                if cells[12] != "NA": self.color[n] = numpy.array([float(cells[12]), float(cells[13]), float(cells[14]), 1.0])
-        periodic_file.close()
+        convertors = []
+        names = []
         
-    def symbol_lookup(self, symbol):
-        """Return the atom number of the given symbol (case insensitive)."""
-        return self.symbol_reverse.get(symbol.lower())   
-            
+        def append_convertor(word):
+            if word == "str":
+                convertors.append(str)
+            elif word == "int":
+                convertors.append(int)
+            elif word == "float":
+                convertors.append(float)
+            elif word == "bool":
+                convertors.append(eval)
+            else:
+                convertor = from_unit.get(by_suffices.get(word))
+                if convertor is not None:
+                    convertors.append(lambda s: convertor(float(s)))
+                else:
+                    convertors.append(float)
+        
+        f = file(filename)
+        lines_read = 0
+        for line in f:
+            words = string.split(line)
+            if (len(words) > 0) and (words[0][0] != "#"):
+                if lines_read == 0:
+                    # load all the attribute names
+                    names = words
+                elif lines_read == 1:
+                    # load all the conversion factors
+                    for word in words:
+                        append_convertor(word)
+                else:
+                    atom_info = AtomInfo()
+                    for name, convertor, word in zip(names, convertors, words):
+                        if word == "NA":
+                            atom_info.add_attribute(name, None)
+                        else:
+                            atom_info.add_attribute(name, convertor(word))
+                    self.atoms_by_number[atom_info.number] = atom_info
+                    self.atoms_by_symbol[atom_info.symbol.lower()] = atom_info
+                lines_read += 1
+        f.close()
+    
+    def __getitem__(self, index):
+        result = self.atoms_by_number.get(index)
+        if result is None:
+            return self.atoms_by_symbol.get(index.lower())
+        else:
+            return result
+        
+    def yield_numbers(self):
+        for number in self.atoms_by_number:
+            yield number

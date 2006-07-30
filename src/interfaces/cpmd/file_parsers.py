@@ -118,7 +118,7 @@ class ElementsParser(MultiLineParser):
         if not self.done:
             match = self.re.search(line)
             if match != None:
-                self.elements.append(periodic.symbol_lookup(match.group("symbol")))
+                self.elements.append(periodic[match.group("symbol")].number)
         
     def stop_collecting(self):
         self.done = True
@@ -152,7 +152,7 @@ class MassesParser(MultiLineParser):
         if not self.done:
             match = self.re.search(line)
             if match != None:
-                number = periodic.symbol_lookup(match.group("symbol"))
+                number = periodic[match.group("symbol")].number
                 mass = from_unified(float(match.group("mass")))
                 self.masses[number] = mass
         

@@ -65,7 +65,7 @@ class AwkMpqcJob(AwkJob):
         print >> f, "multiplicity: " + str(self.multiplicity)
         print >> f, "molecule: "
         for number, (x, y, z) in zip(self.input_molecule.numbers, to_angstrom(self.input_molecule.coordinates)):
-            print >> f, "   %2s  % 10.7f  % 10.7f  % 10.7f" % (periodic.symbol[number], x, y, z)
+            print >> f, "   %2s  % 10.7f  % 10.7f  % 10.7f" % (periodic[number].symbol, x, y, z)
 
     def external_command(self):
         return "%s -o %s%s %s%s" % (self.binary, self.prefix, self.input_extension, self.prefix, self.output_extension)

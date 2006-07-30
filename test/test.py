@@ -39,6 +39,7 @@ from molecular_graphs import *
 from internal_coordinates import *
 from lone_pairs import *
 from pairff import *
+from data import *
 
 unittest.main()
 

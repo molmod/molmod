@@ -82,9 +82,11 @@ class Molecule:
 
     def write_atoms_to_stream(self, stream):
         for number, coordinate in zip(self.numbers, to_angstrom(self.coordinates)):
-            symbol = periodic.symbol.get(number)
-            if symbol == None:
+            atom_info = periodic[number]
+            if atom_info is None:
                 symbol = 'X'
+            else:
+                symbol = atom_info.symbol
             print >> stream, "% 2s % 12.6f % 12.6f % 12.6f" % (
                 symbol,
                 coordinate[0],
@@ -142,8 +144,13 @@ def molecule_xyz_from_stream(stream):
         if len(words) == 1 and num_atoms == None:
             num_atoms = int(words[0])
         elif len(words) == 4:
+            atom_info = periodic[words[0]]
+            if atom_info is None:
+                number = 0
+            else:
+                number = atom_info.number
             atoms.append([
-                periodic.symbol_lookup(words[0]), 
+                number, 
                 from_angstrom(float(words[1])), 
                 from_angstrom(float(words[2])),
                 from_angstrom(float(words[3]))

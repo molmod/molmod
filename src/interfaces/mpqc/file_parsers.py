@@ -148,7 +148,7 @@ class OutputMoleculesParser(MultiLineParser):
     def collect(self, line):
         match = self.re.search(line)
         self.current_atoms.append([
-            periodic.symbol_lookup(match.group("symbol")),
+            periodic[match.group("symbol")].number,
             float(match.group("x")),
             float(match.group("y")),
             float(match.group("z"))

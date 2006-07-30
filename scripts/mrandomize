@@ -75,7 +75,7 @@ def displacement_randomize(molecule, max_displacement):
 
 def coarse_energy(molecule, mgraph):
     energy = 0.0
-    radii = numpy.array([periodic.radius[number] for number in molecule.numbers], float)
+    radii = numpy.array([periodic[number].radius for number in molecule.numbers], float)
     #print "begin energy"
     for index1 in xrange(len(molecule.numbers)):
         for index2 in xrange(index1+1, len(molecule.numbers)):

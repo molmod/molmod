@@ -21,7 +21,6 @@
 
 
 from molmod.interfaces.output_parsers import FileParser, MultiLineParser
-from molmod.data import periodic
 from molmod.molecules import Molecule
 from molmod.units import from_angstrom, from_unified
 

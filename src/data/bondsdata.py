@@ -19,18 +19,33 @@
 # 
 # --
 
+
+from molmod.units import unit, by_suffices
+
 import string, numpy
+
 
 __all__ = [
     "BondData", "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "bond_types"
 ]
 
 
-BOND_SINGLE = 1
-BOND_DOUBLE = 2
-BOND_TRIPLE = 3
+class BondType(object):
+    def __init__(self, num, special):
+        self.num = num
+        self.special = special
 
-bond_types = [BOND_SINGLE, BOND_DOUBLE, BOND_TRIPLE]
+BOND_SINGLE = BondType(1, False)
+BOND_DOUBLE = BondType(2, False)
+BOND_TRIPLE = BondType(3, False)
+BOND_HYBRID = BondType(1.5, True)
+BOND_HYDROGEN = BondType(1, True)
+LONE_PAIR = BondType(1, True)
+
+bond_types = [
+    BOND_SINGLE, BOND_DOUBLE, BOND_TRIPLE, BOND_HYBRID, BOND_HYDROGEN, LONE_PAIR
+]
+
 
 class BondData(object):
     """
@@ -41,22 +56,17 @@ class BondData(object):
     bond_tolerance = 1.2
 
     def __init__(self, filename, periodic_data):
-        self.bond_lengths = dict([bond_type, {}] for bond_type in bond_types)
+        self.lengths = dict([bond_type, {}] for bond_type in bond_types)
         self.periodic_data = periodic_data
         self.load_bond_data(filename)
         self.approximate_unkown_bond_lengths()
-        self.max_length = max(max(type_lengths.itervalues()) for type_lengths in self.bond_lengths.itervalues())
-        
-    def read_length(self, BOND_TYPE, cells, col):
-        """This is a helper method for load_bond_data."""
-        nlow = int(cells[2])
-        nhigh = int(cells[3])
-        for i in range((len(cells) - 4) / 3):
-            cell = cells[col + 3 + i*3]
-            if cell != 'NA':
-                self.bond_lengths[BOND_TYPE][frozenset([nlow, nhigh])] = float(cell)
-                return
-                
+        self.max_length = max(
+            max(lengths.itervalues()) 
+            for lengths 
+            in self.lengths.itervalues()
+            if len(lengths) > 0
+        )
+
     def load_bond_data(self, filename):
         """
         Load the bond data from the given file.
@@ -68,23 +78,42 @@ class BondData(object):
         bond_length_double_b bond_length_triple_b ..."
         where a, b, ... stand for different sources.
         """
-        bond_file = file(filename)
-        for line in bond_file:
-            cells = string.split(line)
-            if (len(cells) > 0) and (cells[0][0] != "#"):
-                self.read_length(BOND_SINGLE, cells, 1)
-                self.read_length(BOND_DOUBLE, cells, 2)
-                self.read_length(BOND_TRIPLE, cells, 3)
-        bond_file.close()
+
+        def read_units(unit_names):
+            return [unit[by_suffices[unit_name]] for unit_name in unit_names]
+            
+        def read_length(BOND_TYPE, words, col):
+            nlow = int(words[2])
+            nhigh = int(words[3])
+            for i, conversion in zip(xrange((len(words) - 4) / 3), conversions):
+                word = words[col + 3 + i*3]
+                if word != 'NA':
+                    self.lengths[BOND_TYPE][frozenset([nlow, nhigh])] = float(word)*conversion
+                    return
+
+        f = file(filename)
+        for line in f:
+            words = string.split(line)
+            if (len(words) > 0) and (words[0][0] != "#"):
+                if words[0] == "unit":
+                    conversions = read_units(words[1:])
+                else:
+                    read_length(BOND_SINGLE, words, 1)
+                    read_length(BOND_DOUBLE, words, 2)
+                    read_length(BOND_TRIPLE, words, 3)
+        f.close()
 
     def approximate_unkown_bond_lengths(self):
-        dataset = self.bond_lengths[BOND_SINGLE]
-        for index1, n1 in enumerate(self.periodic_data.numbers):
-            for n2 in self.periodic_data.numbers[:index1]:
-                pair = frozenset([n1, n2])
-                if (pair not in dataset) and (n1 in self.periodic_data.radius)\
-                   and (n2 in self.periodic_data.radius):
-                    dataset[pair] = self.periodic_data.radius[n1] + self.periodic_data.radius[n2]
+        dataset = self.lengths[BOND_SINGLE]
+        for n1 in self.periodic_data.yield_numbers():
+            for n2 in self.periodic_data.yield_numbers():
+                if n1 <= n2:
+                    pair = frozenset([n1, n2])
+                    atom1 = self.periodic_data[n1]
+                    atom2 = self.periodic_data[n2]
+                    if (pair not in dataset) and (atom1.radius is not None) and (atom2.radius is not None):
+                        dataset[pair] = (atom1.radius + atom2.radius)
+                    #print "%3i  %3i  %s %30s %30s" % (n1, n2, dataset.get(pair), atom1, atom2)
                 
     def bonded(self, n1, n2, distance):
         """
@@ -96,22 +125,25 @@ class BondData(object):
         self.bond_tolerance larger than a tabulated distance, the algorithm
         will not relate them.
         """
-        if distance > self.max_length * self.bond_tolerance: return None
+        if distance > self.max_length * self.bond_tolerance:
+            return None
+            
         deviation = 0.0
         pair = frozenset([n1,n2])
-        bond_type = None
-        for bt in bond_types:
-            bond_length = self.bond_lengths[bt].get(pair)
-            if (bond_length != None) and (distance < bond_length * self.bond_tolerance):
-                if bond_type == None:
-                    bond_type = bt
+        result = None
+        for bond_type in bond_types:
+            bond_length = self.lengths[bond_type].get(pair)
+            if (bond_length is not None) and \
+               (distance < bond_length * self.bond_tolerance):
+                if result is None:
+                    result = bond_type
                     deviation = abs(bond_length - distance)
                 else:
                     new_deviation = abs(bond_length - distance)
                     if deviation > new_deviation:
-                        bond_type = bt
+                        result = bond_type
                         deviation = new_deviation
-        return bond_type
+        return result
         
     def get_length(self, n1, n2, bond_type):
         """
@@ -120,7 +152,7 @@ class BondData(object):
         This is a safe method for querying a bond_length. If no answer can be
         found, this get_length returns None.
         """
-        dataset = self.bond_lengths.get(bond_type)
+        dataset = self.lengths.get(bond_type)
         if dataset == None:
             return None
         return dataset.get(frozenset([n1, n2]))

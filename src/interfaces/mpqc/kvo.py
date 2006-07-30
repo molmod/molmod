@@ -28,7 +28,7 @@ def create_molecule(molecule):
     return KeyValObject(
         'Molecule',
         {
-            'atoms': [periodic.symbol[number] for number in molecule.numbers],
+            'atoms': [periodic[number].symbol for number in molecule.numbers],
             'geometry': molecule.coordinates.tolist()
         }
     )

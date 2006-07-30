@@ -32,14 +32,15 @@
 #    * from_unit is a function that does the inverse of to_unit
 #  The internal units are the atomic units. External units can be anything else.
 
-# Constants that depict measures and units
 
+# Constants that depict measures and units.
         
 ATOMARY = 0
 
 LENGTH = 0
 ANGSTROM = 1
 NANOMETER = 2
+PICOMETER = 13
 
 ENERGY = 1
 KJMOL = 3
@@ -67,7 +68,7 @@ measures = [LENGTH, ENERGY, MASS, CHARGE, ANGLE, TIME, DIPOLE]
 assert len(measures) == len(set(measures)), "Some measures have the same id."
 
 units = [
-    ATOMARY, ANGSTROM, NANOMETER, KJMOL, KCALMOL, EV, UNIFIED, 
+    ATOMARY, ANGSTROM, NANOMETER, PICOMETER, KJMOL, KCALMOL, EV, UNIFIED, 
     RADIAL, DEGREE, NANOSECOND, PICOSECOND, FEMTOSECOND, DEBYE
 ]
 assert len(units) == len(set(units)), "Some units have the same id."
@@ -77,6 +78,7 @@ suffices = {
     ATOMARY: "a.u.",
     ANGSTROM: "A",
     NANOMETER: "nm",
+    PICOMETER: "pm",
     KJMOL: "kJ/mol",
     KCALMOL: "kcal/mol",
     EV: "eV",
@@ -90,10 +92,29 @@ suffices = {
 }
 assert len(units) == len(suffices), "Some units don't have a suffix."
 
+by_suffices = {
+    "a.u.": ATOMARY,
+    "A": ANGSTROM,
+    "nm": NANOMETER,
+    "pm": PICOMETER,
+    "kJ/mol": KJMOL,
+    "kcal/mol": KCALMOL,
+    "eV": EV,
+    "u": UNIFIED,
+    "rad": RADIAL,
+    "°": DEGREE,
+    "ns": NANOSECOND,
+    "ps": PICOSECOND,
+    "fs": FEMTOSECOND,
+    "D": DEBYE,
+}
+assert len(units) == len(by_suffices), "Some units don't have a suffix."
+
 tex_suffices = {
     ATOMARY: r"a.u.",
     ANGSTROM: r"\AA",
     NANOMETER: r"nm",
+    PICOMETER: r"pm",
     KJMOL: r"\frac{kJ}{mol}",
     KCALMOL: r"\frac{kcal}{mol}",
     EV: r"eV",
@@ -108,7 +129,7 @@ tex_suffices = {
 assert len(units) == len(suffices), "Some units don't have a tex suffix."
 
 units_by_measure = {
-    LENGTH: [ATOMARY, ANGSTROM, NANOMETER],
+    LENGTH: [ATOMARY, ANGSTROM, NANOMETER, PICOMETER],
     ENERGY: [ATOMARY, KJMOL, KCALMOL, EV],
     MASS: [ATOMARY, UNIFIED],
     CHARGE: [ATOMARY],
@@ -136,14 +157,17 @@ assert len(measures) == len(measure_names), "Some measures don't have a name."
 
 angstrom = 1.8897261249
 nanometer = 18.897261249
+picometer = 0.018897261249
 meter = 1.8897261249e10
 
 def to_angstrom(x): return x * 0.5291772108
 def to_nanometer(x): return x * 0.05291772108
+def to_picometer(x): return x * 52.91772108
 def to_meter(x): return x * 0.5291772108e-10
 
 def from_angstrom(x): return x * 1.8897261249
 def from_nanometer(x): return x * 18.897261249
+def from_picometer(x): return x * 0.018897261249
 def from_meter(x): return x * 1.8897261249e10
 
 
@@ -228,6 +252,7 @@ unit = {
     ATOMARY: 1,
     ANGSTROM: angstrom,
     NANOMETER: nanometer,
+    PICOMETER: picometer,
     KJMOL: kjmol,
     KCALMOL: kcalmol,
     EV: ev,
@@ -245,6 +270,7 @@ to_unit = {
     ATOMARY: unity,
     ANGSTROM: to_angstrom,
     NANOMETER: to_nanometer,
+    PICOMETER: to_picometer,
     KJMOL: to_kjmol,
     KCALMOL: to_kcalmol,
     EV: to_ev,
@@ -262,6 +288,7 @@ from_unit = {
     ATOMARY: unity,
     ANGSTROM: from_angstrom,
     NANOMETER: from_nanometer,
+    PICOMETER: from_picometer,
     KJMOL: from_kjmol,
     KCALMOL: from_kcalmol,
     EV: from_ev,

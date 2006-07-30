@@ -28,8 +28,6 @@ cutoff. The algorithm consists of two major steps:
 """
 
 
-from molmod.data import periodic
-
 import math, numpy, copy
 
 __all__ = ["PositionedObject", "SparseBinnedObjects",
