@@ -24,15 +24,15 @@ a set of points, when you are only interested in the distances below a given
 cutoff. The algorithm consists of two major steps:
 1) Divide the given set of points into bins on a regular grid in space.
 2) Calculate the distances (or other usefull things) between points in 
-   neighbouring bins.
+   neighboring bins.
 """
 
 
 import math, numpy, copy
 
 __all__ = ["PositionedObject", "SparseBinnedObjects",
-           "AnalyseNeighbouringObjects", "IntraAnalyseNeighbouringObjects",
-           "InterAnalyseNeighbouringObjects"]
+           "AnalyseNeighboringObjects", "IntraAnalyseNeighboringObjects",
+           "InterAnalyseNeighboringObjects"]
 
 
 class PositionedObject(object):
@@ -54,6 +54,16 @@ class PositionedObject(object):
         self.point = point
 
 
+def yield_combinations(l, n):
+    if n == 1:
+        for item in l:
+            yield [item]
+    else:
+        for item in l:
+            for combinations in yield_combinations(l, n-1):
+                yield [item] + combinations
+    
+
 class SparseBinnedObjects(object):
     """
     A SparseBinnedObjects instance divides 3D space into a sparse grid.
@@ -65,6 +75,14 @@ class SparseBinnedObjects(object):
     
     All bins are uniquely defined by their indices i,j,k as defined in __init__.
     """
+
+    deltas = [
+         numpy.array(combination, float)
+         for combination
+         in yield_combinations([-1, 0, 1], 3)
+    ]
+
+
     def __init__(self, yield_positioned_objects, gridsize=1):
         """
         Initialize a BinnedObjects instance.
@@ -81,54 +99,50 @@ class SparseBinnedObjects(object):
         self.bins = {}
             
         for positioned_object in yield_positioned_objects():
-            i, j, k = numpy.floor(positioned_object.point*self.reciproke).astype(int)
-            bin_x = self.bins.get(i)
-            if bin_x != None:
-                bin_y = bin_x.get(j)
-                if bin_y != None:
-                    bin_z = bin_y.get(k)
-                    if bin_z == None:
-                        bin_z = set()
-                        bin_y[k] = bin_z
-                else:
-                    bin_z = set()
-                    bin_x[j] = {k: bin_z}
-            else:
-                bin_z = set()
-                self.bins[i] = {j: {k: bin_z}}
-            bin_z.add(positioned_object)
+            indices = tuple(numpy.floor(positioned_object.point*self.reciproke).astype(int))
+            bin = self.bins.get(indices)
+            if bin is None:
+                bin = set()
+                self.bins[indices] = bin
+            bin.add(positioned_object)
 
-    def get_bin(self, i, j, k):
-        """Return the bin at indices i,j,k."""
-        bin_x = self.bins.get(i)
-        if bin_x != None:
-            bin_y = bin_x.get(j)
-            if bin_y != None:
-                return bin_y.get(k)
-
-
-    def yield_positioned_objects_around(self, r):
+    def _yield_surrounding(self, r, deltas=None):
         """
         Iterate over all objects in the bins that surround the bin that
         contains vector r.
         """
-        center_indices = numpy.floor(r*self.reciproke).astype(int)
-        for i in [-1, 0, 1]:
-            for j in [-1, 0, 1]:
-                for k in [-1, 0, 1]:
-                    bin = self.get_bin(
-                        center_indices[0] + i, 
-                        center_indices[1] + j, 
-                        center_indices[2] + k
-                    )
-                    if bin != None:
-                        for positioned_object in bin:
-                            yield positioned_object
+        if deltas is None:
+            deltas = self.deltas
+        center = numpy.floor(r*self.reciproke).astype(int)
+        for delta in deltas:
+            bin = self.bins.get(tuple(center + delta))
+            if bin is not None:
+                for positioned_object in bin:
+                    yield bin, positioned_object
+
+    def yield_surrounding(self, r, deltas=None, unit_cell=None):
+        """
+        Iterate over all objects in the bins that surround the bin that
+        contains vector r.
+        """
+        if unit_cell == None:
+            for result in self._yield_surrounding(r, deltas):
+                yield result
+        else:
+            for delta in self.deltas:
+                for result in self._yield_surrounding( 
+                    r + numpy.dot(unit_cell.cell, delta), 
+                    deltas
+                ):
+                    yield result
 
 
-class AnalyseNeighbouringObjects(object):
+print SparseBinnedObjects.deltas
+
+
+class AnalyseNeighboringObjects(object):
     """
-    AnalyseNeighbouringObjects is the base class for 'comparing' points between
+    AnalyseNeighboringObjects is the base class for 'comparing' points between
     neigbouring bins.
     """
     corners = (numpy.array([0, 0, 0], int),
@@ -140,50 +154,49 @@ class AnalyseNeighbouringObjects(object):
                numpy.array([1, 1, 0], int),
                numpy.array([1, 1, 1], int))
 
-    def __init__(self, compare_function):
+    def __init__(self, compare_function, unit_cell=None):
         """
-        Intialize a AnalyseNeighbouringObjects instance.
+        Intialize a AnalyseNeighboringObjects instance.
         
-        compare_function -- for each point pair that live in neighbouring bins,
+        compare_function -- for each point pair that lives in neighboring bins,
                             this function is called. It should take four
                             parameters:
                             reference1, reference2, point1, point2
         """
         self.compare_function = compare_function
+        self.unit_cell = unit_cell
         # All these parameters have to be defined by the base class
-        self.gridsize = None
-        self.reciproke = None
         self.compare_indices = None
         self.binned_objects1 = None
         self.binned_objects2 = None
 
-    def __call__(self):
-        for i, bin1_x in self.binned_objects1.bins.iteritems():
-            for j, bin1_y in bin1_x.iteritems():
-                for k, center_bin in bin1_y.iteritems():
-                    neighbour_bins = []
-                    for di,dj,dk in self.compare_indices:
-                        bin2_z = self.binned_objects2.get_bin(i+di, j+dj, k+dk)
-                        if bin2_z != None:
-                            neighbour_bins.append(bin2_z)
-                    
-                    for neighbour_bin in neighbour_bins:
-                        for result in self.compare_bins(center_bin, neighbour_bin):
-                            yield result
+    def __call__(self, unit_cell=None):
+        for center_bin in self.binned_objects1.bins.itervalues():
+            for positioned1 in center_bin:
+                for neighbor_bin, positioned2 in self.binned_objects2.yield_surrounding(positioned1.point, self.compare_indices, unit_cell):
+                    if positioned1 != positioned2 and \
+                       self.allow(center_bin, neighbor_bin, positioned1, positioned2):
+                        result = self.compare_function(
+                            positioned1.reference, 
+                            positioned2.reference, 
+                            positioned1.point, 
+                            positioned2.point
+                        )
+                        if result is not None:
+                            yield frozenset([positioned1.reference, positioned2.reference]), result
+                        
 
-    def compare_bins(self, bin1, bin2):
-        raise NotImplementedError
+    def allow(self, bin1, bin2, positioned1, positioned2):
+        return True
 
 
-class IntraAnalyseNeighbouringObjects(AnalyseNeighbouringObjects):
+class IntraAnalyseNeighboringObjects(AnalyseNeighboringObjects):
     """
-    IntraAnalyseNeighbouringObjects instances compare all points within one
+    IntraAnalyseNeighboringObjects instances compare all points within one
     molecule.
     """
-    def __init__(self, binned_objects, compare_function):
-        AnalyseNeighbouringObjects.__init__(self, compare_function)
-        self.gridsize = binned_objects.gridsize
-        self.reciproke = binned_objects.reciproke
+    def __init__(self, binned_objects, compare_function, unit_cell=None):
+        AnalyseNeighboringObjects.__init__(self, compare_function, unit_cell)
         self.compare_indices = [(0, 0, 0), (1, 1, 1), 
                                 (1, 0, 0), (0, 1, 0), (0, 0, 1),
                                 (0, 1, 1), (1, 0, 1), (1, 1, 0), 
@@ -192,49 +205,18 @@ class IntraAnalyseNeighbouringObjects(AnalyseNeighbouringObjects):
         self.binned_objects1 = binned_objects
         self.binned_objects2 = binned_objects
 
-    def compare_bins(self, bin1, bin2):
-        for positioned1 in bin1:
-            for positioned2 in bin2:
-                if bin1 == bin2 and positioned1.reference >= positioned2.reference:
-                    continue
-                result = self.compare_function(
-                    positioned1.reference, 
-                    positioned2.reference, 
-                    positioned1.point, 
-                    positioned2.point
-                )
-                if result != None:
-                    yield (frozenset((positioned1.reference, positioned2.reference)), result)
+    def allow(self, bin1, bin2, positioned1, positioned2):
+        return bin1 != bin2 or positioned1 > positioned2
 
 
-class InterAnalyseNeighbouringObjects(AnalyseNeighbouringObjects):
+class InterAnalyseNeighboringObjects(AnalyseNeighboringObjects):
     """
-    InterAnalyseNeighbouringObjects instances compare 'all' points between two
+    InterAnalyseNeighboringObjects instances compare 'all' points between two
     molecules.
     """
-    def __init__(self, binned_objects1, binned_objects2, compare_function):
-        AnalyseNeighbouringObjects.__init__(self, compare_function)
+    def __init__(self, binned_objects1, binned_objects2, compare_function, unit_cell=None):
+        AnalyseNeighboringObjects.__init__(self, compare_function, unit_cell)
         assert binned_objects1.gridsize==binned_objects2.gridsize
-        self.gridsize = binned_objects1.gridsize
-        self.reciproke = binned_objects1.reciproke
-        self.compare_indices = []
-        positions = [-1, 0, 1]
-        for x in positions:
-            for y in positions:
-                for z in positions:
-                    self.compare_indices.append((x, y, z))
+        self.compare_indices = None
         self.binned_objects1 = binned_objects1
         self.binned_objects2 = binned_objects2
-
-    def compare_bins(self, bin1, bin2):
-        for positioned1 in bin1:
-            for positioned2 in bin2:
-                result = self.compare_function(
-                    positioned1.reference, 
-                    positioned2.reference, 
-                    positioned1.point, 
-                    positioned2.point)
-                if result != None:
-                    yield (frozenset((positioned1.reference, positioned2.reference)), result)
-
-

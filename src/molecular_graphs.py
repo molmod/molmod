@@ -21,7 +21,7 @@
 
 
 from molmod.graphs import Graph, SymmetricGraph, MatchFilterParameterized, Criterium
-from molmod.binning import IntraAnalyseNeighbouringObjects, PositionedObject, SparseBinnedObjects
+from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
 from molmod.data import bonds
 
 import math, numpy
@@ -244,7 +244,7 @@ class MolecularGraph(Graph):
                 if bond_order != None:
                     return bond_order, distance
         
-        bond_data = list(IntraAnalyseNeighbouringObjects(binned_atoms, compare_function)())
+        bond_data = list(IntraAnalyseNeighboringObjects(binned_atoms, compare_function)())
         pairs = set(key for key, data in bond_data)
         self.bond_orders = dict([(key, data[0]) for key, data in bond_data])
         self.bond_lengths = dict([(key, data[1]) for key, data in bond_data])

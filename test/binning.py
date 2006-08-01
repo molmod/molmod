@@ -20,7 +20,7 @@
 # --
 
 
-from molmod.binning import InterAnalyseNeighbouringObjects, IntraAnalyseNeighbouringObjects, PositionedObject, SparseBinnedObjects
+from molmod.binning import InterAnalyseNeighboringObjects, IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
 
 import math, numpy
 import unittest
@@ -96,12 +96,12 @@ class Distances(unittest.TestCase):
     def test_distances_intra(self):
         molecule, binned_atoms = self.load_binned_atoms("precursor.xyz")
 
-        distances = dict(IntraAnalyseNeighbouringObjects(binned_atoms, self.compare_function)())
+        distances = dict(IntraAnalyseNeighboringObjects(binned_atoms, self.compare_function)())
         self.verify_intra(molecule, distances)
                 
     def test_distances_inter(self):
         molecule1, binned_atoms1 = self.load_binned_atoms("precursor.xyz")
         molecule2, binned_atoms2 = self.load_binned_atoms("precursor.xyz")
 
-        distances = dict(InterAnalyseNeighbouringObjects(binned_atoms1, binned_atoms2, self.compare_function)())
+        distances = dict(InterAnalyseNeighboringObjects(binned_atoms1, binned_atoms2, self.compare_function)())
         self.verify_inter(molecule1, molecule2, distances)
