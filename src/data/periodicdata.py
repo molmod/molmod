@@ -19,7 +19,7 @@
 # 
 # --
 
-from molmod.units import from_unit, by_suffices
+from molmod.units import from_unit
 
 import string, numpy, copy
 
@@ -62,7 +62,7 @@ class PeriodicData(object):
             elif word == "bool":
                 convertors.append(eval)
             else:
-                convertor = from_unit.get(by_suffices.get(word))
+                convertor = from_unit.get(word)
                 if convertor is not None:
                     convertors.append(lambda s: convertor(float(s)))
                 else:

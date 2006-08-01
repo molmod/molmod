@@ -20,13 +20,14 @@
 # --
 
 
-from molmod.units import unit, by_suffices
+from molmod.units import unit
 
 import string, numpy
 
 
 __all__ = [
-    "BondData", "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "bond_types"
+    "BondData", "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "BOND_HYBRID", 
+    "BOND_HYDROGEN", "bond_types"
 ]
 
 
@@ -35,15 +36,14 @@ class BondType(object):
         self.num = num
         self.special = special
 
-BOND_SINGLE = BondType(1, False)
-BOND_DOUBLE = BondType(2, False)
-BOND_TRIPLE = BondType(3, False)
-BOND_HYBRID = BondType(1.5, True)
-BOND_HYDROGEN = BondType(1, True)
-LONE_PAIR = BondType(1, True)
+BOND_SINGLE = 1
+BOND_DOUBLE = 2
+BOND_TRIPLE = 3
+BOND_HYBRID = 4
+BOND_HYDROGEN = 5
 
 bond_types = [
-    BOND_SINGLE, BOND_DOUBLE, BOND_TRIPLE, BOND_HYBRID, BOND_HYDROGEN, LONE_PAIR
+    BOND_SINGLE, BOND_DOUBLE, BOND_TRIPLE, BOND_HYBRID, BOND_HYDROGEN
 ]
 
 
@@ -80,7 +80,7 @@ class BondData(object):
         """
 
         def read_units(unit_names):
-            return [unit[by_suffices[unit_name]] for unit_name in unit_names]
+            return [unit[unit_name] for unit_name in unit_names]
             
         def read_length(BOND_TYPE, words, col):
             nlow = int(words[2])

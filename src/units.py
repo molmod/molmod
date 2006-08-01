@@ -33,122 +33,28 @@
 #  The internal units are the atomic units. External units can be anything else.
 
 
-# Constants that depict measures and units.
-        
-ATOMARY = 0
-
-LENGTH = 0
-ANGSTROM = 1
-NANOMETER = 2
-PICOMETER = 13
-
-ENERGY = 1
-KJMOL = 3
-KCALMOL = 4
-EV = 5
-
-MASS = 2
-UNIFIED = 6
-
-CHARGE = 3
-
-ANGLE = 4
-RADIAL = 7
-DEGREE = 8
-
-TIME = 5
-NANOSECOND = 9
-PICOSECOND = 10
-FEMTOSECOND = 11
-
-DIPOLE = 6
-DEBYE = 12
-
-measures = [LENGTH, ENERGY, MASS, CHARGE, ANGLE, TIME, DIPOLE]
-assert len(measures) == len(set(measures)), "Some measures have the same id."
+measures = ["Length", "Energy", "Mass", "Charge", "Angle", "Time", "Dipole"]
+assert len(measures) == len(set(measures)), "Some measures have the same name."
 
 units = [
-    ATOMARY, ANGSTROM, NANOMETER, PICOMETER, KJMOL, KCALMOL, EV, UNIFIED, 
-    RADIAL, DEGREE, NANOSECOND, PICOSECOND, FEMTOSECOND, DEBYE
+    "au", "A", "nm", "pm", "kJ/mol", "kcal/mol", "eV", "u", 
+    "rad", "deg", "ns", "ps", "fs", "D"
 ]
-assert len(units) == len(set(units)), "Some units have the same id."
+assert len(units) == len(set(units)), "Some units have the same name."
 
-
-suffices = {
-    ATOMARY: "a.u.",
-    ANGSTROM: "A",
-    NANOMETER: "nm",
-    PICOMETER: "pm",
-    KJMOL: "kJ/mol",
-    KCALMOL: "kcal/mol",
-    EV: "eV",
-    UNIFIED: "u",
-    RADIAL: "rad",
-    DEGREE: "°",
-    NANOSECOND: "ns",
-    PICOSECOND: "ps",
-    FEMTOSECOND: "fs",
-    DEBYE: "D",
-}
-assert len(units) == len(suffices), "Some units don't have a suffix."
-
-by_suffices = {
-    "a.u.": ATOMARY,
-    "A": ANGSTROM,
-    "nm": NANOMETER,
-    "pm": PICOMETER,
-    "kJ/mol": KJMOL,
-    "kcal/mol": KCALMOL,
-    "eV": EV,
-    "u": UNIFIED,
-    "rad": RADIAL,
-    "°": DEGREE,
-    "ns": NANOSECOND,
-    "ps": PICOSECOND,
-    "fs": FEMTOSECOND,
-    "D": DEBYE,
-}
-assert len(units) == len(by_suffices), "Some units don't have a suffix."
-
-tex_suffices = {
-    ATOMARY: r"a.u.",
-    ANGSTROM: r"\AA",
-    NANOMETER: r"nm",
-    PICOMETER: r"pm",
-    KJMOL: r"\frac{kJ}{mol}",
-    KCALMOL: r"\frac{kcal}{mol}",
-    EV: r"eV",
-    UNIFIED: r"u",
-    RADIAL: r"rad",
-    DEGREE: r"^{\circ}",
-    NANOSECOND: r"ns",
-    PICOSECOND: r"ps",
-    FEMTOSECOND: r"fs",
-    DEBYE: r"D"
-}
-assert len(units) == len(suffices), "Some units don't have a tex suffix."
 
 units_by_measure = {
-    LENGTH: [ATOMARY, ANGSTROM, NANOMETER, PICOMETER],
-    ENERGY: [ATOMARY, KJMOL, KCALMOL, EV],
-    MASS: [ATOMARY, UNIFIED],
-    CHARGE: [ATOMARY],
-    ANGLE: [RADIAL, DEGREE],
-    TIME: [ATOMARY, NANOSECOND, PICOSECOND, FEMTOSECOND],
-    DIPOLE: [ATOMARY, DEBYE],
+    "Length": ["au", "A", "nm", "pm"],
+    "Energy": ["au", "kJ/mol", "kcal/mol", "eV"],
+    "Mass": ["au", "u"],
+    "Charge": ["au"],
+    "Angle": ["rad", "deg"],
+    "Time": ["au", "ns", "ps", "fs"],
+    "Dipole": ["au", "D"],
 }
 assert len(measures) == len(units_by_measure), "Some measures don't have units."
+assert len(units) == len(set(sum((u for u in units_by_measure.itervalues()), [])))
 
-measure_names = {
-    LENGTH: "Length",
-    ENERGY: "Energy",
-    MASS: "Mass",
-    CHARGE: "Charge",
-    ANGLE: "Angle",
-    TIME: "Time",
-    DIPOLE: "Dipole",
-}
-assert len(measures) == len(measure_names), "Some measures don't have a name."
 
 # some sanity checks:
 
@@ -236,7 +142,7 @@ def from_nanosecond(x): return x * 41341373.336561368
 def from_picosecond(x): return x * 41341.373336561368
 def from_femtosecond(x): return x * 41.341373336561368
 
-# dipole
+# "Dipole"
 
 debye = 0.39343018283144093 # = 3.33564e-30*coulomb*meter
 
@@ -249,56 +155,56 @@ def from_debye(x): return x * 0.39343018283144093
 def unity(x): return x
 
 unit = {
-    ATOMARY: 1,
-    ANGSTROM: angstrom,
-    NANOMETER: nanometer,
-    PICOMETER: picometer,
-    KJMOL: kjmol,
-    KCALMOL: kcalmol,
-    EV: ev,
-    UNIFIED: unified,
-    RADIAL: 1,
-    DEGREE: degree,
-    NANOSECOND: nanosecond,
-    PICOSECOND: picosecond,
-    FEMTOSECOND: femtosecond,
-    DEBYE: debye,
+    "au": 1,
+    "A": angstrom,
+    "nm": nanometer,
+    "pm": picometer,
+    "kJ/mol": kjmol,
+    "kcal/mol": kcalmol,
+    "eV": ev,
+    "u": unified,
+    "rad": 1,
+    "deg": degree,
+    "ns": nanosecond,
+    "ps": picosecond,
+    "fs": femtosecond,
+    "D": debye,
 }
 assert len(units) == len(unit), "Some units don't have a conversion."
 
 to_unit = {
-    ATOMARY: unity,
-    ANGSTROM: to_angstrom,
-    NANOMETER: to_nanometer,
-    PICOMETER: to_picometer,
-    KJMOL: to_kjmol,
-    KCALMOL: to_kcalmol,
-    EV: to_ev,
-    UNIFIED: to_unified,
-    RADIAL: unity,
-    DEGREE: to_degree,
-    NANOSECOND: to_nanosecond,
-    PICOSECOND: to_picosecond,
-    FEMTOSECOND: to_femtosecond,
-    DEBYE: to_debye,
+    "au": unity,
+    "A": to_angstrom,
+    "nm": to_nanometer,
+    "pm": to_picometer,
+    "kJ/mol": to_kjmol,
+    "kcal/mol": to_kcalmol,
+    "eV": to_ev,
+    "u": to_unified,
+    "rad": unity,
+    "deg": to_degree,
+    "ns": to_nanosecond,
+    "ps": to_picosecond,
+    "fs": to_femtosecond,
+    "D": to_debye,
 }
 assert len(units) == len(to_unit), "Some units don't have a to_ function."
 
 from_unit = {
-    ATOMARY: unity,
-    ANGSTROM: from_angstrom,
-    NANOMETER: from_nanometer,
-    PICOMETER: from_picometer,
-    KJMOL: from_kjmol,
-    KCALMOL: from_kcalmol,
-    EV: from_ev,
-    UNIFIED: from_unified,
-    RADIAL: unity,
-    DEGREE: from_degree,
-    NANOSECOND: from_nanosecond,
-    PICOSECOND: from_picosecond,
-    FEMTOSECOND: from_femtosecond,
-    DEBYE: from_debye,
+    "au": unity,
+    "A": from_angstrom,
+    "nm": from_nanometer,
+    "pm": from_picometer,
+    "kJ/mol": from_kjmol,
+    "kcal/mol": from_kcalmol,
+    "eV": from_ev,
+    "u": from_unified,
+    "rad": unity,
+    "deg": from_degree,
+    "ns": from_nanosecond,
+    "ps": from_picosecond,
+    "fs": from_femtosecond,
+    "D": from_debye,
 }
 assert len(units) == len(from_unit), "Some units don't have a from_ function."
 

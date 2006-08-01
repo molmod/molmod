@@ -26,14 +26,15 @@ bonds is an instance of the BondsData class in the module
 molmod.data.bondsdata. It represents the data in bonds.csv.
 """
 
-from periodicdata import PeriodicData
-from bondsdata import BondData, BOND_SINGLE, BOND_DOUBLE, BOND_TRIPLE, bond_types
+from periodicdata import *
+from bondsdata import *
 
 from molmod import context
 
 __all__ = [
     "periodic", 
-    "bonds", "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "bond_types"
+    "bonds", "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "BOND_HYBRID", 
+    "BOND_HYDROGEN", "bond_types"
 ]
 
 periodic = PeriodicData(context.share_path + "periodic.csv")
