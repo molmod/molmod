@@ -40,6 +40,8 @@ from internal_coordinates import *
 from lone_pairs import *
 from pairff import *
 from data import *
+from unit_cell import *
+
 
 unittest.main()
 

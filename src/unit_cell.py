@@ -48,7 +48,7 @@ class UnitCell(object):
             [10.0,  0.0,  0.0], 
             [ 0.0, 10.0,  0.0], 
             [ 0.0,  0.0, 10.0]]
-        )*angstrom,
+        )*angstrom
         self.cell_active = numpy.array([False, False, False])
         self.update_reciproke()
         
@@ -154,6 +154,153 @@ class UnitCell(object):
         beta = math.acos(numpy.dot(self.cell[:,2], self.cell[:,0]) / (length_c * length_a))
         gamma = math.acos(numpy.dot(self.cell[:,0], self.cell[:,1]) / (length_a * length_b))
         return (numpy.array([length_a, length_b, length_c], float), numpy.array([alpha, beta, gamma], float))
+
+    def set_parameters(self, lengths, angles):
+        for length in lengths:
+            if length <= 0:
+                raise ValueError("The length parameters must be strictly positive.")
+        for angle in angles:
+            if angle <= 0 or angle >= math.pi:
+                raise ValueError("The angle parameters must lie in the range ]0 deg, 180 deg[.")
+        del length
+        del angle
+        
+        new_cell = self.cell.copy()
+        
+        # use the same direction for the old first axis
+        a_normal = new_cell[:,0] / math.sqrt(numpy.dot(new_cell[:,0], new_cell[:,0]))
+        new_cell[:,0] = a_normal * lengths[0]
+        #print " (((a_normal))) "
+        #print a_normal
+        
+        # the secocond cell vector lies in the half plane defined by the old
+        # first and second axis
+        b_ortho = new_cell[:,1] - a_normal*numpy.dot(a_normal, new_cell[:,1])
+        b_orthonormal = b_ortho / math.sqrt(numpy.dot(b_ortho, b_ortho))
+        new_cell[:,1] = (a_normal * math.cos(angles[2]) + b_orthonormal * math.sin(angles[2])) * lengths[1]
+        #print " (((b_orthonormal))) "
+        #print b_orthonormal
+        
+        # Finding the last cell vector is slightly more difficult. :-)
+        # It works like this: The third cell vector lies at the intersection
+        # of three spheres:
+        #    - one in the origin, with radius length[2]
+        #    - one centered at new_cell[:,0], with radius ra
+        #    - one centered at new_cell[:,1], with radius rb
+        # where ra = the length of the third side of a triangle defined by
+        #    - one side has length[0]
+        #    - the other side has length[2]
+        #    - the angle between both sides is angles[0]
+        # and rb = calculated similarly
+        
+        # finding the intersection of three spheres is solved in two steps.
+        # First one determines the line that goes through the two solutions, 
+        # assuming that the two solutions exist. Secondly the intersection(s) of
+        # the line with one of the sphers is/are calculated.
+        
+        # Only if two solutions can be found, the resulting cell is physical. If
+        # not, a ValueError is raised.
+        # Of the two solutions, the one is selected that preserves the handed-
+        # ness of the old cell.
+        
+        # A) define the sphere centers
+        centers = numpy.array([
+            [0.0, 0.0, 0.0],
+            new_cell[:,0],
+            new_cell[:,1],
+        ], float)
+        #print " *** CENTERS *** "
+        #print centers
+        
+        # B) define the sphere radii, using the cosine rule
+        radii = numpy.array([
+            lengths[2],
+            math.sqrt(lengths[0]**2 + lengths[2]**2 - 2*math.cos(angles[1])*lengths[0]*lengths[2]),
+            math.sqrt(lengths[1]**2 + lengths[2]**2 - 2*math.cos(angles[0])*lengths[1]*lengths[2]),
+        ], float)
+
+        #print " *** RADII *** "
+        #print radii
+        
+        # C) Obtain the line that goes through the two solutions, by
+        # constructing an under defined linear system. The particular solution
+        # (a point on the line) and the vector from the null space
+        # (the direction of the line) are obtained with singular value
+        # decomposition.
+        
+        # - construct the linear system
+        tmp = numpy.array([
+            (2 * centers[index]).tolist() + [numpy.dot(centers[index], centers[index]) - radii[index]**2]
+            for index in xrange(3)
+        ], float)
+        #print " --- tmp --- "
+        #print tmp
+        tmp = numpy.array([
+            tmp[0] - tmp[1],
+            tmp[0] - tmp[2]
+        ], float)
+        A = tmp[:,:3]
+        b = tmp[:,3]
+        #print " --- A --- "
+        #print A
+        #print " --- b --- "
+        #print b
+        
+        # - perform singular value decomposition
+        V, S, Wt = numpy.linalg.svd(A, True)
+        #print " --- V --- "
+        #print V
+        #print " --- S --- "
+        #print S
+        #print " --- Wt --- "
+        #print Wt
+        if S.min() < 1e-6:
+            raise ValueError("The given cell parameters result in a singular unit cell.")
+        
+        # - calculate the particular solution, p
+        W = Wt.transpose()
+        p = numpy.dot(W[:,:2], (numpy.dot(b, V).transpose()/S).transpose())
+        #print " ~~~ p ~~~ "
+        #print p
+        #print "ZERO", numpy.dot(A, p) - b
+        
+        # - the nullspace
+        n = W[:,2]
+        #print " ~~~ n ~~~ "
+        #print n
+        #print "ZERO", numpy.dot(A, n)
+        
+        # D) solve the second order equation in the parameter t from the
+        # line equation: r = p + n*t
+        
+        # - calculate the coefficients
+        c2 = numpy.dot(n, n)
+        c1 = 2 * numpy.dot(n, p - centers[0])
+        c0 = numpy.dot(p - centers[0], p - centers[0]) - radii[0]**2
+        
+        # - solve the second order equation
+        d = c1*2 - 4*c0*c2
+        #print "d", d
+        if d < 0:
+            raise ValueError("The given cell parameters do not correspond to a unit cell.")
+        elif abs(d) < 1e-6:
+            raise ValueError("The given cell parameters lead to a singular unit cell.")
+        t1 = 0.5*(-c1 + math.sqrt(d))/c2
+        t2 = 0.5*(-c1 - math.sqrt(d))/c2
+        
+        # assume that t1 gives the right handedness
+        new_cell[:,2] = p + t1*n
+        #for index in xrange(3):
+        #    #print "ZERO", numpy.dot(new_cell[:,2] - centers[index], new_cell[:,2] - centers[index]) - radii[index]**2
+        if numpy.linalg.det(new_cell) * numpy.linalg.det(self.cell) < 0:
+            # wrong assumption
+            new_cell[:,2] = p - t1*n
+            #for index in xrange(3):
+            #    #print "ZERO", numpy.dot(new_cell[:,2] - centers[index], new_cell[:,2] - centers[index]) - radii[index]**2
+            assert numpy.linalg.det(new_cell) * numpy.linalg.det(self.cell) > 0, "HELP. THIS SHOULD NOT HAPPEN."
+            
+        self.set_cell(new_cell)        
+        
 
     def generalized_volume(self):
         active, inactive = self.get_active_inactive()
