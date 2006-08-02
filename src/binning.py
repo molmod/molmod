@@ -121,9 +121,6 @@ class SparseBinnedObjects(object):
                     yield bin, positioned_object
 
 
-print SparseBinnedObjects.deltas
-
-
 class AnalyseNeighboringObjects(object):
     """
     AnalyseNeighboringObjects is the base class for 'comparing' points between
@@ -138,7 +135,7 @@ class AnalyseNeighboringObjects(object):
                numpy.array([1, 1, 0], int),
                numpy.array([1, 1, 1], int))
 
-    def __init__(self, compare_function, unit_cell=None):
+    def __init__(self, compare_function):
         """
         Intialize a AnalyseNeighboringObjects instance.
         
@@ -148,7 +145,6 @@ class AnalyseNeighboringObjects(object):
                             reference1, reference2, point1, point2
         """
         self.compare_function = compare_function
-        self.unit_cell = unit_cell
         # All these parameters have to be defined by the base class
         self.compare_indices = None
         self.binned_objects1 = None
@@ -191,8 +187,8 @@ class IntraAnalyseNeighboringObjects(AnalyseNeighboringObjects):
     IntraAnalyseNeighboringObjects instances compare all points within one
     molecule.
     """
-    def __init__(self, binned_objects, compare_function, unit_cell=None):
-        AnalyseNeighboringObjects.__init__(self, compare_function, unit_cell)
+    def __init__(self, binned_objects, compare_function):
+        AnalyseNeighboringObjects.__init__(self, compare_function)
         self.compare_indices = [(0, 0, 0), (1, 1, 1), 
                                 (1, 0, 0), (0, 1, 0), (0, 0, 1),
                                 (0, 1, 1), (1, 0, 1), (1, 1, 0), 
@@ -210,8 +206,8 @@ class InterAnalyseNeighboringObjects(AnalyseNeighboringObjects):
     InterAnalyseNeighboringObjects instances compare 'all' points between two
     molecules.
     """
-    def __init__(self, binned_objects1, binned_objects2, compare_function, unit_cell=None):
-        AnalyseNeighboringObjects.__init__(self, compare_function, unit_cell)
+    def __init__(self, binned_objects1, binned_objects2, compare_function):
+        AnalyseNeighboringObjects.__init__(self, compare_function)
         assert binned_objects1.gridsize==binned_objects2.gridsize
         self.compare_indices = None
         self.binned_objects1 = binned_objects1
