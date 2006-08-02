@@ -20,29 +20,28 @@
 # --
 
 
-import init_files
+from molmod.clusters import Cluster, ClusterFactory
 
-from molmod import context
-context.share_path = "../share/"
+import numpy
 
-import unittest
-
-
-from binning import *
-from graphs import *
-from mpqc_interfaces import *
-from cpmd_interfaces import *
-from gaussian98_interfaces import *
-from gaussian03_interfaces import *
-from gromos96_interfaces import *
-from molecular_graphs import *
-from internal_coordinates import *
-from lone_pairs import *
-from pairff import *
-from data import *
-from unit_cell import *
-from clusters import *
+import unittest, random
 
 
-unittest.main()
+__all__ = ["ClusterExample"]    
 
+
+class ClusterExample(unittest.TestCase):
+    def test_clusters(self):
+        cf = ClusterFactory()
+        for counter in xrange(1000):
+            a = random.randint(0, 100)
+            b = random.randint(0, 100)
+            if (a+b)%2 == 0:
+                cf.add_group([a, b])
+                
+        for cluster in cf.get_clusters():
+            #print cluster.members
+            tmp = numpy.array(cluster.members) % 2
+            #print tmp
+            self.assert_((tmp == 0).all() or (tmp == 1).all())
+        
