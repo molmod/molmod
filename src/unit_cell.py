@@ -43,13 +43,20 @@ def check_cell(cell, norm_threshold=1e-6, volume_threshold=1e-6):
 
 
 class UnitCell(object):
-    def __init__(self):
-        self.cell = numpy.array([
-            [10.0,  0.0,  0.0], 
-            [ 0.0, 10.0,  0.0], 
-            [ 0.0,  0.0, 10.0]]
-        )*angstrom
-        self.cell_active = numpy.array([False, False, False])
+    def __init__(self, cell=None, cell_active=None):
+        if cell is None:
+            self.cell = numpy.array([
+                [10.0,  0.0,  0.0], 
+                [ 0.0, 10.0,  0.0], 
+                [ 0.0,  0.0, 10.0]]
+            )*angstrom
+        else:
+            self.cell = cell
+            
+        if cell_active is None:
+            self.cell_active = numpy.array([False, False, False])
+        else:
+            self.cell_active = cell_active
         self.update_reciproke()
         
     def set_cell(self, cell, norm_threshold=1e-6, volume_threshold=1e-6):
@@ -255,7 +262,7 @@ class UnitCell(object):
         #print " --- Wt --- "
         #print Wt
         if S.min() < 1e-6:
-            raise ValueError("The given cell parameters result in a singular unit cell.")
+            raise ValueError("The given cell parameters result in a singular unit cell. (SVD)")
         
         # - calculate the particular solution, p
         W = Wt.transpose()
@@ -282,9 +289,9 @@ class UnitCell(object):
         d = c1*2 - 4*c0*c2
         #print "d", d
         if d < 0:
-            raise ValueError("The given cell parameters do not correspond to a unit cell.")
+            raise ValueError("The given cell parameters do not correspond to a unit cell. (d is negative)")
         elif abs(d) < 1e-6:
-            raise ValueError("The given cell parameters lead to a singular unit cell.")
+            raise ValueError("The given cell parameters lead to a singular unit cell. (d is too small)")
         t1 = 0.5*(-c1 + math.sqrt(d))/c2
         t2 = 0.5*(-c1 - math.sqrt(d))/c2
         
