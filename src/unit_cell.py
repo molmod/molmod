@@ -174,31 +174,34 @@ class UnitCell(object):
         
         new_cell = self.cell.copy()
         
-        # use the same direction for the old first axis
-        a_normal = new_cell[:,0] / math.sqrt(numpy.dot(new_cell[:,0], new_cell[:,0]))
-        new_cell[:,0] = a_normal * lengths[0]
-        #print " (((a_normal))) "
-        #print a_normal
+        # use the same direction for the old last axis
+        c_normal = new_cell[:,2] / math.sqrt(numpy.dot(new_cell[:,2], new_cell[:,2]))
+        new_cell[:,2] = c_normal * lengths[2]
+        #print " (((c_normal))) "
+        #print c_normal
         
         # the secocond cell vector lies in the half plane defined by the old
-        # first and second axis
-        b_ortho = new_cell[:,1] - a_normal*numpy.dot(a_normal, new_cell[:,1])
+        # last and second axis
+        b_ortho = new_cell[:,1] - c_normal*numpy.dot(c_normal, new_cell[:,1])
         b_orthonormal = b_ortho / math.sqrt(numpy.dot(b_ortho, b_ortho))
-        new_cell[:,1] = (a_normal * math.cos(angles[2]) + b_orthonormal * math.sin(angles[2])) * lengths[1]
+        new_cell[:,1] = (c_normal * math.cos(angles[0]) + b_orthonormal * math.sin(angles[0])) * lengths[1]
         #print " (((b_orthonormal))) "
         #print b_orthonormal
         
-        # Finding the last cell vector is slightly more difficult. :-)
+        # Finding the first cell vector is slightly more difficult. :-)
         # It works like this: The third cell vector lies at the intersection
         # of three spheres:
-        #    - one in the origin, with radius length[2]
-        #    - one centered at new_cell[:,0], with radius ra
+        #    - one in the origin, with radius length[0]
         #    - one centered at new_cell[:,1], with radius rb
-        # where ra = the length of the third side of a triangle defined by
-        #    - one side has length[0]
-        #    - the other side has length[2]
-        #    - the angle between both sides is angles[0]
-        # and rb = calculated similarly
+        #    - one centered at new_cell[:,2], with radius rc
+        # where rb = the length of the third side of a triangle defined by
+        #    - one side has length[1]
+        #    - the other side has length[0]
+        #    - the angle between both sides is angles[2]
+        # and where rc = the length of the third side of a triangle defined by
+        #    - one side has length[2]
+        #    - the other side has length[0]
+        #    - the angle between both sides is angles[1]
         
         # finding the intersection of three spheres is solved in two steps.
         # First one determines the line that goes through the two solutions, 
@@ -213,17 +216,17 @@ class UnitCell(object):
         # A) define the sphere centers
         centers = numpy.array([
             [0.0, 0.0, 0.0],
-            new_cell[:,0],
             new_cell[:,1],
+            new_cell[:,2],
         ], float)
         #print " *** CENTERS *** "
         #print centers
         
         # B) define the sphere radii, using the cosine rule
         radii = numpy.array([
-            lengths[2],
-            math.sqrt(lengths[0]**2 + lengths[2]**2 - 2*math.cos(angles[1])*lengths[0]*lengths[2]),
-            math.sqrt(lengths[1]**2 + lengths[2]**2 - 2*math.cos(angles[0])*lengths[1]*lengths[2]),
+            lengths[0],
+            math.sqrt(lengths[1]**2 + lengths[0]**2 - 2*math.cos(angles[2])*lengths[1]*lengths[0]),
+            math.sqrt(lengths[2]**2 + lengths[0]**2 - 2*math.cos(angles[1])*lengths[2]*lengths[0]),
         ], float)
 
         #print " *** RADII *** "
@@ -296,12 +299,12 @@ class UnitCell(object):
         t2 = 0.5*(-c1 - math.sqrt(d))/c2
         
         # assume that t1 gives the right handedness
-        new_cell[:,2] = p + t1*n
+        new_cell[:,0] = p + t1*n
         #for index in xrange(3):
         #    #print "ZERO", numpy.dot(new_cell[:,2] - centers[index], new_cell[:,2] - centers[index]) - radii[index]**2
         if numpy.linalg.det(new_cell) * numpy.linalg.det(self.cell) < 0:
             # wrong assumption
-            new_cell[:,2] = p - t1*n
+            new_cell[:,0] = p - t1*n
             #for index in xrange(3):
             #    #print "ZERO", numpy.dot(new_cell[:,2] - centers[index], new_cell[:,2] - centers[index]) - radii[index]**2
             assert numpy.linalg.det(new_cell) * numpy.linalg.det(self.cell) > 0, "HELP. THIS SHOULD NOT HAPPEN."
