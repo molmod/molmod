@@ -89,6 +89,8 @@ class PeriodicData(object):
                             atom_info.add_attribute(name, convertor(word))
                     self.atoms_by_number[atom_info.number] = atom_info
                     self.atoms_by_symbol[atom_info.symbol.lower()] = atom_info
+                    if self.max_radius < atom_info.radius:
+                        self.max_radius = atom_info.radius
                 lines_read += 1
         f.close()
     
