@@ -106,7 +106,7 @@ class SparseBinnedObjects(object):
                 self.bins[indices] = bin
             bin.add(positioned_object)
 
-    def _yield_surrounding(self, r, deltas=None):
+    def yield_surrounding(self, r, deltas=None):
         """
         Iterate over all objects in the bins that surround the bin that
         contains vector r.
@@ -119,22 +119,6 @@ class SparseBinnedObjects(object):
             if bin is not None:
                 for positioned_object in bin:
                     yield bin, positioned_object
-
-    def yield_surrounding(self, r, deltas=None, unit_cell=None):
-        """
-        Iterate over all objects in the bins that surround the bin that
-        contains vector r.
-        """
-        if unit_cell == None:
-            for result in self._yield_surrounding(r, deltas):
-                yield result
-        else:
-            for delta in self.deltas:
-                for result in self._yield_surrounding( 
-                    r + numpy.dot(unit_cell.cell, delta), 
-                    deltas
-                ):
-                    yield result
 
 
 print SparseBinnedObjects.deltas
@@ -171,11 +155,23 @@ class AnalyseNeighboringObjects(object):
         self.binned_objects2 = None
 
     def __call__(self, unit_cell=None):
+        if unit_cell is None:
+            for result in self.call_delta(numpy.zeros(3, float)):
+                yield result
+        else:
+            active_a, active_b, active_c = unit_cell.cell_active.astype(int)
+            for index_a in xrange(-active_a, active_a+1):
+                for index_b in xrange(-active_b, active_b+1):
+                    for index_c in xrange(-active_c, active_c+1):
+                        delta = numpy.dot(unit_cell.cell, [index_a, index_b, index_c])
+                        for result in self.call_delta(numpy.dot(unit_cell.cell, delta)):
+                            yield result        
+    
+    def call_delta(self, delta):
         for center_bin in self.binned_objects1.bins.itervalues():
             for positioned1 in center_bin:
-                for neighbor_bin, positioned2 in self.binned_objects2.yield_surrounding(positioned1.point, self.compare_indices, unit_cell):
-                    if positioned1 != positioned2 and \
-                       self.allow(center_bin, neighbor_bin, positioned1, positioned2):
+                for neighbor_bin, positioned2 in self.binned_objects2.yield_surrounding(positioned1.point + delta, self.compare_indices):
+                    if self.allow(center_bin, neighbor_bin, positioned1, positioned2):
                         result = self.compare_function(
                             positioned1.reference, 
                             positioned2.reference, 
@@ -206,7 +202,7 @@ class IntraAnalyseNeighboringObjects(AnalyseNeighboringObjects):
         self.binned_objects2 = binned_objects
 
     def allow(self, bin1, bin2, positioned1, positioned2):
-        return bin1 != bin2 or positioned1 > positioned2
+        return not (bin1 == bin2 and positioned1 >= positioned2)
 
 
 class InterAnalyseNeighboringObjects(AnalyseNeighboringObjects):
