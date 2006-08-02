@@ -24,6 +24,7 @@ from molmod.binning import InterAnalyseNeighboringObjects, \
     IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
 from molmod.unit_cell import UnitCell
 from molmod.units import from_angstrom, from_degree
+from molmod.data import periodic
 
 import math, numpy
 import unittest
@@ -32,7 +33,7 @@ __all__ = ["Distances"]
 
 
 class Distances(unittest.TestCase):
-    gridsize = 1.0
+    gridsize = periodic.max_radius*2
     
     def load_binned_atoms(self, filename):
         from molmod.molecules import molecule_xyz_from_filename
@@ -47,13 +48,13 @@ class Distances(unittest.TestCase):
     def verify(self, yield_pairs, distances, unit_cell=None):
         missing_pairs = []
         wrong_distances = []
-        for (reference1, coord1), (reference2, coord2) in yield_pairs():
+        for (id1, coord1), (id2, coord2) in yield_pairs():
             delta = coord2 - coord1
             if unit_cell is not None:
                 delta = unit_cell.shortest_vector(delta)
             distance = math.sqrt(numpy.dot(delta, delta))
             if distance < self.gridsize:
-                identifier = frozenset([reference1, reference2])
+                identifier = frozenset([id1, id2])
                 fast_distance = distances.get(identifier)
                 if fast_distance == None:
                     missing_pairs.append(tuple(identifier) + (distance,))
@@ -92,8 +93,8 @@ class Distances(unittest.TestCase):
                     yield ((molecule1, index1), coord1), ((molecule2, index2), coord2)
         self.verify(yield_atom_pairs, distances, unit_cell)
 
-    def compare_function(self, atom1, atom2, position1, position2):
-        delta = position2 - position1
+    def compare_function(self, positioned1, positioned2):
+        delta = positioned2.vector - positioned1.vector
         distance = math.sqrt(numpy.dot(delta, delta))
         if distance < self.gridsize:
             return distance
@@ -101,7 +102,11 @@ class Distances(unittest.TestCase):
     def test_distances_intra(self):
         molecule, binned_atoms = self.load_binned_atoms("precursor.xyz")
 
-        distances = dict(IntraAnalyseNeighboringObjects(binned_atoms, self.compare_function)())
+        distances = dict(
+            (frozenset([positioned1.id, positioned2.id]), result)
+            for (positioned1, positioned2), result
+            in IntraAnalyseNeighboringObjects(binned_atoms, self.compare_function)()
+        )
         self.verify_intra(molecule, distances)
                 
     def test_distances_intra_periodic(self):
@@ -112,14 +117,22 @@ class Distances(unittest.TestCase):
             from_degree(numpy.array([90.000, 90.000, 120.000]))
         )
 
-        distances = dict(IntraAnalyseNeighboringObjects(binned_atoms, self.compare_function)(unit_cell))
+        distances = dict(
+            (frozenset([positioned1.id, positioned2.id]), result)
+            for (positioned1, positioned2), result
+            in IntraAnalyseNeighboringObjects(binned_atoms, self.compare_function)(unit_cell)
+        )
         self.verify_intra(molecule, distances, unit_cell)
                 
     def test_distances_inter(self):
         molecule1, binned_atoms1 = self.load_binned_atoms("precursor.xyz")
         molecule2, binned_atoms2 = self.load_binned_atoms("precursor.xyz")
 
-        distances = dict(InterAnalyseNeighboringObjects(binned_atoms1, binned_atoms2, self.compare_function)())
+        distances = dict(
+            (frozenset([positioned1.id, positioned2.id]), result)
+            for (positioned1, positioned2), result
+            in InterAnalyseNeighboringObjects(binned_atoms1, binned_atoms2, self.compare_function)()
+        )
         self.verify_inter(molecule1, molecule2, distances)
 
     def test_distances_inter_periodic(self):
@@ -131,6 +144,10 @@ class Distances(unittest.TestCase):
             from_degree(numpy.array([90.000, 90.000, 120.000]))
         )
 
-        distances = dict(InterAnalyseNeighboringObjects(binned_atoms1, binned_atoms2, self.compare_function)(unit_cell))
+        distances = dict(
+            (frozenset([positioned1.id, positioned2.id]), result)
+            for (positioned1, positioned2), result
+            in InterAnalyseNeighboringObjects(binned_atoms1, binned_atoms2, self.compare_function)(unit_cell)
+        )
         self.verify_inter(molecule1, molecule2, distances, unit_cell)
                 
