@@ -157,8 +157,8 @@ class AnalyseNeighboringObjects(object):
             for index_a in xrange(-active_a, active_a+1):
                 for index_b in xrange(-active_b, active_b+1):
                     for index_c in xrange(-active_c, active_c+1):
-                        delta = numpy.dot(unit_cell.cell, [index_a, index_b, index_c])
-                        for result in self.call_delta(numpy.dot(unit_cell.cell, delta)):
+                        delta = numpy.dot(unit_cell.cell, numpy.array([index_a, index_b, index_c]))
+                        for result in self.call_delta(delta):
                             yield result        
     
     def call_delta(self, delta):
