@@ -1,124 +1,124 @@
-# Periodic data             
-#Data obtained from http://www.physics.nist.gov/PhysRefData/Elements/cover.html             
-#Atom radi from Atomic radii and covalent radii, "Chemical Systems," Chemical Bond Approach Project (1964), McGraw-Hill             
-#(see http://dl.clackamas.cc.or.us/ch104-07/atomic_size.htm)             
-name symbol number row col mass density vdw_radius bond_radius valence artificial red green blue
-str str int int int u g/cm**3 a.u. A NA bool float float float
-Hydrogen H 1 1 1 1.00794 0.763 0.43 0.3 1 False 0.9 0.9 0.9
-Helium He 2 1 18 4.002602 0.19 0.741 NA NA False NA NA NA
-Lithium Li 3 2 1 6.941 0.534 0.88 1.52 NA False NA NA NA
-Beryllium Be 4 2 2 9.012182 1.85 0.55 1.12 NA False NA NA NA
-Boron B 5 2 13 10.811 2.535 1.03 0.88 3 False NA NA NA
-Carbon C 6 2 14 12.0107 3.52 0.9 0.77 4 False 0.5 0.5 0.5
-Nitrogen N 7 2 15 14.0067 1.14 0.88 0.7 3 False 0 0 0.8
-Oxygen O 8 2 16 15.9994 1.568 0.88 0.66 2 False 0.8 0 0
-Fluorine F 9 2 17 18.9984032 1.5 0.84 NA 1 False 0.8 0 0.8
-Neon Ne 10 2 18 20.1797 1.204 0.815 NA 0 False NA NA NA
-Sodium Na 11 3 1 22.98977 0.9712 1.17 1.86 NA False NA NA NA
-Magnesium Mg 12 3 2 24.305 1.74 1.3 1.6 NA False NA NA NA
-Aluminum Al 13 3 13 26.981538 2.7 1.55 1.43 3 False 0.3 0.5 0.9
-Silicon Si 14 3 14 28.0855 2.42 1.4 1.17 4 False 0.9 0.5 0.3
-Phosphorus P 15 3 15 30.973761 1.83 1.25 1.1 3 False 0 0 0.6
-Sulfur S 16 3 16 32.065 2.07 1.22 1.04 2 False 0.8 0.8 0
-Chlorine Cl 17 3 17 35.453 2.2 1.19 0.99 1 False 0.6 0 0.6
-Argon A 18 3 18 39.948 1.65 0.995 NA 0 False NA NA NA
-Potassium K 19 4 1 39.0983 0.87 1.53 2.31 NA False NA NA NA
-Calcium Ca 20 4 2 40.078 1.55 1.19 1.97 NA False NA NA NA
-Scandium Sc 21 4 3 44.95591 3.02 1.64 1.6 NA False NA NA NA
-Titanium Ti 22 4 4 47.867 4.5 1.67 1.46 NA False NA NA NA
-Vanadium V 23 4 5 50.9415 5.87 1.53 1.31 NA False NA NA NA
-Chromium Cr 24 4 6 51.9961 7.14 1.55 1.25 NA False NA NA NA
-Manganese Mn 25 4 7 54.938049 7.3 1.55 1.29 NA False NA NA NA
-Iron Fe 26 4 8 55.845 7.86 1.54 1.26 NA False NA NA NA
-Cobalt Co 27 4 9 58.9332 8.71 1.53 1.25 NA False NA NA NA
-Nickel Ni 28 4 10 58.6934 8.8 1.7 1.24 NA False NA NA NA
-Copper Cu 29 4 11 63.546 8.933 1.72 1.28 NA False NA NA NA
-Zinc Zn 30 4 12 65.409 4.32 1.65 1.33 NA False NA NA NA
-Gallium Ga 31 4 13 69.723 5.93 1.42 1.22 NA False NA NA NA
-Germanium Ge 32 4 14 72.64 5.46 1.37 1.22 NA False NA NA NA
-Arsenic As 33 4 15 74.9216 5.73 1.41 1.21 NA False NA NA NA
-Selenium Se 34 4 16 78.96 4.82 1.42 1.17 NA False NA NA NA
-Bromine Br 35 4 17 79.904 4.2 1.41 1.14 NA False NA NA NA
-Krypton Kr 36 4 18 83.798 3.4 1.069 NA NA False NA NA NA
-Rubidium Rb 37 5 1 85.4678 1.53 1.67 2.44 NA False NA NA NA
-Strontium Sr 38 5 2 87.62 2.6 1.32 2.15 NA False NA NA NA
-Yttrium Y 39 5 3 88.90585 3.8 1.98 1.8 NA False NA NA NA
-Zirconium Zr 40 5 4 91.224 6.44 1.76 1.57 NA False NA NA NA
-Niobium Nb 41 5 5 92.90638 NA 1.68 1.41 NA False NA NA NA
-Molybdenum Mo 42 5 6 95.94 9.01 1.67 1.36 NA False NA NA NA
-Technetium Tc 43 5 7 98 NA 1.55 1.3 NA True NA NA NA
-Ruthenium Ru 44 5 8 101.07 12.1 1.6 1.33 NA False NA NA NA
-Rhodium Rh 45 5 9 102.9055 12.44 1.65 1.34 NA False NA NA NA
-Palladium Pd 46 5 10 106.42 12.16 1.7 1.38 NA False NA NA NA
-Silver Ag 47 5 11 107.8682 10.492 1.79 1.44 NA False NA NA NA
-Cadmium Cd 48 5 12 112.411 8.65 1.89 1.49 NA False NA NA NA
-Indium In 49 5 13 114.818 7.28 1.83 1.62 NA False NA NA NA
-Tin Sn 50 5 14 118.71 7.29 1.66 1.4 NA False NA NA NA
-Antimony Sb 51 5 15 121.76 6.62 1.66 1.41 NA False NA NA NA
-Tellurium Te 52 5 16 127.6 6.25 1.67 1.37 NA False NA NA NA
-Iodine I 53 5 17 126.90447 4.94 1.6 1.33 NA False NA NA NA
-Xenon Xe 54 5 18 131.293 NA 1.75 NA NA False NA NA NA
-Cesium Cs 55 6 1 132.90545 1.873 1.87 2.62 NA False NA NA NA
-Barium Ba 56 6 2 137.327 3.5 1.54 2.17 NA False NA NA NA
-Lanthanum La 57 6 3 138.9055 6.15 2.07 NA NA False NA NA NA
-Cerium Ce 58 9 4 140.116 6.73 2.03 NA NA False NA NA NA
-Praesodymium Pr 59 9 5 140.90765 6.48 2.02 NA NA False NA NA NA
-Neodymium Nd 60 9 6 144.24 7 2.01 NA NA False NA NA NA
-Promethium Pm 61 9 7 145 NA 2 NA NA False NA NA NA
-Samarium Sm 62 9 8 150.36 7.75 2 NA NA False NA NA NA
-Europium Eu 63 9 9 151.964 NA 2.19 NA NA False NA NA NA
-Gadolinium Gd 64 9 10 157.25 NA 1.99 NA NA False NA NA NA
-Terbium Tb 65 9 11 158.92534 NA 1.96 NA NA False NA NA NA
-Dyprosium Dy 66 9 12 162.5 NA 1.95 NA NA False NA NA NA
-Holmium Ho 67 9 13 164.93032 NA 1.94 NA NA False NA NA NA
-Erbium Er 68 9 14 167.259 4.77 1.93 NA NA False NA NA NA
-Thulium Tm 69 9 15 168.93421 NA 1.92 NA NA False NA NA NA
-Ytterbium Yb 70 9 16 173.04 NA 2.14 NA NA False NA NA NA
-Lutetium Lu 71 9 17 174.967 NA 1.92 1.88 NA False NA NA NA
-Hafnium Hf 72 6 4 178.49 11.3 1.77 1.57 NA False NA NA NA
-Tantalium Ta 73 6 5 180.9479 16.6 1.63 1.43 NA False NA NA NA
-Wolfram W 74 6 6 183.84 NA 1.57 1.37 NA False NA NA NA
-Rhenium Re 75 6 7 186.207 20.53 1.55 1.37 NA False NA NA NA
-Osmium Os 76 6 8 190.23 22.5 1.57 1.34 NA False NA NA NA
-Iridium Ir 77 6 9 192.217 22.42 1.52 1.35 NA False NA NA NA
-Platinum Pt 78 6 10 195.078 21.27 1.7 1.38 NA False NA NA NA
-Gold Au 79 6 11 196.96655 18.88 1.7 1.44 NA False NA NA NA
-Mercury Hg 80 6 12 200.59 14.193 1.9 1.52 NA False NA NA NA
-Thallium Tl 81 6 13 204.3833 11.86 1.75 1.71 NA False NA NA NA
-Lead Pb 82 6 14 207.2 11.48 1.74 1.75 NA False NA NA NA
-Bismuth Bi 83 6 15 208.98038 9.86 1.74 1.46 NA False NA NA NA
-Polonium Po 84 6 16 209 NA 1.88 1.4 NA True NA NA NA
-Astatine At 85 6 17 210 NA 0.2 1.4 NA True NA NA NA
-Radon Rn 86 6 18 222 NA 0.2 1.34 NA True NA NA NA
-Francium Fr 87 7 1 223 NA 0.2 2.7 NA True NA NA NA
-Radium Ra 88 7 2 226 5 2.1 2.2 NA True NA NA NA
-Actinium Ac 89 7 3 227 NA 2.08 2.2 NA True NA NA NA
-Thorium Th 90 10 4 232.0381 NA 1.99 NA NA False NA NA NA
-Protactinium Pa 91 10 5 231.03588 NA 1.81 NA NA False NA NA NA
-Uranium U 92 10 6 238.02891 18.7 1.78 NA NA False NA NA NA
-Neptunium Np 93 10 7 237 NA 1.75 NA NA True NA NA NA
-Plutonium Pu 94 10 8 244 NA 0.2 NA NA True NA NA NA
-Americium Am 95 10 9 243 NA 1.71 NA NA True NA NA NA
-Curium Cm 96 10 10 247 NA 0.2 NA NA True NA NA NA
-Berkelium Bk 97 10 11 247 NA 0.2 NA NA True NA NA NA
-Californium Cf 98 10 12 251 NA 1.73 NA NA True NA NA NA
-Einsteinium E 99 10 13 252 NA 0.1 NA NA True NA NA NA
-Fermium Fm 100 10 14 257 NA 0.2 NA NA True NA NA NA
-Mendelevium Mv 101 10 15 258 NA NA NA NA True NA NA NA
-Nobelium No 102 10 16 259 NA NA NA NA True NA NA NA
-Lawrencium Lr 103 10 17 262 NA NA NA NA True NA NA NA
-Rutherfordium Rf 104 7 4 261 NA NA NA NA True NA NA NA
-Dubnium Db 105 7 5 262 NA NA NA NA True NA NA NA
-Seaborgium Sg 106 7 6 266 NA NA NA NA True NA NA NA
-Bohrium Bh 107 7 7 264 NA NA NA NA True NA NA NA
-Hassium Hs 108 7 8 277 NA NA NA NA True NA NA NA
-Meitnerium Mt 109 7 9 268 NA NA NA NA True NA NA NA
-Ununnilium Uun 110 7 10 281 NA NA NA NA True NA NA NA
-Unununium Uuu 111 7 11 272 NA NA NA NA True NA NA NA
-Ununbium Uub 112 7 12 285 NA NA NA NA True NA NA NA
-Ununtrium Uut 113 7 13 NA NA NA NA NA True NA NA NA
-Ununquadium Uuq 114 7 14 289 NA NA NA NA True NA NA NA
-Ununpentium Uup 115 7 15 NA NA NA NA NA True NA NA NA
-Ununhexium Uuh 116 7 16 292 NA NA NA NA True NA NA NA
-Ununseptium Uus 117 7 17 NA NA NA NA NA True NA NA NA
-Ununoctium Uuo 118 7 18 NA NA NA NA NA True NA NA NA
+# Periodic data            
+#Data obtained from http://www.physics.nist.gov/PhysRefData/Elements/cover.html            
+#Atom radi from Atomic radii and covalent radii, "Chemical Systems," Chemical Bond Approach Project (1964), McGraw-Hill            
+#(see http://dl.clackamas.cc.or.us/ch104-07/atomic_size.htm)            
+name symbol number row col mass density vdw_radius bond_radius artificial red green blue
+str str int int int u g/cm**3 a.u. A bool float float float
+Hydrogen H 1 1 1 1.00794 0.763 0.43 0.3 False 0.9 0.9 0.9
+Helium He 2 1 18 4.002602 0.19 0.741 NA False NA NA NA
+Lithium Li 3 2 1 6.941 0.534 0.88 1.52 False NA NA NA
+Beryllium Be 4 2 2 9.012182 1.85 0.55 1.12 False NA NA NA
+Boron B 5 2 13 10.811 2.535 1.03 0.88 False NA NA NA
+Carbon C 6 2 14 12.0107 3.52 0.9 0.77 False 0.5 0.5 0.5
+Nitrogen N 7 2 15 14.0067 1.14 0.88 0.7 False 0 0 0.8
+Oxygen O 8 2 16 15.9994 1.568 0.88 0.66 False 0.8 0 0
+Fluorine F 9 2 17 18.9984032 1.5 0.84 NA False 0.8 0 0.8
+Neon Ne 10 2 18 20.1797 1.204 0.815 NA False NA NA NA
+Sodium Na 11 3 1 22.98977 0.9712 1.17 1.86 False NA NA NA
+Magnesium Mg 12 3 2 24.305 1.74 1.3 1.6 False NA NA NA
+Aluminum Al 13 3 13 26.981538 2.7 1.55 1.43 False 0.3 0.5 0.9
+Silicon Si 14 3 14 28.0855 2.42 1.4 1.17 False 0.9 0.5 0.3
+Phosphorus P 15 3 15 30.973761 1.83 1.25 1.1 False 0 0 0.6
+Sulfur S 16 3 16 32.065 2.07 1.22 1.04 False 0.8 0.8 0
+Chlorine Cl 17 3 17 35.453 2.2 1.19 0.99 False 0.6 0 0.6
+Argon A 18 3 18 39.948 1.65 0.995 NA False NA NA NA
+Potassium K 19 4 1 39.0983 0.87 1.53 2.31 False NA NA NA
+Calcium Ca 20 4 2 40.078 1.55 1.19 1.97 False NA NA NA
+Scandium Sc 21 4 3 44.95591 3.02 1.64 1.6 False NA NA NA
+Titanium Ti 22 4 4 47.867 4.5 1.67 1.46 False NA NA NA
+Vanadium V 23 4 5 50.9415 5.87 1.53 1.31 False NA NA NA
+Chromium Cr 24 4 6 51.9961 7.14 1.55 1.25 False NA NA NA
+Manganese Mn 25 4 7 54.938049 7.3 1.55 1.29 False NA NA NA
+Iron Fe 26 4 8 55.845 7.86 1.54 1.26 False NA NA NA
+Cobalt Co 27 4 9 58.9332 8.71 1.53 1.25 False NA NA NA
+Nickel Ni 28 4 10 58.6934 8.8 1.7 1.24 False NA NA NA
+Copper Cu 29 4 11 63.546 8.933 1.72 1.28 False NA NA NA
+Zinc Zn 30 4 12 65.409 4.32 1.65 1.33 False NA NA NA
+Gallium Ga 31 4 13 69.723 5.93 1.42 1.22 False NA NA NA
+Germanium Ge 32 4 14 72.64 5.46 1.37 1.22 False NA NA NA
+Arsenic As 33 4 15 74.9216 5.73 1.41 1.21 False NA NA NA
+Selenium Se 34 4 16 78.96 4.82 1.42 1.17 False NA NA NA
+Bromine Br 35 4 17 79.904 4.2 1.41 1.14 False NA NA NA
+Krypton Kr 36 4 18 83.798 3.4 1.069 NA False NA NA NA
+Rubidium Rb 37 5 1 85.4678 1.53 1.67 2.44 False NA NA NA
+Strontium Sr 38 5 2 87.62 2.6 1.32 2.15 False NA NA NA
+Yttrium Y 39 5 3 88.90585 3.8 1.98 1.8 False NA NA NA
+Zirconium Zr 40 5 4 91.224 6.44 1.76 1.57 False NA NA NA
+Niobium Nb 41 5 5 92.90638 NA 1.68 1.41 False NA NA NA
+Molybdenum Mo 42 5 6 95.94 9.01 1.67 1.36 False NA NA NA
+Technetium Tc 43 5 7 98 NA 1.55 1.3 True NA NA NA
+Ruthenium Ru 44 5 8 101.07 12.1 1.6 1.33 False NA NA NA
+Rhodium Rh 45 5 9 102.9055 12.44 1.65 1.34 False NA NA NA
+Palladium Pd 46 5 10 106.42 12.16 1.7 1.38 False NA NA NA
+Silver Ag 47 5 11 107.8682 10.492 1.79 1.44 False NA NA NA
+Cadmium Cd 48 5 12 112.411 8.65 1.89 1.49 False NA NA NA
+Indium In 49 5 13 114.818 7.28 1.83 1.62 False NA NA NA
+Tin Sn 50 5 14 118.71 7.29 1.66 1.4 False NA NA NA
+Antimony Sb 51 5 15 121.76 6.62 1.66 1.41 False NA NA NA
+Tellurium Te 52 5 16 127.6 6.25 1.67 1.37 False NA NA NA
+Iodine I 53 5 17 126.90447 4.94 1.6 1.33 False NA NA NA
+Xenon Xe 54 5 18 131.293 NA 1.75 NA False NA NA NA
+Cesium Cs 55 6 1 132.90545 1.873 1.87 2.62 False NA NA NA
+Barium Ba 56 6 2 137.327 3.5 1.54 2.17 False NA NA NA
+Lanthanum La 57 6 3 138.9055 6.15 2.07 NA False NA NA NA
+Cerium Ce 58 9 4 140.116 6.73 2.03 NA False NA NA NA
+Praesodymium Pr 59 9 5 140.90765 6.48 2.02 NA False NA NA NA
+Neodymium Nd 60 9 6 144.24 7 2.01 NA False NA NA NA
+Promethium Pm 61 9 7 145 NA 2 NA False NA NA NA
+Samarium Sm 62 9 8 150.36 7.75 2 NA False NA NA NA
+Europium Eu 63 9 9 151.964 NA 2.19 NA False NA NA NA
+Gadolinium Gd 64 9 10 157.25 NA 1.99 NA False NA NA NA
+Terbium Tb 65 9 11 158.92534 NA 1.96 NA False NA NA NA
+Dyprosium Dy 66 9 12 162.5 NA 1.95 NA False NA NA NA
+Holmium Ho 67 9 13 164.93032 NA 1.94 NA False NA NA NA
+Erbium Er 68 9 14 167.259 4.77 1.93 NA False NA NA NA
+Thulium Tm 69 9 15 168.93421 NA 1.92 NA False NA NA NA
+Ytterbium Yb 70 9 16 173.04 NA 2.14 NA False NA NA NA
+Lutetium Lu 71 9 17 174.967 NA 1.92 1.88 False NA NA NA
+Hafnium Hf 72 6 4 178.49 11.3 1.77 1.57 False NA NA NA
+Tantalium Ta 73 6 5 180.9479 16.6 1.63 1.43 False NA NA NA
+Wolfram W 74 6 6 183.84 NA 1.57 1.37 False NA NA NA
+Rhenium Re 75 6 7 186.207 20.53 1.55 1.37 False NA NA NA
+Osmium Os 76 6 8 190.23 22.5 1.57 1.34 False NA NA NA
+Iridium Ir 77 6 9 192.217 22.42 1.52 1.35 False NA NA NA
+Platinum Pt 78 6 10 195.078 21.27 1.7 1.38 False NA NA NA
+Gold Au 79 6 11 196.96655 18.88 1.7 1.44 False NA NA NA
+Mercury Hg 80 6 12 200.59 14.193 1.9 1.52 False NA NA NA
+Thallium Tl 81 6 13 204.3833 11.86 1.75 1.71 False NA NA NA
+Lead Pb 82 6 14 207.2 11.48 1.74 1.75 False NA NA NA
+Bismuth Bi 83 6 15 208.98038 9.86 1.74 1.46 False NA NA NA
+Polonium Po 84 6 16 209 NA 1.88 1.4 True NA NA NA
+Astatine At 85 6 17 210 NA 0.2 1.4 True NA NA NA
+Radon Rn 86 6 18 222 NA 0.2 1.34 True NA NA NA
+Francium Fr 87 7 1 223 NA 0.2 2.7 True NA NA NA
+Radium Ra 88 7 2 226 5 2.1 2.2 True NA NA NA
+Actinium Ac 89 7 3 227 NA 2.08 2.2 True NA NA NA
+Thorium Th 90 10 4 232.0381 NA 1.99 NA False NA NA NA
+Protactinium Pa 91 10 5 231.03588 NA 1.81 NA False NA NA NA
+Uranium U 92 10 6 238.02891 18.7 1.78 NA False NA NA NA
+Neptunium Np 93 10 7 237 NA 1.75 NA True NA NA NA
+Plutonium Pu 94 10 8 244 NA 0.2 NA True NA NA NA
+Americium Am 95 10 9 243 NA 1.71 NA True NA NA NA
+Curium Cm 96 10 10 247 NA 0.2 NA True NA NA NA
+Berkelium Bk 97 10 11 247 NA 0.2 NA True NA NA NA
+Californium Cf 98 10 12 251 NA 1.73 NA True NA NA NA
+Einsteinium E 99 10 13 252 NA 0.1 NA True NA NA NA
+Fermium Fm 100 10 14 257 NA 0.2 NA True NA NA NA
+Mendelevium Mv 101 10 15 258 NA NA NA True NA NA NA
+Nobelium No 102 10 16 259 NA NA NA True NA NA NA
+Lawrencium Lr 103 10 17 262 NA NA NA True NA NA NA
+Rutherfordium Rf 104 7 4 261 NA NA NA True NA NA NA
+Dubnium Db 105 7 5 262 NA NA NA True NA NA NA
+Seaborgium Sg 106 7 6 266 NA NA NA True NA NA NA
+Bohrium Bh 107 7 7 264 NA NA NA True NA NA NA
+Hassium Hs 108 7 8 277 NA NA NA True NA NA NA
+Meitnerium Mt 109 7 9 268 NA NA NA True NA NA NA
+Ununnilium Uun 110 7 10 281 NA NA NA True NA NA NA
+Unununium Uuu 111 7 11 272 NA NA NA True NA NA NA
+Ununbium Uub 112 7 12 285 NA NA NA True NA NA NA
+Ununtrium Uut 113 7 13 NA NA NA NA True NA NA NA
+Ununquadium Uuq 114 7 14 289 NA NA NA True NA NA NA
+Ununpentium Uup 115 7 15 NA NA NA NA True NA NA NA
+Ununhexium Uuh 116 7 16 292 NA NA NA True NA NA NA
+Ununseptium Uus 117 7 17 NA NA NA NA True NA NA NA
+Ununoctium Uuo 118 7 18 NA NA NA NA True NA NA NA
