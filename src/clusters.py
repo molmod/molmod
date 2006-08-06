@@ -24,8 +24,8 @@ __all__ = ["Cluster", "ClusterFactoryError", "ClusterFactory"]
 
 
 class Cluster(object):
-    def __init__(self):
-        self.clear()
+    def __init__(self, members=[]):
+        self.members = members
     
     def clear(self):
         self.members = []
@@ -47,11 +47,29 @@ class ClusterFactory(object):
         self.clusters = {}
         self.ClusterClass = ClusterClass
         
-    def add_group(self, members):
-        if len(members) < 2:
-            raise ClusterFactoryError("At least groups of two members needed.")
+    def add_cluster(self, master):
+        slaves = set([]) # set of clusters that is going to be merged in the master
+        new = [] # members that are not yet in other clusters
+        for member in master.members:
+            cluster = self.clusters.get(member)
+            if cluster is None:
+                #print "solitaire", member
+                new.append(member)
+            else:
+                #print "in slave", member
+                slaves.add(cluster)
+            #else:
+            #    #print "in master", member
         
-        master = None # first encountered existing cluster 
+        for slave in slaves:
+            for member in slave.members:
+                self.clusters[member] = master
+            master.add_cluster(slave)
+        for member in new:
+            self.clusters[member] = master
+
+    def add_members(self, members):
+        master = None # this will become the common cluster of all related members
         slaves = set([]) # set of clusters that is going to be merged in the master
         solitaire = [] # members that are not yet part of a cluster
         for member in members:
@@ -78,7 +96,7 @@ class ClusterFactory(object):
         for member in solitaire:
             self.clusters[member] = master
             master.add_member(member)
-            
+
     def get_clusters(self):
         return set(cluster for cluster in self.clusters.itervalues())
 
