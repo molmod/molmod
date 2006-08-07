@@ -85,11 +85,14 @@ class UnitCell(object):
             return
         elif len(active) == 1:
             temp = copy.deepcopy(self.cell)
-            temp[:, inactive[0]] = random_orthonormal(temp[:, active[0]])
-            temp[:, inactive[1]] = numpy.cross(temp[:, inactive[0]], temp[:, active[0]])
+            if sum(temp[:,inactive[0]]**2) < 1e-6:
+                temp[:, inactive[0]] = random_orthonormal(temp[:, active[0]])
+            if sum(temp[:,inactive[1]]**2) < 1e-6:
+                temp[:, inactive[1]] = numpy.cross(temp[:, inactive[0]], temp[:, active[0]])
         elif len(active) == 2:
             temp = copy.deepcopy(self.cell)
-            temp[:, inactive[0]] = numpy.cross(temp[:, active[0]], temp[:, active[1]])
+            if sum(temp[:,inactive[0]]**2) < 1e-6:
+                temp[:, inactive[0]] = numpy.cross(temp[:, active[0]], temp[:, active[1]])
         elif len(active) == 3:
             temp = self.cell
         self.cell_reciproke = numpy.transpose(self.cell_active*numpy.transpose(numpy.linalg.inv(temp)))
@@ -98,7 +101,7 @@ class UnitCell(object):
         return numpy.dot(self.cell_reciproke, coordinate)
 
     def to_index(self, coordinate):
-        return self.to_fractional(coordinate).round().astype(int)
+        return numpy.floor(self.to_fractional(coordinate)).astype(int)
 
     def to_coordinate(self, fractional):
         return numpy.dot(self.cell, fractional)
@@ -107,7 +110,7 @@ class UnitCell(object):
         return delta + numpy.dot(self.cell, index)
 
     def shortest_vector(self, delta):
-        return self.move_to_cell(delta, -self.to_index(delta))
+        return self.move_to_cell(delta, -self.to_fractional(delta).round().astype(int))
 
     def add_cell_vector(self, vector, norm_threshold=1e-6, volume_threshold=1e-6):
         active, inactive = self.get_active_inactive()
