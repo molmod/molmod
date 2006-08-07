@@ -34,18 +34,10 @@ setup(name='MolMod',
     package_dir = {'molmod': 'src'},
     data_files=[
         ('share/molmod/%s' % version, glob.glob('share/*.csv')),
-        ('share/molmod/%s/templates/gromos96_sp/' % version, glob.glob('share/templates/gromos96_sp/*.*')),
-        ('share/molmod/%s/awk' % version, glob.glob('share/awk/*.awk'))
     ],
     packages=[
         'molmod',
         'molmod.data',
-        'molmod.interfaces',
-        'molmod.interfaces.mpqc',
-        'molmod.interfaces.cpmd',
-        'molmod.interfaces.gaussian98',
-        'molmod.interfaces.gaussian03',
-        'molmod.interfaces.gromos96'
     ],
     scripts=['scripts/mrandomize'],
     classifiers=[
