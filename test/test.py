@@ -27,14 +27,8 @@ context.share_path = "../share/"
 
 import unittest
 
-
 from binning import *
 from graphs import *
-from mpqc_interfaces import *
-from cpmd_interfaces import *
-from gaussian98_interfaces import *
-from gaussian03_interfaces import *
-from gromos96_interfaces import *
 from molecular_graphs import *
 from internal_coordinates import *
 from lone_pairs import *
@@ -42,7 +36,6 @@ from pairff import *
 from data import *
 from unit_cell import *
 from clusters import *
-
 
 unittest.main()
 
