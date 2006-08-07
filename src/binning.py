@@ -54,16 +54,6 @@ class PositionedObject(object):
         self.vector = vector
 
 
-def yield_combinations(l, n):
-    if n == 1:
-        for item in l:
-            yield [item]
-    else:
-        for item in l:
-            for combinations in yield_combinations(l, n-1):
-                yield [item] + combinations
-
-
 class SparseBinnedObjects(object):
     """
     A SparseBinnedObjects instance divides 3D space into a sparse grid.
@@ -75,13 +65,6 @@ class SparseBinnedObjects(object):
 
     All bins are uniquely defined by their indices i,j,k as defined in __init__.
     """
-
-    deltas = [
-         numpy.array(combination, float)
-         for combination
-         in yield_combinations([-1, 0, 1], 3)
-    ]
-
 
     def __init__(self, yield_positioned_objects, gridsize=1):
         """
@@ -106,13 +89,11 @@ class SparseBinnedObjects(object):
                 self.bins[indices] = bin
             bin.add(positioned_object)
 
-    def yield_surrounding(self, r, deltas=None):
+    def yield_surrounding(self, r, deltas):
         """
         Iterate over all objects in the bins that surround the bin that
         contains vector r.
         """
-        if deltas is None:
-            deltas = self.deltas
         center = numpy.floor(r*self.reciproke).astype(int)
         for delta in deltas:
             bin = self.bins.get(tuple(center + delta))
@@ -126,14 +107,6 @@ class AnalyseNeighboringObjects(object):
     AnalyseNeighboringObjects is the base class for 'comparing' vectors between
     neigbouring bins.
     """
-    corners = (numpy.array([0, 0, 0], int),
-               numpy.array([1, 0, 0], int),
-               numpy.array([0, 1, 0], int),
-               numpy.array([0, 0, 1], int),
-               numpy.array([0, 1, 1], int),
-               numpy.array([1, 0, 1], int),
-               numpy.array([1, 1, 0], int),
-               numpy.array([1, 1, 1], int))
 
     def __init__(self, compare_function):
         """
@@ -182,11 +155,13 @@ class IntraAnalyseNeighboringObjects(AnalyseNeighboringObjects):
     """
     def __init__(self, binned_objects, compare_function):
         AnalyseNeighboringObjects.__init__(self, compare_function)
-        self.compare_indices = [(0, 0, 0), (1, 1, 1),
-                                (1, 0, 0), (0, 1, 0), (0, 0, 1),
-                                (0, 1, 1), (1, 0, 1), (1, 1, 0),
-                                (0, 1, -1), (-1, 0, 1), (1, -1, 0),
-                                (1, 1, -1), (1, -1, -1), (1, -1, 1)]
+        self.compare_indices = numpy.array([
+            (0, 0, 0), (1, 1, 1),
+            (1, 0, 0), (0, 1, 0), (0, 0, 1),
+            (0, 1, 1), (1, 0, 1), (1, 1, 0),
+            (0, 1, -1), (-1, 0, 1), (1, -1, 0),
+            (1, 1, -1), (1, -1, -1), (1, -1, 1)
+        ], int)
         self.binned_objects1 = binned_objects
         self.binned_objects2 = binned_objects
 
@@ -202,6 +177,18 @@ class InterAnalyseNeighboringObjects(AnalyseNeighboringObjects):
     def __init__(self, binned_objects1, binned_objects2, compare_function):
         AnalyseNeighboringObjects.__init__(self, compare_function)
         assert binned_objects1.gridsize==binned_objects2.gridsize
-        self.compare_indices = None
+        self.compare_indices = numpy.array([
+            (-1, -1, -1), (-1, -1,  0), (-1, -1,  1),
+            (-1,  0, -1), (-1,  0,  0), (-1,  0,  1),
+            (-1,  1,  1), (-1,  1,  0), (-1,  1,  1),
+
+            ( 0, -1, -1), ( 0, -1,  0), ( 0, -1,  1),
+            ( 0,  0, -1), ( 0,  0,  0), ( 0,  0,  1),
+            ( 0,  1,  1), ( 0,  1,  0), ( 0,  1,  1),
+
+            ( 1, -1, -1), ( 1, -1,  0), ( 1, -1,  1),
+            ( 1,  0, -1), ( 1,  0,  0), ( 1,  0,  1),
+            ( 1,  1,  1), ( 1,  1,  0), ( 1,  1,  1),
+        ], int)
         self.binned_objects1 = binned_objects1
         self.binned_objects2 = binned_objects2
