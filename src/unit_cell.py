@@ -35,10 +35,10 @@ def check_cell(cell, norm_threshold=1e-6, volume_threshold=1e-6):
     cell = cell.copy()
     for col, name in enumerate(["A", "B", "C"]):
         norm = math.sqrt(numpy.dot(cell[:,col], cell[:,col]))
-        if norm < 1e-6:
+        if norm < norm_threshold:
             raise ValueError("The length of ridge %s is (nearly) zero." % name)
         cell[:,col] /= norm
-    if abs(numpy.linalg.det(cell)) < 1e-6:
+    if abs(numpy.linalg.det(cell)) < volume_threshold:
         raise ValueError("The ridges of the unit cell are (nearly) linearly dependent vectors.")
 
 
@@ -78,20 +78,20 @@ class UnitCell(object):
                 inactive_indices.append(index)
         return active_indices, inactive_indices
 
-    def update_reciproke(self):
+    def update_reciproke(self, auto_threshold=1e-6):
         active, inactive = self.get_active_inactive()
         if len(active) == 0:
             self.cell_reciproke = numpy.zeros((3, 3), float)
             return
         elif len(active) == 1:
             temp = copy.deepcopy(self.cell)
-            if sum(temp[:,inactive[0]]**2) < 1e-6:
+            if sum(temp[:,inactive[0]]**2) < auto_threshold:
                 temp[:, inactive[0]] = random_orthonormal(temp[:, active[0]])
-            if sum(temp[:,inactive[1]]**2) < 1e-6:
+            if sum(temp[:,inactive[1]]**2) < auto_threshold:
                 temp[:, inactive[1]] = numpy.cross(temp[:, inactive[0]], temp[:, active[0]])
         elif len(active) == 2:
             temp = copy.deepcopy(self.cell)
-            if sum(temp[:,inactive[0]]**2) < 1e-6:
+            if sum(temp[:,inactive[0]]**2) < auto_threshold:
                 temp[:, inactive[0]] = numpy.cross(temp[:, active[0]], temp[:, active[1]])
         elif len(active) == 3:
             temp = self.cell
@@ -165,7 +165,7 @@ class UnitCell(object):
         gamma = math.acos(numpy.dot(self.cell[:,0], self.cell[:,1]) / (length_a * length_b))
         return (numpy.array([length_a, length_b, length_c], float), numpy.array([alpha, beta, gamma], float))
 
-    def set_parameters(self, lengths, angles):
+    def set_parameters(self, lengths, angles, volume_threshold=1e-6):
         for length in lengths:
             if length <= 0:
                 raise ValueError("The length parameters must be strictly positive.")
@@ -267,7 +267,7 @@ class UnitCell(object):
         #print S
         #print " --- Wt --- "
         #print Wt
-        if S.min() < 1e-6:
+        if S.min() < volume_threshold:
             raise ValueError("The given cell parameters result in a singular unit cell. (SVD)")
 
         # - calculate the particular solution, p
@@ -296,7 +296,7 @@ class UnitCell(object):
         #print "d", d
         if d < 0:
             raise ValueError("The given cell parameters do not correspond to a unit cell. (d is negative)")
-        elif abs(d) < 1e-6:
+        elif abs(d) < volume_threshold:
             raise ValueError("The given cell parameters lead to a singular unit cell. (d is too small)")
         t1 = 0.5*(-c1 + math.sqrt(d))/c2
         t2 = 0.5*(-c1 - math.sqrt(d))/c2
