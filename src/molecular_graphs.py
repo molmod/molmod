@@ -236,19 +236,23 @@ class MolecularGraph(Graph):
         
         binned_atoms = SparseBinnedObjects(yield_positioned_atoms, bonds.max_length*bonds.bond_tolerance)
         
-        def compare_function(index1, index2, position1, position2):
-            delta = position2 - position1
+        def compare_function(positioned1, positioned2):
+            delta = positioned2.vector - positioned1.vector
             distance = math.sqrt(numpy.dot(delta, delta))
             if distance < binned_atoms.gridsize:
-                bond_order = bonds.bonded(self.molecule.numbers[index1], self.molecule.numbers[index2], distance)
+                bond_order = bonds.bonded(self.molecule.numbers[positioned1.id], self.molecule.numbers[positioned2.id], distance)
                 if bond_order != None:
                     return bond_order, distance
         
-        bond_data = list(IntraAnalyseNeighboringObjects(binned_atoms, compare_function)())
+        bond_data = list(
+            (frozenset([positioned.id for positioned in key]), data)
+            for key, data
+            in IntraAnalyseNeighboringObjects(binned_atoms, compare_function)()
+        )
         pairs = set(key for key, data in bond_data)
         self.bond_orders = dict([(key, data[0]) for key, data in bond_data])
         self.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
-        Graph.__init__(pairs)
+        Graph.__init__(self, pairs)
         
     def yield_subgraphs(self, criteria_sets):
         subgraph = SymmetricGraph(criteria_sets.subpairs, criteria_sets.initiator)

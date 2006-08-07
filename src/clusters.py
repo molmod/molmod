@@ -24,8 +24,11 @@ __all__ = ["Cluster", "ClusterFactoryError", "ClusterFactory"]
 
 
 class Cluster(object):
-    def __init__(self, members=[]):
-        self.members = members
+    def __init__(self, members=None):
+        if members is None:
+            self.members = []
+        else:
+            self.members = members
     
     def clear(self):
         self.members = []
@@ -84,7 +87,7 @@ class ClusterFactory(object):
                 #print "in slave", member
                 slaves.add(cluster)
             #else:
-            #    #print "in master", member
+                #print "in master", member
         
         if master is None:
             master = self.ClusterClass()

@@ -33,7 +33,6 @@ class LonePairs(unittest.TestCase):
     
     def molecule_test(self, filename):
         m = molecule_xyz_from_filename("input/"+filename)
-        print all_lone_pairs(m)
                 
     def test_water(self):
         self.molecule_test("water.xyz")

@@ -37,7 +37,7 @@ class ClusterExample(unittest.TestCase):
             a = random.randint(0, 100)
             b = random.randint(0, 100)
             if (a+b)%2 == 0:
-                cf.add_group([a, b])
+                cf.add_members([a, b])
                 
         for cluster in cf.get_clusters():
             #print cluster.members

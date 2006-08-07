@@ -110,11 +110,11 @@ class Distances(unittest.TestCase):
         self.verify_intra(molecule, distances)
                 
     def test_distances_intra_periodic(self):
-        molecule, binned_atoms = self.load_binned_atoms("dfo.xyz")
+        molecule, binned_atoms = self.load_binned_atoms("lau.xyz")
         unit_cell = UnitCell()
         unit_cell.set_parameters(
-            from_angstrom(numpy.array([21.995, 21.995, 21.159])), 
-            from_degree(numpy.array([90.000, 90.000, 120.000]))
+            from_angstrom(numpy.array([14.59, 12.88, 7.61])), 
+            from_degree(numpy.array([90.0, 111.0, 90.0]))
         )
 
         distances = dict(
@@ -136,12 +136,12 @@ class Distances(unittest.TestCase):
         self.verify_inter(molecule1, molecule2, distances)
 
     def test_distances_inter_periodic(self):
-        molecule1, binned_atoms1 = self.load_binned_atoms("dfo.xyz")
-        molecule2, binned_atoms2 = self.load_binned_atoms("dfo.xyz")
+        molecule1, binned_atoms1 = self.load_binned_atoms("lau.xyz")
+        molecule2, binned_atoms2 = self.load_binned_atoms("lau.xyz")
         unit_cell = UnitCell()
         unit_cell.set_parameters(
-            from_angstrom(numpy.array([21.995, 21.995, 21.159])), 
-            from_degree(numpy.array([90.000, 90.000, 120.000]))
+            from_angstrom(numpy.array([14.59, 12.88, 7.61])), 
+            from_degree(numpy.array([90.0, 111.0, 90.0]))
         )
 
         distances = dict(
