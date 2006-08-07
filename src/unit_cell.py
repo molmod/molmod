@@ -1,22 +1,22 @@
 # Zeobuilder is an extensible GUI-toolkit for molecular model construction.
 # Copyright (C) 2005 Toon Verstraelen
-# 
+#
 # This file is part of Zeobuilder.
-# 
+#
 # Zeobuilder is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# 
+#
 # --
 
 
@@ -46,28 +46,28 @@ class UnitCell(object):
     def __init__(self, cell=None, cell_active=None):
         if cell is None:
             self.cell = numpy.array([
-                [10.0,  0.0,  0.0], 
-                [ 0.0, 10.0,  0.0], 
+                [10.0,  0.0,  0.0],
+                [ 0.0, 10.0,  0.0],
                 [ 0.0,  0.0, 10.0]]
             )*angstrom
         else:
             self.cell = cell
-            
+
         if cell_active is None:
             self.cell_active = numpy.array([False, False, False])
         else:
             self.cell_active = cell_active
         self.update_reciproke()
-        
+
     def set_cell(self, cell, norm_threshold=1e-6, volume_threshold=1e-6):
         check_cell(cell)
         self.cell = cell
         self.update_reciproke()
-    
+
     def set_cell_active(self, cell_active):
         self.cell_active = cell_active
         self.update_reciproke()
-    
+
     def get_active_inactive(self):
         active_indices = []
         inactive_indices = []
@@ -77,7 +77,7 @@ class UnitCell(object):
             else:
                 inactive_indices.append(index)
         return active_indices, inactive_indices
-    
+
     def update_reciproke(self):
         active, inactive = self.get_active_inactive()
         if len(active) == 0:
@@ -96,7 +96,7 @@ class UnitCell(object):
 
     def to_fractional(self, coordinate):
         return numpy.dot(self.cell_reciproke, coordinate)
-        
+
     def to_index(self, coordinate):
         return self.to_fractional(coordinate).round().astype(int)
 
@@ -105,10 +105,10 @@ class UnitCell(object):
 
     def move_to_cell(self, delta, index):
         return delta + numpy.dot(self.cell, index)
-        
+
     def shortest_vector(self, delta):
         return self.move_to_cell(delta, -self.to_index(delta))
-        
+
     def add_cell_vector(self, vector, norm_threshold=1e-6, volume_threshold=1e-6):
         active, inactive = self.get_active_inactive()
         if len(active) == 3:
@@ -171,15 +171,15 @@ class UnitCell(object):
                 raise ValueError("The angle parameters must lie in the range ]0 deg, 180 deg[.")
         del length
         del angle
-        
+
         new_cell = self.cell.copy()
-        
+
         # use the same direction for the old last axis
         c_normal = new_cell[:,2] / math.sqrt(numpy.dot(new_cell[:,2], new_cell[:,2]))
         new_cell[:,2] = c_normal * lengths[2]
         #print " (((c_normal))) "
         #print c_normal
-        
+
         # the secocond cell vector lies in the half plane defined by the old
         # last and second axis
         b_ortho = new_cell[:,1] - c_normal*numpy.dot(c_normal, new_cell[:,1])
@@ -187,7 +187,7 @@ class UnitCell(object):
         new_cell[:,1] = (c_normal * math.cos(angles[0]) + b_orthonormal * math.sin(angles[0])) * lengths[1]
         #print " (((b_orthonormal))) "
         #print b_orthonormal
-        
+
         # Finding the first cell vector is slightly more difficult. :-)
         # It works like this: The third cell vector lies at the intersection
         # of three spheres:
@@ -202,17 +202,17 @@ class UnitCell(object):
         #    - one side has length[2]
         #    - the other side has length[0]
         #    - the angle between both sides is angles[1]
-        
+
         # finding the intersection of three spheres is solved in two steps.
-        # First one determines the line that goes through the two solutions, 
+        # First one determines the line that goes through the two solutions,
         # assuming that the two solutions exist. Secondly the intersection(s) of
         # the line with one of the sphers is/are calculated.
-        
+
         # Only if two solutions can be found, the resulting cell is physical. If
         # not, a ValueError is raised.
         # Of the two solutions, the one is selected that preserves the handed-
         # ness of the old cell.
-        
+
         # A) define the sphere centers
         centers = numpy.array([
             [0.0, 0.0, 0.0],
@@ -221,7 +221,7 @@ class UnitCell(object):
         ], float)
         #print " *** CENTERS *** "
         #print centers
-        
+
         # B) define the sphere radii, using the cosine rule
         radii = numpy.array([
             lengths[0],
@@ -231,13 +231,13 @@ class UnitCell(object):
 
         #print " *** RADII *** "
         #print radii
-        
+
         # C) Obtain the line that goes through the two solutions, by
         # constructing an under defined linear system. The particular solution
         # (a point on the line) and the vector from the null space
         # (the direction of the line) are obtained with singular value
         # decomposition.
-        
+
         # - construct the linear system
         tmp = numpy.array([
             (2 * centers[index]).tolist() + [numpy.dot(centers[index], centers[index]) - radii[index]**2]
@@ -255,7 +255,7 @@ class UnitCell(object):
         #print A
         #print " --- b --- "
         #print b
-        
+
         # - perform singular value decomposition
         V, S, Wt = numpy.linalg.svd(A, True)
         #print " --- V --- "
@@ -266,28 +266,28 @@ class UnitCell(object):
         #print Wt
         if S.min() < 1e-6:
             raise ValueError("The given cell parameters result in a singular unit cell. (SVD)")
-        
+
         # - calculate the particular solution, p
         W = Wt.transpose()
         p = numpy.dot(W[:,:2], (numpy.dot(b, V).transpose()/S).transpose())
         #print " ~~~ p ~~~ "
         #print p
         #print "ZERO", numpy.dot(A, p) - b
-        
+
         # - the nullspace
         n = W[:,2]
         #print " ~~~ n ~~~ "
         #print n
         #print "ZERO", numpy.dot(A, n)
-        
+
         # D) solve the second order equation in the parameter t from the
         # line equation: r = p + n*t
-        
+
         # - calculate the coefficients
         c2 = numpy.dot(n, n)
         c1 = 2 * numpy.dot(n, p - centers[0])
         c0 = numpy.dot(p - centers[0], p - centers[0]) - radii[0]**2
-        
+
         # - solve the second order equation
         d = c1*2 - 4*c0*c2
         #print "d", d
@@ -297,7 +297,7 @@ class UnitCell(object):
             raise ValueError("The given cell parameters lead to a singular unit cell. (d is too small)")
         t1 = 0.5*(-c1 + math.sqrt(d))/c2
         t2 = 0.5*(-c1 - math.sqrt(d))/c2
-        
+
         # assume that t1 gives the right handedness
         new_cell[:,0] = p + t1*n
         #for index in xrange(3):
@@ -308,9 +308,9 @@ class UnitCell(object):
             #for index in xrange(3):
             #    #print "ZERO", numpy.dot(new_cell[:,2] - centers[index], new_cell[:,2] - centers[index]) - radii[index]**2
             assert numpy.linalg.det(new_cell) * numpy.linalg.det(self.cell) > 0, "HELP. THIS SHOULD NOT HAPPEN."
-            
-        self.set_cell(new_cell)        
-        
+
+        self.set_cell(new_cell)
+
 
     def generalized_volume(self):
         active, inactive = self.get_active_inactive()

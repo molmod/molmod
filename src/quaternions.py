@@ -1,22 +1,22 @@
 # Zeobuilder is an extensible GUI-toolkit for molecular model construction.
 # Copyright (C) 2005 Toon Verstraelen
-# 
+#
 # This file is part of Zeobuilder.
-# 
+#
 # Zeobuilder is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# 
+#
 # --
 
 
@@ -81,15 +81,15 @@ def quaternion_from_rotation_matrix(rotation_matrix):
             if (rotation_matrix[row, col] + rotation_matrix[col, row] < 0):
                 r[index] = -r_comp
             else:
-                r[index] = +r_comp            
+                r[index] = +r_comp
     return factor, numpy.array([c, r[0], r[1], r[2]], float)
-    
+
 
 def quaternion_to_rotation_matrix(quaternion):
     c, x, y, z = quaternion
     return 2*numpy.array(
         [[0.5 - y*y - z*z, x*y - c*z,       x*z + c*y      ],
          [x*y + c*z      , 0.5 - x*x - z*z, y*z - c*x      ],
-         [x*z - c*y      , y*z + c*x      , 0.5 - x*x - y*y]], 
+         [x*z - c*y      , y*z + c*x      , 0.5 - x*x - y*y]],
         float)
 

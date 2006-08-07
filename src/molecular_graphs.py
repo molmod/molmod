@@ -1,22 +1,22 @@
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2005 Toon Verstraelen
-# 
+#
 # This file is part of MolMod.
-# 
+#
 # MolMod is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# 
+#
 # --
 
 
@@ -29,12 +29,12 @@ import math, numpy
 __all__ = [
     "MolecularCriterium",
     "BinaryMolecularCriterium", "MolecularOr", "MolecularAnd",
-    "AtomNumberCriterium", "AtomNumberRequire", "AtomNumberRefuse", 
+    "AtomNumberCriterium", "AtomNumberRequire", "AtomNumberRefuse",
     "BondTypeCriterium", "BondTypeRequire", "BondTypeRefuse",
     "NumNeighboursCriterium", "NumNeighboursRequire", "NumNeighboursRefuse",
     "CriteriaSets", "CriteriaSet", "BondSets", "BendSets", "DihedralSets",
     "OutOfPlaneAngleSets", "OutOfPlaneDistanceSets", "LongRangePairSets",
-    "MolecularGraph", 
+    "MolecularGraph",
 ]
 
 # Elementary criteria for MatchFilters
@@ -43,7 +43,7 @@ class MolecularCriterium(Criterium):
     def __init__(self, *parameters):
         self.molecular_graph = None
         Criterium.__init__(self, *parameters)
-        
+
     def set_molecular_graph(self, molecular_graph):
         self.molecular_graph = molecular_graph
 
@@ -84,7 +84,7 @@ class AtomNumberRequire(AtomNumberCriterium):
         return self.molecular_graph.molecule.numbers[index] == self.number
 
 
-class AtomNumberRefuse(AtomNumberCriterium):    
+class AtomNumberRefuse(AtomNumberCriterium):
     def __call__(self, index):
         return self.molecular_graph.molecule.numbers[index] != self.number
 
@@ -110,7 +110,7 @@ class NumNeighboursCriterium(MolecularCriterium):
         self.num_neighbours = num_neighbours
         MolecularCriterium.__init__(self, num_neighbours)
 
-        
+
 class NumNeighboursRequire(NumNeighboursCriterium):
     def __call__(self, index):
         return len(self.molecular_graph.neighbours[index]) == self.num_neighbours
@@ -129,11 +129,11 @@ class CriteriaSets(object):
         self.initiator = initiator # the central ellement, the one that is transformed onto itself by most of the symmetries
         self.calculation_tags = calculation_tags # tags that indicate which atoms are similar due to symmetrie in the topology, not atom labels taken into account
         self.sets = sets
-            
+
     def yield_criteria(self):
         for item in self.sets:
             yield item.tag, item.atom_criteria, item.bond_criteria, item.filter_tags
-            
+
     def yield_tags(self):
         for item in self.sets:
             yield item.tag
@@ -224,7 +224,7 @@ class LongRangePairSets(CriteriaSets):
         return DihedralSets(new_sets)
 
 
-#     
+#
 
 class MolecularGraph(Graph):
     def __init__(self, molecule):
@@ -233,9 +233,9 @@ class MolecularGraph(Graph):
         def yield_positioned_atoms():
             for index in xrange(len(self.molecule.numbers)):
                 yield PositionedObject(index, self.molecule.coordinates[index])
-        
+
         binned_atoms = SparseBinnedObjects(yield_positioned_atoms, bonds.max_length*bonds.bond_tolerance)
-        
+
         def compare_function(positioned1, positioned2):
             delta = positioned2.vector - positioned1.vector
             distance = math.sqrt(numpy.dot(delta, delta))
@@ -243,7 +243,7 @@ class MolecularGraph(Graph):
                 bond_order = bonds.bonded(self.molecule.numbers[positioned1.id], self.molecule.numbers[positioned2.id], distance)
                 if bond_order != None:
                     return bond_order, distance
-        
+
         bond_data = list(
             (frozenset([positioned.id for positioned in key]), data)
             for key, data
@@ -253,7 +253,7 @@ class MolecularGraph(Graph):
         self.bond_orders = dict([(key, data[0]) for key, data in bond_data])
         self.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
         Graph.__init__(self, pairs)
-        
+
     def yield_subgraphs(self, criteria_sets):
         subgraph = SymmetricGraph(criteria_sets.subpairs, criteria_sets.initiator)
         for tag, atom_criteria, bond_criteria, filter_tags in criteria_sets.yield_criteria():
@@ -262,13 +262,13 @@ class MolecularGraph(Graph):
             for bond_criterium in bond_criteria.itervalues():
                 bond_criterium.set_molecular_graph(self)
             graph_filter = MatchFilterParameterized(
-                subgraph, 
+                subgraph,
                 criteria_sets.calculation_tags,
                 atom_criteria,
                 bond_criteria,
                 filter_tags
             )
-        
+
             for match in subgraph.yield_matching_subgraphs(self):
                 for parsed in graph_filter.parse(match):
                     yield tag, parsed

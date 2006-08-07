@@ -1,22 +1,22 @@
-# MolMod is a collection of molecular modelling tools for python. 
+# MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2005 Toon Verstraelen
-# 
+#
 # This file is part of MolMod.
-# 
+#
 # MolMod is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# 
+#
 # --
 
 from molmod.units import from_unit
@@ -38,7 +38,7 @@ class AtomInfo(object):
 
 class PeriodicData(object):
     """
-    Objects of the PeriodicData class centralize information about the 
+    Objects of the PeriodicData class centralize information about the
     periodic system. The data is loaded during initialization.
     """
 
@@ -48,10 +48,10 @@ class PeriodicData(object):
         self.atoms_by_symbol = {}
 
         self.max_radius = 0.0
-        
+
         convertors = []
         names = []
-        
+
         def append_convertor(word):
             if word == "str":
                 convertors.append(str)
@@ -67,7 +67,7 @@ class PeriodicData(object):
                     convertors.append(lambda s: convertor(float(s)))
                 else:
                     convertors.append(float)
-        
+
         f = file(filename)
         lines_read = 0
         for line in f:
@@ -93,14 +93,14 @@ class PeriodicData(object):
                         self.max_radius = atom_info.radius
                 lines_read += 1
         f.close()
-    
+
     def __getitem__(self, index):
         result = self.atoms_by_number.get(index)
         if result is None:
             return self.atoms_by_symbol.get(index.lower())
         else:
             return result
-        
+
     def yield_numbers(self):
         for number in self.atoms_by_number:
             yield number

@@ -1,22 +1,22 @@
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2005 Toon Verstraelen
-# 
+#
 # This file is part of MolMod.
-# 
+#
 # MolMod is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# 
+#
 # --
 
 
@@ -34,15 +34,15 @@ __all__ = ["Distances"]
 
 class Distances(unittest.TestCase):
     gridsize = periodic.max_radius*2
-    
+
     def load_binned_atoms(self, filename):
         from molmod.molecules import molecule_xyz_from_filename
         m = molecule_xyz_from_filename("input/"+filename)
-        
+
         def yield_positioned_atoms():
             for index in xrange(len(m.numbers)):
                 yield PositionedObject((m, index), m.coordinates[index])
-        
+
         return m, SparseBinnedObjects(yield_positioned_atoms, self.gridsize)
 
     def verify(self, yield_pairs, distances, unit_cell=None):
@@ -74,7 +74,7 @@ class Distances(unittest.TestCase):
         for identifier, fast_distance in distances.iteritems():
             message += "%10s %10s: \t % 10.7f\n" % (tuple(identifier) + (fast_distance,))
         message += "-"*50+"\n"
-        
+
         self.assertEqual(len(missing_pairs), 0, message)
         self.assertEqual(len(wrong_distances), 0, message)
         self.assertEqual(len(distances), 0, message)
@@ -98,7 +98,7 @@ class Distances(unittest.TestCase):
         distance = math.sqrt(numpy.dot(delta, delta))
         if distance < self.gridsize:
             return distance
-        
+
     def test_distances_intra(self):
         molecule, binned_atoms = self.load_binned_atoms("precursor.xyz")
 
@@ -108,12 +108,12 @@ class Distances(unittest.TestCase):
             in IntraAnalyseNeighboringObjects(binned_atoms, self.compare_function)()
         )
         self.verify_intra(molecule, distances)
-                
+
     def test_distances_intra_periodic(self):
         molecule, binned_atoms = self.load_binned_atoms("lau.xyz")
         unit_cell = UnitCell()
         unit_cell.set_parameters(
-            from_angstrom(numpy.array([14.59, 12.88, 7.61])), 
+            from_angstrom(numpy.array([14.59, 12.88, 7.61])),
             from_degree(numpy.array([90.0, 111.0, 90.0]))
         )
 
@@ -123,7 +123,7 @@ class Distances(unittest.TestCase):
             in IntraAnalyseNeighboringObjects(binned_atoms, self.compare_function)(unit_cell)
         )
         self.verify_intra(molecule, distances, unit_cell)
-                
+
     def test_distances_inter(self):
         molecule1, binned_atoms1 = self.load_binned_atoms("precursor.xyz")
         molecule2, binned_atoms2 = self.load_binned_atoms("precursor.xyz")
@@ -140,7 +140,7 @@ class Distances(unittest.TestCase):
         molecule2, binned_atoms2 = self.load_binned_atoms("lau.xyz")
         unit_cell = UnitCell()
         unit_cell.set_parameters(
-            from_angstrom(numpy.array([14.59, 12.88, 7.61])), 
+            from_angstrom(numpy.array([14.59, 12.88, 7.61])),
             from_degree(numpy.array([90.0, 111.0, 90.0]))
         )
 
@@ -150,4 +150,4 @@ class Distances(unittest.TestCase):
             in InterAnalyseNeighboringObjects(binned_atoms1, binned_atoms2, self.compare_function)(unit_cell)
         )
         self.verify_inter(molecule1, molecule2, distances, unit_cell)
-                
+

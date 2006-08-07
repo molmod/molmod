@@ -1,22 +1,22 @@
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2005 Toon Verstraelen
-# 
+#
 # This file is part of MolMod.
-# 
+#
 # MolMod is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# 
+#
 # --
 
 from molmod.molecular_graphs import *
@@ -28,11 +28,11 @@ import unittest, copy
 __all__ = ["MolecularGraphsTPA"]
 
 
-class MolecularGraphsTPA(unittest.TestCase):        
+class MolecularGraphsTPA(unittest.TestCase):
     def setUp(self):
         self.molecule = molecule_xyz_from_filename("input/tpa.xyz")
         self.molecular_graph = MolecularGraph(self.molecule)
-        
+
     def verify(self, expected_results, test_results, generate_alternatives):
         for key in test_results.iterkeys():
             unsatisfied = expected_results[key]
@@ -51,11 +51,11 @@ class MolecularGraphsTPA(unittest.TestCase):
                 if not item_correct:
                     unexpected.append(test_item)
             message  = "Incorrect matches (%s):\n" % key
-            message += "unexpected  (%i): %s\n" % (len(unexpected), unexpected)  
-            message += "unsatisfied (%i): %s\n" % (len(unsatisfied), unsatisfied)  
+            message += "unexpected  (%i): %s\n" % (len(unexpected), unexpected)
+            message += "unsatisfied (%i): %s\n" % (len(unsatisfied), unsatisfied)
             self.assertEqual(len(unexpected), 0, message)
             self.assertEqual(len(unsatisfied), 0, message)
-            
+
     def test_bonds(self):
         criteria_sets = BondSets([
             CriteriaSet("HC", ((1, 6), None)),
@@ -66,22 +66,22 @@ class MolecularGraphsTPA(unittest.TestCase):
         ])
         expected_results = {
             "HC": set([(14, 1), (13, 1), (16, 2), (15, 2), (17, 3), (19, 3), (18, 3), (20, 4), (21, 4), (23, 5), (22, 5), (25, 6), (26, 6), (24, 6), (27, 7), (28, 7), (29, 8), (30, 8), (31, 9), (33, 9), (32, 9), (35, 10), (34, 10), (37, 11), (36, 11), (39, 12), (40, 12), (38, 12)]),
-            "CC": set([(2, 1), (3, 2), (5, 4), (6, 5), (8, 7), (9, 8), (11, 10), (12, 11)]), 
-            "CN": set([(10, 0), (1, 0), (4, 0), (7, 0)]), 
-            "C-sp3": set([(10, 0), (1, 0), (4, 0), (7, 0), (2, 1), (3, 2), (5, 4), (6, 5), (8, 7), (9, 8), (11, 10), (12, 11)]), 
+            "CC": set([(2, 1), (3, 2), (5, 4), (6, 5), (8, 7), (9, 8), (11, 10), (12, 11)]),
+            "CN": set([(10, 0), (1, 0), (4, 0), (7, 0)]),
+            "C-sp3": set([(10, 0), (1, 0), (4, 0), (7, 0), (2, 1), (3, 2), (5, 4), (6, 5), (8, 7), (9, 8), (11, 10), (12, 11)]),
             "C-[CN]": set([(10, 0), (1, 0), (4, 0), (7, 0), (2, 1), (3, 2), (5, 4), (6, 5), (8, 7), (9, 8), (11, 10), (12, 11)])
         }
         test_results = dict((key, []) for key in expected_results)
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
             test_results[tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
-            
+
         def generate_alternatives(test_item):
             a, b = test_item
             if self.molecule.numbers[a] == self.molecule.numbers[b]:
                 return [test_item, (b, a)]
             else:
                 return [test_item]
-                
+
         self.verify(expected_results, test_results, generate_alternatives)
 
     def test_bond_angles(self):
@@ -104,15 +104,15 @@ class MolecularGraphsTPA(unittest.TestCase):
         test_results = dict((key, []) for key in expected_results)
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
             test_results[tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
-        
+
         def generate_alternatives(test_item):
             a, b, c = test_item
             if self.molecule.numbers[a] == self.molecule.numbers[c]:
                 return [test_item, (c, b, a)]
             else:
                 return [test_item]
-                
-        self.verify(expected_results, test_results, generate_alternatives)        
+
+        self.verify(expected_results, test_results, generate_alternatives)
 
     def test_dihedral_angles(self):
         criteria_sets = DihedralSets([
@@ -128,13 +128,13 @@ class MolecularGraphsTPA(unittest.TestCase):
         test_results = dict((key, []) for key in expected_results)
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
             test_results[tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
-        
+
         def generate_alternatives(test_item):
             a, b, c, d = test_item
             if (self.molecule.numbers[a] == self.molecule.numbers[d]) and (self.molecule.numbers[b] == self.molecule.numbers[c]):
                 return [test_item, (d, c, b, a)]
             else:
                 return [test_item]
-                
-        self.verify(expected_results, test_results, generate_alternatives)     
+
+        self.verify(expected_results, test_results, generate_alternatives)
 

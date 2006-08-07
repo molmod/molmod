@@ -1,22 +1,22 @@
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2005 Toon Verstraelen
-# 
+#
 # This file is part of MolMod.
-# 
+#
 # MolMod is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# 
+#
 # --
 
 
@@ -25,7 +25,7 @@ import numpy
 
 
 __all__ = [
-    "InternalCoordinate", "Select", 
+    "InternalCoordinate", "Select",
     "Binary", "Add", "Sub", "Delta", "Mul", "Div", "Dot",
     "Unary", "Distance", "DistanceSqr", "Sqr", "Sqrt",
     "InternalCoordinatesCache"
@@ -43,11 +43,11 @@ class InternalCoordinate(object):
     def __init__(self, output_style, **keyvals):
         self.__dict__.update(keyvals)
         self.output_style = output_style
-        
+
     def description(self):
         temp = str(self.__class__)
         return temp[temp.rfind(".")+1:-2].lower()
-        
+
     def label(self):
         raise NotImplementedError
 
@@ -77,7 +77,7 @@ class Select(InternalCoordinate):
     def __init__(self, index, **keyvals):
         InternalCoordinate.__init__(self, VECTOR, **keyvals)
         self.index = index
-        
+
     def value_tangent(self, coordinates):
         tangent = numpy.zeros((len(coordinates), 3, 3), float)
         tangent[self.index, 0, 0] = 1
@@ -88,7 +88,7 @@ class Select(InternalCoordinate):
     def curvature(self, coordinates):
         curvature = numpy.zeros((len(coordinates), 3, len(coordinates), 3, 3), float)
         return curvature
-        
+
     def label(self):
         return "%s(%i)" % (self.description(), self.index)
 
@@ -96,15 +96,15 @@ class Select(InternalCoordinate):
 class Binary(InternalCoordinate):
     """
     The base class for internal coordinates that take _two_ internal
-    coordinate as input parameter. 'iic' in the code stands for "input 
+    coordinate as input parameter. 'iic' in the code stands for "input
     internal coordinate".
     """
-       
+
     def __init__(self, output_style, iic1, iic2, **keyvals):
         InternalCoordinate.__init__(self, output_style, **keyvals)
         self.iic1 = iic1
         self.iic2 = iic2
-        
+
     def label(self):
         return "%s(%s,%s)" % (self.description(), self.iic1.label(), self.iic2.label())
 
@@ -170,7 +170,7 @@ class Mul(ScalarBinary):
         c1 = self.iic1.curvature(coordinates)
         c2 = self.iic2.curvature(coordinates)
         return v1*c2 + v2*c1 + numpy.multiply.outer(t1, t2) + numpy.multiply.outer(t2, t1)
-        
+
 
 class Div(ScalarBinary):
     def value_tangent(self, coordinates):
@@ -189,7 +189,7 @@ class Div(ScalarBinary):
             + v1*c2
             - 2*v1*numpy.multiply.outer(t2, t2)/v2
         )/v2)/v2
-        
+
 
 class Dot(Binary):
     def __init__(self, iic1, iic2, **keyvals):
@@ -215,7 +215,7 @@ class Dot(Binary):
         for i in range(3):
             cdot += e1[i]*c2[:,:,:,:,i] + numpy.multiply.outer(t1[:,:,i], t2[:,:,i]) + numpy.multiply.outer(t2[:,:,i], t1[:,:,i]) + e2[i]*c1[:,:,:,:,i]
         return cdot
-        
+
 
 class Scale(Binary):
     def __init__(self, iic1, iic2, **keyvals):
@@ -230,7 +230,7 @@ class Scale(Binary):
         for i in xrange(3):
             tscale[:,:,i] += e2[i]*t1
         return v1*e2, tscale
-        
+
     def curvature(self, coordinates):
         v1, t1 = self.iic1.value_tangent(coordinates)
         e2, t2 = self.iic2.value_tangent(coordinates)
@@ -245,14 +245,14 @@ class Scale(Binary):
 class Unary(InternalCoordinate):
     """
     The base class for internal coordinates that take _one_ internal
-    coordinate as input parameter. 'iic' in the code stands for "input 
+    coordinate as input parameter. 'iic' in the code stands for "input
     internal coordinate".
     """
 
     def __init__(self, output_style, iic, **keyvals):
         InternalCoordinate.__init__(self, output_style, **keyvals)
         self.iic = iic
-        
+
     def label(self):
         return "%s(%s)" % (self.description(), self.iic.label())
 
@@ -261,11 +261,11 @@ class Factor(Unary):
     def __init__(self, factor, iic, **keyvals):
         Unary.__init__(self, iic.output_style, iic, **keyvals)
         self.factor = factor
-        
+
     def value_tangent(self, coordinates):
         e, t = self.iic.value_tangent(coordinates)
         return self.factor*e, self.factor*t
-        
+
     def curvature(self, coordinates):
         return self.factor*self.iic.curvature(coordinates)
 
@@ -366,30 +366,30 @@ class Sqrt(ScalarUnary):
 
 class InternalCoordinatesCache(object):
     """
-    InternalCoordinatesCache has a twofold goal: (i) Ease the mass creation of 
+    InternalCoordinatesCache has a twofold goal: (i) Ease the mass creation of
     internal coordinates and (ii) make sure an internal coordinate is only
     created once.
     """
     def __init__(self, molecular_graph):
         self.internal_coordinates = {}
-        self.molecular_graph = molecular_graph 
+        self.molecular_graph = molecular_graph
         self.user_coordinates = {}
-        
+
     def __getitem__(self, key):
         return self.user_coordinates[key]
-        
+
     def add(self, InternalCoordinateClass, *parameters, **keyvals):
         """
         Creates an internal coordinate and adds it to the collection.
-        
-        This method assures that all the parameters are internal coordinates 
+
+        This method assures that all the parameters are internal coordinates
         that are availlable in the collection and the the given internal
         coordinate is not recreated if it already exists.
         """
         for parameter in parameters:
             if isinstance(parameter, InternalCoordinate):
                 assert parameter.label() in self.internal_coordinates
-        
+
         internal_coordinate = InternalCoordinateClass(*parameters, **keyvals)
         label = internal_coordinate.label()
         existing_internal_coordinate = self.internal_coordinates.get(label)
@@ -399,7 +399,7 @@ class InternalCoordinatesCache(object):
         else:
             existing_internal_coordinate.__dict__.update(keyvals)
             return existing_internal_coordinate
-    
+
     def add_internal_coordinate(self, tag, internal_coordinate):
         internal_coordinate.tag = tag
         existing_internal_coordinates = self.user_coordinates.get(tag)
@@ -407,7 +407,7 @@ class InternalCoordinatesCache(object):
             self.user_coordinates[tag] = [internal_coordinate]
         else:
             existing_internal_coordinates.append(internal_coordinate)
-   
+
     def add_long_range_distances(self, criteria_sets):
         def all_pairs(atom_criteria):
             first_criterium = atom_criteria[0]
@@ -421,8 +421,8 @@ class InternalCoordinatesCache(object):
                         yield (index1, index2)
                     elif first_criterium(index2) and second_criterium(index1):
                         yield (index2, index1)
-                
-    
+
+
         nonbonded_pairs = dict((tag, set(all_pairs(atom_criteria))) for tag, atom_criteria, bond_criteria, filter_tags in criteria_sets.yield_criteria())
 
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets.bond_excludes()):
@@ -448,8 +448,8 @@ class InternalCoordinatesCache(object):
             s1 = self.add(Select, id[1])
             e = self.add(Delta, s1, s0)
             d = self.add(
-                Distance, 
-                e, 
+                Distance,
+                e,
                 name="long range distance %i-%i" % id,
                 id=id,
                 symbol="D%i.%i" % id
@@ -459,11 +459,11 @@ class InternalCoordinatesCache(object):
         for tag, ids in nonbonded_pairs.iteritems():
             for id in ids:
                 self.add_internal_coordinate(tag, distance(id, tag))
-   
+
     def add_bond_lengths(self, criteria_sets):
         """
         Adds the bond lengths described in criteria_sets to the collection.
-        
+
         Arguments
         criteria_sets -- see molmod.molecular_graphs
         """
@@ -473,17 +473,17 @@ class InternalCoordinatesCache(object):
             s1 = self.add(Select, id[1])
             e = self.add(Delta, s1, s0)
             d = self.add(
-                Distance, 
-                e, 
+                Distance,
+                e,
                 name="bond length %i-%i" % id,
                 id=id,
                 symbol="D%i-%i" % id
             )
             self.add_internal_coordinate(tag, d)
-            
+
     def add_bend_cosines(self, criteria_sets):
         """
-        Adds the cosines of the bend angles described in criteria_sets to the 
+        Adds the cosines of the bend angles described in criteria_sets to the
         collection.
         """
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
@@ -498,15 +498,15 @@ class InternalCoordinatesCache(object):
             dot = self.add(Dot, e1, e2)
             dd = self.add(Mul, d1, d2)
             c = self.add(
-                Div, 
+                Div,
                 dot,
-                dd, 
+                dd,
                 name="bend cos %i-%i-%i" % id,
                 id=id,
                 symbol="C%i-%i-%i" % id
             )
             self.add_internal_coordinate(tag, c)
-        
+
     def add_bend_spans(self, criteria_sets):
         """
         Adds the distances that span the bend angles described in criteria_sets
@@ -518,8 +518,8 @@ class InternalCoordinatesCache(object):
             s2 = self.add(Select, id[2])
             e = self.add(Delta, s0, s2)
             d = self.add(
-                Distance, 
-                e, 
+                Distance,
+                e,
                 name="bend span %i-%i-%i" % id,
                 id=id,
                 symbol="D%i^%i" % (id[0], id[2])
@@ -558,8 +558,8 @@ class InternalCoordinatesCache(object):
             n2 = self.add(Mul, nl, nr)
             n = self.add(Sqrt, n2)
             dihedral_cos = self.add(
-                Div, 
-                t, 
+                Div,
+                t,
                 n,
                 name="dihedral cos %i-%i-%i-%i" % id,
                 id=id,
@@ -578,8 +578,8 @@ class InternalCoordinatesCache(object):
             s3 = self.add(Select, id[3])
             e = self.add(Delta, s0, s3)
             d = self.add(
-                Distance, 
-                e, 
+                Distance,
+                e,
                 name="dihedral span %i-%i-%i-%i" % id,
                 id=id,
                 symbol="D%i~%i" % (id[0], id[3])
@@ -623,7 +623,7 @@ class InternalCoordinatesCache(object):
                 id=id,
                 symbol="C%i-%i(%i,%i)" % id
             )
-            self.add_internal_coordinate(tag, out_of_plane_cos) 
+            self.add_internal_coordinate(tag, out_of_plane_cos)
 
 
     def add_out_of_plane_distances(self, criteria_sets):
@@ -662,7 +662,7 @@ class InternalCoordinatesCache(object):
                 id=id,
                 symbol="D%i-(%i,%i,%i)" % id
             )
-            self.add_internal_coordinate(tag, out_of_plane_distance) 
+            self.add_internal_coordinate(tag, out_of_plane_distance)
 
     def yield_related_internal_coordinates(self, tag1, tag2, order_related=2):
         for ic1 in self[tag1]:

@@ -84,7 +84,7 @@ class PairFF(object):
             for index2 in xrange(index1):
                 if not frozenset([index1, index2]) in self.exclude_pairs:
                     for s, v in self.yield_pair_energies(index1, index2):
-                        result += s*v 
+                        result += s*v
         return result
 
     def gradient(self):
@@ -105,7 +105,7 @@ class PairFF(object):
                         if index3 != index1 and not frozenset([index1, index3]) in self.exclude_pairs:
                             d_1 = 1/self.distances[index1,index3]
                             for (se, ve), (sg, vg), (sh, vh) in zip(
-                                self.yield_pair_energies(index1, index3), 
+                                self.yield_pair_energies(index1, index3),
                                 self.yield_pair_gradients(index1, index3),
                                 self.yield_pair_hessians(index1, index3)
                             ):
@@ -119,7 +119,7 @@ class PairFF(object):
                 elif not frozenset([index1, index2]) in self.exclude_pairs:
                     d_1 = 1/self.distances[index1, index2]
                     for (se, ve), (sg, vg), (sh, vh) in zip(
-                        self.yield_pair_energies(index1, index2), 
+                        self.yield_pair_energies(index1, index2),
                         self.yield_pair_gradients(index1, index2),
                         self.yield_pair_hessians(index1, index2)
                     ):
@@ -142,7 +142,7 @@ class PairFF(object):
             for index2 in xrange(self.numc):
                 result[index1*3:(index1+1)*3,index2*3:(index2+1)*3] = tmp[index1,index2]
         return result
-                
+
 
 class CoulombFF(PairFF):
     def __init__(self, coordinates, charges=None, dipoles=None, exclude_pairs=[]):

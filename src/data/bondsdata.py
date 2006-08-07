@@ -1,22 +1,22 @@
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2005 Toon Verstraelen
-# 
+#
 # This file is part of MolMod.
-# 
+#
 # MolMod is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# 
+#
 # --
 
 
@@ -26,7 +26,7 @@ import string, numpy
 
 
 __all__ = [
-    "BondData", "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "BOND_HYBRID", 
+    "BondData", "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "BOND_HYBRID",
     "BOND_HYDROGEN", "bond_types"
 ]
 
@@ -61,8 +61,8 @@ class BondData(object):
         self.load_bond_data(filename)
         self.approximate_unkown_bond_lengths()
         self.max_length = max(
-            max(lengths.itervalues()) 
-            for lengths 
+            max(lengths.itervalues())
+            for lengths
             in self.lengths.itervalues()
             if len(lengths) > 0
         )
@@ -70,7 +70,7 @@ class BondData(object):
     def load_bond_data(self, filename):
         """
         Load the bond data from the given file.
-        
+
         It's assumed that the uncommented lines in the data file have the
         following format:
         "symbol1 symbol2 number1 number2 bond_length_single_a\
@@ -81,7 +81,7 @@ class BondData(object):
 
         def read_units(unit_names):
             return [unit[unit_name] for unit_name in unit_names]
-            
+
         def read_length(BOND_TYPE, words, col):
             nlow = int(words[2])
             nhigh = int(words[3])
@@ -114,11 +114,11 @@ class BondData(object):
                     if (pair not in dataset) and (atom1.radius is not None) and (atom2.radius is not None):
                         dataset[pair] = (atom1.radius + atom2.radius)
                     #print "%3i  %3i  %s %30s %30s" % (n1, n2, dataset.get(pair), atom1, atom2)
-                
+
     def bonded(self, n1, n2, distance):
         """
         Return the estimated bond type.
-        
+
         This method checks wether for the given pair of atom numbers, the
         given distance corresponds to a certain bond_length. The best
         matching bond type will be returned. If the distance is a factor
@@ -127,7 +127,7 @@ class BondData(object):
         """
         if distance > self.max_length * self.bond_tolerance:
             return None
-            
+
         deviation = 0.0
         pair = frozenset([n1,n2])
         result = None
@@ -144,11 +144,11 @@ class BondData(object):
                         result = bond_type
                         deviation = new_deviation
         return result
-        
+
     def get_length(self, n1, n2, bond_type):
         """
         Return the length of a bond between n1 and n2 of type bond_type.
-        
+
         This is a safe method for querying a bond_length. If no answer can be
         found, this get_length returns None.
         """
@@ -156,4 +156,4 @@ class BondData(object):
         if dataset == None:
             return None
         return dataset.get(frozenset([n1, n2]))
-    
+

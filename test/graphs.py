@@ -1,22 +1,22 @@
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2005 Toon Verstraelen
-# 
+#
 # This file is part of MolMod.
-# 
+#
 # MolMod is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# 
+#
 # --
 
 
@@ -24,34 +24,34 @@ from molmod.graphs import SymmetricGraph, OneToOne, Criterium
 
 import unittest, copy
 
-__all__ = ["ExampleGraphs", "OneToOne"]    
+__all__ = ["ExampleGraphs", "OneToOne"]
 
 
 class ExampleGraphs(unittest.TestCase):
     def setUp(self):
         self.graphs = [
-            (   
-                "bond", 
-                SymmetricGraph([(0,1)]), 
+            (
+                "bond",
+                SymmetricGraph([(0,1)]),
                 [(), ((0,1),)]
             ), (
                 "angle",
                 SymmetricGraph([(0,1), (0,2)]),
                 [(), ((1,2),)]
             ), (
-                "star 3", 
+                "star 3",
                 SymmetricGraph([(0,1), (0,2), (0,3)]),
                 [(), ((1,2,3),), ((1,3,2),), ((1,2),), ((2,3),), ((1,3),)]
             ), (
-                "triangle", 
+                "triangle",
                 SymmetricGraph([(0,1), (1,2), (2,0)]),
                 [(), ((0,1,2),), ((0,2,1),), ((0,1),), ((1,2),), ((0,2),)]
             ), (
-                "chain 3", 
+                "chain 3",
                 SymmetricGraph([(0,1), (1,2), (2,3)]),
                 [(), ((0,3), (1,2))]
             ), (
-                "star 4", 
+                "star 4",
                 SymmetricGraph([(0,1), (0,2), (0,3), (0,4)]),
                 [(), ((1,2),), ((1,3),), ((1,4),), ((2,3),), ((2,4),), ((3,4),),
                  ((1,2),(3,4)), ((1,3),(2,4)), ((1,4),(2,3)),
@@ -59,47 +59,47 @@ class ExampleGraphs(unittest.TestCase):
                  ((1,4,3),), ((2,3,4),), ((2,4,3),), ((1,2,3,4),), ((1,2,4,3),),
                  ((1,3,2,4),), ((1,3,4,2),), ((1,4,2,3),), ((1,4,3,2),)]
             ), (
-                "2 star 3", 
+                "2 star 3",
                 SymmetricGraph([(0,1), (0,2), (0,3), (1,4), (1,5)]),
                 [(),
-                ((2,3),), ((4,5),), ((2,3),(4,5)), 
-                
-                ((0,1), (2,5), (3,4)), ((0,1), (2,4), (3,5)), 
+                ((2,3),), ((4,5),), ((2,3),(4,5)),
+
+                ((0,1), (2,5), (3,4)), ((0,1), (2,4), (3,5)),
                 ((0,1), (2,5,3,4)), ((0,1), (2,4,3,5))
                 ]
             ), (
-                "4 star 3", 
+                "4 star 3",
                 SymmetricGraph([(0, 1), (0, 2), (0, 3), (1, 4), (1, 5), (2, 6), (2, 7), (3, 8), (3, 9)]),
-                [(), 
+                [(),
                 ((4,5),), ((6,7),), ((8,9),),
-                ((4,5),(6,7)), ((4,5),(8,9)), ((6,7),(8,9)), 
+                ((4,5),(6,7)), ((4,5),(8,9)), ((6,7),(8,9)),
                 ((4,5),(6,7),(8,9)),
-                
+
                 ((1,2),(4,6),(5,7)), ((1,2),(4,7),(5,6)),
-                ((1,3),(4,8),(5,9)), ((1,3),(4,9),(5,8)), 
+                ((1,3),(4,8),(5,9)), ((1,3),(4,9),(5,8)),
                 ((2,3),(6,8),(7,9)), ((2,3),(6,9),(7,8)),
-                
+
                 ((1,2),(4,6,5,7)), ((1,2),(4,7,5,6)),
-                ((1,3),(4,8,5,9)), ((1,3),(4,9,5,8)), 
+                ((1,3),(4,8,5,9)), ((1,3),(4,9,5,8)),
                 ((2,3),(6,8,7,9)), ((2,3),(6,9,7,8)),
-                
+
                 ((1,2),(4,6),(5,7),(8,9)), ((1,2),(4,7),(5,6),(8,9)),
-                ((1,3),(4,8),(5,9),(6,7)), ((1,3),(4,9),(5,8),(6,7)), 
+                ((1,3),(4,8),(5,9),(6,7)), ((1,3),(4,9),(5,8),(6,7)),
                 ((2,3),(4,5),(6,8),(7,9)), ((2,3),(4,5),(6,9),(7,8)),
 
                 ((1,2),(4,6,5,7),(8,9)), ((1,2),(4,7,5,6),(8,9)),
-                ((1,3),(4,8,5,9),(6,7)), ((1,3),(4,9,5,8),(6,7)), 
+                ((1,3),(4,8,5,9),(6,7)), ((1,3),(4,9,5,8),(6,7)),
                 ((2,3),(4,5),(6,8,7,9)), ((2,3),(4,5),(6,9,7,8)),
-                
-                ((1,2,3),(4,6,8,5,7,9)), ((1,2,3),(4,6,9,5,7,8)), 
-                ((1,2,3),(4,7,8,5,6,9)), ((1,2,3),(4,7,9,5,6,8)), 
 
-                ((1,3,2),(4,8,6,5,9,7)), ((1,3,2),(4,8,7,5,9,6)), 
+                ((1,2,3),(4,6,8,5,7,9)), ((1,2,3),(4,6,9,5,7,8)),
+                ((1,2,3),(4,7,8,5,6,9)), ((1,2,3),(4,7,9,5,6,8)),
+
+                ((1,3,2),(4,8,6,5,9,7)), ((1,3,2),(4,8,7,5,9,6)),
                 ((1,3,2),(4,9,6,5,8,7)), ((1,3,2),(4,9,7,5,8,6)),
 
-                ((1,2,3),(4,6,8),(5,7,9)), ((1,2,3),(4,6,9),(5,7,8)), 
-                ((1,2,3),(4,7,8),(5,6,9)), ((1,2,3),(4,7,9),(5,6,8)), 
-                ((1,3,2),(4,8,6),(5,9,7)), ((1,3,2),(4,8,7),(5,9,6)), 
+                ((1,2,3),(4,6,8),(5,7,9)), ((1,2,3),(4,6,9),(5,7,8)),
+                ((1,2,3),(4,7,8),(5,6,9)), ((1,2,3),(4,7,9),(5,6,8)),
+                ((1,3,2),(4,8,6),(5,9,7)), ((1,3,2),(4,8,7),(5,9,6)),
                 ((1,3,2),(4,9,6),(5,8,7)), ((1,3,2),(4,9,7),(5,8,6))
                 ]
             )
@@ -147,13 +147,13 @@ class ExampleGraphs(unittest.TestCase):
                 []
             )
         ]
-        
+
     def test_symmetries(self):
         for name, graph, expected_symmetries in self.graphs:
             common = []
             unexpected = []
             unsatisfied = copy.deepcopy(expected_symmetries)
-            
+
             for symmetry in graph.symmetries:
                 try:
                     i = unsatisfied.index(symmetry)
@@ -161,13 +161,13 @@ class ExampleGraphs(unittest.TestCase):
                     common.append(symmetry)
                 except:
                     unexpected.append(symmetry)
-            
+
             def message():
                 return ("-- Graphs %s ---\n" % name) + \
                        ("common (%i): %s\n" % (len(common), common)) + \
                        ("unexpected (%i): %s\n" % (len(unexpected), unexpected)) + \
                        ("unsatisfied (%i): %s\n" % (len(unsatisfied), unsatisfied))
-            
+
             self.assert_(len(unexpected) == 0, message())
             self.assert_(len(unsatisfied) == 0, message())
 

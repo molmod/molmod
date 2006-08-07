@@ -1,22 +1,22 @@
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2005 Toon Verstraelen
-# 
+#
 # This file is part of MolMod.
-# 
+#
 # MolMod is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# 
+#
 # --
 
 from molmod.data import periodic
@@ -28,8 +28,8 @@ import numpy, math
 
 
 __all__ = [
-    "Molecule", 
-    "molecule_xyz_from_stream", "molecule_xyz_from_str", 
+    "Molecule",
+    "molecule_xyz_from_stream", "molecule_xyz_from_str",
     "molecule_xyz_from_filename"
 ]
 
@@ -43,7 +43,7 @@ class Molecule:
     def __init__(self, atoms=[]):
         """
         Initialiaze a Molecule instance.
-        
+
         arguments:
         atoms -- [[number, x, y, z], ...]
         """
@@ -52,7 +52,7 @@ class Molecule:
         for index, line in enumerate(atoms):
             self.numbers[index] = line[0]
             self.coordinates[index] = line[1:4]
-                
+
     def normalize(self):
         """
         Bring the molecule in a normalized frame. This only works if the
@@ -125,12 +125,12 @@ class Molecule:
         bbox_low += bbox_cor
         bbox_high -= bbox_cor
         return (
-            bbox_low, 
-            bbox_num[0], 
+            bbox_low,
+            bbox_num[0],
             numpy.array([grid_spacing, 0, 0], float),
-            bbox_num[1], 
+            bbox_num[1],
             numpy.array([0, grid_spacing, 0], float),
-            bbox_num[2], 
+            bbox_num[2],
             numpy.array([0, 0, grid_spacing], float)
         )
 
@@ -150,8 +150,8 @@ def molecule_xyz_from_stream(stream):
             else:
                 number = atom_info.number
             atoms.append([
-                number, 
-                from_angstrom(float(words[1])), 
+                number,
+                from_angstrom(float(words[1])),
                 from_angstrom(float(words[2])),
                 from_angstrom(float(words[3]))
             ])

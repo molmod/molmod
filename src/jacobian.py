@@ -1,22 +1,22 @@
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2005 Toon Verstraelen
-# 
+#
 # This file is part of MolMod.
-# 
+#
 # MolMod is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# 
+#
 # --
 
 # Tools related to solving the jacobian system
@@ -25,14 +25,14 @@ import numpy, numpy.linalg, math
 
 def jacobian_analysis(configuration, internal_coordinates):
     configuration.internal_coordinates = internal_coordinates
-    
+
     jacobian = []
     values = []
     for internal_coordinate in internal_coordinates:
         value, tangent = internal_coordinate.value_tangent(configuration.cartesian_values)
         values.append(value)
         jacobian.append(numpy.ravel(tangent))
-        
+
     configuration.internal_values = numpy.array(values)
     configuration.jacobian = numpy.transpose(numpy.array(jacobian))
 
@@ -47,9 +47,9 @@ def energy_analysis(configuration, internal_coordinates):
     configuration.rank = rank
     S = S[:rank]
     V = V[:,:rank]
-    
+
     particular_transform = numpy.dot(W[:,:rank], numpy.transpose(V/S))
-    
+
     configuration.gradient = numpy.ravel(configuration.gradient)
     configuration.particular = numpy.dot(particular_transform, configuration.gradient)
     configuration.gradient_error = numpy.ones(configuration.gradient.shape, float)*configuration.gradient_accuracy

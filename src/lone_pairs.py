@@ -1,22 +1,22 @@
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2005 Toon Verstraelen
-# 
+#
 # This file is part of MolMod.
-# 
+#
 # MolMod is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# 
+#
 # --
 
 
@@ -31,13 +31,13 @@ def lone_pair_2(bond1, bond2, angle):
     lone pairs. (The atom under study is supposed to be of type O.)
 
     Arguments:
-    bond1 -- the relative vector from the central atom to the first 
+    bond1 -- the relative vector from the central atom to the first
              bonded atom
-    bond2 -- ... 
+    bond2 -- ...
     angle -- the angle between the two lone pairs.
 
     Returns:
-    lone1 -- the relative vector with unit length pointing along the 
+    lone1 -- the relative vector with unit length pointing along the
              first lone pair
     lone2 -- ...
     """
@@ -66,7 +66,7 @@ def lone_pair_1(bond1, bond2, bond3):
     unit length. (The atom under study is supposed to be of type N.)
 
     Arguments:
-    bond1 -- the relative vector from the central atom to the first 
+    bond1 -- the relative vector from the central atom to the first
              bonded atom
     bond2 -- ...
     bond3 -- ...
@@ -75,10 +75,10 @@ def lone_pair_1(bond1, bond2, bond3):
     lone -- the relative vector with unit length pointing along the
             lone pair
     """
-    
+
     lone = -(
-        bond1/math.sqrt(numpy.dot(bond1, bond1)) + 
-        bond2/math.sqrt(numpy.dot(bond2, bond2)) + 
+        bond1/math.sqrt(numpy.dot(bond1, bond1)) +
+        bond2/math.sqrt(numpy.dot(bond2, bond2)) +
         bond3/math.sqrt(numpy.dot(bond3, bond3))
     )
     length = math.sqrt(numpy.dot(lone, lone))
@@ -90,7 +90,7 @@ def lone_pair_1(bond1, bond2, bond3):
 def all_lone_pairs(molecule, singles=[7], doubles=[8], angle=1.910):
     """
     Returns a list with pairs (index, lone), where index indicates the
-    atom and lone is a relative vector with unit length pointing along 
+    atom and lone is a relative vector with unit length pointing along
     a lone pair on that atom.
 
     Arguments:
@@ -102,7 +102,7 @@ def all_lone_pairs(molecule, singles=[7], doubles=[8], angle=1.910):
     Returns:
     lone_pairs -- a list with pairs (index, lone)
     """
-    
+
     result = []
     mgraph = MolecularGraph(molecule)
 
@@ -126,6 +126,6 @@ def all_lone_pairs(molecule, singles=[7], doubles=[8], angle=1.910):
             )
             result.append((index, lone1))
             result.append((index, lone2))
-        
+
     return result
-    
+
