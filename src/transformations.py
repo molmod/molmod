@@ -170,7 +170,7 @@ class Translation(Base):
     def apply_inverse_before(self, child): # self -> self AFTER !child
         self.t[:] = self.vector_apply(child.vector_apply_inverse(numpy.zeros(3, float)))
 
-    def compare(self, other, translation_threshold=1e-3, rotation_threshold=1e-3):
+    def compare(self, other, translation_threshold=1e-3):
         return sum((self.t - other.t)**2) < translation_threshold
 
     def assign_shallow(self, other):
@@ -254,7 +254,7 @@ class Rotation(Base):
     def apply_inverse_before(self, child): # self -> self AFTER !child
         self.r[:] = child.matrix_apply_inverse_after(self.r)
 
-    def compare(self, other, translation_threshold=1e-3, rotation_threshold=1e-3):
+    def compare(self, other, rotation_threshold=1e-3):
         return sum((self.r - other.r).ravel()**2) < rotation_threshold
 
     def assign_shallow(self, other):
