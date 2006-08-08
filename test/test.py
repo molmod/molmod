@@ -36,6 +36,7 @@ from pairff import *
 from data import *
 from unit_cell import *
 from clusters import *
+from transformations import *
 
 unittest.main()
 
