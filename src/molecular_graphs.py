@@ -234,7 +234,7 @@ class MolecularGraph(Graph):
             for index in xrange(len(self.molecule.numbers)):
                 yield PositionedObject(index, self.molecule.coordinates[index])
 
-        binned_atoms = SparseBinnedObjects(yield_positioned_atoms, bonds.max_length*bonds.bond_tolerance)
+        binned_atoms = SparseBinnedObjects(yield_positioned_atoms(), bonds.max_length*bonds.bond_tolerance)
 
         def compare_function(positioned1, positioned2):
             delta = positioned2.vector - positioned1.vector

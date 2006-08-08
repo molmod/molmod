@@ -43,7 +43,7 @@ class Distances(unittest.TestCase):
             for index in xrange(len(m.numbers)):
                 yield PositionedObject((m, index), m.coordinates[index])
 
-        return m, SparseBinnedObjects(yield_positioned_atoms, self.gridsize)
+        return m, SparseBinnedObjects(yield_positioned_atoms(), self.gridsize)
 
     def verify(self, yield_pairs, distances, unit_cell=None):
         missing_pairs = []

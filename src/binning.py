@@ -66,7 +66,7 @@ class SparseBinnedObjects(object):
     All bins are uniquely defined by their indices i,j,k as defined in __init__.
     """
 
-    def __init__(self, yield_positioned_objects, gridsize=1):
+    def __init__(self, positioned_objects, gridsize=1):
         """
         Initialize a BinnedObjects instance.
 
@@ -81,7 +81,7 @@ class SparseBinnedObjects(object):
 
         self.bins = {}
 
-        for positioned_object in yield_positioned_objects():
+        for positioned_object in positioned_objects:
             indices = tuple(numpy.floor(positioned_object.vector*self.reciproke).astype(int))
             bin = self.bins.get(indices)
             if bin is None:
