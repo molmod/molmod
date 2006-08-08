@@ -37,6 +37,7 @@ from data import *
 from unit_cell import *
 from clusters import *
 from transformations import *
+from environments import *
 
 unittest.main()
 
