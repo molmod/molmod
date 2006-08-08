@@ -30,8 +30,7 @@ __all__ = ["Environment", "calculate_environments"]
 
 class Environment(object):
     def __init__(self, positioned):
-        self.id = positioned.id
-        self.coordinate = positioned.vector
+        self.__dict__.update(positioned.__dict__)
         deltas = []
         distances = []
 
