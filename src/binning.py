@@ -50,6 +50,8 @@ class PositionedObject(object):
         id -- A user defined id that is associated with the vector.
         vector -- A numpy array with shape (3,)
         """
+        assert isinstance(vector, numpy.ndarray)
+        assert vector.shape == (3,)
         self.id = id
         self.vector = vector
 
