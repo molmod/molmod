@@ -104,10 +104,10 @@ class Translation(Base):
         result = "TRANSLATION\n"
         for i in range(3):
             result += "% 10.7f\n" % self.t[i]
-        return result
+        return result[:-1]
 
     def clear(self):
-        self.t[:] = 0
+        self.t = 0
 
     def from_matrix(self, m):
         # check wether the t part is ok
@@ -116,7 +116,7 @@ class Translation(Base):
         assert max(z) < 1.0e-6, "The given matrix doesn't have correct translational part"
         assert m[3,3] == 1.0, "The lower right element of the given matrix must be 1.0."
         # get the translational part
-        self.t[:] = m[0:3, 3]
+        self.t = m[0:3, 3]
 
     def get_matrix(self):
         temp = numpy.identity(4, float)
@@ -159,23 +159,23 @@ class Translation(Base):
         return m
 
     def apply_after(self, parent): # self -> parent AFTER self
-        self.t[:] = parent.vector_apply(self.t)
+        self.t = parent.vector_apply(self.t)
 
     def apply_inverse_after(self, parent): # self -> !parent AFTER self
-        self.t[:] = parent.vector_apply_inverse(self.t)
+        self.t = parent.vector_apply_inverse(self.t)
 
     def apply_before(self, child): # self -> self AFTER child
-        self.t[:] = self.vector_apply(child.vector_apply(numpy.zeros(3, float)))
+        self.t = self.vector_apply(child.vector_apply(numpy.zeros(3, float)))
 
     def apply_inverse_before(self, child): # self -> self AFTER !child
-        self.t[:] = self.vector_apply(child.vector_apply_inverse(numpy.zeros(3, float)))
+        self.t = self.vector_apply(child.vector_apply_inverse(numpy.zeros(3, float)))
 
     def compare(self, other, translation_threshold=1e-3):
         return sum((self.t - other.t)**2) < translation_threshold
 
     def assign_shallow(self, other):
         if isinstance(other, Translation):
-            self.t[:] = other.t
+            self.t = other.t
 
 
 class Rotation(Base):
@@ -186,14 +186,15 @@ class Rotation(Base):
         result = "ROTATION\n"
         for i in range(3):
             result += "[ % 10.7f \t % 10.7f \t % 10.7f ]\n" % tuple(self.r[i])
+        result += "det: %3.2f" % numpy.linalg.det(self.r)
         return result
 
     def clear(self):
-        self.r[:] = 0
+        self.r = 0
         self.r.ravel()[::4] = 1
 
     def from_matrix(self, m):
-        self.r[:] = m[0:3, 0:3]
+        self.r = m[0:3, 0:3]
 
     def get_matrix(self):
         temp = numpy.identity(4, float)
@@ -216,7 +217,7 @@ class Rotation(Base):
         glMultMatrixf(temp)
 
     def invert(self):
-        self.r[:] = self.r.transpose()
+        self.r = self.r.transpose()
 
     def inversion_rotation(self):
         self.r *= -1
@@ -243,28 +244,27 @@ class Rotation(Base):
         return numpy.dot(m, self.r.transpose())
 
     def apply_after(self, parent): # self -> parent AFTER self
-        self.r[:] = parent.matrix_apply_before(self.r)
+        self.r = parent.matrix_apply_before(self.r)
 
     def apply_inverse_after(self, parent): # self -> !parent AFTER self
-        self.r[:] = parent.matrix_apply_inverse_before(self.r)
+        self.r = parent.matrix_apply_inverse_before(self.r)
 
     def apply_before(self, child): # self -> self AFTER child
-        self.r[:] = child.matrix_apply_after(self.r)
+        self.r = child.matrix_apply_after(self.r)
 
     def apply_inverse_before(self, child): # self -> self AFTER !child
-        self.r[:] = child.matrix_apply_inverse_after(self.r)
+        self.r = child.matrix_apply_inverse_after(self.r)
 
     def compare(self, other, rotation_threshold=1e-3):
         return sum((self.r - other.r).ravel()**2) < rotation_threshold
 
     def assign_shallow(self, other):
         if isinstance(other, Rotation):
-            self.r[:] = other.r
+            self.r = other.r
 
     def get_rotation_properties(self):
-        r = self.r
         # determine wether an inversion rotation has been applied
-        invert = (numpy.linalg.det(r) < 0)
+        invert = (numpy.linalg.det(self.r) < 0)
         factor = {True: -1, False: 1}[invert]
         # get the rotation data
         # trace(r) = 1+2*cos(angle)
@@ -296,13 +296,13 @@ class Rotation(Base):
             z = axis[2] / norm
             c = math.cos(angle)
             s = math.sin(angle)
-            self.r[:] = (1-2*invert) * numpy.array([
+            self.r = (1-2*invert) * numpy.array([
                 [x*x*(1-c)+c  , x*y*(1-c)-z*s, x*z*(1-c)+y*s],
                 [x*y*(1-c)+z*s, y*y*(1-c)+c  , y*z*(1-c)-x*s],
                 [x*z*(1-c)-y*s, y*z*(1-c)+x*s, z*z*(1-c)+c  ]
             ])
         else:
-            self.r[:] = numpy.identity(3) * (1-2*invert)
+            self.r = numpy.identity(3) * (1-2*invert)
 
 
 class Complete(Translation, Rotation):
@@ -314,6 +314,7 @@ class Complete(Translation, Rotation):
         result = "COMPLETE\n"
         for i in range(3):
             result += "[ % 10.7f \t % 10.7f \t % 10.7f ] \t % 10.7f \n" % (tuple(self.r[i]) + (self.t[i],))
+        result += "det: %3.2f" % numpy.linalg.det(self.r)
         return result
 
     def clear(self):
@@ -342,8 +343,8 @@ class Complete(Translation, Rotation):
         glMultMatrixf(self.get_inverse_matrix().transpose())
 
     def invert(self):
-        self.r[:] = self.r.transpose()
-        self.t[:] = numpy.dot(self.r, -self.t)
+        self.r = self.r.transpose()
+        self.t = numpy.dot(self.r, -self.t)
 
     def vector_apply(self, v):
         return numpy.dot(self.r, v) + self.t
