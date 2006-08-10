@@ -38,6 +38,7 @@ from unit_cell import *
 from clusters import *
 from transformations import *
 from environments import *
+from descriptors import *
 
 unittest.main()
 

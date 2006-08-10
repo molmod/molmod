@@ -172,7 +172,7 @@ spherical_harmonics_descriptor_external.internal = False
 spherical_harmonics_descriptor_external.shape = lambda parameters: ((parameters["_L"]+1)**2,)
 
 
-class MolecularDescriptorsTV1(object):
+class MolecularDescriptorTV1(object):
     format = "MDTV1"
 
     ordered_descriptors = [
