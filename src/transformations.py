@@ -296,13 +296,13 @@ class Rotation(Base):
             z = axis[2] / norm
             c = math.cos(angle)
             s = math.sin(angle)
-            self.r[:] = (2*invert-1) * numpy.array([
+            self.r[:] = (1-2*invert) * numpy.array([
                 [x*x*(1-c)+c  , x*y*(1-c)-z*s, x*z*(1-c)+y*s],
                 [x*y*(1-c)+z*s, y*y*(1-c)+c  , y*z*(1-c)-x*s],
                 [x*z*(1-c)-y*s, y*z*(1-c)+x*s, z*z*(1-c)+c  ]
             ])
         else:
-            self.r[:] = numpy.identity(3) * (2*invert-1)
+            self.r[:] = numpy.identity(3) * (1-2*invert)
 
 
 class Complete(Translation, Rotation):
