@@ -237,7 +237,7 @@ class MolecularGraph(Graph):
         binned_atoms = SparseBinnedObjects(yield_positioned_atoms(), bonds.max_length*bonds.bond_tolerance)
 
         def compare_function(positioned1, positioned2):
-            delta = positioned2.vector - positioned1.vector
+            delta = positioned2.coordinate - positioned1.coordinate
             distance = math.sqrt(numpy.dot(delta, delta))
             if distance < binned_atoms.gridsize:
                 bond_order = bonds.bonded(self.molecule.numbers[positioned1.id], self.molecule.numbers[positioned2.id], distance)

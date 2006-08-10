@@ -38,7 +38,7 @@ class Environment(object):
 def calculate_environments(sparse_binned_objects, radius, unit_cell=None):
     # this is a function that will extract the environment of each object
     def delta_distance(positioned1, positioned2):
-        delta = positioned2.vector - positioned1.vector
+        delta = positioned2.coordinate - positioned1.coordinate
         if unit_cell is not None:
             delta = unit_cell.shortest_vector(delta)
         distance = numpy.linalg.norm(delta)

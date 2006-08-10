@@ -20,10 +20,10 @@
 # --
 """
 Binning is a usefull technique for efficiently calculating all distances between
-a set of vectors, when you are only interested in the distances below a given
+a set of coordinates, when you are only interested in the distances below a given
 cutoff. The algorithm consists of two major steps:
-1) Divide the given set of vectors into bins on a regular grid in space.
-2) Calculate the distances (or other usefull things) between vectors in
+1) Divide the given set of coordinates into bins on a regular grid in space.
+2) Calculate the distances (or other usefull things) between coordinates in
    neighboring bins.
 """
 
@@ -38,22 +38,22 @@ __all__ = ["PositionedObject", "SparseBinnedObjects",
 class PositionedObject(object):
     """
     PositionedObject instances are used to feed a SparseBinnedObjects instance
-    with information about the vectors that should be binned. Throug the use of
-    a PositionedObject, each vector is associated with an id.
+    with information about the coordinates that should be binned. Throug the use of
+    a PositionedObject, each coordinate is associated with an id.
     """
 
-    def __init__(self, id, vector):
+    def __init__(self, id, coordinate):
         """
         Initialize a PositionedObject instance.
 
         Arguments:
-        id -- A user defined id that is associated with the vector.
-        vector -- A numpy array with shape (3,)
+        id -- A user defined id that is associated with the coordinate.
+        coordinate -- A numpy array with shape (3,)
         """
-        assert isinstance(vector, numpy.ndarray)
-        assert vector.shape == (3,)
+        assert isinstance(coordinate, numpy.ndarray)
+        assert coordinate.shape == (3,)
         self.id = id
-        self.vector = vector
+        self.coordinate = coordinate
 
 
 class SparseBinnedObjects(object):
@@ -84,7 +84,7 @@ class SparseBinnedObjects(object):
         self.bins = {}
 
         for positioned_object in positioned_objects:
-            indices = tuple(numpy.floor(positioned_object.vector*self.reciproke).astype(int))
+            indices = tuple(numpy.floor(positioned_object.coordinate*self.reciproke).astype(int))
             bin = self.bins.get(indices)
             if bin is None:
                 bin = set()
@@ -94,7 +94,7 @@ class SparseBinnedObjects(object):
     def yield_surrounding(self, r, deltas):
         """
         Iterate over all objects in the bins that surround the bin that
-        contains vector r.
+        contains coordinate r.
         """
         center = numpy.floor(r*self.reciproke).astype(int)
         for delta in deltas:
@@ -106,7 +106,7 @@ class SparseBinnedObjects(object):
 
 class AnalyseNeighboringObjects(object):
     """
-    AnalyseNeighboringObjects is the base class for 'comparing' vectors between
+    AnalyseNeighboringObjects is the base class for 'comparing' coordinates between
     neigbouring bins.
     """
 
@@ -139,7 +139,7 @@ class AnalyseNeighboringObjects(object):
     def call_delta(self, delta):
         for center_bin in self.binned_objects1.bins.itervalues():
             for positioned1 in center_bin:
-                for neighbor_bin, positioned2 in self.binned_objects2.yield_surrounding(positioned1.vector + delta, self.compare_indices):
+                for neighbor_bin, positioned2 in self.binned_objects2.yield_surrounding(positioned1.coordinate + delta, self.compare_indices):
                     if self.allow(center_bin, neighbor_bin, positioned1, positioned2):
                         result = self.compare_function(positioned1, positioned2)
                         if result is not None:
@@ -152,7 +152,7 @@ class AnalyseNeighboringObjects(object):
 
 class IntraAnalyseNeighboringObjects(AnalyseNeighboringObjects):
     """
-    IntraAnalyseNeighboringObjects instances compare all vectors within one
+    IntraAnalyseNeighboringObjects instances compare all coordinates within one
     molecule.
     """
     def __init__(self, binned_objects, compare_function):
@@ -173,7 +173,7 @@ class IntraAnalyseNeighboringObjects(AnalyseNeighboringObjects):
 
 class InterAnalyseNeighboringObjects(AnalyseNeighboringObjects):
     """
-    InterAnalyseNeighboringObjects instances compare 'all' vectors between two
+    InterAnalyseNeighboringObjects instances compare 'all' coordinates between two
     molecules.
     """
     def __init__(self, binned_objects1, binned_objects2, compare_function):

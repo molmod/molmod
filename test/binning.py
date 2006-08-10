@@ -94,7 +94,7 @@ class Distances(unittest.TestCase):
         self.verify(yield_atom_pairs, distances, unit_cell)
 
     def compare_function(self, positioned1, positioned2):
-        delta = positioned2.vector - positioned1.vector
+        delta = positioned2.coordinate - positioned1.coordinate
         distance = math.sqrt(numpy.dot(delta, delta))
         if distance < self.gridsize:
             return distance
