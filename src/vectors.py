@@ -25,7 +25,7 @@ import numpy
 import math, random
 
 
-__all__= ["cosine", "angle", "random_orthonormal", "triangle_normal"]
+__all__= ["cosine", "angle", "random_orthonormal", "trivial_orthonormal", "triangle_normal"]
 
 
 def cosine(a, b):
@@ -51,6 +51,11 @@ def random_orthonormal(normal):
     v = numpy.cross(normal, u)
     angle = random.uniform(0.0, math.pi*2)
     return math.cos(angle)*u + math.sin(angle)*v
+
+def trivial_orthonormal(normal):
+    u = normal_fns[numpy.argmin(numpy.fabs(normal))](normal)
+    u /= math.sqrt(numpy.dot(u, u))
+    return u
 
 
 def triangle_normal(a, b, c):
