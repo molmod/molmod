@@ -22,7 +22,7 @@
 
 from molmod.molecules import molecule_xyz_from_filename
 from molmod.data import periodic
-from molmod.descriptors import MolecularDescriptorsTV1, sph_harmonics
+from molmod.descriptors import MolecularDescriptorTV1, sph_harmonics
 from molmod.transformations import Complete
 
 import numpy
@@ -42,7 +42,7 @@ class Descriptors(unittest.TestCase):
         ], float)
 
     def do_test(self, coordinates, masses, expected_is):
-        reference = MolecularDescriptorsTV1(coordinates, masses)
+        reference = MolecularDescriptorTV1(coordinates, masses)
         self.assert_(reference.inversion_symmetric == expected_is)
 
         for counter in xrange(3):
@@ -58,7 +58,7 @@ class Descriptors(unittest.TestCase):
                 for coordinate
                 in coordinates
             ], float)
-            new_descriptor = MolecularDescriptorsTV1(new_coordinates, masses)
+            new_descriptor = MolecularDescriptorTV1(new_coordinates, masses)
             self.assert_(reference.compare_structure(new_descriptor))
             self.assert_(not reference.compare_global_rotation(new_descriptor))
             self.assert_(not reference.compare_global_translation(new_descriptor))
