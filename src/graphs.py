@@ -184,15 +184,15 @@ class Graph(object):
         Arguments:
         pairs -- [frozenset([node1, node2]), ...]
 
-        During initialization, also the neighbour-representation will be created
-        neighbourlist = {node1: [neighbour_node1, ...], ...}
+        During initialization, also the neighbor-representation will be created
+        neighborlist = {node1: [neighbor_node1, ...], ...}
         """
         #print "="*50
         #print "="*50
         self.pairs = pairs # a list of 2-frozenset connecting nodes
         #print self.pairs
         self.init_index()
-        self.init_neighbours()
+        self.init_neighbors()
 
     def init_index(self):
         tmp = set([])
@@ -204,15 +204,15 @@ class Graph(object):
         self.items.sort()
         self.index = dict((item, index) for index, item in enumerate(self.items))
 
-    def init_neighbours(self):
+    def init_neighbors(self):
         """Generate a neigbours-representation of the graph."""
-        self.neighbours = {}
+        self.neighbors = {}
 
         def add_relation(first, second):
-            if first in self.neighbours:
-                self.neighbours[first].append(second)
+            if first in self.neighbors:
+                self.neighbors[first].append(second)
             else:
-                self.neighbours[first] = [second]
+                self.neighbors[first] = [second]
 
 
         for pair in self.pairs:
@@ -220,7 +220,7 @@ class Graph(object):
             add_relation(a, b)
             add_relation(b, a)
 
-    def neighbour_matrix(self, max_order=None):
+    def neighbor_matrix(self, max_order=None):
         num_items = len(self.index)
         if max_order is None:
             max_order = num_items - 1
@@ -296,15 +296,15 @@ class SymmetricGraph(Graph):
 
         def find_symmetries(source, destination):
             #print "SYMMETRIES %s ~ %s" % (source, destination)
-            for symmetry in self.yield_matches(source, destination, self.neighbours, Permutation(), allow_more=False, no_duplicates=False):
+            for symmetry in self.yield_matches(source, destination, self.neighbors, Permutation(), allow_more=False, no_duplicates=False):
                 if add_symmetry(symmetry):
                     add_symmetry(symmetry.inverse())
 
         # The unity transformation will certainly be found by this call
         find_symmetries(self.initiator, self.initiator)
         # Non unity transformations will certainly be found in this loop
-        for source in self.neighbours:
-            for destination in self.neighbours:
+        for source in self.neighbors:
+            for destination in self.neighbors:
                 if source >= destination: continue
                 find_symmetries(source, destination)
 
@@ -330,7 +330,7 @@ class SymmetricGraph(Graph):
             sequence = sequence[:-1]
         return len(sequence)
 
-    def yield_matches(self, node, thing, thing_neighbours, match, allow_more=True, no_duplicates=True, spaces=""):
+    def yield_matches(self, node, thing, thing_neighbors, match, allow_more=True, no_duplicates=True, spaces=""):
         """
         Generate all matching subgraphs congruent to the graph described by
         thing_neigbours where node and thing are corresponding items between
@@ -344,7 +344,7 @@ class SymmetricGraph(Graph):
         Arguments:
         node -- the node that corresponds to thing in the subgraph
         thing -- the item in the subgraph that corresponds to node
-        thing_neighbours -- a neighbour representation of the subgraph
+        thing_neighbors -- a neighbor representation of the subgraph
         match -- a permutation that describes the partial symmetry at a
                  recursion level. user should give an empty permutation as
                  input
@@ -358,19 +358,19 @@ class SymmetricGraph(Graph):
         """
         ##print spaces + "BEGIN ONE -- add %s -> %s to %s" % (node, thing, match)
 
-        if allow_more and len(self.neighbours[node]) > len(thing_neighbours[thing]):
-            ##print spaces + "ONE -- graph node containse more neighbours than thing"
+        if allow_more and len(self.neighbors[node]) > len(thing_neighbors[thing]):
+            ##print spaces + "ONE -- graph node containse more neighbors than thing"
             return
 
-        if not allow_more and len(self.neighbours[node]) != len(thing_neighbours[thing]):
-            ##print spaces + "ONE -- number of neighbours differs"
+        if not allow_more and len(self.neighbors[node]) != len(thing_neighbors[thing]):
+            ##print spaces + "ONE -- number of neighbors differs"
             return
 
         if not match.add_relation(node, thing):
             ##print spaces + "ONE -- given relation conflicts with existing match"
             return
 
-        if len(match) == len(self.neighbours):
+        if len(match) == len(self.neighbors):
             ##print spaces + "ONE -- match is complete"
             yield match
             return
@@ -393,14 +393,14 @@ class SymmetricGraph(Graph):
                     return False
             elif match.in_destinations(relation[1]): #b
                 return False
-            elif allow_more and len(self.neighbours[relation[0]]) > len(thing_neighbours[relation[1]]): #c
+            elif allow_more and len(self.neighbors[relation[0]]) > len(thing_neighbors[relation[1]]): #c
                 return False
-            elif not allow_more and len(self.neighbours[relation[0]]) != len(thing_neighbours[relation[1]]): #d
+            elif not allow_more and len(self.neighbors[relation[0]]) != len(thing_neighbors[relation[1]]): #d
                 return False
             else:
                 return True
 
-        ##print spaces + "ONE -- possible relations  %s -> %s" % (self.neighbours[node], thing_neighbours[thing])
+        ##print spaces + "ONE -- possible relations  %s -> %s" % (self.neighbors[node], thing_neighbors[thing])
 
         if no_duplicates:
             def relations_without_symmetric_images(list1, list2, worth_trying=None, num_ordered=0):
@@ -443,7 +443,7 @@ class SymmetricGraph(Graph):
         else:
             relations = all_relations
 
-        for relation_set in relations(self.neighbours[node], thing_neighbours[thing], worth_trying):
+        for relation_set in relations(self.neighbors[node], thing_neighbors[thing], worth_trying):
             # Here we will try to extend the given match with new relations.
             # These extend matches will feed recursively to this algorithm.
             if len(relation_set) == 0:
@@ -458,7 +458,7 @@ class SymmetricGraph(Graph):
                     # suppose this is more efficient:
                     # elif not (former_match.in_sources(node) or former_match.in_destination(thing)):
                     else:
-                        new_matches.extend(list(self.yield_matches(node, thing, thing_neighbours, former_match, allow_more, no_duplicates, spaces=spaces+"  ")))
+                        new_matches.extend(list(self.yield_matches(node, thing, thing_neighbors, former_match, allow_more, no_duplicates, spaces=spaces+"  ")))
                 former_matches = new_matches
 
             for new_match in new_matches:
@@ -486,8 +486,8 @@ class SymmetricGraph(Graph):
         possible equivalent nodes. The cost of the algorithm is proportional
         to this number of equivalent nodes (including the initiator).
         """
-        for thing in graph.neighbours:
-            for match in self.yield_matches(self.initiator, thing, graph.neighbours, OneToOne()):
+        for thing in graph.neighbors:
+            for match in self.yield_matches(self.initiator, thing, graph.neighbors, OneToOne()):
                 if self.lowest_initiator(match):
                     #print match
                     yield match
@@ -579,15 +579,15 @@ class MatchFilter(object):
             For the given (transformed) match return wether it meets the
             criteria.
             """
-            for node, neighbours in self.subgraph.neighbours.iteritems():
+            for node, neighbors in self.subgraph.neighbors.iteritems():
                 if not self.check_thing(node, transformed_match.get_destination(node)):
                     return False
-                for neighbour in neighbours:
+                for neighbor in neighbors:
                     if not self.check_relation(
-                        frozenset([node, neighbour]),
+                        frozenset([node, neighbor]),
                         frozenset([
                             transformed_match.get_destination(node),
-                            transformed_match.get_destination(neighbour)
+                            transformed_match.get_destination(neighbor)
                         ])):
                         return False
             return True

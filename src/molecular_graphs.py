@@ -106,19 +106,19 @@ class BondTypeRefuse(BondTypeCriterium):
 
 
 class NumNeighboursCriterium(MolecularCriterium):
-    def __init__(self, num_neighbours):
-        self.num_neighbours = num_neighbours
-        MolecularCriterium.__init__(self, num_neighbours)
+    def __init__(self, num_neighbors):
+        self.num_neighbors = num_neighbors
+        MolecularCriterium.__init__(self, num_neighbors)
 
 
 class NumNeighboursRequire(NumNeighboursCriterium):
     def __call__(self, index):
-        return len(self.molecular_graph.neighbours[index]) == self.num_neighbours
+        return len(self.molecular_graph.neighbors[index]) == self.num_neighbors
 
 
 class NumNeighboursRefuse(NumNeighboursCriterium):
     def __call__(self, index):
-        return len(self.molecular_graph.neighbours[index]) != self.num_neighbours
+        return len(self.molecular_graph.neighbors[index]) != self.num_neighbors
 
 
 # Predefined sets of criteria: bonds, angles, dihedrals
