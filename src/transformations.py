@@ -107,7 +107,7 @@ class Translation(Base):
         return result[:-1]
 
     def clear(self):
-        self.t = 0
+        self.t[:] = 0
 
     def from_matrix(self, m):
         # check wether the t part is ok
@@ -190,7 +190,7 @@ class Rotation(Base):
         return result
 
     def clear(self):
-        self.r = 0
+        self.r[:] = 0
         self.r.ravel()[::4] = 1
 
     def from_matrix(self, m):
