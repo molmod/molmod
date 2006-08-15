@@ -68,7 +68,7 @@ def quaternion_from_rotation_matrix(rotation_matrix):
         factor = 1
     c2 = 0.25*(factor*numpy.trace(rotation_matrix) + 1)
     if c2 < 0:
-        print c2
+        #print c2
         c2 = 0.0
     c = math.sqrt(c2)
     r2 = 0.5*(1 + factor*numpy.diagonal(rotation_matrix)) - c2
