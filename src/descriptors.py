@@ -27,7 +27,7 @@ import numpy
 import math
 
 
-__all__ = ["MolecularDescriptorsTV1"]
+__all__ = ["MolecularDescriptorTV1"]
 
 
 def sph_harmonics(L, phi, theta):
@@ -71,6 +71,7 @@ def total_mass(values):
 total_mass.label = "tm"
 total_mass.internal = True
 total_mass.shape = lambda parameters: (1,)
+total_mass.tolerance = 1000.0
 
 
 def mass_center(values):
@@ -84,6 +85,7 @@ def mass_center(values):
 mass_center.label = "mc"
 mass_center.internal = False
 mass_center.shape = lambda parameters: (3,)
+mass_center.tolerance = 100.0
 
 
 def inertia_tensor(values):
@@ -97,6 +99,7 @@ def inertia_tensor(values):
 inertia_tensor.label = "it"
 inertia_tensor.internal = False
 inertia_tensor.shape = lambda parameters: (9,)
+inertia_tensor.tolerance = 10.0
 
 
 def rms_radius(values):
@@ -119,6 +122,7 @@ def rms_radius(values):
 rms_radius.label = "rmsr"
 rms_radius.internal = True
 rms_radius.shape = lambda parameters: (1,)
+rms_radius.tolerance = 0.1
 
 
 def spherical_harmonics_descriptor_internal(values):
@@ -151,6 +155,7 @@ def spherical_harmonics_descriptor_internal(values):
 spherical_harmonics_descriptor_internal.label = "shdi"
 spherical_harmonics_descriptor_internal.internal = True
 spherical_harmonics_descriptor_internal.shape = lambda parameters: (len(parameters["_modulators"]),parameters["_L"]+1)
+spherical_harmonics_descriptor_internal.tolerance = 0.1
 
 
 def spherical_harmonics_descriptor_external(values):
@@ -170,10 +175,52 @@ def spherical_harmonics_descriptor_external(values):
 spherical_harmonics_descriptor_external.label = "shde"
 spherical_harmonics_descriptor_external.internal = False
 spherical_harmonics_descriptor_external.shape = lambda parameters: ((parameters["_L"]+1)**2,)
+spherical_harmonics_descriptor_external.tolerance = 0.1
+
+
+def static_fields(ordered_descriptors, parameters, internal, label, format):
+    adresses = {}
+    begin = 0
+    for descriptor in ordered_descriptors:
+        if descriptor.internal == internal:
+            end = begin + reduce(lambda x,y: x*y, descriptor.shape(parameters), 1)
+            adresses[descriptor.label] = (begin, end)
+            end = begin
+    size = end
+
+    labels = []
+    for descriptor in ordered_descriptors:
+        if descriptor.internal == internal:
+            size = reduce(lambda x,y: x*y, descriptor.shape(parameters), 1)
+            l = len(str(size))
+            labels.extend(["%s.%*i" % (descriptor.label, index, l) for index in xrange(l)])
+
+    sql_create_descriptor_table = """
+    CREATE TABLE %s_%s (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        %s,
+        INDEX fingerprint (%s)
+    )
+    """ % (
+        format, label, ", ".join(
+            "%s DOUBLE" % label
+            for label in labels
+        ), ", ".join(labels)
+    )
+
+    tolerance = []
+    for descriptor in ordered_descriptors:
+        if descriptor.internal == internal:
+            print descriptor.label
+            size = reduce(lambda x,y: x*y, descriptor.shape(parameters), 1)
+            tolerance.extend([descriptor.tolerance]*size)
+    tolerance = numpy.array(tolerance, float)
+
+    return labels, size, labels, sql_create_descriptor_table, tolerance
 
 
 class MolecularDescriptorTV1(object):
-    format = "MDTV1"
+    format = "mdtv1"
 
     ordered_descriptors = [
         total_mass,
@@ -196,25 +243,22 @@ class MolecularDescriptorTV1(object):
         "_modulators": [FaseModulator(order) for order in xrange(1,6)]
     }
 
-    internal_adresses = {}
-    begin = 0
-    for descriptor in ordered_descriptors:
-        if descriptor.internal:
-            end = begin + reduce(lambda x,y: x*y, descriptor.shape(parameters), 1)
-            internal_adresses[descriptor.label] = (begin, end)
-            end = begin
-    internal_size = end
 
-    external_adresses = {}
-    begin = 0
-    for descriptor in ordered_descriptors:
-        if not descriptor.internal:
-            end = begin + reduce(lambda x,y: x*y, descriptor.shape(parameters), 1)
-            external_adresses[descriptor.label] = (begin, end)
-            end = begin
-    external_size = end
-    del begin
-    del end
+    (
+        internal_adresses,
+        internal_size,
+        internal_labels,
+        sql_create_internal_descriptor_table,
+        internal_tolerance
+    ) = static_fields(ordered_descriptors, parameters, True, "internal", format)
+    (
+        external_adresses,
+        external_size,
+        external_labels,
+        sql_create_external_descriptor_table,
+        external_tolerance
+    ) = static_fields(ordered_descriptors, parameters, False, "external", format)
+
 
     def __init__(self, coordinates, masses):
         assert len(coordinates.shape) == 2
@@ -295,3 +339,28 @@ class MolecularDescriptorTV1(object):
         ratio = sum((mc1 - mc2)**2) / (0.5*sum((mc1 + mc2)**2))
         return ratio < 1e-10
 
+    def look_up_internal(self, connection):
+        sql = "SELECT id FROM %s_internal WHERE (%s)" % (
+            self.format, " AND ".join(
+                "%s < %f AND %s > %f" % (label, reference + tolerance, label, reference - tolerance)
+                for label, reference, tolerance
+                in zip(self.internal_labels, self.internal_fingerprint, self.internal_tolerance)
+            )
+        )
+        cursor = connection.cursor()
+        cursos.execute(sql)
+        result = cursor.fetchall()
+        cursor.close()
+
+    def look_up_external(self, connection):
+        sql = "SELECT id FROM %s_external WHERE (%s)" % (
+            self.format, " AND ".join(
+                "%s < %f AND %s > %f" % (label, reference + tolerance, label, reference - tolerance)
+                for label, reference, tolerance
+                in zip(self.external_labels, self.external_fingerprint, self.external_tolerance)
+            )
+        )
+        cursor = connection.cursor()
+        cursos.execute(sql)
+        result = cursor.fetchall()
+        cursor.close()
