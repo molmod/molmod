@@ -211,7 +211,6 @@ def static_fields(ordered_descriptors, parameters, internal, label, format):
     tolerance = []
     for descriptor in ordered_descriptors:
         if descriptor.internal == internal:
-            print descriptor.label
             size = reduce(lambda x,y: x*y, descriptor.shape(parameters), 1)
             tolerance.extend([descriptor.tolerance]*size)
     tolerance = numpy.array(tolerance, float)
