@@ -175,7 +175,7 @@ def all_relations(list1, list2, worth_trying=None):
 class Graph(object):
     """
     A Graph object contains two typical pythonic (not oriented) graph
-    representations: pairs and neigbours.
+    representations: pairs and neigbors.
     """
 
     def __init__(self, pairs, ordered_nodes=None):
@@ -219,7 +219,7 @@ class Graph(object):
         self.shells = {}
         self.shell_sizes = {}
         for central_node in self.nodes:
-            directed_graph = {}#dict((node, set([])) for node in self.nodes)
+            tree = dict((node, set([])) for node in self.nodes)
             shells = []
             shell_sizes = []
             excludes = set([central_node])
@@ -234,13 +234,14 @@ class Graph(object):
                         for neighbor in self.neighbors[previous_node]
                         if neighbor not in excludes
                     ])
-                    directed_graph[previous_node] = new_neighbors
+                    for new_neighbor in new_neighbors:
+                        tree[new_neighbor].add(previous_node)
                     new_shell.update(new_neighbors)
                 excludes.update(new_shell)
                 previous_shell = new_shell
             self.shells[central_node] = shells
             self.shell_sizes[central_node] = numpy.array(shell_sizes, int)
-            self.trees[central_node] = directed_graph
+            self.trees[central_node] = tree
 
     def init_distances(self):
         self.distances = numpy.zeros((len(self.nodes), len(self.nodes)), int)
@@ -251,6 +252,37 @@ class Graph(object):
 
     def init_central_node(self):
         self.central_node = self.nodes[self.distances.max(0).argmin()]
+
+    def can_overlap(self, central_node, node_a, node_b):
+        tree = self.trees[central_node]
+        # sanity checks
+        if node_a == central_node or node_b == central_node:
+            raise GraphError("can_overlap only makes sense of node_a != central_node and node_b != central_node")
+        distance_a = self.distances[self.index[node_a], self.index[central_node]]
+        distance_b = self.distances[self.index[node_b], self.index[central_node]]
+        if distance_a == 0 or distance_b == 0:
+            raise GraphError("can_overlap is only applicable when node_a and node_b are connected to central_node")
+        if distance_a != distance_b:
+            raise GraphError("can_overlap only works if distance(central_node, node_a) == distance(central_node, node_b)")
+        if node_a == node_b:
+            return True
+        # the real algorithm
+        return self._unsafe_can_overlap(tree, node_a, node_b, distance_a)
+
+    def _unsafe_can_overlap(self, tree, node_a, node_b, distance):
+        print "_"*distance, "_unsafe_can_overlap", distance
+        if distance > 0:
+            down_a = tree[node_a]
+            down_b = tree[node_b]
+            if len(down_a.intersection(down_b)) > 0:
+                return True
+            else:
+                for new_node_a in down_a:
+                    for new_node_b in down_b:
+                        if self._unsafe_can_overlap(tree, node_a, node_b, distance-1):
+                            return True
+        else:
+            return False
 
 
 class MatchFilterError(Exception):
