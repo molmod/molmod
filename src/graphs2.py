@@ -191,8 +191,9 @@ class Graph(object):
         self.pairs = pairs
         self.init_index()
         self.init_neighbors()
+        self.init_trees_and_shells()
         self.init_distances()
-        self.init_shells()
+        self.init_central_node()
 
     def init_index(self):
         tmp = set([])
@@ -208,49 +209,48 @@ class Graph(object):
         self.index = dict((node, index) for index, node in enumerate(self.nodes))
 
     def init_neighbors(self):
-        self.neighbors = dict((node, []) for node in self.nodes)
+        self.neighbors = dict((node, set([])) for node in self.nodes)
         for a, b in self.pairs:
-            self.neighbors[a].append(b)
-            self.neighbors[b].append(a)
+            self.neighbors[a].add(b)
+            self.neighbors[b].add(a)
 
-    def init_distances(self, max_order=None):
-        num_nodes = len(self.nodes)
-        if max_order is None:
-            max_order = num_nodes - 1
-        result = numpy.zeros((num_nodes, num_nodes), int)
-        for first, second in self.pairs:
-            result[self.index[first], self.index[second]] = 1
-            result[self.index[second], self.index[first]] = 1
-        num_mods = len(self.pairs)
-        current_order = 2
-        while num_mods > 0 and current_order <= max_order:
-            num_mods = 0
-            for i in xrange(num_nodes):
-                for j in xrange(i):
-                    if result[i, j] == 0 and ((result[i] + result[j] == current_order)*result[i]*result[j]).any():
-                        result[i, j] = current_order
-                        result[j, i] = current_order
-                        num_mods += 1
-            current_order += 1
-        self.distances = result
-
-    def init_shells(self):
+    def init_trees_and_shells(self):
+        self.trees = {}
         self.shells = {}
-        for node in self.nodes:
-            index = self.index[node]
-            shells = [set([]) for i in xrange(self.distances[index].max()+1)]
-            shells[0].add(node)
-            for neighbor_index, graph_distance in enumerate(self.distances[index]):
-                if graph_distance > 0:
-                    shells[graph_distance].add(self.nodes[neighbor_index])
-            self.shells[node] = shells
-        self.shell_sizes = dict(
-            (node, numpy.array([len(neighbors) for neighbors in shells], int))
-            for node, shells in self.shells.iteritems()
-        )
+        self.shell_sizes = {}
+        for central_node in self.nodes:
+            directed_graph = {}#dict((node, set([])) for node in self.nodes)
+            shells = []
+            shell_sizes = []
+            excludes = set([central_node])
+            previous_shell = set([central_node])
+            while len(previous_shell) > 0:
+                shells.append(previous_shell)
+                shell_sizes.append(len(previous_shell))
+                new_shell = set([])
+                for previous_node in previous_shell:
+                    new_neighbors = set([
+                        neighbor
+                        for neighbor in self.neighbors[previous_node]
+                        if neighbor not in excludes
+                    ])
+                    directed_graph[previous_node] = new_neighbors
+                    new_shell.update(new_neighbors)
+                excludes.update(new_shell)
+                previous_shell = new_shell
+            self.shells[central_node] = shells
+            self.shell_sizes[central_node] = numpy.array(shell_sizes, int)
+            self.trees[central_node] = directed_graph
 
-    def central_node(self):
-        return self.nodes[self.distances.max(0).argmin()]
+    def init_distances(self):
+        self.distances = numpy.zeros((len(self.nodes), len(self.nodes)), int)
+        for node, shells in self.shells.iteritems():
+            for distance, shell in enumerate(shells):
+                for shell_node in shell:
+                    self.distances[self.index[node], self.index[shell_node]] = distance
+
+    def init_central_node(self):
+        self.central_node = self.nodes[self.distances.max(0).argmin()]
 
 
 class MatchFilterError(Exception):
@@ -346,7 +346,7 @@ class MatchGenerator(object):
         match_filter.init_graphs(subgraph, graph)
 
     def __call__(self):
-        node0 = self.subgraph.central_node()
+        node0 = self.subgraph.central_node
         for node1 in self.graph.nodes:
             if self.match_filter.compare(node0, node1):
                 init_relations = [(node0, node1)]
