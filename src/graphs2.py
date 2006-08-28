@@ -408,7 +408,6 @@ class ExactMatchDefinition(SubGraphMatchDefinition):
 class MatchGenerator(object):
     def __init__(self, match_definition, graph, debug=False):
         self.match_definition = match_definition
-        self.graph = graph
         self.debug = debug
 
         match_definition.init_graph(graph)
