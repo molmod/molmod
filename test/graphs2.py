@@ -20,7 +20,7 @@
 # --
 
 
-from molmod.graphs2 import OneToOne, Graph, MatchGenerator, ExactMatchDefinition
+from molmod.graphs2 import OneToOne, Graph, MatchGenerator, EgoMatchDefinition
 
 import unittest, copy
 
@@ -180,7 +180,7 @@ class ExampleGraphs2(unittest.TestCase):
             #print
             #print "GRAPH %s" % name
             match_generator = MatchGenerator(
-                ExactMatchDefinition(graph),
+                EgoMatchDefinition(),
                 graph,
                 debug=False
             )

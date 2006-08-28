@@ -405,6 +405,15 @@ class ExactMatchDefinition(SubGraphMatchDefinition):
         return len(self.subgraph.nodes) == len(match.forward)
 
 
+class EgoMatchDefinition(ExactMatchDefinition):
+    def __init__(self):
+        ExactMatchDefinition.__init__(self, None)
+
+    def init_graph(self, graph):
+        self.subgraph = graph
+        ExactMatchDefinition.init_graph(self, graph)
+
+
 class MatchGenerator(object):
     def __init__(self, match_definition, graph, debug=False):
         self.match_definition = match_definition
