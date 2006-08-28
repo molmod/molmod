@@ -20,7 +20,7 @@
 # --
 
 
-from molmod.graphs2 import OneToOne, Graph, MatchGenerator, ExactMatchFilter
+from molmod.graphs2 import OneToOne, Graph, MatchGenerator, ExactMatchDefinition
 
 import unittest, copy
 
@@ -180,8 +180,8 @@ class ExampleGraphs2(unittest.TestCase):
             #print
             #print "GRAPH %s" % name
             match_generator = MatchGenerator(
-                ExactMatchFilter(),
-                graph, graph,
+                ExactMatchDefinition(graph),
+                graph,
                 debug=False
             )
             #print match_generator().next()

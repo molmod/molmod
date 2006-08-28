@@ -57,8 +57,7 @@ class OneToOne(object):
     def __init__(self, pairs=[]):
         self.forward = {}
         self.backward = {}
-        for source, destination in pairs:
-            self.add_relation(source, destination)
+        self.add_relations(pairs)
 
     def __len__(self):
         return len(self.forward)
@@ -70,9 +69,13 @@ class OneToOne(object):
         return result
 
     def __copy__(self):
-        result = self.__class__()
-        result.forward = copy.copy(self.forward)
-        result.backward = copy.copy(self.backward)
+        class EmptyClass(object):
+            pass
+        result = EmptyClass()
+        result.__class__ = self.__class__
+        result.__dict__ = self.__dict__.copy()
+        result.forward = self.forward.copy()
+        result.backward = self.backward.copy()
         return result
 
     def __mul__(self, other):
@@ -95,6 +98,10 @@ class OneToOne(object):
         else:
             self.forward[source] = destination
             self.backward[destination] = source
+
+    def add_relations(self, pairs):
+        for source, destination in pairs:
+            self.add_relation(source, destination)
 
     def get_destination(self, source):
         return self.forward[source]
@@ -148,28 +155,6 @@ class Permutation(OneToOne):
                     closed_cycles.append(tuple(current_cycle))
                 current_source = None
         return tuple(closed_cycles)
-
-
-def all_relations(list1, list2, worth_trying=None):
-    """
-    Yields all possible relation sets between elements from list1 and list2.
-
-    This is a helper function for the Graph class.
-
-    Arguments:
-    list1 -- list of source items
-    list2 -- list of destination items
-    worth_trying -- a function that takes a relation (tuple) as argument and
-                    returns False if the relation is not usefull.
-    """
-    if len(list1) == 0 or len(list2) == 0:
-        yield []
-    else:
-        for index2 in xrange(len(list2)):
-            pair = (list1[0], list2[index2])
-            if worth_trying == None or worth_trying(pair):
-                for relation_set in all_relations(list1[1:], list2[:index2] + list2[index2+1:], worth_trying):
-                    yield [pair] + relation_set
 
 
 class Graph(object):
@@ -285,22 +270,40 @@ class Graph(object):
             return False
 
 
-class MatchFilterError(Exception):
+
+class Match(OneToOne):
+    def __init__(self, init_relations):
+        OneToOne.__init__(self, init_relations)
+        self.previous_relations = init_relations
+
+    def copy_with_new_relations(self, new_relations):
+        result = self.__copy__()
+        result.add_relations(new_relations)
+        result.previous_relations = new_relations
+        return result
+
+
+class MatchDefinitionError(Exception):
     pass
 
 
-class MatchFilter(object):
-    def init_graphs(self, subgraph, graph):
+class MatchDefinition(object):
+    MatchClass = Match
+
+    def init_graph(self, graph):
         "Checks initialy whether it makes sense to match both graphs."
-        self.subgraph = subgraph
         self.graph = graph
 
-    def new_pools(self, node0, node1, partial_match, shell_index):
-        "Creates pool0 for subgraph and pool1 for graph that contain the nodes for the new relations."
-        # The default behavior is to allow all nodes that have not been used yet.
-        pool0 = set(self.subgraph.nodes).difference(partial_match.forward.keys())
-        pool1 = set(self.graph.nodes).difference(partial_match.backward.keys())
-        return pool0, pool1
+    def new_pools(self, partial_match):
+        "Returns pool0 for subgraph and pool1 for graph that contain the nodes for the new relations."
+        # return pool0, pool1 # both are sets of nodes.
+        return set([]), set([])
+
+    def subgraph_neighbors(self, node0):
+        return None
+
+    def graph_neighbors(self, node1):
+        return self.graph.neighbors[node1]
 
     def useful_relation_group(self, relation_group):
         "Checks if the relation_group is worth looking at"
@@ -321,15 +324,59 @@ class MatchFilter(object):
         """
         return True
 
-    def complete(self, node0, node1, match, shell_index):
+    def complete(self, match):
         return True
 
 
-class DistanceMatchFilter(MatchFilter):
-    def new_pools(self, node0, node1, partial_match, shell_index):
-        # It is often a good approximation and also in many cases a 'physical'
-        # requirement that distance(node0, new0) == distance(node1, new1) for
-        # every relation (new0, new1) in the match.
+class SubGraphMatchDefinition(MatchDefinition):
+    def __init__(self, subgraph):
+        self.subgraph = subgraph
+
+    def init_matches(self):
+        node0 = self.subgraph.central_node
+        for node1 in self.graph.nodes:
+            init_match = self.MatchClass([(node0, node1)])
+            yield init_match
+
+    def new_pools(self, partial_match):
+        "Creates pool0 for subgraph and pool1 for graph that contain the nodes for the new relations."
+        # The default behavior is to allow all nodes that have not been used yet.
+        pool0 = set(self.subgraph.nodes).difference(partial_match.forward.keys())
+        pool1 = set(self.graph.nodes).difference(partial_match.backward.keys())
+        return pool0, pool1
+
+    def subgraph_neighbors(self, node0):
+        return self.subgraph.neighbors[node0]
+
+
+class ExactMatch(Match):
+    def __init__(self, init_relations):
+        assert len(init_relations) == 1, "An exact match filter can only start with one relation!"
+        self.node0, self.node1 = init_relations[0]
+        self.shell_index = 1
+        Match.__init__(self, init_relations)
+
+    def copy_with_new_relations(self, new_relations):
+        result = Match.copy_with_new_relations(self, new_relations)
+        result.shell_index += 1
+        return result
+
+
+class ExactMatchDefinition(SubGraphMatchDefinition):
+    MatchClass = ExactMatch
+
+    def init_graph(self, graph):
+        if len(self.subgraph.nodes) != len(graph.nodes):
+            raise MatchDefinitionError("It does not make sense to find an exact match between two graphs if the number of nodes is different")
+        if len(self.subgraph.pairs) != len(graph.pairs):
+            raise MatchDefinitionError("It does not make sense to find an exact match between two graphs if the number of relations is different")
+        MatchDefinition.init_graph(self, graph)
+
+    def new_pools(self, partial_match):
+        # for an exact match, the matching nodes come from matching shells.
+        shell_index = partial_match.shell_index
+        node0 = partial_match.node0
+        node1 = partial_match.node1
         if len(self.subgraph.shells[node0]) <= shell_index:
             pool0 = set([])
         else:
@@ -339,16 +386,6 @@ class DistanceMatchFilter(MatchFilter):
         else:
             pool1 = self.graph.shells[node1][shell_index]
         return pool0, pool1
-
-
-
-class ExactMatchFilter(DistanceMatchFilter):
-    def init_graphs(self, subgraph, graph):
-        if len(subgraph.nodes) != len(graph.nodes):
-            raise MatchFilterError("It does not make sense to find an exact match between two graphs if the number of nodes is different")
-        if len(subgraph.pairs) != len(graph.pairs):
-            raise MatchFilterError("It does not make sense to find an exact match between two graphs if the number of relations is different")
-        DistanceMatchFilter.init_graphs(self, subgraph, graph)
 
     def valid_relation_group(self, relation_group):
         return len(relation_group[0]) == len(relation_group[1])
@@ -364,27 +401,22 @@ class ExactMatchFilter(DistanceMatchFilter):
             (self.subgraph.shell_sizes[node0] == self.graph.shell_sizes[node1]).all()
         )
 
-    def complete(self, node0, node1, match, shell_index):
+    def complete(self, match):
         return len(self.subgraph.nodes) == len(match.forward)
 
 
 class MatchGenerator(object):
-    def __init__(self, match_filter, subgraph, graph, debug=False):
-        self.match_filter = match_filter
-        self.subgraph = subgraph
+    def __init__(self, match_definition, graph, debug=False):
+        self.match_definition = match_definition
         self.graph = graph
         self.debug = debug
 
-        match_filter.init_graphs(subgraph, graph)
+        match_definition.init_graph(graph)
 
     def __call__(self):
-        node0 = self.subgraph.central_node
-        for node1 in self.graph.nodes:
-            if self.match_filter.compare(node0, node1):
-                init_relations = [(node0, node1)]
-                init_match = OneToOne(init_relations)
-                for match in self.yield_matches(node0, node1, init_match, 1, init_relations):
-                    yield match
+        for init_match in self.match_definition.init_matches():
+            for match in self.yield_matches(init_match):
+                yield match
 
     def combine(self, group0, group1):
         if len(group0) == 0 or len(group1) == 0:
@@ -405,22 +437,18 @@ class MatchGenerator(object):
                 for new_relations_0 in self.combine(group0, group1):
                     yield new_relations_0 + new_relations_rest
 
-    def yield_matches(self, node0, node1, input_match, shell_index, previous_relations):
-        if self.debug: prefix = " "*shell_index
-        if self.debug: print prefix, "ENTERING SHELL %i" % shell_index
-
-        pool0, pool1 = self.match_filter.new_pools(node0, node1, input_match, shell_index)
+    def yield_matches(self, input_match):
+        pool0, pool1 = self.match_definition.new_pools(input_match)
         if len(pool0) == 0 or len(pool1) == 0:
-            if self.debug: print prefix, "LEAVING SHELL (empty pool(s)) %i" % shell_index
             return
 
         cf = ClusterFactory()
-        for previous_node0, previous_node1 in previous_relations:
-            neighbors0 = pool0.intersection(self.subgraph.neighbors[previous_node0])
-            neighbors1 = pool1.intersection(self.graph.neighbors[previous_node1])
+        for previous_node0, previous_node1 in input_match.previous_relations:
+            neighbors0 = pool0.intersection(self.match_definition.subgraph_neighbors(previous_node0))
+            neighbors1 = pool1.intersection(self.match_definition.graph_neighbors(previous_node1))
             for neighbor0 in neighbors0:
                 for neighbor1 in neighbors1:
-                    if self.match_filter.compare(neighbor0, neighbor1):
+                    if self.match_definition.compare(neighbor0, neighbor1):
                         cf.add_members([(0, neighbor0), (1, neighbor1)])
 
         clusters = cf.get_clusters()
@@ -430,25 +458,20 @@ class MatchGenerator(object):
                 [neighbor for gid, neighbor in cluster.members if gid==0], # gid = graph index
                 [neighbor for gid, neighbor in cluster.members if gid==1]
             ]
-            if not self.match_filter.useful_relation_group(relation_group):
+            if not self.match_definition.useful_relation_group(relation_group):
                 continue
-            if not self.match_filter.valid_relation_group(relation_group):
-                if self.debug: print prefix, "LEAVING SHELL (invalid relation_groups) %i" % shell_index
+            if not self.match_definition.valid_relation_group(relation_group):
                 return
             relation_groups.append(relation_group)
         if len(relation_groups) == 0:
-            if self.debug: print prefix, "LEAVING SHELL (zero relation_groups) %i" % shell_index
             return
 
         for new_relations in self.combine_relations(relation_groups):
-            if self.match_filter.check_symmetry(new_relations):
-                next_match = copy.copy(input_match)
-                for new_node0, new_node1 in new_relations:
-                    next_match.add_relation(new_node0, new_node1)
-                if self.match_filter.complete(node0, node1, next_match, shell_index):
+            if self.match_definition.check_symmetry(new_relations):
+                next_match = input_match.copy_with_new_relations(new_relations)
+                if self.match_definition.complete(next_match):
                     yield next_match
                 else:
-                    for match in self.yield_matches(node0, node1, next_match, shell_index+1, new_relations):
+                    for match in self.yield_matches(next_match):
                         yield match
 
-        if self.debug: print prefix, "LEAVING SHELL %i" % shell_index

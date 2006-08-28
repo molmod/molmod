@@ -193,19 +193,19 @@ def static_fields(ordered_descriptors, parameters, internal, label, format):
         if descriptor.internal == internal:
             size = reduce(lambda x,y: x*y, descriptor.shape(parameters), 1)
             l = len(str(size))
-            labels.extend(["%s.%*i" % (descriptor.label, index, l) for index in xrange(l)])
+            labels.extend(["%s_%0*i" % (descriptor.label, l, index) for index in xrange(size)])
+
+    table_name = "%s_%s" % (format, label)
 
     sql_create_descriptor_table = """
-    CREATE TABLE %s_%s (
-        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        %s,
-        INDEX fingerprint (%s)
+    CREATE TABLE %s (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, %s
     )
     """ % (
-        format, label, ", ".join(
+        table_name, ", ".join(
             "%s DOUBLE" % label
             for label in labels
-        ), ", ".join(labels)
+        )
     )
 
     tolerance = []
@@ -215,7 +215,7 @@ def static_fields(ordered_descriptors, parameters, internal, label, format):
             tolerance.extend([descriptor.tolerance]*size)
     tolerance = numpy.array(tolerance, float)
 
-    return labels, size, labels, sql_create_descriptor_table, tolerance
+    return labels, size, labels, table_name, sql_create_descriptor_table, tolerance
 
 
 class MolecularDescriptorTV1(object):
@@ -247,6 +247,7 @@ class MolecularDescriptorTV1(object):
         internal_adresses,
         internal_size,
         internal_labels,
+        internal_table_name,
         sql_create_internal_descriptor_table,
         internal_tolerance
     ) = static_fields(ordered_descriptors, parameters, True, "internal", format)
@@ -254,6 +255,7 @@ class MolecularDescriptorTV1(object):
         external_adresses,
         external_size,
         external_labels,
+        external_table_name,
         sql_create_external_descriptor_table,
         external_tolerance
     ) = static_fields(ordered_descriptors, parameters, False, "external", format)
@@ -339,8 +341,8 @@ class MolecularDescriptorTV1(object):
         return ratio < 1e-10
 
     def look_up_internal(self, connection):
-        sql = "SELECT id FROM %s_internal WHERE (%s)" % (
-            self.format, " AND ".join(
+        sql = "SELECT id FROM %s WHERE (%s)" % (
+            self.internal_table_name, " AND ".join(
                 "%s < %f AND %s > %f" % (label, reference + tolerance, label, reference - tolerance)
                 for label, reference, tolerance
                 in zip(self.internal_labels, self.internal_fingerprint, self.internal_tolerance)
@@ -352,8 +354,8 @@ class MolecularDescriptorTV1(object):
         cursor.close()
 
     def look_up_external(self, connection):
-        sql = "SELECT id FROM %s_external WHERE (%s)" % (
-            self.format, " AND ".join(
+        sql = "SELECT id FROM %s WHERE (%s)" % (
+            self.external_table_name, " AND ".join(
                 "%s < %f AND %s > %f" % (label, reference + tolerance, label, reference - tolerance)
                 for label, reference, tolerance
                 in zip(self.external_labels, self.external_fingerprint, self.external_tolerance)
