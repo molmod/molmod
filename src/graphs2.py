@@ -238,37 +238,16 @@ class Graph(object):
     def init_central_node(self):
         self.central_node = self.nodes[self.distances.max(0).argmin()]
 
-    def can_overlap(self, central_node, node_a, node_b):
-        tree = self.trees[central_node]
-        # sanity checks
-        if node_a == central_node or node_b == central_node:
-            raise GraphError("can_overlap only makes sense of node_a != central_node and node_b != central_node")
-        distance_a = self.distances[self.index[node_a], self.index[central_node]]
-        distance_b = self.distances[self.index[node_b], self.index[central_node]]
-        if distance_a == 0 or distance_b == 0:
-            raise GraphError("can_overlap is only applicable when node_a and node_b are connected to central_node")
-        if distance_a != distance_b:
-            raise GraphError("can_overlap only works if distance(central_node, node_a) == distance(central_node, node_b)")
+    def get_distance(self, node_a, node_b):
+        return self.distances[self.index[node_a], self.index[node_b]]
+
+    def yield_shortest_paths(self, node_a, node_b):
         if node_a == node_b:
-            return True
-        # the real algorithm
-        return self._unsafe_can_overlap(tree, node_a, node_b, distance_a)
-
-    def _unsafe_can_overlap(self, tree, node_a, node_b, distance):
-        print "_"*distance, "_unsafe_can_overlap", distance
-        if distance > 0:
-            down_a = tree[node_a]
-            down_b = tree[node_b]
-            if len(down_a.intersection(down_b)) > 0:
-                return True
-            else:
-                for new_node_a in down_a:
-                    for new_node_b in down_b:
-                        if self._unsafe_can_overlap(tree, node_a, node_b, distance-1):
-                            return True
+            yield []
         else:
-            return False
-
+            for down_b in self.trees[node_a][node_b]:
+                for path in self.yield_shortest_paths(node_a, down_b):
+                    yield [down_b] + path
 
 
 class Match(OneToOne):
@@ -294,10 +273,15 @@ class MatchDefinition(object):
         "Checks initialy whether it makes sense to match both graphs."
         self.graph = graph
 
+    def init_matches(self):
+        "Yields the initial matches to start with."
+        return
+
     def new_pools(self, partial_match):
         "Returns pool0 for subgraph and pool1 for graph that contain the nodes for the new relations."
-        # return pool0, pool1 # both are sets of nodes.
-        return set([]), set([])
+        # derived classes should return both pool0 and pool1. Here only pool1
+        # is implemented:
+        return set(self.graph.nodes).difference(partial_match.backward.keys())
 
     def subgraph_neighbors(self, node0):
         return None
@@ -335,14 +319,13 @@ class SubGraphMatchDefinition(MatchDefinition):
     def init_matches(self):
         node0 = self.subgraph.central_node
         for node1 in self.graph.nodes:
-            init_match = self.MatchClass([(node0, node1)])
-            yield init_match
+            yield self.MatchClass([(node0, node1)])
 
     def new_pools(self, partial_match):
         "Creates pool0 for subgraph and pool1 for graph that contain the nodes for the new relations."
+        pool1 = MatchDefinition.new_pools(self, partial_match)
         # The default behavior is to allow all nodes that have not been used yet.
         pool0 = set(self.subgraph.nodes).difference(partial_match.forward.keys())
-        pool1 = set(self.graph.nodes).difference(partial_match.backward.keys())
         return pool0, pool1
 
     def subgraph_neighbors(self, node0):
@@ -414,6 +397,165 @@ class EgoMatchDefinition(ExactMatchDefinition):
         ExactMatchDefinition.init_graph(self, graph)
 
 
+class RingMatchError(Exception):
+    pass
+
+
+class RingMatch(Match):
+    def __init__(self, init_relations):
+        assert len(init_relations) == 1, "A ring match filter can only start with one relation!"
+        self.increasing = True
+        self.first_node = init_relations[0][1]
+        self.size = None
+        self.length = 0
+        self.cache = {}
+        Match.__init__(self, init_relations)
+
+    def cache_node(self, node, increasing=False, decreasing=False):
+        self.cache[node] = (increasing, decreasing)
+
+    def check_oposite_even(self, node, graph):
+        if self.size is None:
+            max_distance = self.length
+        else:
+            max_distance = self.size/2
+        oposite_node = self.forward[self.length + 1 - max_distance]
+        #print node, oposite_node
+        #print max_distance, graph.get_distance(oposite_node, node)
+        if not graph.get_distance(oposite_node, node) == max_distance:
+            return False
+        counter = 0
+        for path in graph.yield_shortest_paths(node, oposite_node):
+            counter += 1
+            if counter > 2:
+                return False
+        return True
+
+    def check_oposite_odd(self, node, graph):
+        if self.size is None:
+            max_distance = self.length
+        else:
+            max_distance = self.size/2
+        oposite_node1 = self.forward[self.length + 1 - max_distance]
+        oposite_node2 = self.forward[self.length + 1 - max_distance - 1]
+        #print node, oposite_node1, oposite_node2
+        #print max_distance, graph.get_distance(oposite_node1, node), graph.get_distance(oposite_node2, node)
+        if not (graph.get_distance(oposite_node1, node) == max_distance and
+                graph.get_distance(oposite_node2, node) == max_distance):
+            return False
+        counter = 0
+        for path in graph.yield_shortest_paths(node, oposite_node1):
+            counter += 1
+            if counter > 1:
+                return False
+        counter = 0
+        for path in graph.yield_shortest_paths(node, oposite_node2):
+            counter += 1
+            if counter > 1:
+                return False
+        return True
+
+    def check_distances(self, node, graph, max_size):
+        new_distance = graph.get_distance(node, self.first_node)
+        last_distance = graph.get_distance(self.forward[len(self)-1], self.first_node)
+        #print "new-, last-distance", new_distance, last_distance
+        if self.increasing:
+            if new_distance > max_size:
+                return False
+            if new_distance == len(self):
+                self.cache_node(node, increasing=True)
+                return True
+            elif new_distance == len(self) - 1:
+                if self.check_oposite_odd(node, graph):
+                    self.cache_node(node)
+                    return True
+                else:
+                    return False
+            elif new_distance == len(self) - 2:
+                if self.check_oposite_even(node, graph):
+                    self.cache_node(node, decreasing=True)
+                    return True
+                else:
+                    return False
+            else:
+                raise RingMatchError("Distances can only vary by one at a time. There must be an error in the graph.distances matrix.")
+        else:
+            # do distance checks
+            if new_distance != last_distance - 1:
+                return False
+            if self.size % 2 == 0:
+                if self.check_oposite_even(node, graph):
+                    self.cache_node(node, decreasing=True)
+                    return True
+                else:
+                    return False
+            else:
+                if self.check_oposite_odd(node, graph):
+                    self.cache_node(node, decreasing=True)
+                    return True
+                else:
+                    return False
+
+    def copy_with_new_relations(self, new_relations):
+        assert len(new_relations) == 1, "Only one new relation at a time."
+        result = Match.copy_with_new_relations(self, new_relations)
+        result.cache = {}
+        result.length += 1
+
+        node1 = new_relations[0][1]
+        increasing, decreasing = self.cache[node1]
+        if not increasing and self.size == None:
+            #print "not increasing"
+            result.increasing = False
+            if decreasing:
+                result.size = self.length * 2
+            else:
+                result.size = self.length * 2 + 1
+            #print "SIZE", result.size
+        return result
+
+
+
+class RingMatchDefinition(MatchDefinition):
+    MatchClass = RingMatch
+
+    def __init__(self, max_size):
+        self.max_size = max_size
+
+    def init_matches(self):
+        node0 = 0
+        for node1 in self.graph.nodes:
+            yield self.MatchClass([(node0, node1)])
+
+    def new_pools(self, partial_match):
+        first_node1 = partial_match.forward[0]
+        last_node1 = partial_match.forward[len(partial_match)-1]
+        #pool1 = MatchDefinition.new_pools(self, partial_match)
+        pool1 = set([
+            node1
+            for node1
+            in self.graph.neighbors[last_node1]
+            if (
+                node1 > partial_match.first_node and
+                node1 not in partial_match.backward and
+                partial_match.check_distances(node1, self.graph, self.max_size)
+           )
+        ])
+        pool0 = set([len(partial_match)])
+        return pool0, pool1
+
+    def subgraph_neighbors(self, node0):
+        return [node0 + 1]
+
+    def compare(self, node0, node1):
+        return True
+
+    def complete(self, match):
+        # TODO: a more efficient way of eliminating duplicate rings (that only
+        # differ in the direction
+        return (match.size == match.length + 1) and match.forward[1] < match.forward[match.length]
+
+
 class MatchGenerator(object):
     def __init__(self, match_definition, graph, debug=False):
         self.match_definition = match_definition
@@ -445,9 +587,20 @@ class MatchGenerator(object):
                 for new_relations_0 in self.combine(group0, group1):
                     yield new_relations_0 + new_relations_rest
 
+    def print_debug(self, text, indent=0):
+        if self.debug:
+            if indent > 0:
+                print " "*self.debug, text
+            self.debug += indent
+            if indent <= 0:
+                print " "*self.debug, text
+
     def yield_matches(self, input_match):
+        self.print_debug("ENTERING YIELD_MATCHES", 1)
+        self.print_debug("input_match: %s" % input_match)
         pool0, pool1 = self.match_definition.new_pools(input_match)
         if len(pool0) == 0 or len(pool1) == 0:
+            self.print_debug("LEAVING YIELD_MATCHES (empty pools)", -1)
             return
 
         cf = ClusterFactory()
@@ -469,11 +622,14 @@ class MatchGenerator(object):
             if not self.match_definition.useful_relation_group(relation_group):
                 continue
             if not self.match_definition.valid_relation_group(relation_group):
+                self.print_debug("LEAVING YIELD_MATCHES (invalid_relation_groups)", -1)
                 return
             relation_groups.append(relation_group)
         if len(relation_groups) == 0:
+            self.print_debug("LEAVING YIELD_MATCHES (no new relations)", -1)
             return
 
+        self.print_debug("relation_groups: %s" % relation_groups)
         for new_relations in self.combine_relations(relation_groups):
             if self.match_definition.check_symmetry(new_relations):
                 next_match = input_match.copy_with_new_relations(new_relations)
@@ -483,3 +639,4 @@ class MatchGenerator(object):
                     for match in self.yield_matches(next_match):
                         yield match
 
+        self.print_debug("LEAVING YIELD_MATCHES", -1)

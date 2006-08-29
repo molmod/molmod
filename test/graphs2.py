@@ -20,7 +20,8 @@
 # --
 
 
-from molmod.graphs2 import OneToOne, Graph, MatchGenerator, EgoMatchDefinition
+from molmod.graphs2 import OneToOne, Graph, MatchGenerator, EgoMatchDefinition,\
+    RingMatchDefinition
 
 import unittest, copy
 
@@ -107,7 +108,11 @@ class ExampleGraphs2(unittest.TestCase):
         ]
         self.todo = [
             (
-                "ortho hexane",
+                "cyclopentane",
+                Graph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 0)]),
+                []
+            ), (
+                "ortho benzene",
                 Graph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 0), (0, 6), (3, 7)]),
                 []
             ), (
@@ -173,18 +178,23 @@ class ExampleGraphs2(unittest.TestCase):
             self.assert_(len(unsatisfied) == 0, message())
 
 
-    def test_match_generator(self):
-        #print
-        for name, graph, expected_symmetries in self.graphs:
-            #print
-            #print
-            #print "GRAPH %s" % name
+    def do_match_generator_test(self, match_definition, verbose=False, debug=False):
+        if verbose: print
+        for name, graph, foo in self.todo:
+            if verbose: print
+            if verbose: print
+            if verbose: print "GRAPH %s" % name
             match_generator = MatchGenerator(
-                EgoMatchDefinition(),
+                match_definition,
                 graph,
-                debug=False
+                debug=debug
             )
-            #print match_generator().next()
             for match in match_generator():
                 pass
-                #print "_ _ _ _ _", match, "_ _ _ _ _"
+                if verbose: print "_ _ _ _ _", match, "_ _ _ _ _"
+
+    def test_ego_match_definition(self):
+        self.do_match_generator_test(EgoMatchDefinition())
+
+    def test_ring_match_definition(self):
+        self.do_match_generator_test(RingMatchDefinition(10))
