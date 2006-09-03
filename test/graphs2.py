@@ -178,18 +178,17 @@ class ExampleGraphs2(unittest.TestCase):
             self.assert_(len(unsatisfied) == 0, message())
 
 
-    def do_match_generator_test(self, match_definition, verbose=False, debug=False):
+    def do_match_generator_test(self, match_definition, verbose=True, debug=True):
         if verbose: print
-        for name, graph, foo in self.todo:
+        match_generator = MatchGenerator(
+            match_definition,
+            debug=debug
+        )
+        for name, graph, foo in self.graphs + self.todo:
             if verbose: print
             if verbose: print
             if verbose: print "GRAPH %s" % name
-            match_generator = MatchGenerator(
-                match_definition,
-                graph,
-                debug=debug
-            )
-            for match in match_generator():
+            for match in match_generator(graph):
                 pass
                 if verbose: print "_ _ _ _ _", match, "_ _ _ _ _"
 

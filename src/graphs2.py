@@ -39,9 +39,6 @@ from clusters import ClusterFactory
 import copy, numpy
 
 
-__all__ = ["OneToOne", "Permutation", "Graph", "MatchGenerator"]
-
-
 class OneToOneError(Exception):
     pass
 
@@ -174,13 +171,19 @@ class Graph(object):
         """
         self.nodes = ordered_nodes
         self.pairs = pairs
-        self.init_index()
-        self.init_neighbors()
-        self.init_trees_and_shells()
-        self.init_distances()
-        self.init_central_node()
+
+        self.index = None
+        self.neighbors = None
+        self.trees = None
+        self.shells = None
+        self.shellsizes = None
+        self.distances = None
+        self.central_node = None
+        self.symmetries = None
 
     def init_index(self):
+        if (self.index is not None) and (self.nodes is not None): return
+
         tmp = set([])
         for a, b in self.pairs:
             tmp.add(a)
@@ -194,12 +197,18 @@ class Graph(object):
         self.index = dict((node, index) for index, node in enumerate(self.nodes))
 
     def init_neighbors(self):
+        if self.neighbors is not None: return
+        self.init_index()
+
         self.neighbors = dict((node, set([])) for node in self.nodes)
         for a, b in self.pairs:
             self.neighbors[a].add(b)
             self.neighbors[b].add(a)
 
     def init_trees_and_shells(self):
+        if (self.trees is not None) and (self.shells is not None) and (self.shell_sizes is not None): return
+        self.init_neighbors()
+
         self.trees = {}
         self.shells = {}
         self.shell_sizes = {}
@@ -229,6 +238,10 @@ class Graph(object):
             self.trees[central_node] = tree
 
     def init_distances(self):
+        if self.distances is not None: return
+        self.init_trees_and_shells()
+        self.init_index()
+
         self.distances = numpy.zeros((len(self.nodes), len(self.nodes)), int)
         for node, shells in self.shells.iteritems():
             for distance, shell in enumerate(shells):
@@ -236,6 +249,9 @@ class Graph(object):
                     self.distances[self.index[node], self.index[shell_node]] = distance
 
     def init_central_node(self):
+        if self.central_node is not None: return
+        self.init_distances()
+
         self.central_node = self.nodes[self.distances.max(0).argmin()]
 
     def get_distance(self, node_a, node_b):
@@ -270,8 +286,9 @@ class MatchDefinition(object):
     MatchClass = Match
 
     def init_graph(self, graph):
-        "Checks initialy whether it makes sense to match both graphs."
+        "Checks initialy whether it makes sense to match the graph."
         self.graph = graph
+        self.graph.init_neighbors()
 
     def init_matches(self):
         "Yields the initial matches to start with."
@@ -316,6 +333,11 @@ class SubGraphMatchDefinition(MatchDefinition):
     def __init__(self, subgraph):
         self.subgraph = subgraph
 
+    def init_graph(self, graph):
+        self.subgraph.init_neighbors()
+        self.subgraph.init_central_node()
+        MatchDefinition.init_graph(self, graph)
+
     def init_matches(self):
         node0 = self.subgraph.central_node
         for node1 in self.graph.nodes:
@@ -349,11 +371,15 @@ class ExactMatchDefinition(SubGraphMatchDefinition):
     MatchClass = ExactMatch
 
     def init_graph(self, graph):
+        graph.init_index()
+        self.subgraph.init_index()
         if len(self.subgraph.nodes) != len(graph.nodes):
             raise MatchDefinitionError("It does not make sense to find an exact match between two graphs if the number of nodes is different")
         if len(self.subgraph.pairs) != len(graph.pairs):
             raise MatchDefinitionError("It does not make sense to find an exact match between two graphs if the number of relations is different")
-        MatchDefinition.init_graph(self, graph)
+        graph.init_trees_and_shells()
+        self.subgraph.init_trees_and_shells()
+        SubGraphMatchDefinition.init_graph(self, graph)
 
     def new_pools(self, partial_match):
         # for an exact match, the matching nodes come from matching shells.
@@ -522,6 +548,11 @@ class RingMatchDefinition(MatchDefinition):
     def __init__(self, max_size):
         self.max_size = max_size
 
+    def init_graph(self, graph):
+        graph.init_trees_and_shells()
+        graph.init_distances()
+        MatchDefinition.init_graph(self, graph)
+
     def init_matches(self):
         node0 = 0
         for node1 in self.graph.nodes:
@@ -557,13 +588,12 @@ class RingMatchDefinition(MatchDefinition):
 
 
 class MatchGenerator(object):
-    def __init__(self, match_definition, graph, debug=False):
+    def __init__(self, match_definition, debug=False):
         self.match_definition = match_definition
         self.debug = debug
 
-        match_definition.init_graph(graph)
-
-    def __call__(self):
+    def __call__(self, graph):
+        self.match_definition.init_graph(graph)
         for init_match in self.match_definition.init_matches():
             for match in self.yield_matches(init_match):
                 yield match
