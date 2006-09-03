@@ -117,40 +117,6 @@ class OneToOne(object):
         return result
 
 
-class Permutation(OneToOne):
-    """
-    A special type of bijection where both source and destination elements
-    are part of the same set. A permutation is closed when each destination
-    is also a source.
-    """
-
-    def get_closed(self):
-        """Return wether this permutation is closed."""
-        for source in self.forward:
-            if source not in self.backward:
-                return False
-        return True
-
-    def get_closed_cycles(self):
-        """Return the closed cycles that form this permutation."""
-        closed_cycles = []
-        sources = self.forward.keys()
-        current_source = None
-        current_cycle = []
-        while len(sources) > 0:
-            if current_source == None:
-                current_source = sources[0]
-                current_cycle = []
-            current_cycle.append(current_source)
-            sources.remove(current_source)
-            current_source = self.get_destination(current_source)
-            if current_source == current_cycle[0]:
-                if len(current_cycle) > 1:
-                    closed_cycles.append(tuple(current_cycle))
-                current_source = None
-        return tuple(closed_cycles)
-
-
 class Graph(object):
     """
     A Graph object contains two typical pythonic (not oriented) graph
@@ -250,6 +216,15 @@ class Graph(object):
         self.init_distances()
 
         self.central_node = self.nodes[self.distances.max(0).argmin()]
+
+    def init_symmetries(self):
+        if self.symmetries is not None: return
+        self.symmetries = set([])
+        for match in MatchGenerator(EgoMatchDefinition())(self):
+            closed_cycles = match.get_closed_cycles()
+            assert closed_cycles not in self.symmetries, "Duplicates in EgoMatch"
+            self.symmetries.add(match.get_closed_cycles())
+
 
     def get_distance(self, node_a, node_b):
         return self.distances[self.index[node_a], self.index[node_b]]
@@ -422,7 +397,38 @@ class ExactMatchDefinition(SubGraphMatchDefinition):
         return len(self.subgraph.nodes) == len(match.forward)
 
 
+class EgoMatch(ExactMatch):
+    def get_closed(self):
+        """Return wether this permutation is closed."""
+        for source in self.forward:
+            if source not in self.backward:
+                return False
+        return True
+
+    def get_closed_cycles(self):
+        """Return the closed cycles that form this permutation."""
+        closed_cycles = []
+        sources = self.forward.keys()
+        sources.sort()
+        current_source = None
+        current_cycle = []
+        while len(sources) > 0:
+            if current_source == None:
+                current_source = sources[0]
+                current_cycle = []
+            current_cycle.append(current_source)
+            sources.remove(current_source)
+            current_source = self.get_destination(current_source)
+            if current_source == current_cycle[0]:
+                if len(current_cycle) > 1:
+                    closed_cycles.append(tuple(current_cycle))
+                current_source = None
+        return frozenset(closed_cycles)
+
+
 class EgoMatchDefinition(ExactMatchDefinition):
+    MatchClass = EgoMatch
+
     def __init__(self):
         ExactMatchDefinition.__init__(self, None)
 
@@ -629,25 +635,6 @@ class MatchGenerator(object):
         for init_match in self.match_definition.init_matches():
             for match in self.yield_matches(init_match):
                 yield match
-
-    #def combine(self, group0, group1):
-    #    if len(group0) == 0 or len(group1) == 0:
-    #        yield []
-    #    else:
-    #        for index1 in xrange(len(group1)):
-    #            group1_copy = copy.copy(group1)
-    #            pop1 = group1_copy.pop(index1)
-    #            for tail in self.combine(group0[1:], group1_copy):
-    #                yield [(group0[0], pop1)] + tail
-
-    #def combine_relations(self, relation_groups):
-    #    if len(relation_groups) == 0:
-    #        yield []
-    #    else:
-    #        group0, group1 = relation_groups[0]
-    #        for new_relations_rest in self.combine_relations(relation_groups[1:]):
-    #            for new_relations_0 in self.combine(group0, group1):
-    #                yield new_relations_0 + new_relations_rest
 
     def print_debug(self, text, indent=0):
         if self.debug:
