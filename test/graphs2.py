@@ -178,7 +178,7 @@ class ExampleGraphs2(unittest.TestCase):
             self.assert_(len(unsatisfied) == 0, message())
 
 
-    def do_match_generator_test(self, match_definition, verbose=True, debug=True):
+    def do_match_generator_test(self, match_definition, verbose=False, debug=False):
         if verbose: print
         match_generator = MatchGenerator(
             match_definition,

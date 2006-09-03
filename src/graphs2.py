@@ -33,9 +33,6 @@ graph that are completely contained within self. This method requires the
 symmetries of the graph to be known, in order to avoid duplicates.
 """
 
-
-from clusters import ClusterFactory
-
 import copy, numpy
 
 
@@ -306,13 +303,8 @@ class MatchDefinition(object):
     def graph_neighbors(self, node1):
         return self.graph.neighbors[node1]
 
-    def useful_relation_group(self, relation_group):
-        "Checks if the relation_group is worth looking at"
-        return not (len(relation_group[0]) == 0 or len(relation_group[1]) == 0)
-
-    def valid_relation_group(self, relation_group):
-        "Checks if the relation_group is valid"
-        return True
+    def valid_potential_relations(self, potential_relations):
+        return len(potential_relations) > 0
 
     def check_symmetry(self, new_relations):
         "Check wether the new_relations correspond the reference case of all possible symetric equivalents"
@@ -396,8 +388,24 @@ class ExactMatchDefinition(SubGraphMatchDefinition):
             pool1 = self.graph.shells[node1][shell_index]
         return pool0, pool1
 
-    def valid_relation_group(self, relation_group):
-        return len(relation_group[0]) == len(relation_group[1])
+    def valid_potential_relations(self, potential_relations):
+        num_relations_per_begin = {}
+        num_relations_per_end = {}
+        for begin, end in potential_relations:
+            if begin not in num_relations_per_begin:
+                num_relations_per_begin[begin] = 1
+            else:
+                num_relations_per_begin[begin] += 1
+
+            if end not in num_relations_per_end:
+                num_relations_per_end[end] = 1
+            else:
+                num_relations_per_end[end] += 1
+
+        for begin, end in potential_relations:
+            if num_relations_per_begin[begin] != num_relations_per_end[end]:
+                return False
+        return True
 
     def check_symmetry(self, new_relations):
         return True
@@ -528,7 +536,7 @@ class RingMatch(Match):
         result.cache = {}
         result.length += 1
 
-        node1 = new_relations[0][1]
+        node1 = iter(new_relations).next()[1]
         increasing, decreasing = self.cache[node1]
         if not increasing and self.size == None:
             #print "not increasing"
@@ -576,7 +584,10 @@ class RingMatchDefinition(MatchDefinition):
         return pool0, pool1
 
     def subgraph_neighbors(self, node0):
-        return [node0 + 1]
+        if node0 == 0:
+            return [node0 + 1]
+        else:
+            return [node0 - 1, node0 + 1]
 
     def compare(self, node0, node1):
         return True
@@ -585,6 +596,27 @@ class RingMatchDefinition(MatchDefinition):
         # TODO: a more efficient way of eliminating duplicate rings (that only
         # differ in the direction
         return (match.size == match.length + 1) and match.forward[1] < match.forward[match.length]
+
+
+def combine_relations(potential_relations):
+    if len(potential_relations) == 0:
+        yield set([])
+    else:
+        candidate_begin, candidate_end = iter(potential_relations).next()
+        #print " "*len(potential_relations), "cb en ce", candidate_begin, candidate_end
+        for candidate in potential_relations:
+            #print " "*len(potential_relations), "candidate", candidate
+            if candidate[0] == candidate_begin:# or candidate[1] == candidate_end:
+                remainder = set([
+                    (begin, end)
+                    for begin, end
+                    in potential_relations
+                    if begin != candidate[0] and end != candidate[1]
+                ])
+                for new_relations in combine_relations(remainder):
+                    result = copy.copy(new_relations)
+                    result.add(candidate)
+                    yield result
 
 
 class MatchGenerator(object):
@@ -598,24 +630,24 @@ class MatchGenerator(object):
             for match in self.yield_matches(init_match):
                 yield match
 
-    def combine(self, group0, group1):
-        if len(group0) == 0 or len(group1) == 0:
-            yield []
-        else:
-            for index1 in xrange(len(group1)):
-                group1_copy = copy.copy(group1)
-                pop1 = group1_copy.pop(index1)
-                for tail in self.combine(group0[1:], group1_copy):
-                    yield [(group0[0], pop1)] + tail
+    #def combine(self, group0, group1):
+    #    if len(group0) == 0 or len(group1) == 0:
+    #        yield []
+    #    else:
+    #        for index1 in xrange(len(group1)):
+    #            group1_copy = copy.copy(group1)
+    #            pop1 = group1_copy.pop(index1)
+    #            for tail in self.combine(group0[1:], group1_copy):
+    #                yield [(group0[0], pop1)] + tail
 
-    def combine_relations(self, relation_groups):
-        if len(relation_groups) == 0:
-            yield []
-        else:
-            group0, group1 = relation_groups[0]
-            for new_relations_rest in self.combine_relations(relation_groups[1:]):
-                for new_relations_0 in self.combine(group0, group1):
-                    yield new_relations_0 + new_relations_rest
+    #def combine_relations(self, relation_groups):
+    #    if len(relation_groups) == 0:
+    #        yield []
+    #    else:
+    #        group0, group1 = relation_groups[0]
+    #        for new_relations_rest in self.combine_relations(relation_groups[1:]):
+    #            for new_relations_0 in self.combine(group0, group1):
+    #                yield new_relations_0 + new_relations_rest
 
     def print_debug(self, text, indent=0):
         if self.debug:
@@ -633,35 +665,37 @@ class MatchGenerator(object):
             self.print_debug("LEAVING YIELD_MATCHES (empty pools)", -1)
             return
 
-        cf = ClusterFactory()
-        for previous_node0, previous_node1 in input_match.previous_relations:
+        def check_potential(neighbor0, neighbor1):
+            if not self.match_definition.compare(neighbor0, neighbor1):
+                self.print_debug("not equal: %s and %s" % (neighbor0, neighbor1))
+                return False
+            back_neigbours0 = self.match_definition.subgraph_neighbors(neighbor0)
+            back_neighbors1 = self.match_definition.graph_neighbors(neighbor1)
+            for back_neigbour0 in back_neigbours0:
+                test1 = input_match.forward.get(back_neigbour0)
+                if test1 is not None and test1 not in back_neighbors1:
+                    self.print_debug("no equal back neighbours: %s and %s" % (neighbor0, neighbor1))
+                    return False
+            return True
+
+        potential_relations = set([])
+        for previous in input_match.previous_relations:
+            previous_node0, previous_node1 = previous
             neighbors0 = pool0.intersection(self.match_definition.subgraph_neighbors(previous_node0))
             neighbors1 = pool1.intersection(self.match_definition.graph_neighbors(previous_node1))
             for neighbor0 in neighbors0:
                 for neighbor1 in neighbors1:
-                    if self.match_definition.compare(neighbor0, neighbor1):
-                        cf.add_members([(0, neighbor0), (1, neighbor1)])
+                    if check_potential(neighbor0, neighbor1):
+                        potential_relations.add((neighbor0, neighbor1))
 
-        clusters = cf.get_clusters()
-        relation_groups = []
-        for cluster in clusters:
-            relation_group = [
-                [neighbor for gid, neighbor in cluster.members if gid==0], # gid = graph index
-                [neighbor for gid, neighbor in cluster.members if gid==1]
-            ]
-            if not self.match_definition.useful_relation_group(relation_group):
-                continue
-            if not self.match_definition.valid_relation_group(relation_group):
-                self.print_debug("LEAVING YIELD_MATCHES (invalid_relation_groups)", -1)
-                return
-            relation_groups.append(relation_group)
-        if len(relation_groups) == 0:
-            self.print_debug("LEAVING YIELD_MATCHES (no new relations)", -1)
+        self.print_debug("potential_relations: %s" % str(potential_relations))
+        if not self.match_definition.valid_potential_relations(potential_relations):
+            self.print_debug("LEAVING YIELD_MATCHES (invalid_potential_relations)", -1)
             return
 
-        self.print_debug("relation_groups: %s" % relation_groups)
-        for new_relations in self.combine_relations(relation_groups):
+        for new_relations in combine_relations(potential_relations):
             if self.match_definition.check_symmetry(new_relations):
+                self.print_debug("new_relations: %s" % str(new_relations))
                 next_match = input_match.copy_with_new_relations(new_relations)
                 if self.match_definition.complete(next_match):
                     yield next_match
