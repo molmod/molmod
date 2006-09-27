@@ -74,7 +74,7 @@ class OneToOne(object):
 
     def __mul__(self, other):
         """Return the result of the 'after' operator."""
-        result = self.__class__()
+        result = OneToOne()
         for source, mid in other.forward.iteritems():
             destination = self.forward[mid]
             result.forward[source] = destination
@@ -142,7 +142,9 @@ class Graph(object):
         self.shellsizes = None
         self.distances = None
         self.central_node = None
+        self.symmetry_cycles = None
         self.symmetries = None
+        self.equivalent_nodes = None
 
     def init_index(self):
         if (self.index is not None) and (self.nodes is not None): return
@@ -218,13 +220,22 @@ class Graph(object):
         self.central_node = self.nodes[self.distances.max(0).argmin()]
 
     def init_symmetries(self):
-        if self.symmetries is not None: return
+        if (self.symmetries is not None) and (self.equivalent_nodes is not None): return
+
+        self.symmetry_cycles = set([])
         self.symmetries = set([])
         for match in MatchGenerator(EgoMatchDefinition())(self):
             closed_cycles = match.get_closed_cycles()
-            assert closed_cycles not in self.symmetries, "Duplicates in EgoMatch"
-            self.symmetries.add(match.get_closed_cycles())
+            assert closed_cycles not in self.symmetry_cycles, "Duplicates in EgoMatch"
+            self.symmetry_cycles.add(match.get_closed_cycles())
+            self.symmetries.add(match)
 
+        self.equivalent_nodes = dict((node, tuple()) for node in self.nodes)
+        for cycles in self.symmetry_cycles:
+            for cycle in cycles:
+                for node in cycle:
+                    if len(cycle) > len(self.equivalent_nodes[node]):
+                        self.equivalent_nodes[node] = cycle
 
     def get_distance(self, node_a, node_b):
         return self.distances[self.index[node_a], self.index[node_b]]
@@ -281,7 +292,7 @@ class MatchDefinition(object):
     def valid_potential_relations(self, potential_relations):
         return len(potential_relations) > 0
 
-    def check_symmetry(self, new_relations):
+    def check_symmetry(self, new_relations, next_match):
         "Check wether the new_relations correspond the reference case of all possible symetric equivalents"
         return True
 
@@ -295,20 +306,27 @@ class MatchDefinition(object):
     def complete(self, match):
         return True
 
+    def yield_final_matches(self, graph_match):
+        yield graph_match
 
-class SubGraphMatchDefinition(MatchDefinition):
-    def __init__(self, subgraph):
+
+class SubgraphMatchDefinition(MatchDefinition):
+    def __init__(self, subgraph, node_tags=None):
         self.subgraph = subgraph
+        self.node_tags = node_tags
 
     def init_graph(self, graph):
         self.subgraph.init_neighbors()
         self.subgraph.init_central_node()
+        if self.node_tags is not None:
+            self.subgraph.init_symmetries()
         MatchDefinition.init_graph(self, graph)
 
     def init_matches(self):
         node0 = self.subgraph.central_node
         for node1 in self.graph.nodes:
-            yield self.MatchClass([(node0, node1)])
+            if self.compare(node0, node1):
+                yield self.MatchClass([(node0, node1)])
 
     def new_pools(self, partial_match):
         "Creates pool0 for subgraph and pool1 for graph that contain the nodes for the new relations."
@@ -319,6 +337,40 @@ class SubGraphMatchDefinition(MatchDefinition):
 
     def subgraph_neighbors(self, node0):
         return self.subgraph.neighbors[node0]
+
+    def check_symmetry(self, new_relations, next_match):
+        if self.node_tags is not None:
+            for new_node0, new_node1 in new_relations:
+                for equivalent_node0 in self.subgraph.equivalent_nodes[new_node0]:
+                    if equivalent_node0 != new_node0:
+                        equivalent_node1 = next_match.forward.get(equivalent_node0)
+                        if equivalent_node1 is None: continue
+                        if cmp(new_node1, equivalent_node1) * cmp(new_node0, equivalent_node0) < 0:
+                            return False
+        return True
+
+    def complete(self, match):
+        return len(match) == len(self.subgraph.nodes)
+
+    def test_final_match(self, final_match):
+        return True
+
+    def yield_final_matches(self, graph_match):
+        if self.node_tags is None:
+            yield graph_match
+        else:
+            satisfied_match_tags = set([])
+            for symmetry in self.subgraph.symmetries:
+                final_match = graph_match * symmetry
+                if self.test_final_match(final_match):
+                    match_tags = tuple(
+                        self.node_tags.get(symmetry.forward[node0])
+                        for node0
+                        in self.subgraph.nodes
+                    )
+                    if match_tags not in satisfied_match_tags:
+                        yield final_match
+                        satisfied_match_tags.add(match_tags)
 
 
 class ExactMatch(Match):
@@ -334,7 +386,7 @@ class ExactMatch(Match):
         return result
 
 
-class ExactMatchDefinition(SubGraphMatchDefinition):
+class ExactMatchDefinition(SubgraphMatchDefinition):
     MatchClass = ExactMatch
 
     def init_graph(self, graph):
@@ -346,7 +398,7 @@ class ExactMatchDefinition(SubGraphMatchDefinition):
             raise MatchDefinitionError("It does not make sense to find an exact match between two graphs if the number of relations is different")
         graph.init_trees_and_shells()
         self.subgraph.init_trees_and_shells()
-        SubGraphMatchDefinition.init_graph(self, graph)
+        SubgraphMatchDefinition.init_graph(self, graph)
 
     def new_pools(self, partial_match):
         # for an exact match, the matching nodes come from matching shells.
@@ -380,9 +432,6 @@ class ExactMatchDefinition(SubGraphMatchDefinition):
         for begin, end in potential_relations:
             if num_relations_per_begin[begin] != num_relations_per_end[end]:
                 return False
-        return True
-
-    def check_symmetry(self, new_relations):
         return True
 
     def compare(self, node0, node1):
@@ -634,7 +683,9 @@ class MatchGenerator(object):
         self.match_definition.init_graph(graph)
         for init_match in self.match_definition.init_matches():
             for match in self.yield_matches(init_match):
-                yield match
+                for final_match in self.match_definition.yield_final_matches(match):
+                    self.print_debug("final_match: %s" % final_match)
+                    yield final_match
 
     def print_debug(self, text, indent=0):
         if self.debug:
@@ -656,12 +707,12 @@ class MatchGenerator(object):
             if not self.match_definition.compare(neighbor0, neighbor1):
                 self.print_debug("not equal: %s and %s" % (neighbor0, neighbor1))
                 return False
-            back_neigbours0 = self.match_definition.subgraph_neighbors(neighbor0)
+            back_neigbors0 = self.match_definition.subgraph_neighbors(neighbor0)
             back_neighbors1 = self.match_definition.graph_neighbors(neighbor1)
-            for back_neigbour0 in back_neigbours0:
+            for back_neigbour0 in back_neigbors0:
                 test1 = input_match.forward.get(back_neigbour0)
                 if test1 is not None and test1 not in back_neighbors1:
-                    self.print_debug("no equal back neighbours: %s and %s" % (neighbor0, neighbor1))
+                    self.print_debug("no equal back neighbors: %s and %s" % (neighbor0, neighbor1))
                     return False
             return True
 
@@ -681,9 +732,9 @@ class MatchGenerator(object):
             return
 
         for new_relations in combine_relations(potential_relations):
-            if self.match_definition.check_symmetry(new_relations):
-                self.print_debug("new_relations: %s" % str(new_relations))
-                next_match = input_match.copy_with_new_relations(new_relations)
+            self.print_debug("new_relations: %s" % str(new_relations))
+            next_match = input_match.copy_with_new_relations(new_relations)
+            if self.match_definition.check_symmetry(new_relations, next_match):
                 if self.match_definition.complete(next_match):
                     yield next_match
                 else:

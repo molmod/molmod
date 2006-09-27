@@ -31,6 +31,7 @@ from binning import *
 from graphs import *
 from graphs2 import *
 from molecular_graphs import *
+from molecular_graphs2 import *
 from internal_coordinates import *
 from lone_pairs import *
 from pairff import *

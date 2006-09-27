@@ -234,12 +234,12 @@ class ExampleGraphs2(unittest.TestCase):
             unsatisfied = copy.deepcopy(expected_symmetries)
 
             graph.init_symmetries()
-            for symmetry in graph.symmetries:
-                if symmetry in unsatisfied:
-                    unsatisfied.remove(symmetry)
-                    common.add(symmetry)
+            for cycles in graph.symmetry_cycles:
+                if cycles in unsatisfied:
+                    unsatisfied.remove(cycles)
+                    common.add(cycles)
                 else:
-                    unexpected.append(symmetry)
+                    unexpected.add(cycles)
 
             def message():
                 return ("-- Graphs %s ---\n" % name) + \
