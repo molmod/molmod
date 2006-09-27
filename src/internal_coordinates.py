@@ -20,6 +20,10 @@
 # --
 
 
+from molmod.graphs2 import MatchGenerator
+from molmod.molecular_graphs2 import BondMatchDefinition, BendingAngleMatchDefinition, DihedralAngleMatchDefinition, OutOfPlaneMatchDefinition
+
+
 import math, copy
 import numpy
 
@@ -408,42 +412,25 @@ class InternalCoordinatesCache(object):
         else:
             existing_internal_coordinates.append(internal_coordinate)
 
-    def add_long_range_distances(self, criteria_sets):
-        def all_pairs(atom_criteria):
-            first_criterium = atom_criteria[0]
-            first_criterium.set_molecular_graph(self.molecular_graph)
-            second_criterium = atom_criteria[1]
-            second_criterium.set_molecular_graph(self.molecular_graph)
+    def add_long_range_distances(self, tag, atom1_criterion, atom2_criterion, min_bonds=4):
+        self.molecular_graph.init_distances()
+
+        def all_pairs():
+            atom1_criterion.init_graph(self.molecular_graph)
+            atom2_criterion.init_graph(self.molecular_graph)
             molecule = self.molecular_graph.molecule
             for index1 in xrange(len(molecule.numbers)):
                 for index2 in xrange(index1+1, len(molecule.numbers)):
-                    if first_criterium(index1) and second_criterium(index2):
-                        yield (index1, index2)
-                    elif first_criterium(index2) and second_criterium(index1):
-                        yield (index2, index1)
+                    if self.molecular_graph.get_distance(index1, index2) >= min_bonds:
+                        if atom1_criterion(index1) and atom2_criterion(index2):
+                            yield (index1, index2)
+                        elif atom1_criterion(index2) and atom2_criterion(index1):
+                            yield (index2, index1)
 
 
-        nonbonded_pairs = dict((tag, set(all_pairs(atom_criteria))) for tag, atom_criteria, bond_criteria, filter_tags in criteria_sets.yield_criteria())
+        nonbonded_pairs = set(all_pairs(atom_criteria))
 
-        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets.bond_excludes()):
-            id = tuple([match.get_destination(source) for source in [0, 1]])
-            nonbonded_pairs[tag].discard(id)
-            reverse_id = (id[1], id[0])
-            nonbonded_pairs[tag].discard(reverse_id)
-
-        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets.bend_excludes()):
-            id = tuple([match.get_destination(source) for source in [0, 2]])
-            nonbonded_pairs[tag].discard(id)
-            reverse_id = (id[1], id[0])
-            nonbonded_pairs[tag].discard(reverse_id)
-
-        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets.dihedral_excludes()):
-            id = tuple([match.get_destination(source) for source in [0, 3]])
-            nonbonded_pairs[tag].discard(id)
-            reverse_id = (id[1], id[0])
-            nonbonded_pairs[tag].discard(reverse_id)
-
-        def distance(id, tag):
+        def distance(id):
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
             e = self.add(Delta, s1, s0)
@@ -456,9 +443,8 @@ class InternalCoordinatesCache(object):
             )
             return d
 
-        for tag, ids in nonbonded_pairs.iteritems():
-            for id in ids:
-                self.add_internal_coordinate(tag, distance(id, tag))
+        for id in ids:
+            self.add_internal_coordinate(tag, distance(id, tag))
 
     def add_bond_lengths(self, criteria_sets):
         """
@@ -467,7 +453,8 @@ class InternalCoordinatesCache(object):
         Arguments
         criteria_sets -- see molmod.molecular_graphs
         """
-        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
+        match_generator = MatchGenerator(BondMatchDefinition(criteria_sets))
+        for match in match_generator(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1]])
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
@@ -479,14 +466,15 @@ class InternalCoordinatesCache(object):
                 id=id,
                 symbol="D%i-%i" % id
             )
-            self.add_internal_coordinate(tag, d)
+            self.add_internal_coordinate(match.tag, d)
 
-    def add_bend_cosines(self, criteria_sets):
+    def add_bending_cosines(self, criteria_sets):
         """
-        Adds the cosines of the bend angles described in criteria_sets to the
+        Adds the cosines of the bending angles described in criteria_sets to the
         collection.
         """
-        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
+        match_generator = MatchGenerator(BendingAngleMatchDefinition(criteria_sets))
+        for match in match_generator(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2]])
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
@@ -505,14 +493,15 @@ class InternalCoordinatesCache(object):
                 id=id,
                 symbol="C%i-%i-%i" % id
             )
-            self.add_internal_coordinate(tag, c)
+            self.add_internal_coordinate(match.tag, c)
 
     def add_bend_spans(self, criteria_sets):
         """
         Adds the distances that span the bend angles described in criteria_sets
         to the collection.
         """
-        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
+        match_generator = MatchGenerator(BendingAngleMatchDefinition(criteria_sets))
+        for match in match_generator(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2]])
             s0 = self.add(Select, id[0])
             s2 = self.add(Select, id[2])
@@ -524,13 +513,14 @@ class InternalCoordinatesCache(object):
                 id=id,
                 symbol="D%i^%i" % (id[0], id[2])
             )
-            self.add_internal_coordinate(tag, d)
+            self.add_internal_coordinate(match.tag, d)
 
     def add_dihedral_cosines(self, criteria_sets):
         """
         Adds the dihedral angles described in criteria_sets to the collection.
         """
-        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
+        match_generator = MatchGenerator(DihedralAngleMatchDefinition(criteria_sets))
+        for match in match_generator(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
@@ -565,13 +555,14 @@ class InternalCoordinatesCache(object):
                 id=id,
                 symbol="C%i-%i-%i-%i" % id
             )
-            self.add_internal_coordinate(tag, dihedral_cos)
+            self.add_internal_coordinate(match.tag, dihedral_cos)
 
     def add_dihedral_spans(self, criteria_sets):
         """
         Adds the distances that span the dihedral angles described in
         criteria_sets to the collection.
         """
+        match_generator = MatchGenerator(DihedralAngleMatchDefinition(criteria_sets))
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
@@ -584,22 +575,23 @@ class InternalCoordinatesCache(object):
                 id=id,
                 symbol="D%i~%i" % (id[0], id[3])
             )
-            self.add_internal_coordinate(tag, d)
+            self.add_internal_coordinate(match.tag, d)
 
     def add_out_of_plane_cosines(self, criteria_sets):
         """
         Adds the out of plane cosines described in criteria_sets to the
         collection.
         """
-        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
+        match_generator = MatchGenerator(OutOfPlaneMatchDefinition(criteria_sets, node_tags={1: 1}))
+        for match in match_generator(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
             s2 = self.add(Select, id[2])
             s3 = self.add(Select, id[3])
-            rt = self.add(Delta, s1, s0)
-            ra = self.add(Delta, s1, s2)
-            rb = self.add(Delta, s1, s3)
+            rt = self.add(Delta, s0, s1)
+            ra = self.add(Delta, s0, s2)
+            rb = self.add(Delta, s0, s3)
             dat = self.add(Dot, ra, rt)
             dbt = self.add(Dot, rb, rt)
             dl = self.add(Scale, dat, rb)
@@ -623,7 +615,7 @@ class InternalCoordinatesCache(object):
                 id=id,
                 symbol="C%i-%i(%i,%i)" % id
             )
-            self.add_internal_coordinate(tag, out_of_plane_cos)
+            self.add_internal_coordinate(match.tag, out_of_plane_cos)
 
 
     def add_out_of_plane_distances(self, criteria_sets):
@@ -631,7 +623,8 @@ class InternalCoordinatesCache(object):
         Adds the out of plane cosines described in criteria_sets to the
         collection.
         """
-        for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
+        match_generator = MatchGenerator(OutOfPlaneMatchDefinition(criteria_sets))
+        for match in match_generator(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
@@ -662,7 +655,7 @@ class InternalCoordinatesCache(object):
                 id=id,
                 symbol="D%i-(%i,%i,%i)" % id
             )
-            self.add_internal_coordinate(tag, out_of_plane_distance)
+            self.add_internal_coordinate(match.tag, out_of_plane_distance)
 
     def yield_related_internal_coordinates(self, tag1, tag2, order_related=2):
         for ic1 in self[tag1]:

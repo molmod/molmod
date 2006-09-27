@@ -20,7 +20,8 @@
 # --
 
 from molmod.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
-from molmod.molecular_graphs import BondSets, BendSets, DihedralSets, OutOfPlaneAngleSets, OutOfPlaneDistanceSets, CriteriaSet, MolecularGraph
+from molmod.molecular_graphs2 import MolecularGraph, atom_criteria
+from molmod.graphs2 import CriteriaSet
 from molmod.molecules import molecule_xyz_from_filename
 from molmod.data import BOND_SINGLE
 from molmod.units import from_angstrom
@@ -64,10 +65,7 @@ class InternalCoordinatesTPA(unittest.TestCase):
         return result
 
     def test_bonds(self):
-        bond_sets = BondSets([
-            CriteriaSet("All bonds", (None, None)),
-        ])
-        self.ic_cache.add_bond_lengths(bond_sets)
+        self.ic_cache.add_bond_lengths([CriteriaSet("All bonds")])
         expected_results = self.load_expected_results(
             "input/tpa_stretch.csv",
             from_angstrom
@@ -85,10 +83,7 @@ class InternalCoordinatesTPA(unittest.TestCase):
         )
 
     def test_bond_angles(self):
-        bend_sets = BendSets([
-            CriteriaSet("All bends", (None, None))
-        ])
-        self.ic_cache.add_bend_cosines(bend_sets)
+        self.ic_cache.add_bending_cosines([CriteriaSet("All bends")])
         expected_results = self.load_expected_results(
             "input/tpa_bend.csv",
             lambda x: math.cos(math.pi*x/180.0)
@@ -106,10 +101,7 @@ class InternalCoordinatesTPA(unittest.TestCase):
         )
 
     def test_dihedral_angles(self):
-        dihedral_sets = DihedralSets([
-            CriteriaSet("All dihedrals", (None, None)),
-        ])
-        self.ic_cache.add_dihedral_cosines(dihedral_sets)
+        self.ic_cache.add_dihedral_cosines([CriteriaSet("All dihedrals")])
         expected_results = self.load_expected_results(
             "input/tpa_tors.csv",
             lambda x: math.cos(math.pi*x/180.0)
@@ -182,7 +174,7 @@ class Chainrule(unittest.TestCase):
         self.check_sanity(ethene2.coordinates, tangent2, internal_coordinate)
 
     def test_dihedral(self):
-        self.ic_cache.add_dihedral_cosines(DihedralSets([CriteriaSet("HCCH", ((1, 6, 6, 1), None))]))
+        self.ic_cache.add_dihedral_cosines([CriteriaSet("HCCH", atom_criteria(1, 6, 6, 1))])
         dihedral_cos = self.ic_cache["HCCH"][0]
 
         self.errors = []
@@ -207,7 +199,7 @@ class Chainrule(unittest.TestCase):
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))
 
     def test_out_of_plane_cosine(self):
-        self.ic_cache.add_out_of_plane_cosines(OutOfPlaneAngleSets([CriteriaSet("CC(HCl)", ((6, 6, 1, 17), None))]))
+        self.ic_cache.add_out_of_plane_cosines([CriteriaSet("CC(HCl)", atom_criteria(6, 6, 1, 17))])
         out_of_plane_cos = self.ic_cache["CC(HCl)"][0]
 
         self.errors = []
@@ -231,7 +223,7 @@ class Chainrule(unittest.TestCase):
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))
 
     def test_out_of_plane_distance(self):
-        self.ic_cache.add_out_of_plane_distances(OutOfPlaneDistanceSets([CriteriaSet("C(CHCl)", ((6, 6, 1, 17), None))]))
+        self.ic_cache.add_out_of_plane_distances([CriteriaSet("C(CHCl)", atom_criteria(6, 6, 1, 17))])
         out_of_plane_distance = self.ic_cache["C(CHCl)"][0]
 
         self.errors = []
@@ -252,9 +244,9 @@ class Chainrule(unittest.TestCase):
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))
 
     def load_internal_coordinates(self):
-        self.ic_cache.add_out_of_plane_cosines(OutOfPlaneAngleSets([CriteriaSet("CC(HCl)", ((6, 6, 1, 17), None))]))
-        self.ic_cache.add_dihedral_cosines(DihedralSets([CriteriaSet("HCCH", ((1, 6, 6, 1), None))]))
-        self.ic_cache.add_bond_lengths(BondSets([CriteriaSet("All bonds", (None, None))]))
+        self.ic_cache.add_out_of_plane_cosines([CriteriaSet("CC(HCl)", atom_criteria(6, 6, 1, 17))])
+        self.ic_cache.add_dihedral_cosines([CriteriaSet("HCCH", atom_criteria(1, 6, 6, 1))])
+        self.ic_cache.add_bond_lengths([CriteriaSet("All bonds")])
 
         result = []
         # a) test wether the source is ok

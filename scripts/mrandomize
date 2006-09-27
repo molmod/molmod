@@ -25,7 +25,7 @@
 import os, sys, copy, random, math, numpy.random, getopt
 
 from molmod.molecules import molecule_xyz_from_filename
-from molmod.molecular_graphs import MolecularGraph
+from molmod.molecular_graphs2 import MolecularGraph
 from molmod.units import from_angstrom, to_angstrom
 from molmod.data import periodic
 from molmod.transformations import Rotation
@@ -33,17 +33,17 @@ from molmod.transformations import Rotation
 
 
 def half_molecule(graph, atom1, atom2):
-    atom1_new = set(graph.neighbours[atom1])
+    atom1_new = set(graph.neighbors[atom1])
     atom1_new.discard(atom2)
     atom1_part = set([atom1])
     
     while len(atom1_new) > 0:
         pivot = atom1_new.pop()
         if pivot == atom2: return
-        pivot_neighbours = set(graph.neighbours[pivot])
-        pivot_neighbours -= atom1_part
-        pivot_neighbours.discard(atom1)
-        atom1_new |= pivot_neighbours
+        pivot_neighbors = set(graph.neighbors[pivot])
+        pivot_neighbors -= atom1_part
+        pivot_neighbors.discard(atom1)
+        atom1_new |= pivot_neighbors
         atom1_part.add(pivot)
     
     return atom1_part
@@ -53,8 +53,8 @@ def rotational_randomize(molecule, mgraph):
     for (atom1, atom2), order in mgraph.bond_orders.iteritems():
         #print (atom1, atom2), order
         if order != 1: continue
-        if len(mgraph.neighbours[atom1]) < 2: continue
-        if len(mgraph.neighbours[atom2]) < 2: continue
+        if len(mgraph.neighbors[atom1]) < 2: continue
+        if len(mgraph.neighbors[atom2]) < 2: continue
         atom1_part = half_molecule(mgraph, atom1, atom2)
         if atom1_part is None: continue
         
