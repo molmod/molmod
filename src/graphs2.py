@@ -310,10 +310,32 @@ class MatchDefinition(object):
         yield graph_match
 
 
+class CriteriaSet(object):
+    def __init__(self, tag, thing_criteria={}, relation_criteria={}, global_criteria={}):
+        self.tag = tag
+        self.thing_criteria = thing_criteria
+        self.relation_criteria = relation_criteria
+        self.global_criteria = global_criteria
+
+    def test_match(self, match):
+        for node0, c in self.thing_criteria.iteritems():
+            node1 = match.forward[node0]
+            if not c(node1): return False
+        for (node0a, node0b), c in self.relation_criteria.iteritems():
+            node1a = match.forward[node0a]
+            node1b = match.forward[node0b]
+            if not c(frozenset([node1a, node1b])): return False
+        for c in self.global_criteria:
+            if not c(match): return False
+        return True
+
+
 class SubgraphMatchDefinition(MatchDefinition):
-    def __init__(self, subgraph, node_tags=None):
+    def __init__(self, subgraph, criteria_sets=[], node_tags={}):
         self.subgraph = subgraph
+        self.criteria_sets = criteria_sets
         self.node_tags = node_tags
+        MatchDefinition.__init__(self)
 
     def init_graph(self, graph):
         self.subgraph.init_neighbors()
@@ -352,25 +374,24 @@ class SubgraphMatchDefinition(MatchDefinition):
     def complete(self, match):
         return len(match) == len(self.subgraph.nodes)
 
-    def test_final_match(self, final_match):
-        return True
-
     def yield_final_matches(self, graph_match):
         if self.node_tags is None:
             yield graph_match
         else:
-            satisfied_match_tags = set([])
-            for symmetry in self.subgraph.symmetries:
-                final_match = graph_match * symmetry
-                if self.test_final_match(final_match):
-                    match_tags = tuple(
-                        self.node_tags.get(symmetry.forward[node0])
-                        for node0
-                        in self.subgraph.nodes
-                    )
-                    if match_tags not in satisfied_match_tags:
-                        yield final_match
-                        satisfied_match_tags.add(match_tags)
+            for criteria_set in self.criteria_sets:
+                satisfied_match_tags = set([])
+                for symmetry in self.subgraph.symmetries:
+                    final_match = graph_match * symmetry
+                    final_match.tag = criteria_set.tag
+                    if criteria_set.test_match(final_match):
+                        match_tags = tuple(
+                            self.node_tags.get(symmetry.forward[node0])
+                            for node0
+                            in self.subgraph.nodes
+                        )
+                        if match_tags not in satisfied_match_tags:
+                            yield final_match
+                            satisfied_match_tags.add(match_tags)
 
 
 class ExactMatch(Match):
@@ -442,9 +463,6 @@ class ExactMatchDefinition(SubgraphMatchDefinition):
             (self.subgraph.shell_sizes[node0] == self.graph.shell_sizes[node1]).all()
         )
 
-    def complete(self, match):
-        return len(self.subgraph.nodes) == len(match.forward)
-
 
 class EgoMatch(ExactMatch):
     def get_closed(self):
@@ -479,7 +497,7 @@ class EgoMatchDefinition(ExactMatchDefinition):
     MatchClass = EgoMatch
 
     def __init__(self):
-        ExactMatchDefinition.__init__(self, None)
+        ExactMatchDefinition.__init__(self, None, node_tags=None)
 
     def init_graph(self, graph):
         self.subgraph = graph
