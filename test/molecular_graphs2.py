@@ -26,12 +26,12 @@ from molmod.data import BOND_SINGLE
 
 import unittest, copy
 
-__all__ = ["MolecularGraphs2TPA"]
+__all__ = ["MolecularGraphs2"]
 
 
-class MolecularGraphs2TPA(unittest.TestCase):
-    def setUp(self):
-        self.molecule = molecule_xyz_from_filename("input/tpa.xyz")
+class MolecularGraphs2(unittest.TestCase):
+    def load_graph(self, filename):
+        self.molecule = molecule_xyz_from_filename(filename)
         self.molecular_graph = MolecularGraph(self.molecule)
 
     def verify(self, expected_results, test_results, yield_alternatives):
@@ -56,7 +56,8 @@ class MolecularGraphs2TPA(unittest.TestCase):
             self.assertEqual(len(unexpected), 0, message)
             self.assertEqual(len(unsatisfied), 0, message)
 
-    def test_bonds(self):
+    def test_bonds_tpa(self):
+        self.load_graph("input/tpa.xyz")
         match_definition = BondMatchDefinition([
             CriteriaSet("HC", atom_criteria(1, 6)),
             CriteriaSet("CC", atom_criteria(6, 6)),
@@ -86,7 +87,8 @@ class MolecularGraphs2TPA(unittest.TestCase):
 
         self.verify(expected_results, test_results, yield_alternatives)
 
-    def test_bending_angles(self):
+    def test_bending_angles_tpa(self):
+        self.load_graph("input/tpa.xyz")
         match_definition = BendingAngleMatchDefinition([
             CriteriaSet("HCH", atom_criteria(1, 6, 1)),
             CriteriaSet("HCC", atom_criteria(1, 6, 6)),
@@ -116,7 +118,8 @@ class MolecularGraphs2TPA(unittest.TestCase):
 
         self.verify(expected_results, test_results, yield_alternatives)
 
-    def test_dihedral_angles(self):
+    def test_dihedral_angles_tpa(self):
+        self.load_graph("input/tpa.xyz")
         match_definition = DihedralAngleMatchDefinition([
             CriteriaSet("HCCH", atom_criteria(1, 6, 6, 1)),
             CriteriaSet("HCCN", atom_criteria(1, 6, 6, 7)),
@@ -140,7 +143,8 @@ class MolecularGraphs2TPA(unittest.TestCase):
 
         self.verify(expected_results, test_results, yield_alternatives)
 
-    def test_tetra(self):
+    def test_tetra_tpa(self):
+        self.load_graph("input/tpa.xyz")
         match_definition = TetraMatchDefinition([
             CriteriaSet("C-(HCCH)", atom_criteria(6, 1, 6, 6, 1))
         ], node_tags={0: 1, 1: 1})
@@ -172,3 +176,31 @@ class MolecularGraphs2TPA(unittest.TestCase):
 
         self.verify(expected_results, test_results, yield_alternatives)
 
+    def test_dihedral_angles_precursor(self):
+        self.load_graph("input/precursor.xyz")
+        self.molecular_graph.init_neighbors()
+        match_definition = DihedralAngleMatchDefinition([
+            CriteriaSet("all"),
+        ])
+        # construct all dihedral angles:
+        all_dihedrals = set([])
+        for b, c in self.molecular_graph.pairs:
+            for a in self.molecular_graph.neighbors[b]:
+                if a != c:
+                    for d in self.molecular_graph.neighbors[c]:
+                        if d != b:
+                            all_dihedrals.add((a, b, c, d))
+        expected_results = {
+            'all': all_dihedrals,
+        }
+        test_results = dict((key, []) for key in expected_results)
+        match_generator = MatchGenerator(match_definition, debug=False)
+        for match in match_generator(self.molecular_graph):
+            test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
+
+        def yield_alternatives(test_item):
+            yield test_item
+            a, b, c, d = test_item
+            yield d, c, b, a
+
+        self.verify(expected_results, test_results, yield_alternatives)

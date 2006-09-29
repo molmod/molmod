@@ -339,6 +339,7 @@ class SubgraphMatchDefinition(MatchDefinition):
 
     def init_graph(self, graph):
         self.subgraph.init_neighbors()
+        self.subgraph.init_distances()
         self.subgraph.init_central_node()
         if self.node_tags is not None:
             self.subgraph.init_symmetries()
@@ -364,10 +365,13 @@ class SubgraphMatchDefinition(MatchDefinition):
         if self.node_tags is not None:
             for new_node0, new_node1 in new_relations:
                 for equivalent_node0 in self.subgraph.equivalent_nodes[new_node0]:
-                    if equivalent_node0 != new_node0:
+                    #print " ---- distance: ", self.subgraph.get_distance(new_node0, equivalent_node0)
+                    if equivalent_node0 != new_node0 and \
+                       self.subgraph.get_distance(new_node0, equivalent_node0) <= 2:
                         equivalent_node1 = next_match.forward.get(equivalent_node0)
                         if equivalent_node1 is None: continue
-                        if cmp(new_node1, equivalent_node1) * cmp(new_node0, equivalent_node0) < 0:
+                        #print " ---- (%s > %s) _ (%s > %s) = %s" % (new_node1, equivalent_node1, new_node0, equivalent_node0, cmp(new_node1, equivalent_node1) * cmp(new_node0, equivalent_node0))
+                        if (cmp(id(new_node1), id(equivalent_node1)) * cmp(id(new_node0), id(equivalent_node0)) < 0):
                             return False
         return True
 
@@ -375,14 +379,17 @@ class SubgraphMatchDefinition(MatchDefinition):
         return len(match) == len(self.subgraph.nodes)
 
     def yield_final_matches(self, graph_match):
+        #print graph_match
         if self.node_tags is None:
             yield graph_match
         else:
             for criteria_set in self.criteria_sets:
+                #print criteria_set.tag
                 satisfied_match_tags = set([])
                 for symmetry in self.subgraph.symmetries:
                     final_match = graph_match * symmetry
                     final_match.tag = criteria_set.tag
+                    #print final_match
                     if criteria_set.test_match(final_match):
                         match_tags = tuple(
                             self.node_tags.get(symmetry.forward[node0])
