@@ -331,10 +331,13 @@ class CriteriaSet(object):
 
 
 class SubgraphMatchDefinition(MatchDefinition):
-    def __init__(self, subgraph, criteria_sets=[], node_tags={}):
+    def __init__(self, subgraph, criteria_sets=None, node_tags={}):
         self.subgraph = subgraph
         self.criteria_sets = criteria_sets
-        self.node_tags = node_tags
+        if criteria_sets is None:
+            self.node_tags = None
+        else:
+            self.node_tags = node_tags
         MatchDefinition.__init__(self)
 
     def init_graph(self, graph):
@@ -379,7 +382,6 @@ class SubgraphMatchDefinition(MatchDefinition):
         return len(match) == len(self.subgraph.nodes)
 
     def yield_final_matches(self, graph_match):
-        #print graph_match
         if self.node_tags is None:
             yield graph_match
         else:
@@ -443,24 +445,25 @@ class ExactMatchDefinition(SubgraphMatchDefinition):
             pool1 = self.graph.shells[node1][shell_index]
         return pool0, pool1
 
-    def valid_potential_relations(self, potential_relations):
-        num_relations_per_begin = {}
-        num_relations_per_end = {}
-        for begin, end in potential_relations:
-            if begin not in num_relations_per_begin:
-                num_relations_per_begin[begin] = 1
-            else:
-                num_relations_per_begin[begin] += 1
-
-            if end not in num_relations_per_end:
-                num_relations_per_end[end] = 1
-            else:
-                num_relations_per_end[end] += 1
-
-        for begin, end in potential_relations:
-            if num_relations_per_begin[begin] != num_relations_per_end[end]:
-                return False
-        return True
+    #def valid_potential_relations(self, potential_relations):
+    #    num_relations_per_begin = {}
+    #    num_relations_per_end = {}
+    #    for begin, end in potential_relations:
+    #        if begin not in num_relations_per_begin:
+    #            num_relations_per_begin[begin] = 1
+    #        else:
+    #            num_relations_per_begin[begin] += 1
+    #
+    #        if end not in num_relations_per_end:
+    #            num_relations_per_end[end] = 1
+    #        else:
+    #            num_relations_per_end[end] += 1
+    #
+    #    for begin, end in potential_relations:
+    #        if num_relations_per_begin[begin] != num_relations_per_end[end]:
+    #            print "AAAAARGHH", begin, end, "---", num_relations_per_begin[begin], num_relations_per_end[end]
+    #            return False
+    #    return True
 
     def compare(self, node0, node1):
         sizes0 = self.subgraph.shell_sizes[node0]
@@ -504,7 +507,7 @@ class EgoMatchDefinition(ExactMatchDefinition):
     MatchClass = EgoMatch
 
     def __init__(self):
-        ExactMatchDefinition.__init__(self, None, node_tags=None)
+        ExactMatchDefinition.__init__(self, None)
 
     def init_graph(self, graph):
         self.subgraph = graph
