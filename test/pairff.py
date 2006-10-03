@@ -108,14 +108,14 @@ class PairFFExample(unittest.TestCase):
     def test_coulombff_cd(self):
         self.ff_test(self.make_coulombff(do_charges=True,  do_dipoles=True,  do_excludes=False))
 
-    #def test_coulombff_c_ex(self):
-    #    self.ff_test(self.make_coulombff(do_charges=True,  do_dipoles=False, do_excludes=True))
+    def test_coulombff_c_ex(self):
+        self.ff_test(self.make_coulombff(do_charges=True,  do_dipoles=False, do_excludes=True))
 
-    #def test_coulombff_d_ex(self):
-    #    self.ff_test(self.make_coulombff(do_charges=False, do_dipoles=True,  do_excludes=True))
+    def test_coulombff_d_ex(self):
+        self.ff_test(self.make_coulombff(do_charges=False, do_dipoles=True,  do_excludes=True))
 
-    #def test_coulombff_cd_ex(self):
-    #    self.ff_test(self.make_coulombff(do_charges=True,  do_dipoles=True,  do_excludes=True))
+    def test_coulombff_cd_ex(self):
+        self.ff_test(self.make_coulombff(do_charges=True,  do_dipoles=True,  do_excludes=True))
 
     def make_dispersionff(self, do_excludes):
         atom_strengths = numpy.array([0.3, 0.5, 0.8], float)
@@ -269,10 +269,10 @@ class PairFFExample(unittest.TestCase):
 
 
         # 1) hessian should be symmetric
-        #hessian_flat = ff.hessian_flat()
-        #error = sum((hessian_flat - hessian_flat.transpose()).ravel()**2)
-        #reference = sum(hessian_flat.ravel()**2)
-        #self.assertAlmostEqual(error, 0.0, 3, "1) The hessian is not symmetric: % 12.8f / % 12.8f" % (error, reference))
+        hessian_flat = ff.hessian_flat()
+        error = sum((hessian_flat - hessian_flat.transpose()).ravel()**2)
+        reference = sum(hessian_flat.ravel()**2)
+        self.assertAlmostEqual(error, 0.0, 3, "1) The hessian is not symmetric: % 12.8f / % 12.8f" % (error, reference))
 
         # 1a) test the diagonal hessian blocks
         for atom in xrange(numc):
@@ -339,9 +339,9 @@ class PairFFExample(unittest.TestCase):
 
         #print  numerical_hessian
 
-        #error = sum(((numerical_hessian - hessian)*diagonal_mask).ravel()**2)
-        #reference = sum((numerical_hessian*diagonal_mask).ravel()**2)
-        #self.assertAlmostEqual(error, 0.0, 3, "2b) The diagonal blocks of the analytical hessian are incorrect: % 12.8f / %12.8f" % (error, reference))
+        error = sum(((numerical_hessian - hessian)*diagonal_mask).ravel()**2)
+        reference = sum((numerical_hessian*diagonal_mask).ravel()**2)
+        self.assertAlmostEqual(error, 0.0, 3, "2b) The diagonal blocks of the analytical hessian are incorrect: % 12.8f / %12.8f" % (error, reference))
 
         error = sum(((numerical_hessian - hessian)*off_diagonal_mask).ravel()**2)
         reference = sum((numerical_hessian*off_diagonal_mask).ravel()**2)
