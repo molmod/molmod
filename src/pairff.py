@@ -88,42 +88,59 @@ class PairFF(object):
                         result += se*ve
         return result
 
+    def gradient_component(self, index1):
+        result = numpy.zeros(3, float)
+        for index2 in xrange(self.numc):
+            if index2 != index1 and not frozenset([index1, index2]) in self.exclude_pairs:
+                for (se, ve), (sg, vg) in zip(self.yield_pair_energies(index1, index2), self.yield_pair_gradients(index1, index2)):
+                    result += sg*self.directions[index1, index2]*ve + se*vg
+        return result
+
     def gradient(self):
         result = numpy.zeros((self.numc, 3), float)
         for index1 in xrange(self.numc):
-            for index2 in xrange(self.numc):
-                if index2 != index1 and not frozenset([index1, index2]) in self.exclude_pairs:
-                    for (se, ve), (sg, vg) in zip(self.yield_pair_energies(index1, index2), self.yield_pair_gradients(index1, index2)):
-                        result[index1] += sg*self.directions[index1, index2]*ve + se*vg
+            result[index1] = self.gradient_component(index1)
+        return result
+
+    def hessian_component(self, index1, index2):
+        result = numpy.zeros((3, 3), float)
+        if index1 == index2:
+            for index3 in xrange(self.numc):
+                if index3 != index1 and not frozenset([index1, index3]) in self.exclude_pairs:
+                    d_1 = 1/self.distances[index1,index3]
+                    for (se, ve), (sg, vg), (sh, vh) in zip(
+                        self.yield_pair_energies(index1, index3),
+                        self.yield_pair_gradients(index1, index3),
+                        self.yield_pair_hessians(index1, index3)
+                    ):
+                        result += (
+                            +sh*self.dirouters[index1,index3]*ve
+                            +sg*(numpy.identity(3, float) - self.dirouters[index1, index3])*ve*d_1
+                            +sg*numpy.outer(self.directions[index1, index3],  vg)
+                            +sg*numpy.outer(vg, self.directions[index1, index3])
+                            +se*vh
+                        )
+        elif not frozenset([index1, index2]) in self.exclude_pairs:
+            d_1 = 1/self.distances[index1,index2]
+            for (se, ve), (sg, vg), (sh, vh) in zip(
+                self.yield_pair_energies(index1, index2),
+                self.yield_pair_gradients(index1, index2),
+                self.yield_pair_hessians(index1, index2)
+            ):
+                result -= (
+                    +sh*self.dirouters[index1,index2]*ve
+                    +sg*(numpy.identity(3, float) - self.dirouters[index1, index2])*ve*d_1
+                    +sg*numpy.outer(self.directions[index1, index2],  vg)
+                    +sg*numpy.outer(vg, self.directions[index1, index2])
+                    +se*vh
+                )
         return result
 
     def hessian(self):
         result = numpy.zeros((self.numc, self.numc, 3, 3), float)
         for index1 in xrange(self.numc):
             for index2 in xrange(self.numc):
-                if index1 != index2 and not frozenset([index1, index2]) in self.exclude_pairs:
-                    d_1 = 1/self.distances[index1,index2]
-                    for (se, ve), (sg, vg), (sh, vh) in zip(
-                        self.yield_pair_energies(index1, index2),
-                        self.yield_pair_gradients(index1, index2),
-                        self.yield_pair_hessians(index1, index2)
-                    ):
-                        result[index1, index1] += (
-                            +sh*self.dirouters[index1,index2]*ve
-                            +sg*(numpy.identity(3, float) - self.dirouters[index1, index2])*ve*d_1
-                            +sg*numpy.outer(self.directions[index1, index2],  vg)
-                            +sg*numpy.outer(vg, self.directions[index1, index2])
-                            +se*vh
-                        )
-
-                        result[index1, index2] -= (
-                            +sh*self.dirouters[index1,index2]*ve
-                            +sg*(numpy.identity(3, float) - self.dirouters[index1, index2])*ve*d_1
-                            +sg*numpy.outer(self.directions[index1, index2],  vg)
-                            +sg*numpy.outer(vg, self.directions[index1, index2])
-                            +se*vh
-                        )
-
+                result[index1, index2] = self.hessian_component(index1, index2)
         return result
 
     def gradient_flat(self):
