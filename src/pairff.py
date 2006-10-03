@@ -42,8 +42,9 @@ class PairFF(object):
         self.update_coordinates(coordinates)
         self.exclude_pairs = exclude_pairs
 
-    def update_coordinates(self, coordinates):
-        self.coordinates = coordinates
+    def update_coordinates(self, coordinates=None):
+        if coordinates is not None:
+            self.coordinates = coordinates
         self.numc = len(self.coordinates)
         self.distances = numpy.zeros((self.numc, self.numc), float)
         self.deltas = numpy.zeros((self.numc, self.numc, 3), float)
@@ -149,36 +150,36 @@ class CoulombFF(PairFF):
         if self.charges is not None:
             c1 = self.charges[index1]
             c2 = self.charges[index2]
-            yield (c1*c2*d_1, 1)
+            yield c1*c2*d_1, 1
         if self.dipoles is not None:
             d_3 = d_1**3
             d_5 = d_1**5
             delta = self.deltas[index1, index2]
             p1 = self.dipoles[index1]
             p2 = self.dipoles[index2]
-            yield (d_3*numpy.dot(p1, p2), 1)
-            yield (-3*d_5, numpy.dot(p1, delta)*numpy.dot(delta, p2))
+            yield d_3*numpy.dot(p1, p2), 1
+            yield -3*d_5, numpy.dot(p1, delta)*numpy.dot(delta, p2)
             if self.charges is not None:
-                yield (c1*d_3, numpy.dot(p2, delta))
-                yield (c2*d_3, numpy.dot(p1, -delta))
+                yield c1*d_3, numpy.dot(p2, delta)
+                yield c2*d_3, numpy.dot(p1, -delta)
 
     def yield_pair_gradients(self, index1, index2):
         d_2 = 1/self.distances[index1, index2]**2
         if self.charges is not None:
             c1 = self.charges[index1]
             c2 = self.charges[index2]
-            yield (-c1*c2*d_2, 0)
+            yield -c1*c2*d_2, numpy.zeros(3)
         if self.dipoles is not None:
             d_4 = d_2**2
             d_6 = d_2**3
             delta = self.deltas[index1, index2]
             p1 = self.dipoles[index1]
             p2 = self.dipoles[index2]
-            yield (-3*d_4*numpy.dot(p1, p2), 0)
-            yield (15*d_6, p1*numpy.dot(p2, delta) + p2*numpy.dot(p1, delta))
+            yield -3*d_4*numpy.dot(p1, p2), numpy.zeros(3)
+            yield 15*d_6, p1*numpy.dot(p2, delta) + p2*numpy.dot(p1, delta)
             if self.charges is not None:
-                yield (-3*c1*d_4, p2)
-                yield (-3*c2*d_4, -p1)
+                yield -3*c1*d_4, p2
+                yield -3*c2*d_4, -p1
 
     def yield_pair_hessians(self, index1, index2):
         d_1 = 1/self.distances[index1, index2]
@@ -186,18 +187,18 @@ class CoulombFF(PairFF):
         if self.charges is not None:
             c1 = self.charges[index1]
             c2 = self.charges[index2]
-            yield (2*c1*c2*d_3, 0)
+            yield 2*c1*c2*d_3, numpy.zeros((3,3))
         if self.dipoles is not None:
             d_5 = d_1**5
             d_7 = d_1**7
             delta = self.deltas[index1, index2]
             p1 = self.dipoles[index1]
             p2 = self.dipoles[index2]
-            yield (12*d_5*numpy.dot(p1, p2), 0)
-            yield (90*d_7, numpy.outer(p1, p2) + numpy.outer(p2, p1))
+            yield 12*d_5*numpy.dot(p1, p2), numpy.zeros((3,3))
+            yield -90*d_7, numpy.outer(p1, p2) + numpy.outer(p2, p1)
             if self.charges is not None:
-                yield (12*c1*d_5, 0)
-                yield (12*c2*d_5, 0)
+                yield 12*c1*d_5, numpy.zeros((3,3))
+                yield 12*c2*d_5, numpy.zeros((3,3))
 
 
 class DispersionFF(PairFF):
@@ -213,11 +214,10 @@ class DispersionFF(PairFF):
     def yield_pair_gradients(self, index1, index2):
         strength = self.strengths[index1, index2]
         distance = self.distances[index1, index2]
-        yield -6*strength*distance**(-7), 0
+        yield -6*strength*distance**(-7), numpy.zeros(3)
 
     def yield_pair_hessians(self, index1, index2):
         strength = self.strengths[index1, index2]
         distance = self.distances[index1, index2]
-        yield 42*strength*distance**(-8), 0
-
+        yield 42*strength*distance**(-8), numpy.zeros((3,3))
 
