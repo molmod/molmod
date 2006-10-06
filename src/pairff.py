@@ -158,7 +158,6 @@ class PairFF(object):
 class CoulombFF(PairFF):
     def __init__(self, coordinates, charges=None, dipoles=None, exclude_pairs=[]):
         PairFF.__init__(self, coordinates, exclude_pairs)
-        assert (charges is not None) or (dipoles is not None), "Charges or dipoles are required!"
         self.charges = charges
         self.dipoles = dipoles
 
