@@ -41,6 +41,7 @@ from clusters import *
 from transformations import *
 from environments import *
 from descriptors import *
+from esp import *
 
 unittest.main()
 
