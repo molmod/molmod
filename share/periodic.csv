@@ -21,7 +21,7 @@ Silicon Si 14 3 14 28.0855 2.42 1.4 1.17 False 0.9 0.5 0.3
 Phosphorus P 15 3 15 30.973761 1.83 1.25 1.1 False 0 0 0.6
 Sulfur S 16 3 16 32.065 2.07 1.22 1.04 False 0.8 0.8 0
 Chlorine Cl 17 3 17 35.453 2.2 1.19 0.99 False 0.6 0 0.6
-Argon A 18 3 18 39.948 1.65 0.995 NA False NA NA NA
+Argon Ar 18 3 18 39.948 1.65 0.995 NA False NA NA NA
 Potassium K 19 4 1 39.0983 0.87 1.53 2.31 False NA NA NA
 Calcium Ca 20 4 2 40.078 1.55 1.19 1.97 False NA NA NA
 Scandium Sc 21 4 3 44.95591 3.02 1.64 1.6 False NA NA NA
