@@ -20,33 +20,48 @@
 #
 # --
 
-import glob
-from distutils.core import setup
+if __name__ == "__main__":
+    from numpy.distutils.core import setup
+    from numpy.distutils.misc_util import Configuration
+    config = Configuration(
+        package_name="molmod",
+        parent_name="",
+        top_path=""
+    )
+    config.add_extension('helpers', sources=['src/helpers.f90'])
+    setup(**config.todict())
 
-version = '0.1.2'
 
-setup(name='MolMod',
-    version=version,
-    description='MolMod is a collection of molecular modelling tools for python.',
-    author='Toon Verstraelen',
-    author_email='Toon.Verstraelen@UGent.be',
-    url='http://molmod.ugent.be/projects/molmod',
-    package_dir = {'molmod': 'src'},
-    data_files=[
-        ('share/molmod/%s' % version, glob.glob('share/*.csv')),
-    ],
-    packages=[
-        'molmod',
-        'molmod.data',
-    ],
-    scripts=['scripts/mrandomize'],
-    classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Environment :: Console',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: GNU General Public License (GPL)',
-        'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python',
-        'Topic :: Science/Engineering :: Molecular Science'
-    ],
-)
+    import glob
+    from distutils.core import setup
+
+
+    version = '0.1.2'
+
+    setup(name='MolMod',
+        version=version,
+        description='MolMod is a collection of molecular modelling tools for python.',
+        author='Toon Verstraelen',
+        author_email='Toon.Verstraelen@UGent.be',
+        url='http://molmod.ugent.be/projects/molmod',
+        package_dir = {'molmod': 'src'},
+        data_files=[
+            ('share/molmod/%s' % version, glob.glob('share/*.csv')),
+        ],
+        packages=[
+            'molmod',
+            'molmod.data',
+        ],
+        scripts=['scripts/mrandomize'],
+        classifiers=[
+            'Development Status :: 3 - Alpha',
+            'Environment :: Console',
+            'Intended Audience :: Science/Research',
+            'License :: OSI Approved :: GNU General Public License (GPL)',
+            'Operating System :: POSIX :: Linux',
+            'Programming Language :: Python',
+            'Topic :: Science/Engineering :: Molecular Science'
+        ],
+    )
+
+
