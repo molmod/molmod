@@ -113,8 +113,8 @@ class Molecule:
         f.close()
 
     def bounding_box(self, margin=0.0):
-        bbox_low = numpy.array([dim.min() for dim in self.coordinates.transpose()], float) - margin
-        bbox_high = numpy.array([dim.max() for dim in self.coordinates.transpose()], float) + margin
+        bbox_low = self.coordinates.min(axis=0) - margin
+        bbox_high = self.coordinates.max(axis=0) + margin
         return bbox_low, bbox_high
 
     def surrounding_grid(self, grid_margin, grid_spacing):
