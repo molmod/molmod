@@ -31,17 +31,14 @@ class ESPCostFunction(object):
         self.dipoles = dipoles
         self.design_matrix = design_matrix
         self.expected_values = expected_values
-        self.weights = None
-        self.recompute(weights)
+        self.weights = weights
+        self.num_equations = len(expected_values)
+        self.recompute()
 
-    def recompute(self, weights=None):
-        if weights is None:
-            weights = self.weights
-        else:
-            self.weights = weights
-        if weights is not None:
-            tmp_ev = weights*self.expected_values
-            tmp_dm = (self.design_matrix.transpose()*weights).transpose()
+    def recompute(self):
+        if self.weights is not None:
+            tmp_ev = self.weights*self.expected_values
+            tmp_dm = (self.design_matrix.transpose()*self.weights).transpose()
         else:
             tmp_ev = self.expected_values
             tmp_dm = self.design_matrix
@@ -72,17 +69,15 @@ class ESPCostFunction(object):
 
 
 class StandardESPCostFunction(ESPCostFunction):
-    def __init__(self, potential_data, charges, dipoles, weights=None, external_potential=None, epsilons=None):
-        if potential_data is not None:
-            design_matrix = numpy.zeros((len(potential_data), len(charges) + len(dipoles)*3), float)
-            expected_values = potential_data[:,-1].copy()
-            self.num_equations = len(expected_values)
+    def __init__(self, points, potential, charges, dipoles, weights=None, external_potential=None, epsilons=None):
+        if points is not None:
+            design_matrix = numpy.zeros((len(potential), len(charges) + len(dipoles)*3), float)
+            expected_values = potential.copy()
 
             if external_potential is not None:
-                expected_values -= external_potential(potential_data[:,:-1])
+                expected_values -= external_potential(points)
 
-            for row, record in enumerate(potential_data):
-                point = record[:-1]
+            for row, point in enumerate(points):
                 if len(charges) > 0:
                     design_matrix[row,:len(charges)] = 1/numpy.sqrt(sum((point - charges).transpose()**2))
                 if len(dipoles) > 0:

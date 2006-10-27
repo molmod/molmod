@@ -211,60 +211,27 @@ MODULE potential
 IMPLICIT NONE
     REAL(8),PARAMETER :: pi = 3.141592653589793238462643d0
 CONTAINS
-
-    SUBROUTINE gridv1(skip,rho,vol,ionval,ioncor,V,ndata,nions)
-        INTEGER :: skip
-        INTEGER :: ndata,nions
-        REAL(8) :: vol, V
-        REAL(8),DIMENSION(ndata,4) :: rho
-        REAL(8),DIMENSION(nions) :: ionval
-        REAL(8),DIMENSION(nions,3) :: ioncor
-!f2py   intent(in) :: skip,rho,vol,ionval,ioncor
-!f2py   intent(out) :: V
-!f2py   intent(hide) :: ndata,N
-        INTEGER :: i
-        REAL(8) :: d
-        REAL(8),DIMENSION(3) :: reference
-        V = 0
-        skip = skip + 1
-        reference = rho(skip,1:3)
-        DO i=1,ndata
-            IF (i /= skip) THEN
-                d = SQRT(SUM( (reference(1) - rho(i,:))**2 ))
-                V = V - rho(i,4)/d
-            END IF
-        END DO
-        V = V * vol
-        DO i=1,nions
-            d = SQRT(SUM( (reference(1) - ioncor(i,:))**2 ))
-            V = V + ionval(i)/d
-        END DO
-    END SUBROUTINE
-
-    SUBROUTINE gridv2(observer,rho,vols,ionval,ioncor,threshold,V,ndata,nions)
-        INTEGER,INTENT(IN) :: ndata,nions
+    FUNCTION gridv(observer, grid, densities, volumes, ion_charges, ion_coordinates, ngrid, nion)
+        INTEGER,INTENT(IN) :: ngrid,nion
         REAL(8),DIMENSION(3),INTENT(IN) :: observer
-        REAL(8),DIMENSION(ndata,4),INTENT(IN) :: rho
-        REAL(8),DIMENSION(ndata),INTENT(IN) :: vols
-        REAL(8),DIMENSION(nions),INTENT(IN) :: ionval
-        REAL(8),DIMENSION(nions,3),INTENT(IN) :: ioncor
-        REAL(8),INTENT(IN) :: threshold
-        REAL(8),INTENT(OUT) :: V
+        REAL(8),DIMENSION(ngrid,3),INTENT(IN) :: grid
+        REAL(8),DIMENSION(ngrid),INTENT(IN) :: densities, volumes
+        REAL(8),DIMENSION(nion),INTENT(IN) :: ion_charges
+        REAL(8),DIMENSION(nion,3),INTENT(IN) :: ion_coordinates
+        REAL(8) :: gridv
 !f2py   intent(hide) :: ndata,nions
         INTEGER :: i
-        REAL(8) :: d
-        V = 0
-        DO i=1,ndata
-            d = SQRT(SUM( (observer - rho(i,1:3))**2 ))
-            IF (d > threshold) THEN
-                V = V - vols(i)*rho(i,4)/d
-            END IF
+        REAL(8) :: distance
+        gridv = 0
+        DO i=1,ngrid
+            distance = SQRT(SUM( (observer - grid(i,:))**2 ))
+            gridv = gridv - volumes(i)*densities(i)/distance
         END DO
-        DO i=1,nions
-            d = SQRT(SUM( (observer - ioncor(i,:))**2 ))
-            V = V + ionval(i)/d
+        DO i=1,nion
+            distance = SQRT(SUM( (observer - ion_coordinates(i,:))**2 ))
+            gridv = gridv + ion_charges(i)/distance
         END DO
-     END SUBROUTINE
+     END FUNCTION
 
      FUNCTION switch_cos(distance, low, high)
         REAL(8),INTENT(IN) :: distance, low, high
@@ -471,7 +438,7 @@ CONTAINS
 
 END MODULE
 
-MODULE hirshfeld
+MODULE partitioning
 IMPLICIT NONE
 CONTAINS
     FUNCTION lin_interpol(x, xs, ys, n, lefty, righty)
@@ -494,41 +461,150 @@ CONTAINS
         END IF
     END FUNCTION
 
-    ! Calculates hirshfeld charges and dipoles
-    SUBROUTINE hirshfeld_cd(rho, vols, atom_rho, atom_i, atom_cor, nrho, nrad, natrho, natom, output)
-        INTEGER,INTENT(IN) :: nrho, nrad, natrho, natom
-        REAL(8),INTENT(IN),DIMENSION(nrho,4) :: rho
-        REAL(8),INTENT(IN),DIMENSION(nrho) :: vols
-        REAL(8),INTENT(IN),DIMENSION(natrho,nrad) :: atom_rho
-        INTEGER,INTENT(IN),DIMENSION(natom) :: atom_i
-        REAL(8),INTENT(IN),DIMENSION(natom,3) :: atom_cor
-        REAL(8),INTENT(OUT),DIMENSION(natom,4) :: output
-!cf2py  intent(hide) :: nrho, nrad, natrho, natom
+    ! Calculate hirshfeld weights
+    SUBROUTINE hirshfeld_weights(grid, weights, atom_densities, atom_indices, &
+                                 atom_coordinates, ngrid, nrad, natden, natom)
+        INTEGER,INTENT(IN) :: ngrid, nrad, natden, natom
+        REAL(8),INTENT(IN),DIMENSION(ngrid,3) :: grid
+        REAL(8),INTENT(IN),DIMENSION(natden,2,nrad) :: atom_densities
+        INTEGER,INTENT(IN),DIMENSION(natom) :: atom_indices
+        REAL(8),INTENT(IN),DIMENSION(natom,3) :: atom_coordinates
+        REAL(8),INTENT(OUT),DIMENSION(ngrid,natom) :: weights
+!cf2py  intent(hide) :: ngrid, nrad, natden, natom
         INTEGER :: i,j
-        REAL(8) :: distance, total_weight, c
-        REAL(8),DIMENSION(natom) :: weights
-        DO i=1,nrho
-            c = vols(i)*rho(i,4)
+        REAL(8) :: distance, total_weight
+        DO i=1,ngrid
             DO j=1,natom
-                distance = SQRT(SUM( (rho(i,1:3) - atom_cor(j,:))**2 ))
-                weights(j) = lin_interpol(              &
-                    distance,                           &
-                    atom_rho(atom_i(j)*2+1,:),          &
-                    atom_rho(atom_i(j)*2+2,:),          &
-                    nrad,                               &
-                    atom_rho(atom_i(j)*2+2,1),          &
-                    0D0                                 &
+                distance = SQRT(SUM( (grid(i,:) - atom_coordinates(j,:))**2 ))
+                weights(i,j) = lin_interpol(               &
+                    distance,                              &
+                    atom_densities(atom_indices(j)+1,1,:),   &
+                    atom_densities(atom_indices(j)+1,2,:),   &
+                    nrad,                                  &
+                    atom_densities(atom_indices(j)+1,2,1),   &
+                    0D0                                    &
                 )
             END DO
-            total_weight = SUM(weights)
+            total_weight = SUM(weights(i,:))
             IF (total_weight > 0) THEN
-                weights = weights / SUM(weights)
-                !print *, weights
-                output(:,1) = output(:,1) + c*weights
-                DO j=1,natom
-                    output(j,2:4) = output(j,2:4) + c*weights(j)*(rho(i,1:3) - atom_cor(j,:))
-                END DO
+                weights(i,:) = weights(i,:) / total_weight
             END IF
+        END DO
+    END SUBROUTINE
+
+    ! Calculate voronoi weights
+    SUBROUTINE voronoi_weights(grid, weights, atom_coordinates, ngrid, natom)
+        INTEGER,INTENT(IN) :: ngrid, natom
+        REAL(8),INTENT(IN),DIMENSION(ngrid,3) :: grid
+        REAL(8),INTENT(IN),DIMENSION(natom,3) :: atom_coordinates
+        REAL(8),INTENT(OUT),DIMENSION(ngrid,natom) :: weights
+!cf2py  intent(hide) :: ngrid, natom
+        INTEGER :: i,j
+        INTEGER,DIMENSION(1) :: tmp
+        DO i=1,ngrid
+            DO j=1,natom
+                weights(i,j) = SQRT(SUM( (grid(i,:) - atom_coordinates(j,:))**2 ))
+            END DO
+            tmp = MINLOC(weights(i,:))
+            weights(i,:) = 0.0
+            weights(i,tmp(1)) = 1.0
+        END DO
+    END SUBROUTINE
+
+    ! Calculate charges and dipoles based on densities and weights
+    SUBROUTINE charges_and_dipoles(grid, volumes, densities, weights,  &
+                                   atom_coordinates, cd, ngrid, natom)
+        INTEGER,INTENT(IN) :: ngrid, natom
+        REAL(8),INTENT(IN),DIMENSION(ngrid,3) :: grid
+        REAL(8),INTENT(IN),DIMENSION(ngrid) :: volumes, densities
+        REAL(8),INTENT(IN),DIMENSION(ngrid,natom) :: weights
+        REAL(8),INTENT(IN),DIMENSION(natom,3) :: atom_coordinates
+        REAL(8),INTENT(OUT),DIMENSION(natom,4) :: cd
+!cf2py  intent(hide) :: ngrid, natom
+        INTEGER :: i,j
+        REAL(8) :: c
+        DO i=1,ngrid
+            c = volumes(i)*densities(i)
+            cd(:,1) = cd(:,1) + c*weights(i,:)
+            DO j=1,natom
+                cd(j,2:4) = (                                            &
+                    cd(j,2:4) +                                          &
+                    c*weights(i,j)*(grid(i,:) - atom_coordinates(j,:))   &
+                )
+            END DO
+        END DO
+    END SUBROUTINE
+
+    FUNCTION mfn(x,y,z)
+        REAL(8),INTENT(IN) :: x,y,z
+        REAL(8) :: r2
+        REAL(8),DIMENSION(25) :: mfn
+        REAL(8),PARAMETER :: c20  = 1.0/2.0
+        REAL(8),PARAMETER :: c21  = SQRT(3.0)
+        REAL(8),PARAMETER :: c22c = SQRT(3.0/4.0)
+        REAL(8),PARAMETER :: c31  = SQRT(3.0/8.0)
+        REAL(8),PARAMETER :: c32c = SQRT(15.0/4.0)
+        REAL(8),PARAMETER :: c32s = SQRT(15.0)
+        REAL(8),PARAMETER :: c33  = SQRT(5.0/8.0)
+        REAL(8),PARAMETER :: c40  = 1.0/8.0
+        REAL(8),PARAMETER :: c42c = SQRT(5.0/16.0)
+        REAL(8),PARAMETER :: c42s = SQRT(5.0/4.0)
+        REAL(8),PARAMETER :: c43  = SQRT(35.0/8.0)
+        REAL(8),PARAMETER :: c44c = SQRT(35.0/64.0)
+        REAL(8),PARAMETER :: c44s = SQRT(35.0/4.0)
+
+        r2 = x*x+y*y+z*z
+        ! monopole, 00
+        mfn(1) = 1
+        ! dipole, 10, 11c, 11s
+        mfn(2) = z
+        mfn(3) = x
+        mfn(4) = y
+        ! quadrupole, 20, 21c, 21s, 22c, 22s
+        mfn(5) = c20 *(3*z*z-r2)
+        mfn(6) = c21 *x*z
+        mfn(7) = c21 *y*z
+        mfn(8) = c22c*(x*x-y*y)
+        mfn(9) = c21 *x*y
+        ! octopole, 30, 31C, 31s, 32c, 32s, 33c, 33s
+        mfn(10) = c20 *(5*z**3-3*z*r2)
+        mfn(11) = c31 *x*(5*z*z-r2)
+        mfn(12) = c31 *y*(5*z*z-r2)
+        mfn(13) = c32c*z*(x*x-y*y)
+        mfn(14) = c32s*x*y*z
+        mfn(15) = c33 *x*(x*x-3*y*y)
+        mfn(16) = c33 *y*(3*x*x-y*y)
+        ! hexadecapole, 40, 41c, 41s, 42c, 42s, 43c, 43s, 44c, 44s
+        mfn(17) = c40 *(35*z**4-30*z*z*r2+3*r2*r2)
+        mfn(18) = c33 *x*z*(7*z*z-3*r2)
+        mfn(19) = c33 *y*z*(7*z*z-3*r2)
+        mfn(20) = c42c*(x*x-y*y)*(7*z*z-r2)
+        mfn(21) = c42s*x*y*(7*z*z-r2)
+        mfn(22) = c43 *z*x*(x*x-3*y*y)
+        mfn(23) = c43 *z*y*(3*x*x-y*y)
+        mfn(24) = c44c*(x**4-6*x*x*y*y+y**4)
+        mfn(25) = c44s*x*y*(x*x-y*y)
+    END FUNCTION
+
+    SUBROUTINE multipoles(grid, volumes, densities, weights,  &
+                          atom_coordinates, output, ngrid, natom)
+        INTEGER,INTENT(IN) :: ngrid, natom
+        REAL(8),INTENT(IN),DIMENSION(ngrid,3) :: grid
+        REAL(8),INTENT(IN),DIMENSION(ngrid) :: volumes, densities
+        REAL(8),INTENT(IN),DIMENSION(ngrid,natom) :: weights
+        REAL(8),INTENT(IN),DIMENSION(natom,3) :: atom_coordinates
+        REAL(8),INTENT(OUT),DIMENSION(natom,25) :: output
+!cf2py  intent(hide) :: ngrid, natom
+        INTEGER :: i,j
+        REAL(8) :: c
+        REAL(8),DIMENSION(3) :: delta
+        output = 0
+        DO i=1,ngrid
+            DO j=1,natom
+                c = volumes(i)*densities(i)*weights(i,j)
+                delta = grid(i,:) - atom_coordinates(j,:)
+                output(j,:) = output(j,:) + c*mfn(delta(1),delta(2),delta(3))
+            END DO
         END DO
     END SUBROUTINE
 END MODULE

@@ -39,8 +39,8 @@ def sph_harmonics(L, phi, theta):
             numpy.array([y^(-N)_N, ..., y^N_N])
        ].
     """
-    x = math.cos(theta)
-    val, foo = lpml(L,L,x)
+    z = math.cos(theta)
+    val, foo = lpml(L,L,z)
     val = val.astype(complex)
     for l in xrange(0, L+1):
         val[:,l] *= math.sqrt((2*l+1)/4.0/math.pi)

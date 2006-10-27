@@ -22,31 +22,7 @@
 
 import numpy
 
-__all__ = ["yield_3d_indices", "yield_cusp_grid", "hierarchical_grid"]
-
-
-def yield_3d_indices(num):
-    for i in xrange(num):
-        for j in xrange(num):
-            for k in xrange(num):
-                yield numpy.array([i, j, k], int)
-
-
-def yield_cusp_grid(center, corner, spacing, size, div, subdiv, level):
-    spacing /= div
-    subspacing = spacing/subdiv
-    center_index = numpy.floor((center - corner)/subspacing).astype(int)
-    #print "center_index", center_index
-
-    for index in yield_3d_indices(size*div*subdiv):
-        if level == 1 or (abs(index - center_index) > (size/2)*subdiv).any():
-            #print index, point, spacing**3
-            yield (index+0.5) * subspacing + corner, subspacing**3
-
-    if level > 1:
-        new_corner = (center_index - (size/2)*subdiv)*subspacing + corner
-        for data in yield_cusp_grid(center, new_corner, spacing, size, div, subdiv, level-1):
-            yield data
+__all__ = ["hierarchical_grid"]
 
 
 def hierarchical_grid(coordinates, callback, div=2, min_spacing=1e-4, max_spacing=1e-0, margin=8, alpha1=0.1, alpha2=0.3, threshold=1):
@@ -54,3 +30,10 @@ def hierarchical_grid(coordinates, callback, div=2, min_spacing=1e-4, max_spacin
     center = sum(coordinates)/len(coordinates)
     size = (coordinates.max(axis=0) - coordinates.min(axis=0)).max() + 2*margin
     gridf.recursive_grid(center, size, div, min_spacing, max_spacing, alpha1, alpha2, threshold, coordinates, callback)
+
+
+class Grid(object):
+    def __init__(self, points, volumes=None, data={}):
+        self.__dict__.update(data)
+        self.points = points
+        self.volumes = volumes
