@@ -21,15 +21,16 @@
 
 
 import numpy
+from molmod.helpers import grids as gridsf90
+
 
 __all__ = ["hierarchical_grid"]
 
 
 def hierarchical_grid(coordinates, callback, div=2, min_spacing=1e-4, max_spacing=1e-0, margin=8, alpha1=0.1, alpha2=0.3, threshold=1):
-    from molmod.helpers import gridf
     center = sum(coordinates)/len(coordinates)
     size = (coordinates.max(axis=0) - coordinates.min(axis=0)).max() + 2*margin
-    gridf.recursive_grid(center, size, div, min_spacing, max_spacing, alpha1, alpha2, threshold, coordinates, callback)
+    gridsf90.recursive_grid(center, size, div, min_spacing, max_spacing, alpha1, alpha2, threshold, coordinates, callback)
 
 
 class Grid(object):
@@ -37,3 +38,13 @@ class Grid(object):
         self.__dict__.update(data)
         self.points = points
         self.volumes = volumes
+
+    def list_neighbors(self, label="neighbors"):
+        assert self.volumes is not None
+        neighbors = [[] for index in xrange(len(self.points))]
+        def add_neighbour(index1, index2):
+            neighbors[index1-1].append(index2-1)
+            neighbors[index2-1].append(index1-1)
+
+        gridsf90.list_neighbors(self.points, self.volumes, add_neighbour)
+        self.__dict__[label] = neighbors

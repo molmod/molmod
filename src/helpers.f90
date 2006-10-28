@@ -1,4 +1,4 @@
-MODULE gridf
+MODULE grids
 IMPLICIT NONE
 CONTAINS
     FUNCTION must_finer(point, boxsize, min_spacing, max_spacing, alpha1, &
@@ -11,7 +11,7 @@ CONTAINS
         LOGICAL :: must_finer
         ! local vars
         INTEGER :: i
-        REAL(8) :: distance, new_distance
+        REAL(8) :: distance, new_distance, s
         IF (boxsize .gt. max_spacing) THEN
             must_finer = .true.
         ELSE IF (boxsize .lt. min_spacing) THEN
@@ -32,11 +32,13 @@ CONTAINS
             END DO
             !must_finer = (distance*alpha .lt. boxsize)
             !must_finer = (alpha*(distance - 0.3*exp(-(2*(distance-1))**2)) .lt. boxsize)
-            must_finer = ( &
-                ((alpha1*distance*threshold/distance + alpha2*distance**5) / &
-                 (threshold/distance + distance**4)) &
-                .lt. boxsize &
-            )
+            !must_finer = ( &
+            !    ((alpha1*distance*threshold/distance + alpha2*distance**5) / &
+            !     (threshold/distance + distance**4)) &
+            !    .lt. boxsize &
+            !)
+            s = (1 - EXP(-distance/threshold))**2
+            must_finer = (alpha1*(1-s) + alpha2*s)*distance .lt. boxsize
         END IF
     END FUNCTION
 
@@ -75,7 +77,6 @@ CONTAINS
             END DO
         END DO
     END SUBROUTINE
-
 
     SUBROUTINE pseudo_log_grid(low, sizes, delta, beta, numu, coordinates, n, cb)
 !f2py   intent(hide) n
@@ -202,6 +203,30 @@ CONTAINS
                     END DO
 
                 END DO
+            END DO
+        END DO
+    END SUBROUTINE
+
+    SUBROUTINE list_neighbors(grid, volumes, callback, ngrid)
+        INTEGER :: ngrid
+        REAL(8),DIMENSION(ngrid,3),INTENT(IN) :: grid
+        REAL(8),DIMENSION(ngrid),INTENT(IN) :: volumes
+        EXTERNAL callback
+!f2py   intent(hide) :: ngrid
+
+        INTEGER :: i,j
+        REAL(8),DIMENSION(3) :: delta
+        REAL(8) :: distance
+        REAL(8),DIMENSION(ngrid) :: sizes
+
+        sizes = volumes**(1.0/3.0)
+        DO i=1,ngrid
+            DO j=1,i-1
+                delta = grid(i,:) - grid(j,:)
+                distance = MAXVAL(delta)
+                IF (distance < sizes(i) + sizes(j) + 0.5*MIN(sizes(i),sizes(j))) THEN
+                    CALL callback(i,j)
+                END IF
             END DO
         END DO
     END SUBROUTINE
@@ -444,19 +469,29 @@ CONTAINS
     FUNCTION lin_interpol(x, xs, ys, n, lefty, righty)
         INTEGER,INTENT(IN) :: n
         REAL(8),INTENT(IN) :: x, lefty, righty
-        REAL(8),INTENT(IN),DIMENSION(:) :: xs, ys
+        REAL(8),INTENT(IN),DIMENSION(n) :: xs, ys
         REAL(8) :: lin_interpol
 
-        INTEGER,DIMENSION(1) :: i
-        INTEGER :: b,e
+        INTEGER :: b,e,j
         IF (x <= xs(1)) THEN
             lin_interpol = lefty
         ELSE IF (x >= xs(n)) THEN
             lin_interpol = righty
         ELSE
-            i = MAXLOC(xs, xs < x)
-            b = i(1)
-            e = i(1) + 1
+            b = 1
+            e = n
+            DO
+                j = (b+e)/2
+                IF (xs(j) > x) THEN
+                    e = j
+                ELSEIF (xs(j+1) < x) THEN
+                    b = j+1
+                ELSE
+                    b = j
+                    e = j+1
+                    EXIT
+                END IF
+            END DO
             lin_interpol = (x - xs(b))/(xs(e) - xs(b))*(ys(e) - ys(b)) + ys(b)
         END IF
     END FUNCTION
