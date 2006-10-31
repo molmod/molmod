@@ -56,13 +56,13 @@ class TestPartitioning(unittest.TestCase):
             self.assertAlmostEqual(((multipoles[:,3]-multipoles[:,3].mean())**2).sum(), 0, 5, "Problem with the octopole")
             self.assertAlmostEqual(((multipoles[:,4]-multipoles[:,4].mean())**2).sum(), 0, 5, "Problem with the hexadecapole")
 
-    def tst_slow(self):
+    def test_slow(self):
+        sqrt2 = numpy.sqrt(2)
         def slow_mfn(x,y,z):
             r = numpy.sqrt(x*x + y*y + z*z)
             theta = numpy.arccos(z/r)
-            phi = numpy.arctan2(y,z)
+            phi = numpy.arctan2(y,x)
             s = sph_harmonics(4, phi, theta)
-            print s
             counter = 0
             result = numpy.zeros(25, float)
             for row in s:
@@ -73,9 +73,9 @@ class TestPartitioning(unittest.TestCase):
                         result[counter] = factor*row[l].real
                         counter += 1
                     else:
-                        result[counter] = factor*row[l+m].real
+                        result[counter] = (-1)**m*factor*row[l+m].real*sqrt2
                         counter += 1
-                        result[counter] = factor*row[l-m].imag
+                        result[counter] = (-1)**m*factor*row[l+m].imag*sqrt2
                         counter += 1
             return result
 
@@ -83,10 +83,7 @@ class TestPartitioning(unittest.TestCase):
             delta = numpy.random.uniform(-1, 1, 3)
             v1 = slow_mfn(delta[0],delta[1],delta[2])
             v2 = partitioning.mfn(delta[0],delta[1],delta[2])
-            print v1
-            print v2
-            print
-            print
+            self.assertAlmostEqual(((v1/v2 - 1)**2).sum(), 0.0, 5, "Wrong multipole function %s" % str(v1/v2))
 
 
 

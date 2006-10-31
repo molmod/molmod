@@ -642,4 +642,38 @@ CONTAINS
             END DO
         END DO
     END SUBROUTINE
+
+    SUBROUTINE partitioned_interactions(grid, volumes, densities, weights,    &
+                                        atom_coordinates, ion_charges, parte, &
+                                        ngrid, natom)
+        INTEGER,INTENT(IN) :: ngrid, natom
+        REAL(8),INTENT(IN),DIMENSION(ngrid,3) :: grid
+        REAL(8),INTENT(IN),DIMENSION(ngrid) :: volumes, densities
+        REAL(8),INTENT(IN),DIMENSION(ngrid,natom) :: weights
+        REAL(8),INTENT(IN),DIMENSION(natom,3) :: atom_coordinates
+        REAL(8),INTENT(IN),DIMENSION(natom) :: ion_charges
+        REAL(8),INTENT(OUT),DIMENSION(natom,natom) :: parte
+!cf2py  intent(hide) :: ngrid, natom
+        INTEGER :: i,j,k
+        REAL(8) :: c
+        DO i=1,ngrid
+            DO j=1,i-1
+                c = volumes(i)*densities(i)*volumes(j)*densities(j) / &
+                    SQRT(SUM( (grid(i,:) - grid(j,:))**2 ))
+                DO k=1,natom
+                    parte(k,:) = parte(k,:) - weights(i,k)*weights(j,:)*c
+                    !DO l=1,atom
+                    !    part(k,l) = part(k,l) - weights(i,k)*weights(j,l)*c
+                    !END DO
+                END DO
+            END DO
+        END DO
+        DO i=1,natom
+            DO j=1,i-1
+                c = ion_charges(i)*ion_charges(j) / &
+                    SQRT(SUM( (atom_coordinates(i,:) - atom_coordinates(j,:))**2 ))
+                parte(i,j) = parte(i,j) + c
+            END DO
+        END DO
+    END SUBROUTINE
 END MODULE
