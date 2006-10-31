@@ -96,7 +96,7 @@ class PeriodicData(object):
 
     def __getitem__(self, index):
         result = self.atoms_by_number.get(index)
-        if result is None:
+        if (result is None) and isinstance(index, str):
             return self.atoms_by_symbol.get(index.lower())
         else:
             return result
