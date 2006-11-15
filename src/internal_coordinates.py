@@ -495,7 +495,7 @@ class InternalCoordinatesCache(object):
             )
             self.add_internal_coordinate(match.tag, c)
 
-    def add_bend_spans(self, criteria_sets):
+    def add_bending_spans(self, criteria_sets):
         """
         Adds the distances that span the bend angles described in criteria_sets
         to the collection.
@@ -673,6 +673,7 @@ class InternalCoordinatesCache(object):
                 ic1,
                 ic2,
                 name="%s x %s" % (ic1.name, ic2.name),
+                id=(ic1.id + ic2.id),
                 symbol="%s*%s" % (ic1.symbol, ic2.symbol)
             )
             self.add_internal_coordinate(tag, product)

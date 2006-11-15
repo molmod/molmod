@@ -576,18 +576,18 @@ CONTAINS
         REAL(8) :: r2
         REAL(8),DIMENSION(25) :: ext_mfn
         REAL(8),PARAMETER :: c20  = 1.0/2.0
-        REAL(8),PARAMETER :: c21  = SQRT(3.0)
-        REAL(8),PARAMETER :: c22c = SQRT(3.0/4.0)
-        REAL(8),PARAMETER :: c31  = SQRT(3.0/8.0)
-        REAL(8),PARAMETER :: c32c = SQRT(15.0/4.0)
-        REAL(8),PARAMETER :: c32s = SQRT(15.0)
-        REAL(8),PARAMETER :: c33  = SQRT(5.0/8.0)
+        REAL(8),PARAMETER :: c21  = (3.0)**0.5
+        REAL(8),PARAMETER :: c22c = (3.0/4.0)**0.5
+        REAL(8),PARAMETER :: c31  = (3.0/8.0)**0.5
+        REAL(8),PARAMETER :: c32c = (15.0/4.0)**0.5
+        REAL(8),PARAMETER :: c32s = (15.0)**0.5
+        REAL(8),PARAMETER :: c33  = (5.0/8.0)**0.5
         REAL(8),PARAMETER :: c40  = 1.0/8.0
-        REAL(8),PARAMETER :: c42c = SQRT(5.0/16.0)
-        REAL(8),PARAMETER :: c42s = SQRT(5.0/4.0)
-        REAL(8),PARAMETER :: c43  = SQRT(35.0/8.0)
-        REAL(8),PARAMETER :: c44c = SQRT(35.0/64.0)
-        REAL(8),PARAMETER :: c44s = SQRT(35.0/4.0)
+        REAL(8),PARAMETER :: c42c = (5.0/16.0)**0.5
+        REAL(8),PARAMETER :: c42s = (5.0/4.0)**0.5
+        REAL(8),PARAMETER :: c43  = (35.0/8.0)**0.5
+        REAL(8),PARAMETER :: c44c = (35.0/64.0)**0.5
+        REAL(8),PARAMETER :: c44s = (35.0/4.0)**0.5
 
         r2 = x*x+y*y+z*z
         ! monopole, 00
