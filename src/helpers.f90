@@ -570,10 +570,10 @@ CONTAINS
         END DO
     END SUBROUTINE
 
-    FUNCTION mfn(x,y,z)
+    FUNCTION ext_mfn(x,y,z)
         REAL(8),INTENT(IN) :: x,y,z
         REAL(8) :: r2
-        REAL(8),DIMENSION(25) :: mfn
+        REAL(8),DIMENSION(25) :: ext_mfn
         REAL(8),PARAMETER :: c20  = 1.0/2.0
         REAL(8),PARAMETER :: c21  = SQRT(3.0)
         REAL(8),PARAMETER :: c22c = SQRT(3.0/4.0)
@@ -590,39 +590,59 @@ CONTAINS
 
         r2 = x*x+y*y+z*z
         ! monopole, 00
-        mfn(1) = 1
+        ext_mfn(1) = 1
         ! dipole, 10, 11c, 11s
-        mfn(2) = z
-        mfn(3) = x
-        mfn(4) = y
+        ext_mfn(2) = z
+        ext_mfn(3) = x
+        ext_mfn(4) = y
         ! quadrupole, 20, 21c, 21s, 22c, 22s
-        mfn(5) = c20 *(3*z*z-r2)
-        mfn(6) = c21 *x*z
-        mfn(7) = c21 *y*z
-        mfn(8) = c22c*(x*x-y*y)
-        mfn(9) = c21 *x*y
+        ext_mfn(5) = c20 *(3*z*z-r2)
+        ext_mfn(6) = c21 *x*z
+        ext_mfn(7) = c21 *y*z
+        ext_mfn(8) = c22c*(x*x-y*y)
+        ext_mfn(9) = c21 *x*y
         ! octopole, 30, 31C, 31s, 32c, 32s, 33c, 33s
-        mfn(10) = c20 *(5*z**3-3*z*r2)
-        mfn(11) = c31 *x*(5*z*z-r2)
-        mfn(12) = c31 *y*(5*z*z-r2)
-        mfn(13) = c32c*z*(x*x-y*y)
-        mfn(14) = c32s*x*y*z
-        mfn(15) = c33 *x*(x*x-3*y*y)
-        mfn(16) = c33 *y*(3*x*x-y*y)
+        ext_mfn(10) = c20 *(5*z**3-3*z*r2)
+        ext_mfn(11) = c31 *x*(5*z*z-r2)
+        ext_mfn(12) = c31 *y*(5*z*z-r2)
+        ext_mfn(13) = c32c*z*(x*x-y*y)
+        ext_mfn(14) = c32s*x*y*z
+        ext_mfn(15) = c33 *x*(x*x-3*y*y)
+        ext_mfn(16) = c33 *y*(3*x*x-y*y)
         ! hexadecapole, 40, 41c, 41s, 42c, 42s, 43c, 43s, 44c, 44s
-        mfn(17) = c40 *(35*z**4-30*z*z*r2+3*r2*r2)
-        mfn(18) = c33 *x*z*(7*z*z-3*r2)
-        mfn(19) = c33 *y*z*(7*z*z-3*r2)
-        mfn(20) = c42c*(x*x-y*y)*(7*z*z-r2)
-        mfn(21) = c42s*x*y*(7*z*z-r2)
-        mfn(22) = c43 *z*x*(x*x-3*y*y)
-        mfn(23) = c43 *z*y*(3*x*x-y*y)
-        mfn(24) = c44c*(x**4-6*x*x*y*y+y**4)
-        mfn(25) = c44s*x*y*(x*x-y*y)
+        ext_mfn(17) = c40 *(35*z**4-30*z*z*r2+3*r2*r2)
+        ext_mfn(18) = c33 *x*z*(7*z*z-3*r2)
+        ext_mfn(19) = c33 *y*z*(7*z*z-3*r2)
+        ext_mfn(20) = c42c*(x*x-y*y)*(7*z*z-r2)
+        ext_mfn(21) = c42s*x*y*(7*z*z-r2)
+        ext_mfn(22) = c43 *z*x*(x*x-3*y*y)
+        ext_mfn(23) = c43 *z*y*(3*x*x-y*y)
+        ext_mfn(24) = c44c*(x**4-6*x*x*y*y+y**4)
+        ext_mfn(25) = c44s*x*y*(x*x-y*y)
     END FUNCTION
 
-    SUBROUTINE multipoles(grid, volumes, densities, weights,  &
-                          atom_coordinates, output, ngrid, natom)
+    FUNCTION int_mfn(x,y,z)
+        REAL(8),INTENT(IN) :: x,y,z
+        REAL(8) :: r2, tmp
+        REAL(8),DIMENSION(25) :: int_mfn
+
+        r2 = x*x+y*y+z*z
+        tmp = 1/SQRT(r2)
+
+        int_mfn = ext_mfn(x,y,z)
+        int_mfn(1) = int_mfn(1)*tmp
+        tmp = tmp/r2
+        int_mfn(2:4) = int_mfn(2:4)*tmp
+        tmp = tmp/r2
+        int_mfn(5:9) = int_mfn(5:9)*tmp
+        tmp = tmp/r2
+        int_mfn(10:16) = int_mfn(10:16)*tmp
+        tmp = tmp/r2
+        int_mfn(17:25) = int_mfn(17:25)*tmp
+    END FUNCTION
+
+    SUBROUTINE ext_multipoles(grid, volumes, densities, weights,  &
+                              atom_coordinates, output, ngrid, natom)
         INTEGER,INTENT(IN) :: ngrid, natom
         REAL(8),INTENT(IN),DIMENSION(ngrid,3) :: grid
         REAL(8),INTENT(IN),DIMENSION(ngrid) :: volumes, densities
@@ -638,7 +658,49 @@ CONTAINS
             DO j=1,natom
                 c = volumes(i)*densities(i)*weights(i,j)
                 delta = grid(i,:) - atom_coordinates(j,:)
-                output(j,:) = output(j,:) + c*mfn(delta(1),delta(2),delta(3))
+                output(j,:) = output(j,:) + c*ext_mfn(delta(1),delta(2),delta(3))
+            END DO
+        END DO
+    END SUBROUTINE
+
+    SUBROUTINE int_multipoles(grid, volumes, densities, weights,             &
+                              atom_coordinates, ion_charges, output, ngrid,  &
+                              natom)
+        INTEGER,INTENT(IN) :: ngrid, natom
+        REAL(8),INTENT(IN),DIMENSION(ngrid,3) :: grid
+        REAL(8),INTENT(IN),DIMENSION(ngrid) :: volumes, densities
+        REAL(8),INTENT(IN),DIMENSION(ngrid,natom) :: weights
+        REAL(8),INTENT(IN),DIMENSION(natom,3) :: atom_coordinates
+        REAL(8),INTENT(IN),DIMENSION(natom) :: ion_charges
+        ! First index is the atom where the interior multipole is calculated for.
+        ! Second index is the atom that generates this part of the
+        ! interior multipole
+        REAL(8),INTENT(OUT),DIMENSION(natom,natom,25) :: output
+!cf2py  intent(hide) :: ngrid, natom
+        INTEGER :: i,j,k
+        REAL(8),DIMENSION(3) :: delta
+        REAL(8),DIMENSION(25) :: tmp
+        output = 0
+        DO i=1,ngrid
+            DO j=1,natom
+                delta = (grid(i,:) - atom_coordinates(j,:))
+                IF (MAXVAL(ABS(delta)) > 1e-2) THEN
+                    tmp = int_mfn(delta(1),delta(2),delta(3))
+                    DO k=1,natom
+                        IF ((j /= k) .AND. (weights(i,k) > 0)) THEN
+                            output(j,k,:) = output(j,k,:) - volumes(i)*densities(i)*weights(i,k)*tmp
+                        END IF
+                    END DO
+                END IF
+            END DO
+        END DO
+        DO j=1,natom
+            DO k=1,natom
+                IF (j /= k) THEN
+                    delta = (atom_coordinates(k,:) - atom_coordinates(j,:))
+                    tmp = int_mfn(delta(1),delta(2),delta(3))
+                    output(j,k,:) = output(j,k,:) + ion_charges(k)*tmp
+                END IF
             END DO
         END DO
     END SUBROUTINE
