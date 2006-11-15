@@ -42,8 +42,9 @@ CONTAINS
         END IF
     END FUNCTION
 
-    SUBROUTINE recursive_grid(center, boxsize, div, min_spacing, max_spacing, &
-                              alpha1, alpha2, threshold, coordinates, n, cb)
+    RECURSIVE SUBROUTINE recursive_grid(center, boxsize, div, min_spacing,  &
+                              max_spacing, alpha1, alpha2, threshold, &
+                              coordinates, n, cb)
 !f2py   intent(hide) n
 
         REAL(8),DIMENSION(3) :: center
