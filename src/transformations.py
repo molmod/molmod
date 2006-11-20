@@ -27,7 +27,7 @@ import numpy
 import math
 
 
-__all__ = ["Base", "Translation", "Rotation", "Complete"]
+__all__ = ["Base", "Translation", "Rotation", "Complete", "rotation_around_center"]
 
 
 class Base(object):
@@ -392,3 +392,18 @@ class Complete(Translation, Rotation):
     def assign_shallow(self, other):
         Translation.assign_shallow(self, other)
         Rotation.assign_shallow(self, other)
+
+
+def rotation_around_center(center, angle, axis):
+    result = Translation()
+    result.t = -center
+
+    rotation = Rotation()
+    rotation.set_rotation_properties(angle, axis, False)
+    result.apply_before(rotation)
+
+    translation = Translation()
+    translation.t = center
+    result.apply_before(translation)
+
+    return result
