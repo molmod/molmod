@@ -105,7 +105,7 @@ class Molecule:
         print >> stream, "%5i" % len(self.numbers)
         print >> stream
         self.write_atoms_to_stream(stream)
-        print >> stream
+        #print >> stream
 
     def write_xyz_to_filename(self, filename):
         f = file(filename, 'w')
