@@ -395,15 +395,15 @@ class Complete(Translation, Rotation):
 
 
 def rotation_around_center(center, angle, axis):
-    result = Translation()
+    result = Complete()
     result.t = -center
 
     rotation = Rotation()
     rotation.set_rotation_properties(angle, axis, False)
-    result.apply_before(rotation)
+    result.apply_after(rotation)
 
     translation = Translation()
     translation.t = center
-    result.apply_before(translation)
+    result.apply_after(translation)
 
     return result
