@@ -21,7 +21,7 @@
 
 
 from molmod.constants import boltzman
-import numpy
+import numpy, pickle
 
 
 class Error(Exception):
@@ -39,8 +39,24 @@ class TrajectoryMaker(object):
 
         self.current_state = numpy.zeros(self.dof, float)
 
-        self.states = []
-        self.potential_energies = []
+        self.trajectory_vars = []
+        self.init_trajectory_vars(["states", "potential_energies"])
+
+    def init_trajectory_vars(self, names):
+        self.trajectory_vars.extend(names)
+
+    def clear_trajectory_vars(self):
+        for var in self.trajectory_vars:
+            self.__dict__[var] = []
+
+    def make_arrays(self):
+        for var in self.trajectory_vars:
+            self.__dict__[var] = numpy.array(self.__dict__[var], float)
+
+    def dump_trajectory(self, filename):
+        f = file(filename, "w")
+        pickle.dump(dict((var, self.__dict__[var]) for var in self.trajectory_vars), f)
+        f.close()
 
     def verbose(self):
         if self.log is not None:
@@ -62,15 +78,19 @@ class VerletIntegrator(TrajectoryMaker):
         self.accelerations = numpy.zeros(self.dof, float)
         self.tmp = numpy.zeros(self.dof, float)
 
+        self.init_trajectory_vars(["velocities", "energies", "kinetic_energies", "times", "temperatures"])
         self.velocities = []
         self.energies = []
         self.kinetic_energies = []
+        self.times = []
+        self.temperatures = []
 
     def initialize_state(self, initial_state, initial_velocities=0):
         self.current_state[:] = initial_state
         self.current_velocities[:] = initial_velocities[:]
         self.accelerations[:] = -self.calculate_gradient(self.current_state)/self.masses
         self.tmp[:] = self.current_velocities + 0.5*self.accelerations*self.time_step
+        self.clear_trajectory_vars()
         self.initialized = True
 
     def run(self, steps):
@@ -86,15 +106,17 @@ class VerletIntegrator(TrajectoryMaker):
 
             potential_energy = self.calculate_energy(self.current_state)
             kinetic_energy = 0.5*(self.masses*self.current_velocities**2).sum()
-            self.energies.append(potential_energy + kinetic_energy)
             self.potential_energies.append(potential_energy)
             self.kinetic_energies.append(kinetic_energy)
             self.energies.append(potential_energy + kinetic_energy)
+            self.times.append(step*self.time_step)
+            self.temperatures.append(kinetic_energy/boltzman/self.dof)
 
             self.verbose()
+        self.make_arrays()
 
     def initialize_kinetic_energy(self, initial_state, kinetic_energy):
-        initial_velocities = numpy.random.normal(0.0, 1.0)*numpy.sqrt(2*kinetic_energy/self.masses)
+        initial_velocities = numpy.random.normal(0.0, 1.0, self.dof)*numpy.sqrt(2*kinetic_energy/self.masses)
         self.initialize_state(initial_state, initial_velocities)
 
     def initialize_temperature(self, initial_state, temperature):
@@ -107,13 +129,14 @@ class ConjugateGradientOptimizer(TrajectoryMaker):
         self.ofm = ofm
         self.epsilon = epsilon
 
-        self.gradient_norms = []
+        self.init_trajectory_vars(["gradient_norms"])
 
     def initialize_state(self, initial_state):
         self.current_state[:] = initial_state
+        self.clear_trajectory_vars()
         self.initialized = True
 
-    def run(self, steps):
+    def run(self, steps, gradient_norm_threshold):
         TrajectoryMaker.run(self)
         gradient = self.calculate_gradient(self.current_state)
         direction = -gradient.copy()
@@ -131,6 +154,7 @@ class ConjugateGradientOptimizer(TrajectoryMaker):
                 new_gradient = self.calculate_gradient(self.current_state)
                 new_gradient_norm = numpy.sqrt(numpy.dot(new_gradient, new_gradient))
                 beta = (new_gradient_norm*new_gradient_norm)/(gradient_norm*gradient_norm)
+                #beta = numpy.dot(new_gradient_norm - gradient_norm, new_gradient_norm)/(gradient_norm*gradient_norm)
                 direction *= beta
                 direction -= new_gradient
                 gradient = new_gradient
@@ -145,3 +169,8 @@ class ConjugateGradientOptimizer(TrajectoryMaker):
             self.potential_energies.append(self.calculate_energy(self.current_state))
             self.states.append(self.current_state.copy())
             self.verbose()
+
+            if gradient_norm < gradient_norm_threshold and self.last_method == "CG":
+                break
+
+        self.make_arrays()
