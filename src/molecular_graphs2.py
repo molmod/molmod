@@ -53,7 +53,7 @@ class MolecularGraph(Graph):
         pairs = set(key for key, data in bond_data)
         self.bond_orders = dict([(key, data[0]) for key, data in bond_data])
         self.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
-        Graph.__init__(self, pairs)
+        Graph.__init__(self, pairs, range(len(molecule.numbers)))
 
 
 # molecular criteria
@@ -84,6 +84,21 @@ class MolecularOr(object):
         return False
 
 
+class MolecularAnd(object):
+    def __init__(self, *criteria):
+        self.criteria = criteria
+
+    def init_graph(self, graph):
+        for c in self.criteria:
+            c.init_graph(graph)
+
+    def __call__(self, id):
+        for c in self.criteria:
+            if not c(id):
+                return False
+        return True
+
+
 class HasAtomNumber(MolecularCriterion):
     def __init__(self, number):
         self.number = number
@@ -98,6 +113,20 @@ class HasNumNeighbors(MolecularCriterion):
 
     def __call__(self, atom):
         return len(self.graph.neighbors[atom]) == self.number
+
+
+class HasNeighborNumbers(MolecularCriterion):
+    def __init__(self, numbers):
+        self.numbers = list(numbers)
+        self.numbers.sort()
+
+    def __call__(self, atom):
+        neighbors = self.graph.neighbors[atom]
+        if not len(neighbors) == len(self.numbers):
+            return
+        neighbors = [self.graph.molecule.numbers[neighbor] for neighbor in neighbors]
+        neighbors.sort()
+        return neighbors == self.numbers
 
 
 class BondLongerThan(MolecularCriterion):

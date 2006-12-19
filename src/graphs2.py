@@ -147,18 +147,19 @@ class Graph(object):
         self.equivalent_nodes = None
 
     def init_index(self):
-        if (self.index is not None) and (self.nodes is not None): return
+        if (self.index is not None): return
 
-        tmp = set([])
-        for a, b in self.pairs:
-            tmp.add(a)
-            tmp.add(b)
         if self.nodes is None:
-            self.nodes = list(tmp)
-            self.nodes.sort()
-        else:
-            assert tmp.issubset(self.nodes)
-            assert len(tmp) == len(self.nodes)
+            tmp = set([])
+            for a, b in self.pairs:
+                tmp.add(a)
+                tmp.add(b)
+            if self.nodes is None:
+                self.nodes = list(tmp)
+                self.nodes.sort()
+            else:
+                assert tmp.issubset(self.nodes)
+                assert len(tmp) == len(self.nodes)
         self.index = dict((node, index) for index, node in enumerate(self.nodes))
 
     def init_neighbors(self):
