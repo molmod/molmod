@@ -27,11 +27,7 @@ from StringIO import StringIO
 import numpy, math
 
 
-__all__ = [
-    "Molecule",
-    "molecule_xyz_from_stream", "molecule_xyz_from_str",
-    "molecule_xyz_from_filename"
-]
+__all__ = ["Molecule"]
 
 
 class Molecule:
@@ -40,18 +36,40 @@ class Molecule:
     - cartesian coordinates
     """
 
-    def __init__(self, atoms=[]):
-        """
-        Initialiaze a Molecule instance.
+    def __init__(self, numbers=None, coordinates=None):
+        self.numbers = numbers
+        self.coordinates = coordinates
 
-        arguments:
-        atoms -- [[number, x, y, z], ...]
-        """
-        self.numbers = numpy.zeros(len(atoms), int)
-        self.coordinates = numpy.zeros((len(atoms), 3), float)
-        for index, line in enumerate(atoms):
-            self.numbers[index] = line[0]
-            self.coordinates[index] = line[1:4]
+    def dump_atoms(self, stream):
+        for number, coordinate in zip(self.numbers, to_angstrom(self.coordinates)):
+            atom_info = periodic[number]
+            if atom_info is None:
+                symbol = 'X'
+            else:
+                symbol = atom_info.symbol
+            print >> stream, "% 2s % 12.6f % 12.6f % 12.6f" % (
+                symbol,
+                coordinate[0],
+                coordinate[1],
+                coordinate[2]
+            )
+
+    def dumps_atoms(self):
+        sio = StringIO()
+        self.dump_atoms(sio)
+        result = sio.getvalue()
+        sio.close()
+        return result
+
+    def dump(self, stream):
+        print >> stream, "%5i" % len(self.numbers)
+        print >> stream
+        self.dump_atoms(stream)
+
+    def write_to_file(self, filename):
+        f = file(filename, 'w')
+        self.dump(f)
+        f.close()
 
     def normalize(self):
         """
@@ -80,38 +98,6 @@ class Molecule:
         rotation = numpy.transpose(numpy.array([new_x, new_y, new_z]))
         self.coordinates = numpy.dot(self.coordinates, rotation)
 
-    def write_atoms_to_stream(self, stream):
-        for number, coordinate in zip(self.numbers, to_angstrom(self.coordinates)):
-            atom_info = periodic[number]
-            if atom_info is None:
-                symbol = 'X'
-            else:
-                symbol = atom_info.symbol
-            print >> stream, "% 2s % 12.6f % 12.6f % 12.6f" % (
-                symbol,
-                coordinate[0],
-                coordinate[1],
-                coordinate[2]
-            )
-
-    def write_atoms_to_string(self):
-        sio = StringIO()
-        self.write_atoms_to_stream(sio)
-        result = sio.getvalue()
-        sio.close()
-        return result
-
-    def write_xyz_to_stream(self, stream):
-        print >> stream, "%5i" % len(self.numbers)
-        print >> stream
-        self.write_atoms_to_stream(stream)
-        #print >> stream
-
-    def write_xyz_to_filename(self, filename):
-        f = file(filename, 'w')
-        self.write_xyz_to_stream(f)
-        f.close()
-
     def bounding_box(self, margin=0.0):
         bbox_low = self.coordinates.min(axis=0) - margin
         bbox_high = self.coordinates.max(axis=0) + margin
@@ -133,41 +119,3 @@ class Molecule:
             bbox_num[2],
             numpy.array([0, 0, grid_spacing], float)
         )
-
-
-def molecule_xyz_from_stream(stream):
-    num_atoms = None
-    atoms = []
-    for line in stream:
-        line = line[0:line.find("#")]
-        words = line.split()
-        if len(words) == 1 and num_atoms == None:
-            num_atoms = int(words[0])
-        elif len(words) == 4:
-            atom_info = periodic[words[0]]
-            if atom_info is None:
-                number = 0
-            else:
-                number = atom_info.number
-            atoms.append([
-                number,
-                from_angstrom(float(words[1])),
-                from_angstrom(float(words[2])),
-                from_angstrom(float(words[3]))
-            ])
-    assert len(atoms) == num_atoms, "Inconsistent number of atoms."
-    return Molecule(atoms)
-
-def molecule_xyz_from_filename(filename):
-    """Load an xyz file and return a Molecule instance."""
-    f = file(filename)
-    result = molecule_xyz_from_stream(f)
-    f.close()
-    return result
-
-def molecule_xyz_from_string(string):
-    stream = StringIO(string)
-    result = molecule_xyz_from_stream(stream)
-    stream.close()
-    return result
-
