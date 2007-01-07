@@ -276,3 +276,10 @@ class ExampleGraphs2(unittest.TestCase):
         for match in MatchGenerator(EgoMatchDefinition(), debug=False)(g):
             pass
 
+    def test_nodes_per_independent_graph(self):
+        g = Graph(
+            [(0,1), (0,2), (0,3), (1,4), (1,5), (6,7), (6,8), (6,9), (7,10), (7,11)],
+            [0, 2, 4, 6, 8, 10, 1, 3, 5, 7, 9, 11],
+        )
+        result = g.get_nodes_per_independent_graph()
+        self.assert_(result == [[0, 2, 4, 1, 3, 5], [6, 8, 10, 7, 9, 11]])

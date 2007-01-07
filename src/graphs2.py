@@ -146,20 +146,24 @@ class Graph(object):
         self.symmetries = None
         self.equivalent_nodes = None
 
+    def init_nodes(self):
+        if self.nodes is not None: return
+
+        tmp = set([])
+        for a, b in self.pairs:
+            tmp.add(a)
+            tmp.add(b)
+        if self.nodes is None:
+            self.nodes = list(tmp)
+            self.nodes.sort()
+        else:
+            assert tmp.issubset(self.nodes)
+            assert len(tmp) == len(self.nodes)
+
     def init_index(self):
         if (self.index is not None): return
 
-        if self.nodes is None:
-            tmp = set([])
-            for a, b in self.pairs:
-                tmp.add(a)
-                tmp.add(b)
-            if self.nodes is None:
-                self.nodes = list(tmp)
-                self.nodes.sort()
-            else:
-                assert tmp.issubset(self.nodes)
-                assert len(tmp) == len(self.nodes)
+        self.init_nodes()
         self.index = dict((node, index) for index, node in enumerate(self.nodes))
 
     def init_neighbors(self):
@@ -248,6 +252,24 @@ class Graph(object):
             for down_b in self.trees[node_a][node_b]:
                 for path in self.yield_shortest_paths(node_a, down_b):
                     yield [down_b] + path
+
+    def get_nodes_per_independent_graph(self):
+        self.init_nodes()
+        self.init_trees_and_shells()
+        nodes = set(self.nodes)
+
+        result = []
+        while len(nodes) > 0:
+            pivot = nodes.pop()
+            tmp = []
+            for shell in self.shells[pivot]:
+                tmp.extend(shell)
+            for node in tmp:
+                nodes.discard(node)
+            # this sort makes sure that the order of the nodes is respected
+            tmp.sort(key=(lambda node: self.nodes.index(node)))
+            result.append(tmp)
+        return result
 
 
 class Match(OneToOne):
