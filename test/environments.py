@@ -22,7 +22,8 @@
 
 from molmod.binning import PositionedObject, SparseBinnedObjects
 from molmod.environments import calculate_environments
-from molmod.molecules import molecule_xyz_from_filename
+
+from ccop.xyz import XYZFile
 
 import unittest, random
 
@@ -32,7 +33,7 @@ __all__ = ["EnvironmentsExample"]
 
 class EnvironmentsExample(unittest.TestCase):
     def test_environments(self):
-        m = molecule_xyz_from_filename("input/precursor.xyz")
+        m = XYZFile("input/precursor.xyz").get_molecule()
         def yield_positioned_objects():
             for row, coordinate in enumerate(m.coordinates):
                 yield PositionedObject(row, coordinate)

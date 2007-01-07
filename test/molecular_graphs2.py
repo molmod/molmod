@@ -21,8 +21,9 @@
 
 from molmod.molecular_graphs2 import *
 from molmod.graphs2 import MatchGenerator, CriteriaSet
-from molmod.molecules import molecule_xyz_from_filename
 from molmod.data import BOND_SINGLE
+
+from ccop.xyz import XYZFile
 
 import unittest, copy
 
@@ -31,7 +32,7 @@ __all__ = ["MolecularGraphs2"]
 
 class MolecularGraphs2(unittest.TestCase):
     def load_graph(self, filename):
-        self.molecule = molecule_xyz_from_filename(filename)
+        self.molecule = XYZFile(filename).get_molecule()
         self.molecular_graph = MolecularGraph(self.molecule)
 
     def verify(self, expected_results, test_results, yield_alternatives):

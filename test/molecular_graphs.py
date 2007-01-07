@@ -20,8 +20,9 @@
 # --
 
 from molmod.molecular_graphs import *
-from molmod.molecules import molecule_xyz_from_filename
 from molmod.data import BOND_SINGLE
+
+from ccop.xyz import XYZFile
 
 import unittest, copy
 
@@ -30,7 +31,7 @@ __all__ = ["MolecularGraphsTPA"]
 
 class MolecularGraphsTPA(unittest.TestCase):
     def setUp(self):
-        self.molecule = molecule_xyz_from_filename("input/tpa.xyz")
+        self.molecule = XYZFile("input/tpa.xyz").get_molecule()
         self.molecular_graph = MolecularGraph(self.molecule)
 
     def verify(self, expected_results, test_results, generate_alternatives):

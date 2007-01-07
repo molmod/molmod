@@ -21,7 +21,8 @@
 
 
 from molmod.lone_pairs import all_lone_pairs
-from molmod.molecules import molecule_xyz_from_filename
+
+from ccop.xyz import XYZFile
 
 import unittest
 
@@ -32,7 +33,7 @@ class LonePairs(unittest.TestCase):
     gridsize = 1.0
 
     def molecule_test(self, filename):
-        m = molecule_xyz_from_filename("input/"+filename)
+        m = XYZFile("input/"+filename).get_molecule()
 
     def test_water(self):
         self.molecule_test("water.xyz")

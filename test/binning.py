@@ -26,6 +26,8 @@ from molmod.unit_cell import UnitCell
 from molmod.units import from_angstrom, from_degree
 from molmod.data import periodic
 
+from ccop.xyz import XYZFile
+
 import math, numpy
 import unittest
 
@@ -36,8 +38,7 @@ class Distances(unittest.TestCase):
     gridsize = periodic.max_radius*2
 
     def load_binned_atoms(self, filename):
-        from molmod.molecules import molecule_xyz_from_filename
-        m = molecule_xyz_from_filename("input/"+filename)
+        m = XYZFile("input/"+filename).get_molecule()
 
         def yield_positioned_atoms():
             for index in xrange(len(m.numbers)):
