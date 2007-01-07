@@ -22,7 +22,7 @@
 
 import math, numpy
 
-from molmod.molecular_graphs2 import MolecularGraph
+from molmod.molecular_graphs import MolecularGraph
 
 
 def lone_pair_2(bond1, bond2, angle):

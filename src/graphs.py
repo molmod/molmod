@@ -35,9 +35,9 @@ symmetries of the graph to be known, in order to avoid duplicates.
 
 import copy, numpy
 
-__all__ = ["OneToOne", "Permutation", "Graph",
-           "SymmetricGraph", "Criterium",
-           "MatchFilter", "MatchFilterParameterized", "MatchFilterMolecular"]
+
+class OneToOneError(Exception):
+    pass
 
 
 class OneToOne(object):
@@ -51,8 +51,7 @@ class OneToOne(object):
     def __init__(self, pairs=[]):
         self.forward = {}
         self.backward = {}
-        for source, destination in pairs:
-            self.add_relation(source, destination)
+        self.add_relations(pairs)
 
     def __len__(self):
         return len(self.forward)
@@ -64,14 +63,18 @@ class OneToOne(object):
         return result
 
     def __copy__(self):
-        result = self.__class__()
-        result.forward = copy.copy(self.forward)
-        result.backward = copy.copy(self.backward)
+        class EmptyClass(object):
+            pass
+        result = EmptyClass()
+        result.__class__ = self.__class__
+        result.__dict__ = self.__dict__.copy()
+        result.forward = self.forward.copy()
+        result.backward = self.backward.copy()
         return result
 
     def __mul__(self, other):
         """Return the result of the 'after' operator."""
-        result = self.__class__()
+        result = OneToOne()
         for source, mid in other.forward.iteritems():
             destination = self.forward[mid]
             result.forward[source] = destination
@@ -79,21 +82,20 @@ class OneToOne(object):
         return result
 
     def add_relation(self, source, destination):
-        """
-        Extend the bijection with one new relation. Returns true of the
-        new relation is accepted or when the new relation is already made.
-        """
         if self.in_sources(source):
-            if self.forward[source] == destination:
-                return True
+            if self.forward[source] != destination:
+                raise OneToOneError("Source is already in use. Destination does not match.")
             else:
-                return False
+                raise OneToOneError("Source-Destination relation already exists.")
         elif self.in_destinations(destination):
-            return False
+            raise OneToOneError("Destination is already in use. Source does not match.")
         else:
             self.forward[source] = destination
             self.backward[destination] = source
-            return True
+
+    def add_relations(self, pairs):
+        for source, destination in pairs:
+            self.add_relation(source, destination)
 
     def get_destination(self, source):
         return self.forward[source]
@@ -115,13 +117,387 @@ class OneToOne(object):
         return result
 
 
-class Permutation(OneToOne):
+class Graph(object):
     """
-    A special type of bijection where both source and destination elements
-    are part of the same set. A permutation is closed when each destination
-    is also a source.
+    A Graph object contains two typical pythonic (not oriented) graph
+    representations: pairs and neigbors.
     """
 
+    def __init__(self, pairs, ordered_nodes=None):
+        """
+        Initialize a Graph object.
+
+        Arguments:
+        ordered_nodes -- [node1, node2, ...]
+        pairs -- [frozenset([node1, node2]), ...]
+
+        """
+        self.nodes = ordered_nodes
+        self.pairs = pairs
+
+        self.index = None
+        self.neighbors = None
+        self.trees = None
+        self.shells = None
+        self.shellsizes = None
+        self.distances = None
+        self.central_node = None
+        self.symmetry_cycles = None
+        self.symmetries = None
+        self.equivalent_nodes = None
+
+    def init_nodes(self):
+        if self.nodes is not None: return
+
+        tmp = set([])
+        for a, b in self.pairs:
+            tmp.add(a)
+            tmp.add(b)
+        if self.nodes is None:
+            self.nodes = list(tmp)
+            self.nodes.sort()
+        else:
+            assert tmp.issubset(self.nodes)
+            assert len(tmp) == len(self.nodes)
+
+    def init_index(self):
+        if (self.index is not None): return
+
+        self.init_nodes()
+        self.index = dict((node, index) for index, node in enumerate(self.nodes))
+
+    def init_neighbors(self):
+        if self.neighbors is not None: return
+        self.init_index()
+
+        self.neighbors = dict((node, set([])) for node in self.nodes)
+        for a, b in self.pairs:
+            self.neighbors[a].add(b)
+            self.neighbors[b].add(a)
+
+    def init_trees_and_shells(self):
+        if (self.trees is not None) and (self.shells is not None) and (self.shell_sizes is not None): return
+        self.init_neighbors()
+
+        self.trees = {}
+        self.shells = {}
+        self.shell_sizes = {}
+        for central_node in self.nodes:
+            tree = dict((node, set([])) for node in self.nodes)
+            shells = []
+            shell_sizes = []
+            excludes = set([central_node])
+            previous_shell = set([central_node])
+            while len(previous_shell) > 0:
+                shells.append(previous_shell)
+                shell_sizes.append(len(previous_shell))
+                new_shell = set([])
+                for previous_node in previous_shell:
+                    new_neighbors = set([
+                        neighbor
+                        for neighbor in self.neighbors[previous_node]
+                        if neighbor not in excludes
+                    ])
+                    for new_neighbor in new_neighbors:
+                        tree[new_neighbor].add(previous_node)
+                    new_shell.update(new_neighbors)
+                excludes.update(new_shell)
+                previous_shell = new_shell
+            self.shells[central_node] = shells
+            self.shell_sizes[central_node] = numpy.array(shell_sizes, int)
+            self.trees[central_node] = tree
+
+    def init_distances(self):
+        if self.distances is not None: return
+        self.init_trees_and_shells()
+        self.init_index()
+
+        self.distances = numpy.zeros((len(self.nodes), len(self.nodes)), int)
+        for node, shells in self.shells.iteritems():
+            for distance, shell in enumerate(shells):
+                for shell_node in shell:
+                    self.distances[self.index[node], self.index[shell_node]] = distance
+
+    def init_central_node(self):
+        if self.central_node is not None: return
+        self.init_distances()
+
+        self.central_node = self.nodes[self.distances.max(0).argmin()]
+
+    def init_symmetries(self):
+        if (self.symmetries is not None) and (self.equivalent_nodes is not None): return
+
+        self.symmetry_cycles = set([])
+        self.symmetries = set([])
+        for match in MatchGenerator(EgoMatchDefinition())(self):
+            closed_cycles = match.get_closed_cycles()
+            assert closed_cycles not in self.symmetry_cycles, "Duplicates in EgoMatch"
+            self.symmetry_cycles.add(match.get_closed_cycles())
+            self.symmetries.add(match)
+
+        self.equivalent_nodes = dict((node, tuple()) for node in self.nodes)
+        for cycles in self.symmetry_cycles:
+            for cycle in cycles:
+                for node in cycle:
+                    if len(cycle) > len(self.equivalent_nodes[node]):
+                        self.equivalent_nodes[node] = cycle
+
+    def get_distance(self, node_a, node_b):
+        return self.distances[self.index[node_a], self.index[node_b]]
+
+    def yield_shortest_paths(self, node_a, node_b):
+        if node_a == node_b:
+            yield []
+        else:
+            for down_b in self.trees[node_a][node_b]:
+                for path in self.yield_shortest_paths(node_a, down_b):
+                    yield [down_b] + path
+
+    def get_nodes_per_independent_graph(self):
+        self.init_nodes()
+        self.init_trees_and_shells()
+        nodes = set(self.nodes)
+
+        result = []
+        while len(nodes) > 0:
+            pivot = nodes.pop()
+            tmp = []
+            for shell in self.shells[pivot]:
+                tmp.extend(shell)
+            for node in tmp:
+                nodes.discard(node)
+            # this sort makes sure that the order of the nodes is respected
+            tmp.sort(key=(lambda node: self.nodes.index(node)))
+            result.append(tmp)
+        return result
+
+
+class Match(OneToOne):
+    def __init__(self, init_relations):
+        OneToOne.__init__(self, init_relations)
+        self.previous_relations = init_relations
+
+    def copy_with_new_relations(self, new_relations):
+        result = self.__copy__()
+        result.add_relations(new_relations)
+        result.previous_relations = new_relations
+        return result
+
+
+class MatchDefinitionError(Exception):
+    pass
+
+
+class MatchDefinition(object):
+    MatchClass = Match
+
+    def init_graph(self, graph):
+        "Checks initialy whether it makes sense to match the graph."
+        self.graph = graph
+        self.graph.init_neighbors()
+
+    def init_matches(self):
+        "Yields the initial matches to start with."
+        return
+
+    def new_pools(self, partial_match):
+        "Returns pool0 for subgraph and pool1 for graph that contain the nodes for the new relations."
+        # derived classes should return both pool0 and pool1. Here only pool1
+        # is implemented:
+        return set(self.graph.nodes).difference(partial_match.backward.keys())
+
+    def subgraph_neighbors(self, node0):
+        return None
+
+    def graph_neighbors(self, node1):
+        return self.graph.neighbors[node1]
+
+    def valid_potential_relations(self, potential_relations):
+        return len(potential_relations) > 0
+
+    def check_symmetry(self, new_relations, next_match):
+        "Check wether the new_relations correspond the reference case of all possible symetric equivalents"
+        return True
+
+    def compare(self, node0, node1):
+        """
+        Test if node0 and node1 can be equal. False positives are allowed, but
+        the less false positives, the more efficient the MatchGenerator will be.
+        """
+        return True
+
+    def complete(self, match):
+        return True
+
+    def yield_final_matches(self, graph_match):
+        yield graph_match
+
+
+class CriteriaSet(object):
+    def __init__(self, tag, thing_criteria={}, relation_criteria={}, global_criteria={}):
+        self.tag = tag
+        self.thing_criteria = thing_criteria
+        self.relation_criteria = relation_criteria
+        self.global_criteria = global_criteria
+
+    def test_match(self, match):
+        for node0, c in self.thing_criteria.iteritems():
+            node1 = match.forward[node0]
+            if not c(node1): return False
+        for (node0a, node0b), c in self.relation_criteria.iteritems():
+            node1a = match.forward[node0a]
+            node1b = match.forward[node0b]
+            if not c(frozenset([node1a, node1b])): return False
+        for c in self.global_criteria:
+            if not c(match): return False
+        return True
+
+
+class SubgraphMatchDefinition(MatchDefinition):
+    def __init__(self, subgraph, criteria_sets=None, node_tags={}):
+        self.subgraph = subgraph
+        self.criteria_sets = criteria_sets
+        if criteria_sets is None:
+            self.node_tags = None
+        else:
+            self.node_tags = node_tags
+        MatchDefinition.__init__(self)
+
+    def init_graph(self, graph):
+        self.subgraph.init_neighbors()
+        self.subgraph.init_distances()
+        self.subgraph.init_central_node()
+        if self.node_tags is not None:
+            self.subgraph.init_symmetries()
+        MatchDefinition.init_graph(self, graph)
+
+    def init_matches(self):
+        node0 = self.subgraph.central_node
+        for node1 in self.graph.nodes:
+            if self.compare(node0, node1):
+                yield self.MatchClass([(node0, node1)])
+
+    def new_pools(self, partial_match):
+        "Creates pool0 for subgraph and pool1 for graph that contain the nodes for the new relations."
+        pool1 = MatchDefinition.new_pools(self, partial_match)
+        # The default behavior is to allow all nodes that have not been used yet.
+        pool0 = set(self.subgraph.nodes).difference(partial_match.forward.keys())
+        return pool0, pool1
+
+    def subgraph_neighbors(self, node0):
+        return self.subgraph.neighbors[node0]
+
+    def check_symmetry(self, new_relations, next_match):
+        if self.node_tags is not None:
+            for new_node0, new_node1 in new_relations:
+                for equivalent_node0 in self.subgraph.equivalent_nodes[new_node0]:
+                    #print " ---- distance: ", self.subgraph.get_distance(new_node0, equivalent_node0)
+                    if equivalent_node0 != new_node0 and \
+                       self.subgraph.get_distance(new_node0, equivalent_node0) <= 2:
+                        equivalent_node1 = next_match.forward.get(equivalent_node0)
+                        if equivalent_node1 is None: continue
+                        #print " ---- (%s > %s) _ (%s > %s) = %s" % (new_node1, equivalent_node1, new_node0, equivalent_node0, cmp(new_node1, equivalent_node1) * cmp(new_node0, equivalent_node0))
+                        if (cmp(id(new_node1), id(equivalent_node1)) * cmp(id(new_node0), id(equivalent_node0)) < 0):
+                            return False
+        return True
+
+    def complete(self, match):
+        return len(match) == len(self.subgraph.nodes)
+
+    def yield_final_matches(self, graph_match):
+        if self.node_tags is None:
+            yield graph_match
+        else:
+            for criteria_set in self.criteria_sets:
+                #print criteria_set.tag
+                satisfied_match_tags = set([])
+                for symmetry in self.subgraph.symmetries:
+                    final_match = graph_match * symmetry
+                    final_match.tag = criteria_set.tag
+                    #print final_match
+                    if criteria_set.test_match(final_match):
+                        match_tags = tuple(
+                            self.node_tags.get(symmetry.forward[node0])
+                            for node0
+                            in self.subgraph.nodes
+                        )
+                        if match_tags not in satisfied_match_tags:
+                            yield final_match
+                            satisfied_match_tags.add(match_tags)
+
+
+class ExactMatch(Match):
+    def __init__(self, init_relations):
+        assert len(init_relations) == 1, "An exact match filter can only start with one relation!"
+        self.node0, self.node1 = init_relations[0]
+        self.shell_index = 1
+        Match.__init__(self, init_relations)
+
+    def copy_with_new_relations(self, new_relations):
+        result = Match.copy_with_new_relations(self, new_relations)
+        result.shell_index += 1
+        return result
+
+
+class ExactMatchDefinition(SubgraphMatchDefinition):
+    MatchClass = ExactMatch
+
+    def init_graph(self, graph):
+        graph.init_index()
+        self.subgraph.init_index()
+        if len(self.subgraph.nodes) != len(graph.nodes):
+            raise MatchDefinitionError("It does not make sense to find an exact match between two graphs if the number of nodes is different")
+        if len(self.subgraph.pairs) != len(graph.pairs):
+            raise MatchDefinitionError("It does not make sense to find an exact match between two graphs if the number of relations is different")
+        graph.init_trees_and_shells()
+        self.subgraph.init_trees_and_shells()
+        SubgraphMatchDefinition.init_graph(self, graph)
+
+    def new_pools(self, partial_match):
+        # for an exact match, the matching nodes come from matching shells.
+        shell_index = partial_match.shell_index
+        node0 = partial_match.node0
+        node1 = partial_match.node1
+        if len(self.subgraph.shells[node0]) <= shell_index:
+            pool0 = set([])
+        else:
+            pool0 = self.subgraph.shells[node0][shell_index]
+        if len(self.graph.shells[node1]) <= shell_index:
+            pool1 = set([])
+        else:
+            pool1 = self.graph.shells[node1][shell_index]
+        return pool0, pool1
+
+    #def valid_potential_relations(self, potential_relations):
+    #    num_relations_per_begin = {}
+    #    num_relations_per_end = {}
+    #    for begin, end in potential_relations:
+    #        if begin not in num_relations_per_begin:
+    #            num_relations_per_begin[begin] = 1
+    #        else:
+    #            num_relations_per_begin[begin] += 1
+    #
+    #        if end not in num_relations_per_end:
+    #            num_relations_per_end[end] = 1
+    #        else:
+    #            num_relations_per_end[end] += 1
+    #
+    #    for begin, end in potential_relations:
+    #        if num_relations_per_begin[begin] != num_relations_per_end[end]:
+    #            print "AAAAARGHH", begin, end, "---", num_relations_per_begin[begin], num_relations_per_end[end]
+    #            return False
+    #    return True
+
+    def compare(self, node0, node1):
+        sizes0 = self.subgraph.shell_sizes[node0]
+        sizes1 = self.graph.shell_sizes[node1]
+        return (
+            (sizes0.shape == sizes1.shape) and
+            (self.subgraph.shell_sizes[node0] == self.graph.shell_sizes[node1]).all()
+        )
+
+
+class EgoMatch(ExactMatch):
     def get_closed(self):
         """Return wether this permutation is closed."""
         for source in self.forward:
@@ -133,6 +509,7 @@ class Permutation(OneToOne):
         """Return the closed cycles that form this permutation."""
         closed_cycles = []
         sources = self.forward.keys()
+        sources.sort()
         current_source = None
         current_cycle = []
         while len(sources) > 0:
@@ -146,534 +523,273 @@ class Permutation(OneToOne):
                 if len(current_cycle) > 1:
                     closed_cycles.append(tuple(current_cycle))
                 current_source = None
-        return tuple(closed_cycles)
+        return frozenset(closed_cycles)
 
 
-def all_relations(list1, list2, worth_trying=None):
-    """
-    Yields all possible relation sets between elements from list1 and list2.
+class EgoMatchDefinition(ExactMatchDefinition):
+    MatchClass = EgoMatch
 
-    This is a helper function for the Graph class.
+    def __init__(self):
+        ExactMatchDefinition.__init__(self, None)
 
-    Arguments:
-    list1 -- list of source items
-    list2 -- list of destination items
-    worth_trying -- a function that takes a relation (tuple) as argument and
-                    returns False if the relation is not usefull.
-    """
-    if len(list1) == 0 or len(list2) == 0:
-        yield []
-    else:
-        for index2 in xrange(len(list2)):
-            pair = (list1[0], list2[index2])
-            if worth_trying == None or worth_trying(pair):
-                for relation_set in all_relations(list1[1:], list2[:index2] + list2[index2+1:], worth_trying):
-                    yield [pair] + relation_set
+    def init_graph(self, graph):
+        self.subgraph = graph
+        ExactMatchDefinition.init_graph(self, graph)
 
 
-class Graph(object):
-    """
-    A Graph object contains two typical pythonic (not oriented) graph
-    representations: pairs and neigbours.
-    """
-
-    def __init__(self, pairs):
-        """
-        Initialize a Graph object.
-
-        Arguments:
-        pairs -- [frozenset([node1, node2]), ...]
-
-        During initialization, also the neighbor-representation will be created
-        neighborlist = {node1: [neighbor_node1, ...], ...}
-        """
-        #print "="*50
-        #print "="*50
-        self.pairs = pairs # a list of 2-frozenset connecting nodes
-        #print self.pairs
-        self.init_index()
-        self.init_neighbors()
-
-    def init_index(self):
-        tmp = set([])
-        for pair in self.pairs:
-            a, b = pair
-            tmp.add(a)
-            tmp.add(b)
-        self.items = list(tmp)
-        self.items.sort()
-        self.index = dict((item, index) for index, item in enumerate(self.items))
-
-    def init_neighbors(self):
-        """Generate a neigbours-representation of the graph."""
-        self.neighbors = {}
-
-        def add_relation(first, second):
-            if first in self.neighbors:
-                self.neighbors[first].append(second)
-            else:
-                self.neighbors[first] = [second]
+class RingMatchError(Exception):
+    pass
 
 
-        for pair in self.pairs:
-            a, b = pair
-            add_relation(a, b)
-            add_relation(b, a)
+class RingMatch(Match):
+    def __init__(self, init_relations):
+        assert len(init_relations) == 1, "A ring match filter can only start with one relation!"
+        self.increasing = True
+        self.first_node = init_relations[0][1]
+        self.size = None
+        self.length = 0
+        self.cache = {}
+        Match.__init__(self, init_relations)
 
-    def neighbor_matrix(self, max_order=None):
-        num_items = len(self.index)
-        if max_order is None:
-            max_order = num_items - 1
-        result = numpy.zeros((num_items, num_items), int)
-        for first, second in self.pairs:
-            result[self.index[first], self.index[second]] = 1
-            result[self.index[second], self.index[first]] = 1
-        num_mods = len(self.pairs)
-        current_order = 2
-        while num_mods > 0 and current_order <= max_order:
-            num_mods = 0
-            for i in xrange(num_items):
-                for j in xrange(i):
-                    if result[i, j] == 0 and ((result[i] + result[j] == current_order)*result[i]*result[j]).any():
-                        result[i, j] = current_order
-                        result[j, i] = current_order
-                        num_mods += 1
-            current_order += 1
-        return result
+    def cache_node(self, node, increasing=False, decreasing=False):
+        self.cache[node] = (increasing, decreasing)
 
-
-class SymmetricGraph(Graph):
-    def __init__(self, pairs, initiator=None):
-        """
-        Initialize the graph and find all symmetries in the graph.
-
-        Arguments:
-        pairs -- see Graph
-        initiator -- a node with as less as possible symmetric equivalents
-
-        If possible, make sure that the initiator is a node with as less as
-        possible equivalent nodes in the graph. The equivalent nodes of a given
-        node are all the nodes on which the given node may me mapped by a
-        symmetry transformation.
-        """
-        Graph.__init__(self, pairs)
-        if initiator == None:
-            self.initiator = list(self.pairs[0])[0]
+    def check_oposite_even(self, node, graph):
+        if self.size is None:
+            max_distance = self.length
         else:
-            self.initiator = initiator
-        self.init_symmetries()
-        self.init_initiator_cycle()
-
-    def init_symmetries(self):
-        """
-        Analyze the symmetries of this graph.
-
-        This method uses yield_matches to find all the symmetries in this
-        graph. Such symmetry information is essential for further analysis
-        of the graph.
-
-        self.symmetries is a dictionary (cycle_lists -> permutations). Each
-        cycle/permutation describes how the nodes can be interchanged without
-        modifying the graph in any aspect.
-
-        self.cycles is a list of all cycles that occur in the graph. A cycle
-        is defined as undividable subpermutation of a symmetry. It is also a
-        list of equivalent nodes.
-        """
-        self.symmetries = {}
-        self.cycles = []
-
-        def add_symmetry(symmetry):
-            cycles = symmetry.get_closed_cycles()
-            if not cycles in self.symmetries:
-                self.symmetries[cycles] = symmetry
-                for cycle in cycles:
-                    if cycle not in self.cycles:
-                        self.cycles.append(cycle)
-                return True
-            else:
+            max_distance = self.size/2
+        oposite_node = self.forward[self.length + 1 - max_distance]
+        #print node, oposite_node
+        #print max_distance, graph.get_distance(oposite_node, node)
+        if not graph.get_distance(oposite_node, node) == max_distance:
+            return False
+        counter = 0
+        for path in graph.yield_shortest_paths(node, oposite_node):
+            counter += 1
+            if counter > 2:
                 return False
+        return True
 
-        def find_symmetries(source, destination):
-            #print "SYMMETRIES %s ~ %s" % (source, destination)
-            for symmetry in self.yield_matches(source, destination, self.neighbors, Permutation(), allow_more=False, no_duplicates=False):
-                if add_symmetry(symmetry):
-                    add_symmetry(symmetry.inverse())
+    def check_oposite_odd(self, node, graph):
+        if self.size is None:
+            max_distance = self.length
+        else:
+            max_distance = self.size/2
+        oposite_node1 = self.forward[self.length + 1 - max_distance]
+        oposite_node2 = self.forward[self.length + 1 - max_distance - 1]
+        #print node, oposite_node1, oposite_node2
+        #print max_distance, graph.get_distance(oposite_node1, node), graph.get_distance(oposite_node2, node)
+        if not (graph.get_distance(oposite_node1, node) == max_distance and
+                graph.get_distance(oposite_node2, node) == max_distance):
+            return False
+        counter = 0
+        for path in graph.yield_shortest_paths(node, oposite_node1):
+            counter += 1
+            if counter > 1:
+                return False
+        counter = 0
+        for path in graph.yield_shortest_paths(node, oposite_node2):
+            counter += 1
+            if counter > 1:
+                return False
+        return True
 
-        # The unity transformation will certainly be found by this call
-        find_symmetries(self.initiator, self.initiator)
-        # Non unity transformations will certainly be found in this loop
-        for source in self.neighbors:
-            for destination in self.neighbors:
-                if source >= destination: continue
-                find_symmetries(source, destination)
-
-
-        #print "-- number of symmetries: %i" % (len(self.symmetries))
-        #for cycles in self.symmetries.iterkeys():
-        #    print cycles
-        #print "-- number of cycles: %i" % (len(self.cycles))
-        #for cycle in self.cycles:
-        #    print cycle
-
-    def init_initiator_cycle(self):
-        """Find a largest cycle that contains the initiator."""
-        self.initiator_cycle = (self.initiator, )
-        for cycle in self.cycles:
-            if self.initiator in cycle and len(cycle) > len(self.initiator_cycle):
-                self.initiator_cycle = cycle
-        #print "initiator_cycle", self.initiator_cycle
-
-    def len_cycle_prefix(self, sequence):
-        """Returns the largest cycle at the beginning of the given sequence."""
-        while (sequence not in self.cycles) and len(sequence) > 0:
-            sequence = sequence[:-1]
-        return len(sequence)
-
-    def yield_matches(self, node, thing, thing_neighbors, match, allow_more=True, no_duplicates=True, spaces=""):
-        """
-        Generate all matching subgraphs congruent to the graph described by
-        thing_neigbours where node and thing are corresponding items between
-        this graph and the subgraph.
-
-        This code is the core algorithm of the Graph class. It uses extensively
-        the yield keyword. If you plan to analyze this algorithm, make sure
-        you have a very good understanding of the generator concept in the
-        python language. Note that this algorithm is recursive.
-
-        Arguments:
-        node -- the node that corresponds to thing in the subgraph
-        thing -- the item in the subgraph that corresponds to node
-        thing_neighbors -- a neighbor representation of the subgraph
-        match -- a permutation that describes the partial symmetry at a
-                 recursion level. user should give an empty permutation as
-                 input
-        allow_more -- wether a node in this graph may have more neigbours than
-                      the corresponding thing in the subgraph. For symmetry
-                      problems this must be set to False for efficiency reasons.
-                      For subgraph problems this may be True, depending on your
-                      preferences.
-        no_duplicates -- lets the algorithm use symmetry information to a priori
-                         avoid duplicate mathces.
-        """
-        ##print spaces + "BEGIN ONE -- add %s -> %s to %s" % (node, thing, match)
-
-        if allow_more and len(self.neighbors[node]) > len(thing_neighbors[thing]):
-            ##print spaces + "ONE -- graph node containse more neighbors than thing"
-            return
-
-        if not allow_more and len(self.neighbors[node]) != len(thing_neighbors[thing]):
-            ##print spaces + "ONE -- number of neighbors differs"
-            return
-
-        if not match.add_relation(node, thing):
-            ##print spaces + "ONE -- given relation conflicts with existing match"
-            return
-
-        if len(match) == len(self.neighbors):
-            ##print spaces + "ONE -- match is complete"
-            yield match
-            return
-
-        def worth_trying(relation):
-            """
-            Wether a candidate mapping between a node and a thing is usefull.
-
-            Such a priori exclussions reduce the number of loops below. The
-            following relations are excluded:
-                - relations that certainly conflict with the existing match: a&b
-                - relations that conflict with the allow_more parameter: c&d
-            Note that a relation that is already part of the match, will be
-            accepted.
-            """
-            if match.in_sources(relation[0]): #a
-                if match.get_destination(relation[0]) == relation[1]:
+    def check_distances(self, node, graph, max_size):
+        new_distance = graph.get_distance(node, self.first_node)
+        last_distance = graph.get_distance(self.forward[len(self)-1], self.first_node)
+        #print "new-, last-distance", new_distance, last_distance
+        if self.increasing:
+            if new_distance > max_size:
+                return False
+            if new_distance == len(self):
+                self.cache_node(node, increasing=True)
+                return True
+            elif new_distance == len(self) - 1:
+                if self.check_oposite_odd(node, graph):
+                    self.cache_node(node)
                     return True
                 else:
                     return False
-            elif match.in_destinations(relation[1]): #b
-                return False
-            elif allow_more and len(self.neighbors[relation[0]]) > len(thing_neighbors[relation[1]]): #c
-                return False
-            elif not allow_more and len(self.neighbors[relation[0]]) != len(thing_neighbors[relation[1]]): #d
-                return False
-            else:
-                return True
-
-        ##print spaces + "ONE -- possible relations  %s -> %s" % (self.neighbors[node], thing_neighbors[thing])
-
-        if no_duplicates:
-            def relations_without_symmetric_images(list1, list2, worth_trying=None, num_ordered=0):
-                """
-                Return all relation sets that do not cause duplicate matches to
-                be generated.
-
-                Arguments:
-                list1 -- list of source items
-                list2 -- list of destination items
-                worth_trying -- a function that takes a relation (tuple) as
-                                argument and returns False if the relation is
-                                not usefull.
-                num_ordered -- help, I don't know any more what this means!!!
-                               Someone please...
-                """
-                if len(list1) == 0 or len(list2) == 0:
-                    yield []
+            elif new_distance == len(self) - 2:
+                if self.check_oposite_even(node, graph):
+                    self.cache_node(node, decreasing=True)
+                    return True
                 else:
-                    if num_ordered == 0:
-                        num_ordered = self.len_cycle_prefix(tuple(list1))
-
-                    if num_ordered > 0:
-                        length = len(list2)-len(list1)+1
-                        new_num_ordered = num_ordered - 1
-                    else:
-                        length = len(list2)
-                        new_num_ordered = 0
-
-                    for index2 in xrange(length):
-                        pair = (list1[0], list2[index2])
-                        if worth_trying == None or worth_trying(pair):
-                            sublist2 = list2[index2+1:]
-                            if num_ordered == 0:
-                                sublist2 = list2[:index2] + sublist2
-                            for relation_set in relations_without_symmetric_images(list1[1:], sublist2, worth_trying, new_num_ordered):
-                                yield [pair] + relation_set
-
-            relations = relations_without_symmetric_images
-        else:
-            relations = all_relations
-
-        for relation_set in relations(self.neighbors[node], thing_neighbors[thing], worth_trying):
-            # Here we will try to extend the given match with new relations.
-            # These extend matches will feed recursively to this algorithm.
-            if len(relation_set) == 0:
-                continue
-            ##print spaces + "BEGIN SET -- add %s to %s" % (relation_set, match)
-            former_matches = [copy.copy(match)]
-            for node, thing in relation_set:
-                new_matches = []
-                for former_match in former_matches:
-                    if former_match.in_sources(node) and former_match.get_destination(node) == thing:
-                        new_matches.append(former_match)
-                    # suppose this is more efficient:
-                    # elif not (former_match.in_sources(node) or former_match.in_destination(thing)):
-                    else:
-                        new_matches.extend(list(self.yield_matches(node, thing, thing_neighbors, former_match, allow_more, no_duplicates, spaces=spaces+"  ")))
-                former_matches = new_matches
-
-            for new_match in new_matches:
-                ##print spaces + "SET -- yield %s" % new_match
-                yield new_match
-
-            ##print spaces + "END SET"
-
-        ##print spaces + "END ONE"
-
-    def lowest_initiator(self, match):
-        """
-        Returns true if the thing associated with the initiator is the lowest
-        of all things associated with the largest cycle that contains an
-        initiator.
-        """
-        return match.get_destination(self.initiator) == min([match.get_destination(node) for node in self.initiator_cycle])
-
-    def yield_matching_subgraphs(self, graph):
-        """
-        Returns all macthings subgraphs in terms bijections between nodes and
-        things.
-
-        This function explains why the 'initiator' should have as less as
-        possible equivalent nodes. The cost of the algorithm is proportional
-        to this number of equivalent nodes (including the initiator).
-        """
-        for thing in graph.neighbors:
-            for match in self.yield_matches(self.initiator, thing, graph.neighbors, OneToOne()):
-                if self.lowest_initiator(match):
-                    #print match
-                    yield match
-
-
-class Criterium(object):
-    """A base class for all thing_ and relation_criteria."""
-
-    def __init__(self, *parameters):
-        self.parameters = parameters
-
-    def get_tag(self):
-        """Return a tag that uniquely identifies the behaviour of a criterium."""
-        if "parameters" not in self.__dict__:
-            print self, self.__class__
-        return (self.__class__, self.parameters)
-
-
-class MatchFilter(object):
-    """
-    MatchFilter instances help analyzing and selecting matched subgraphs
-    generated by a Graph instance. This is an abstract base class.
-    """
-
-    def __init__(self, subgraph, calculation_tags):
-        """
-        Initialize a MatchFilter instance
-
-        Arguments:
-        subgraph -- the subgraph to be searched for
-        calculation_tags -- {node: calculation_tag}. This argument tells the the
-                            MatchFilter what the different types of nodes are in
-                            the subgraph.
-
-        Example usage: You want to list all angles 1-0-2 of the sp3 atoms in a
-        molecule.
-        MatchFilter(
-            subgraph = SymmetricGraph([(0, 1), (0, 2), (0, 3), (0, 4)], 0)
-            calculation_tags = {
-                0: 0,
-                1: 1, 2: 1,
-                3: 2, 4: 2
-            }
-        )
-        The calculation_tags indicate that the calculation of the angle is
-        invariant under the exchange of atom 1 and 2, and under the exchange of
-        atom 3 and 4.
-        """
-        self.subgraph = subgraph
-        self.calculation_tags = calculation_tags
-
-        # create a symmetry subgroup that only contains symmetry transformations
-        # that leave invariant:
-        # - the topology of the subgraph
-        # - the calculation of the variable based on the matched subgraph
-        #   (this is user defined by calculation_tags
-        # - the thing and relation criteria (has to be implemented in
-        #   subclasses)
-        self.lower_symmetries = dict(
-            (cycle_representation, symmetry)
-            for cycle_representation, symmetry
-            in self.subgraph.symmetries.iteritems()
-            if self.invariant_tags(symmetry)
-        )
-        # remove unity
-        del self.lower_symmetries[tuple()]
-        #print self.lower_symmetries
-
-    def invariant_tags(self, symmetry):
-        for node, tag in self.calculation_tags.iteritems():
-            transformed_tag = self.calculation_tags.get(symmetry.get_destination(node))
-            if transformed_tag != None and transformed_tag != tag:
-                return False
-        return True
-
-    def check_thing(self, node, thing):
-        raise NotImplementedError
-
-    def check_relation(self, nodes, things):
-        raise NotImplementedError
-
-    def parse(self, match):
-        """
-        Return transformed matches that obey the criteria defined in
-        check_thing and check_relation and avoid symmetric duplicates.
-        """
-        def check_match(match):
-            """
-            For the given (transformed) match return wether it meets the
-            criteria.
-            """
-            for node, neighbors in self.subgraph.neighbors.iteritems():
-                if not self.check_thing(node, transformed_match.get_destination(node)):
                     return False
-                for neighbor in neighbors:
-                    if not self.check_relation(
-                        frozenset([node, neighbor]),
-                        frozenset([
-                            transformed_match.get_destination(node),
-                            transformed_match.get_destination(neighbor)
-                        ])):
-                        return False
-            return True
-
-        symmetries = self.subgraph.symmetries.copy()
-        while len(symmetries) > 0:
-            key, symmetry = symmetries.popitem()
-            transformed_match = match * symmetry
-            # remove all elements of the coset(symmetry, lower_symmetries) in
-            # the group symmetries.
-            for closed_cycles, lower_symmetry in self.lower_symmetries.iteritems():
-                del symmetries[(symmetry * lower_symmetry).get_closed_cycles()]
-            if check_match(transformed_match):
-                yield transformed_match
-
-
-class MatchFilterParameterized(MatchFilter):
-    """
-    This MatchFilter uses dictionaries that map each node and relation of the
-    subgraph to a criterion function.
-    """
-
-    def __init__(self, subgraph, calculation_tags, thing_criteria={}, relation_criteria={}, filter_tags=True):
-        """
-        Initialize a MatchFilterParameterized
-
-        Arguments:
-        thing_criteria -- {node: thing_criterion(thing), ...}
-        relation_criteria -- {frozenset([node1, node2]:
-                              relation_criterion(thing1, thing2), ...}
-        """
-        self.thing_criteria = thing_criteria
-        self.relation_criteria = relation_criteria
-        self.filter_tags = filter_tags
-        MatchFilter.__init__(self, subgraph, calculation_tags)
-
-    def invariant_tags(self, symmetry):
-        if not MatchFilter.invariant_tags(self, symmetry):
-            return False
-        if not self.filter_tags:
-            return True
-
-        nodes = set(pair[0] for pair in self.subgraph.pairs) | \
-                set(pair[1] for pair in self.subgraph.pairs)
-
-        def node_tag(node):
-            thing_criterium = self.thing_criteria.get(node)
-            if thing_criterium == None:
-                return None
             else:
-                return thing_criterium.get_tag()
-
-        for node in nodes:
-            tag = node_tag(node)
-            transformed_tag = node_tag(symmetry.get_destination(node))
-            if tag != None and transformed_tag != None and transformed_tag != tag:
+                raise RingMatchError("Distances can only vary by one at a time. There must be an error in the graph.distances matrix.")
+        else:
+            # do distance checks
+            if new_distance != last_distance - 1:
                 return False
-
-        def pair_tag(pair):
-            relation_criterium = self.relation_criteria.get(pair)
-            if relation_criterium == None:
-                return None
+            if self.size % 2 == 0:
+                if self.check_oposite_even(node, graph):
+                    self.cache_node(node, decreasing=True)
+                    return True
+                else:
+                    return False
             else:
-                return relation_criterium.get_tag()
+                if self.check_oposite_odd(node, graph):
+                    self.cache_node(node, decreasing=True)
+                    return True
+                else:
+                    return False
 
-        for pair in self.subgraph.pairs:
-            tag = node_tag(pair)
-            node1, node2 = pair
-            transformed_pair = frozenset([symmetry.get_destination(node1), symmetry.get_destination(node2)])
-            transformed_tag = node_tag(transformed_pair)
-            if tag != None and transformed_tag != None and transformed_tag != tag:
-                return False
+    def copy_with_new_relations(self, new_relations):
+        assert len(new_relations) == 1, "Only one new relation at a time."
+        result = Match.copy_with_new_relations(self, new_relations)
+        result.cache = {}
+        result.length += 1
 
+        node1 = iter(new_relations).next()[1]
+        increasing, decreasing = self.cache[node1]
+        if not increasing and self.size == None:
+            #print "not increasing"
+            result.increasing = False
+            if decreasing:
+                result.size = self.length * 2
+            else:
+                result.size = self.length * 2 + 1
+            #print "SIZE", result.size
+        return result
+
+
+
+class RingMatchDefinition(MatchDefinition):
+    MatchClass = RingMatch
+
+    def __init__(self, max_size):
+        self.max_size = max_size
+
+    def init_graph(self, graph):
+        graph.init_trees_and_shells()
+        graph.init_distances()
+        MatchDefinition.init_graph(self, graph)
+
+    def init_matches(self):
+        node0 = 0
+        for node1 in self.graph.nodes:
+            yield self.MatchClass([(node0, node1)])
+
+    def new_pools(self, partial_match):
+        first_node1 = partial_match.forward[0]
+        last_node1 = partial_match.forward[len(partial_match)-1]
+        #pool1 = MatchDefinition.new_pools(self, partial_match)
+        pool1 = set([
+            node1
+            for node1
+            in self.graph.neighbors[last_node1]
+            if (
+                node1 > partial_match.first_node and
+                node1 not in partial_match.backward and
+                partial_match.check_distances(node1, self.graph, self.max_size)
+           )
+        ])
+        pool0 = set([len(partial_match)])
+        return pool0, pool1
+
+    def subgraph_neighbors(self, node0):
+        if node0 == 0:
+            return [node0 + 1]
+        else:
+            return [node0 - 1, node0 + 1]
+
+    def compare(self, node0, node1):
         return True
 
+    def complete(self, match):
+        # TODO: a more efficient way of eliminating duplicate rings (that only
+        # differ in the direction
+        return (match.size == match.length + 1) and match.forward[1] < match.forward[match.length]
 
-    def check_thing(self, node, thing):
-        thing_criterium = self.thing_criteria.get(node)
-        if thing_criterium == None:
-            return True
-        else:
-            return thing_criterium(thing)
 
-    def check_relation(self, nodes, things):
-        relation_criterium = self.relation_criteria.get(nodes)
-        if relation_criterium == None:
+def combine_relations(potential_relations):
+    if len(potential_relations) == 0:
+        yield set([])
+    else:
+        candidate_begin, candidate_end = iter(potential_relations).next()
+        #print " "*len(potential_relations), "cb en ce", candidate_begin, candidate_end
+        for candidate in potential_relations:
+            #print " "*len(potential_relations), "candidate", candidate
+            if candidate[0] == candidate_begin:# or candidate[1] == candidate_end:
+                remainder = set([
+                    (begin, end)
+                    for begin, end
+                    in potential_relations
+                    if begin != candidate[0] and end != candidate[1]
+                ])
+                for new_relations in combine_relations(remainder):
+                    result = copy.copy(new_relations)
+                    result.add(candidate)
+                    yield result
+
+
+class MatchGenerator(object):
+    def __init__(self, match_definition, debug=False):
+        self.match_definition = match_definition
+        self.debug = debug
+
+    def __call__(self, graph):
+        self.match_definition.init_graph(graph)
+        for init_match in self.match_definition.init_matches():
+            for match in self.yield_matches(init_match):
+                for final_match in self.match_definition.yield_final_matches(match):
+                    self.print_debug("final_match: %s" % final_match)
+                    yield final_match
+
+    def print_debug(self, text, indent=0):
+        if self.debug:
+            if indent > 0:
+                print " "*self.debug, text
+            self.debug += indent
+            if indent <= 0:
+                print " "*self.debug, text
+
+    def yield_matches(self, input_match):
+        self.print_debug("ENTERING YIELD_MATCHES", 1)
+        self.print_debug("input_match: %s" % input_match)
+        pool0, pool1 = self.match_definition.new_pools(input_match)
+        if len(pool0) == 0 or len(pool1) == 0:
+            self.print_debug("LEAVING YIELD_MATCHES (empty pools)", -1)
+            return
+
+        def check_potential(neighbor0, neighbor1):
+            if not self.match_definition.compare(neighbor0, neighbor1):
+                self.print_debug("not equal: %s and %s" % (neighbor0, neighbor1))
+                return False
+            back_neigbors0 = self.match_definition.subgraph_neighbors(neighbor0)
+            back_neighbors1 = self.match_definition.graph_neighbors(neighbor1)
+            for back_neigbour0 in back_neigbors0:
+                test1 = input_match.forward.get(back_neigbour0)
+                if test1 is not None and test1 not in back_neighbors1:
+                    self.print_debug("no equal back neighbors: %s and %s" % (neighbor0, neighbor1))
+                    return False
             return True
-        else:
-            return relation_criterium(things)
+
+        potential_relations = set([])
+        for previous in input_match.previous_relations:
+            previous_node0, previous_node1 = previous
+            neighbors0 = pool0.intersection(self.match_definition.subgraph_neighbors(previous_node0))
+            neighbors1 = pool1.intersection(self.match_definition.graph_neighbors(previous_node1))
+            for neighbor0 in neighbors0:
+                for neighbor1 in neighbors1:
+                    if check_potential(neighbor0, neighbor1):
+                        potential_relations.add((neighbor0, neighbor1))
+
+        self.print_debug("potential_relations: %s" % str(potential_relations))
+        if not self.match_definition.valid_potential_relations(potential_relations):
+            self.print_debug("LEAVING YIELD_MATCHES (invalid_potential_relations)", -1)
+            return
+
+        for new_relations in combine_relations(potential_relations):
+            self.print_debug("new_relations: %s" % str(new_relations))
+            next_match = input_match.copy_with_new_relations(new_relations)
+            if self.match_definition.check_symmetry(new_relations, next_match):
+                if self.match_definition.complete(next_match):
+                    yield next_match
+                else:
+                    for match in self.yield_matches(next_match):
+                        yield match
+
+        self.print_debug("LEAVING YIELD_MATCHES", -1)

@@ -20,8 +20,8 @@
 # --
 
 from molmod.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
-from molmod.molecular_graphs2 import MolecularGraph, atom_criteria
-from molmod.graphs2 import CriteriaSet
+from molmod.molecular_graphs import MolecularGraph, atom_criteria
+from molmod.graphs import CriteriaSet
 from molmod.data import BOND_SINGLE
 from molmod.units import from_angstrom
 
