@@ -394,12 +394,12 @@ class Complete(Translation, Rotation):
         Rotation.assign_shallow(self, other)
 
 
-def rotation_around_center(center, angle, axis):
+def rotation_around_center(center, angle, axis, invert=False):
     result = Complete()
     result.t = -center
 
     rotation = Rotation()
-    rotation.set_rotation_properties(angle, axis, False)
+    rotation.set_rotation_properties(angle, axis, invert)
     result.apply_after(rotation)
 
     translation = Translation()
