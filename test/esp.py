@@ -72,8 +72,7 @@ class ESPExample(unittest.TestCase):
                     potential_data[counter,-1] = potential
                     counter += 1
 
-        cost_fn = molmod.esp.ESPCostFunction(potential_data, charges, dipoles)
-        self.assert_(sum((esp_data -cost_fn.solve())**2) / sum(esp_data**2) < 1e-6, "Wrong ESP solution")
+        cost_fn = molmod.esp.StandardESPCostFunction(potential_data[:,:3], potential_data[:,3], charges, dipoles)
+        self.assert_(cost_fn.cost_to_error(cost_fn.evaluate(esp_data)) < 1e-6, "Wrong ESP solution")
         cost_fn.gradient(esp_data)
-        cost_fn.evaluate(esp_data)
 

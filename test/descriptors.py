@@ -20,10 +20,11 @@
 # --
 
 
-from molmod.molecules import molecule_xyz_from_filename
 from molmod.data import periodic
 from molmod.descriptors import MolecularDescriptorTV1, sph_harmonics
 from molmod.transformations import Complete
+
+from ccop.xyz import XYZFile
 
 import numpy
 
@@ -35,7 +36,7 @@ __all__ = ["Descriptors"]
 
 class Descriptors(unittest.TestCase):
     def load_molecule(self, filename):
-        m = molecule_xyz_from_filename("input/"+filename)
+        m = XYZFile("input/"+filename).get_molecule()
         return m.coordinates, numpy.array([
             periodic[number].mass
             for number in m.numbers

@@ -20,8 +20,8 @@
 # --
 
 
-from molmod.graphs2 import MatchGenerator
-from molmod.molecular_graphs2 import BondMatchDefinition, BendingAngleMatchDefinition, DihedralAngleMatchDefinition, OutOfPlaneMatchDefinition
+from molmod.graphs import MatchGenerator
+from molmod.molecular_graphs import BondMatchDefinition, BendingAngleMatchDefinition, DihedralAngleMatchDefinition, OutOfPlaneMatchDefinition
 
 
 import math, copy

@@ -37,14 +37,14 @@ measures = ["Length", "Energy", "Mass", "Charge", "Angle", "Time", "Dipole"]
 assert len(measures) == len(set(measures)), "Some measures have the same name."
 
 units = [
-    "au", "A", "nm", "pm", "kJ/mol", "kcal/mol", "eV", "u",
+    "au", "A", "nm", "kJ/mol", "kcal/mol", "eV", "u",
     "rad", "deg", "ns", "ps", "fs", "D"
 ]
 assert len(units) == len(set(units)), "Some units have the same name."
 
 
 units_by_measure = {
-    "Length": ["au", "A", "nm", "pm"],
+    "Length": ["au", "A", "nm"],
     "Energy": ["au", "kJ/mol", "kcal/mol", "eV"],
     "Mass": ["au", "u"],
     "Charge": ["au"],
@@ -63,17 +63,14 @@ assert len(units) == len(set(sum((u for u in units_by_measure.itervalues()), [])
 
 angstrom = 1.8897261249
 nanometer = 18.897261249
-picometer = 0.018897261249
 meter = 1.8897261249e10
 
 def to_angstrom(x): return x * 0.5291772108
 def to_nanometer(x): return x * 0.05291772108
-def to_picometer(x): return x * 52.91772108
 def to_meter(x): return x * 0.5291772108e-10
 
 def from_angstrom(x): return x * 1.8897261249
 def from_nanometer(x): return x * 18.897261249
-def from_picometer(x): return x * 0.018897261249
 def from_meter(x): return x * 1.8897261249e10
 
 
@@ -158,7 +155,6 @@ unit = {
     "au": 1,
     "A": angstrom,
     "nm": nanometer,
-    "pm": picometer,
     "kJ/mol": kjmol,
     "kcal/mol": kcalmol,
     "eV": ev,
@@ -176,7 +172,6 @@ to_unit = {
     "au": unity,
     "A": to_angstrom,
     "nm": to_nanometer,
-    "pm": to_picometer,
     "kJ/mol": to_kjmol,
     "kcal/mol": to_kcalmol,
     "eV": to_ev,
@@ -194,7 +189,6 @@ from_unit = {
     "au": unity,
     "A": from_angstrom,
     "nm": from_nanometer,
-    "pm": from_picometer,
     "kJ/mol": from_kjmol,
     "kcal/mol": from_kcalmol,
     "eV": from_ev,

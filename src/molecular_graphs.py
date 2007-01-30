@@ -20,211 +20,12 @@
 # --
 
 
-from molmod.graphs import Graph, SymmetricGraph, MatchFilterParameterized, Criterium
+from molmod.graphs import Graph, SubgraphMatchDefinition, Match
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
 from molmod.data import bonds
 
 import math, numpy
 
-__all__ = [
-    "MolecularCriterium",
-    "BinaryMolecularCriterium", "MolecularOr", "MolecularAnd",
-    "AtomNumberCriterium", "AtomNumberRequire", "AtomNumberRefuse",
-    "BondTypeCriterium", "BondTypeRequire", "BondTypeRefuse",
-    "NumNeighboursCriterium", "NumNeighboursRequire", "NumNeighboursRefuse",
-    "CriteriaSets", "CriteriaSet", "BondSets", "BendSets", "DihedralSets",
-    "OutOfPlaneAngleSets", "OutOfPlaneDistanceSets", "LongRangePairSets",
-    "MolecularGraph",
-]
-
-# Elementary criteria for MatchFilters
-
-class MolecularCriterium(Criterium):
-    def __init__(self, *parameters):
-        self.molecular_graph = None
-        Criterium.__init__(self, *parameters)
-
-    def set_molecular_graph(self, molecular_graph):
-        self.molecular_graph = molecular_graph
-
-
-class BinaryMolecularCriterium(MolecularCriterium):
-    def __init__(self, criterium1, criterium2):
-        self.criterium1 = criterium1
-        self.criterium2 = criterium2
-        MolecularCriterium.__init__(self, None)
-
-    def get_tag(self):
-        return (self.__class__, self.criterium1.get_tag(), self.criterium2.get_tag())
-
-    def set_molecular_graph(self, molecular_graph):
-        self.molecular_graph = molecular_graph
-        self.criterium1.set_molecular_graph(molecular_graph)
-        self.criterium2.set_molecular_graph(molecular_graph)
-
-
-class MolecularOr(BinaryMolecularCriterium):
-    def __call__(self, argument):
-        return self.criterium1(argument) or self.criterium2(argument)
-
-
-class MolecularAnd(BinaryMolecularCriterium):
-    def __call__(self, argument):
-        return self.criterium1(argument) and self.criterium2(argument)
-
-
-class AtomNumberCriterium(MolecularCriterium):
-    def __init__(self, number):
-        self.number = number
-        MolecularCriterium.__init__(self, number)
-
-
-class AtomNumberRequire(AtomNumberCriterium):
-    def __call__(self, index):
-        return self.molecular_graph.molecule.numbers[index] == self.number
-
-
-class AtomNumberRefuse(AtomNumberCriterium):
-    def __call__(self, index):
-        return self.molecular_graph.molecule.numbers[index] != self.number
-
-
-class BondTypeCriterium(MolecularCriterium):
-    def __init__(self, bond_type):
-        self.bond_type = bond_type
-        MolecularCriterium.__init__(self, bond_type)
-
-
-class BondTypeRequire(BondTypeCriterium):
-    def __call__(self, pair):
-        return self.molecular_graph.bonds[pair] == self.bond_type
-
-
-class BondTypeRefuse(BondTypeCriterium):
-    def __call__(self, pair):
-        return self.molecular_graph.bonds[pair] != self.bond_type
-
-
-class NumNeighboursCriterium(MolecularCriterium):
-    def __init__(self, num_neighbors):
-        self.num_neighbors = num_neighbors
-        MolecularCriterium.__init__(self, num_neighbors)
-
-
-class NumNeighboursRequire(NumNeighboursCriterium):
-    def __call__(self, index):
-        return len(self.molecular_graph.neighbors[index]) == self.num_neighbors
-
-
-class NumNeighboursRefuse(NumNeighboursCriterium):
-    def __call__(self, index):
-        return len(self.molecular_graph.neighbors[index]) != self.num_neighbors
-
-
-# Predefined sets of criteria: bonds, angles, dihedrals
-
-class CriteriaSets(object):
-    def __init__(self, subpairs, initiator, calculation_tags, sets):
-        self.subpairs = subpairs   # pairs of bonded atoms
-        self.initiator = initiator # the central ellement, the one that is transformed onto itself by most of the symmetries
-        self.calculation_tags = calculation_tags # tags that indicate which atoms are similar due to symmetrie in the topology, not atom labels taken into account
-        self.sets = sets
-
-    def yield_criteria(self):
-        for item in self.sets:
-            yield item.tag, item.atom_criteria, item.bond_criteria, item.filter_tags
-
-    def yield_tags(self):
-        for item in self.sets:
-            yield item.tag
-
-
-class CriteriaSet(object):
-    def __init__(self, tag, short=None, extensive=None, filter_tags=True):
-        self.tag = tag
-        self.atom_criteria = {}
-        self.bond_criteria = {}
-        self.filter_tags = filter_tags
-        if short != None:
-            atoms, bonds = short
-            if atoms != None:
-                for index, number in enumerate(atoms):
-                    if number > 0:
-                        self.atom_criteria[index] = AtomNumberRequire(number)
-                    elif number < 0:
-                        self.atom_criteria[index] = AtomNumberRefuse(number)
-            if bonds != None:
-                for index, bond_type in bonds.iteritems:
-                    if bond_type > 0:
-                        self.bond_criteria[frozenset(index)] = BondTypeRequire(bond_type)
-                    elif bond_type < 0:
-                        self.bond_criteria[frozenset(index)] = BondTypeRefuse(bond_type)
-        if extensive != None:
-            atoms, bonds = extensive
-            if atoms != None:
-                self.atom_criteria.update(atoms)
-            if bonds != None:
-                self.bond_criteria.update(bonds)
-
-
-class BondSets(CriteriaSets):
-    def __init__(self, sets):
-        CriteriaSets.__init__(self, [(0, 1)], 0, {0: 0, 1: 0}, sets)
-
-
-class BendSets(CriteriaSets):
-    def __init__(self, sets):
-        CriteriaSets.__init__(self, [(0, 1), (1, 2)], 1, {0: 1, 1: 0, 2: 1}, sets)
-
-
-class DihedralSets(CriteriaSets):
-    def __init__(self, sets):
-        CriteriaSets.__init__(self, [(0, 1), (1, 2), (2, 3)], 1, {0: 0, 1: 1, 2: 1, 3: 0}, sets)
-
-
-class OutOfPlaneAngleSets(CriteriaSets):
-    def __init__(self, sets):
-        CriteriaSets.__init__(self, [(1, 0), (1, 2), (1, 3)], 1, {0: 0, 1: 1, 2: 2, 3: 2}, sets)
-
-
-class OutOfPlaneDistanceSets(CriteriaSets):
-    def __init__(self, sets):
-        CriteriaSets.__init__(self, [(0, 1), (0, 2), (0, 3)], 0, {0: 0, 1: 1, 2: 1, 3: 1}, sets)
-
-
-class LongRangePairSets(CriteriaSets):
-    def __init__(self, sets):
-        CriteriaSets.__init__(self, [(0, 1)], 0, {0: 0, 1: 0}, sets)
-
-    def bond_excludes(self):
-        return BondSets(self.sets)
-
-    def bend_excludes(self):
-        new_sets = [
-            CriteriaSet(
-                set.tag,
-                extensive=({0: set.atom_criteria[0], 2: set.atom_criteria[1]}, None),
-                filter_tags=set.filter_tags
-            )
-            for set
-            in self.sets
-        ]
-        return BendSets(new_sets)
-
-    def dihedral_excludes(self):
-        new_sets = [
-            CriteriaSet(
-                set.tag,
-                extensive=({0: set.atom_criteria[0], 3: set.atom_criteria[1]}, None),
-                filter_tags=set.filter_tags
-            )
-            for set
-            in self.sets
-        ]
-        return DihedralSets(new_sets)
-
-
-#
 
 class MolecularGraph(Graph):
     def __init__(self, molecule):
@@ -252,23 +53,159 @@ class MolecularGraph(Graph):
         pairs = set(key for key, data in bond_data)
         self.bond_orders = dict([(key, data[0]) for key, data in bond_data])
         self.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
-        Graph.__init__(self, pairs)
+        Graph.__init__(self, pairs, range(len(molecule.numbers)))
 
-    def yield_subgraphs(self, criteria_sets):
-        subgraph = SymmetricGraph(criteria_sets.subpairs, criteria_sets.initiator)
-        for tag, atom_criteria, bond_criteria, filter_tags in criteria_sets.yield_criteria():
-            for atom_criterium in atom_criteria.itervalues():
-                atom_criterium.set_molecular_graph(self)
-            for bond_criterium in bond_criteria.itervalues():
-                bond_criterium.set_molecular_graph(self)
-            graph_filter = MatchFilterParameterized(
-                subgraph,
-                criteria_sets.calculation_tags,
-                atom_criteria,
-                bond_criteria,
-                filter_tags
-            )
 
-            for match in subgraph.yield_matching_subgraphs(self):
-                for parsed in graph_filter.parse(match):
-                    yield tag, parsed
+# molecular criteria
+
+
+class Anything(object):
+    def __call__(self, id):
+        return True
+
+
+class MolecularCriterion(object):
+    def init_graph(self, graph):
+        self.graph = graph
+
+
+class MolecularOr(object):
+    def __init__(self, *criteria):
+        self.criteria = criteria
+
+    def init_graph(self, graph):
+        for c in self.criteria:
+            c.init_graph(graph)
+
+    def __call__(self, id):
+        for c in self.criteria:
+            if c(id):
+                return True
+        return False
+
+
+class MolecularAnd(object):
+    def __init__(self, *criteria):
+        self.criteria = criteria
+
+    def init_graph(self, graph):
+        for c in self.criteria:
+            c.init_graph(graph)
+
+    def __call__(self, id):
+        for c in self.criteria:
+            if not c(id):
+                return False
+        return True
+
+
+class HasAtomNumber(MolecularCriterion):
+    def __init__(self, number):
+        self.number = number
+
+    def __call__(self, atom):
+        return self.graph.molecule.numbers[atom] == self.number
+
+
+class HasNumNeighbors(MolecularCriterion):
+    def __init__(self, number):
+        self.number = number
+
+    def __call__(self, atom):
+        return len(self.graph.neighbors[atom]) == self.number
+
+
+class HasNeighborNumbers(MolecularCriterion):
+    def __init__(self, numbers):
+        self.numbers = list(numbers)
+        self.numbers.sort()
+
+    def __call__(self, atom):
+        neighbors = self.graph.neighbors[atom]
+        if not len(neighbors) == len(self.numbers):
+            return
+        neighbors = [self.graph.molecule.numbers[neighbor] for neighbor in neighbors]
+        neighbors.sort()
+        return neighbors == self.numbers
+
+
+class BondLongerThan(MolecularCriterion):
+    def __init__(self, length):
+        self.length = length
+
+    def __call__(self, pair):
+        return self.graph.bond_lengths[pair] > self.length
+
+
+def atom_criteria(*params):
+    result = {}
+    for index, param in enumerate(params):
+        if param is None:
+            continue
+        elif isinstance(param, int):
+            result[index] = HasAtomNumber(param)
+        else:
+            result[index] = param
+    return result
+
+
+# match definitions
+
+
+class MolecularMatchDefinition(SubgraphMatchDefinition):
+    def init_graph(self, graph):
+        assert isinstance(graph, MolecularGraph)
+        for criteria_set in self.criteria_sets:
+            for c in criteria_set.thing_criteria.itervalues():
+                c.init_graph(graph)
+            for c in criteria_set.relation_criteria.itervalues():
+                c.init_graph(graph)
+            for c in criteria_set.global_criteria:
+                c.init_graph(graph)
+        SubgraphMatchDefinition.init_graph(self, graph)
+
+
+class BondMatchDefinition(MolecularMatchDefinition):
+    def __init__(self, criteria_sets, node_tags={}):
+        subgraph = Graph([frozenset([0, 1])], [0, 1])
+        MolecularMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+
+
+class BendingAngleMatchDefinition(MolecularMatchDefinition):
+    def __init__(self, criteria_sets, node_tags={}):
+        subgraph = Graph([
+            frozenset([0, 1]),
+            frozenset([1, 2]),
+        ], [0, 1, 2])
+        MolecularMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+
+
+class DihedralAngleMatchDefinition(MolecularMatchDefinition):
+    def __init__(self, criteria_sets, node_tags={}):
+        subgraph = Graph([
+            frozenset([0, 1]),
+            frozenset([1, 2]),
+            frozenset([2, 3]),
+        ], [0, 1, 2, 3])
+        MolecularMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+
+
+class OutOfPlaneMatchDefinition(MolecularMatchDefinition):
+    def __init__(self, criteria_sets, node_tags={}):
+        subgraph = Graph([
+            frozenset([0, 1]),
+            frozenset([0, 2]),
+            frozenset([0, 3]),
+        ], [0, 1, 2, 3])
+        MolecularMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+
+
+class TetraMatchDefinition(MolecularMatchDefinition):
+    def __init__(self, criteria_sets, node_tags={}):
+        subgraph = Graph([
+            frozenset([0, 1]),
+            frozenset([0, 2]),
+            frozenset([0, 3]),
+            frozenset([0, 4]),
+        ], [0, 1, 2, 3, 4])
+        MolecularMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
