@@ -241,6 +241,9 @@ class Graph(object):
                 for node in cycle:
                     if len(cycle) > len(self.equivalent_nodes[node]):
                         self.equivalent_nodes[node] = cycle
+        for node, equivalents in self.equivalent_nodes.items():
+            if len(equivalents) == 0:
+                self.equivalent_nodes[node] = (node,)
 
     def get_distance(self, node_a, node_b):
         return self.distances[self.index[node_a], self.index[node_b]]
