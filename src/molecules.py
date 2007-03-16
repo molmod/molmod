@@ -36,15 +36,16 @@ class Molecule:
     - cartesian coordinates
     """
 
-    def __init__(self, numbers=None, coordinates=None):
+    def __init__(self, numbers=None, coordinates=None, title=None):
         self.numbers = numbers
         self.coordinates = coordinates
+        self.title = None
 
     def dump_atoms(self, stream):
         for number, coordinate in zip(self.numbers, to_angstrom(self.coordinates)):
             atom_info = periodic[number]
             if atom_info is None:
-                symbol = 'X'
+                symbol = "X"
             else:
                 symbol = atom_info.symbol
             print >> stream, "% 2s % 12.6f % 12.6f % 12.6f" % (

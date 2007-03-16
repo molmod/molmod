@@ -32,7 +32,7 @@ from bondsdata import *
 from molmod import context
 
 __all__ = [
-    "periodic",
+    "periodic", "AtomInfo",
     "bonds", "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "BOND_HYBRID",
     "BOND_HYDROGEN", "bond_types"
 ]
