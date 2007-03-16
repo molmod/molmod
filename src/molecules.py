@@ -64,7 +64,7 @@ class Molecule:
 
     def dump(self, stream):
         print >> stream, "%5i" % len(self.numbers)
-        print >> stream
+        print >> stream, str(self.title)
         self.dump_atoms(stream)
 
     def write_to_file(self, filename):
