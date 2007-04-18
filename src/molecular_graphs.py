@@ -20,7 +20,7 @@
 # --
 
 
-from molmod.graphs import Graph, SubgraphMatchDefinition, Match
+from molmod.graphs import Graph, SubgraphMatchDefinition, ExactMatchDefinition, Match
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
 from molmod.data import bonds
 
@@ -152,7 +152,7 @@ def atom_criteria(*params):
 # match definitions
 
 
-class MolecularMatchDefinition(SubgraphMatchDefinition):
+class MolecularMixinMatchDefinition(object):
     def init_graph(self, graph):
         assert isinstance(graph, MolecularGraph)
         for criteria_set in self.criteria_sets:
@@ -162,7 +162,18 @@ class MolecularMatchDefinition(SubgraphMatchDefinition):
                 c.init_graph(graph)
             for c in criteria_set.global_criteria:
                 c.init_graph(graph)
+
+
+class MolecularMatchDefinition(SubgraphMatchDefinition, MolecularMixinMatchDefinition):
+    def init_graph(self, graph):
+        MolecularMixinMatchDefinition.init_graph(self, graph)
         SubgraphMatchDefinition.init_graph(self, graph)
+
+
+class MolecularExactDefinition(ExactMatchDefinition, MolecularMixinMatchDefinition):
+    def init_graph(self, graph):
+        MolecularMixinMatchDefinition.init_graph(self, graph)
+        ExactMatchDefinition.init_graph(self, graph)
 
 
 class BondMatchDefinition(MolecularMatchDefinition):
