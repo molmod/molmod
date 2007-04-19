@@ -155,6 +155,8 @@ def atom_criteria(*params):
 class MolecularMixinMatchDefinition(object):
     def init_graph(self, graph):
         assert isinstance(graph, MolecularGraph)
+        if self.criteria_sets is None:
+            return
         for criteria_set in self.criteria_sets:
             for c in criteria_set.thing_criteria.itervalues():
                 c.init_graph(graph)
