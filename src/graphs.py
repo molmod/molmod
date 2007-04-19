@@ -390,18 +390,34 @@ class SubgraphMatchDefinition(MatchDefinition):
     def subgraph_neighbors(self, node0):
         return self.subgraph.neighbors[node0]
 
-    def check_symmetry(self, new_relations, next_match):
-        if self.node_tags is not None:
+    def check_symmetry(self, new_relations, current_match, next_match):
+        # only returns true for ecaxtly one set of new_relations from all the
+        # ones that are symmetrically equivalent
+        if self.node_tags is not None: # only do this test when symmetry matters
             for new_node0, new_node1 in new_relations:
                 for equivalent_node0 in self.subgraph.equivalent_nodes[new_node0]:
-                    #print " ---- distance: ", self.subgraph.get_distance(new_node0, equivalent_node0)
-                    if equivalent_node0 != new_node0 and \
-                       self.subgraph.get_distance(new_node0, equivalent_node0) <= 2:
-                        equivalent_node1 = next_match.forward.get(equivalent_node0)
-                        if equivalent_node1 is None: continue
-                        #print " ---- (%s > %s) _ (%s > %s) = %s" % (new_node1, equivalent_node1, new_node0, equivalent_node0, cmp(new_node1, equivalent_node1) * cmp(new_node0, equivalent_node0))
-                        if (cmp(id(new_node1), id(equivalent_node1)) * cmp(id(new_node0), id(equivalent_node0)) < 0):
-                            return False
+                    # the test only makes sense if the equivalent_node1 in the 
+                    # user graph does exist
+                    equivalent_node1 = next_match.forward.get(equivalent_node0)
+                    if equivalent_node1 is None: continue
+                    # the test is only applicable to a pair of new relations
+                    # between nodes that have one or more common neighbors. It
+                    # is safe to consider only the common neighbours in the 
+                    # subgraph
+                    common_neighbors = (
+                        self.subgraph.neighbors[new_node0] &
+                        self.subgraph.neighbors[equivalent_node0]
+                    )
+                    if len(common_neighbors) == 0: continue
+                    # at least one of these common neighbors must exist in the
+                    # previous iteration level
+                    if len(common_neighbors.intersection(current_match.forward)) == 0: continue
+                    # for these nodes we test whether the order is respected by
+                    # next_match. if not, reject these new relations since it
+                    # will only result in a final match that is the symmetric
+                    # equivalent does fullfill this condition.
+                    if (cmp(id(new_node1), id(equivalent_node1)) * cmp(id(new_node0), id(equivalent_node0)) < 0):
+                         return False
         return True
 
     def complete(self, match):
@@ -788,11 +804,15 @@ class MatchGenerator(object):
         for new_relations in combine_relations(potential_relations):
             self.print_debug("new_relations: %s" % str(new_relations))
             next_match = input_match.copy_with_new_relations(new_relations)
-            if self.match_definition.check_symmetry(new_relations, next_match):
+            if self.match_definition.check_symmetry(new_relations, input_match, next_match):
+                self.print_debug("passed symmetry test")
                 if self.match_definition.complete(next_match):
+                    self.print_debug("complete")
                     yield next_match
                 else:
                     for match in self.yield_matches(next_match):
                         yield match
+            else:
+                self.print_debug("failed symmetry test")
 
         self.print_debug("LEAVING YIELD_MATCHES", -1)
