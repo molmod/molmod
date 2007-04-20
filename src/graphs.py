@@ -318,7 +318,7 @@ class MatchDefinition(object):
     def valid_potential_relations(self, potential_relations):
         return len(potential_relations) > 0
 
-    def check_symmetry(self, new_relations, next_match):
+    def check_symmetry(self, new_relations, current_match, next_match):
         "Check wether the new_relations correspond the reference case of all possible symetric equivalents"
         return True
 
