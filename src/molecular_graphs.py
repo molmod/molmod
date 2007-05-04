@@ -20,7 +20,8 @@
 # --
 
 
-from molmod.graphs import Graph, SubgraphMatchDefinition, ExactMatchDefinition, Match
+from molmod.molecules import Molecule
+from molmod.graphs import Graph, SubgraphMatchDefinition, ExactMatchDefinition, Match, OneToOne, MatchGenerator, CriteriaSet
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
 from molmod.data import bonds
 
@@ -28,11 +29,13 @@ import math, numpy
 
 
 class MolecularGraph(Graph):
-    def __init__(self, molecule):
+    def __init__(self, molecule, labels=None):
         self.molecule = molecule
+        if labels is None:
+            labels = range(len(molecule.numbers))
 
         def yield_positioned_atoms():
-            for index in xrange(len(self.molecule.numbers)):
+            for index in xrange(len(labels)):
                 yield PositionedObject(index, self.molecule.coordinates[index])
 
         binned_atoms = SparseBinnedObjects(yield_positioned_atoms(), bonds.max_length*bonds.bond_tolerance)
@@ -46,14 +49,20 @@ class MolecularGraph(Graph):
                     return bond_order, distance
 
         bond_data = list(
-            (frozenset([positioned.id for positioned in key]), data)
+            (frozenset([labels[positioned.id] for positioned in key]), data)
             for key, data
             in IntraAnalyseNeighboringObjects(binned_atoms, compare_function)()
         )
         pairs = set(key for key, data in bond_data)
         self.bond_orders = dict([(key, data[0]) for key, data in bond_data])
         self.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
-        Graph.__init__(self, pairs, range(len(molecule.numbers)))
+        Graph.__init__(self, pairs, labels)
+
+    def subgraph(self, subindices):
+        molecule = Molecule()
+        molecule.numbers = self.molecule.numbers[subindices]
+        molecule.coordinates = self.molecule.coordinates[subindices]
+        return MolecularGraph(molecule, subindices)
 
 
 # molecular criteria
@@ -67,6 +76,7 @@ class Anything(object):
 class MolecularCriterion(object):
     def init_graph(self, graph):
         self.graph = graph
+        graph.init_index()
 
 
 class MolecularOr(object):
@@ -102,9 +112,9 @@ class MolecularAnd(object):
 class HasAtomNumber(MolecularCriterion):
     def __init__(self, number):
         self.number = number
-
+    
     def __call__(self, atom):
-        return self.graph.molecule.numbers[atom] == self.number
+        return self.graph.molecule.numbers[self.graph.index[atom]] == self.number
 
 
 class HasNumNeighbors(MolecularCriterion):
@@ -112,7 +122,7 @@ class HasNumNeighbors(MolecularCriterion):
         self.number = number
 
     def __call__(self, atom):
-        return len(self.graph.neighbors[atom]) == self.number
+        return len(self.graph.neighbors[self.graph.index[atom]]) == self.number
 
 
 class HasNeighborNumbers(MolecularCriterion):
@@ -124,7 +134,7 @@ class HasNeighborNumbers(MolecularCriterion):
         neighbors = self.graph.neighbors[atom]
         if not len(neighbors) == len(self.numbers):
             return
-        neighbors = [self.graph.molecule.numbers[neighbor] for neighbor in neighbors]
+        neighbors = [self.graph.molecule.numbers[self.graph.index[neighbor]] for neighbor in neighbors]
         neighbors.sort()
         return neighbors == self.numbers
 
@@ -166,54 +176,54 @@ class MolecularMixinMatchDefinition(object):
                 c.init_graph(graph)
 
 
-class MolecularMatchDefinition(SubgraphMatchDefinition, MolecularMixinMatchDefinition):
+class MolecularSubgraphMatchDefinition(SubgraphMatchDefinition, MolecularMixinMatchDefinition):
     def init_graph(self, graph):
         MolecularMixinMatchDefinition.init_graph(self, graph)
         SubgraphMatchDefinition.init_graph(self, graph)
 
 
-class MolecularExactDefinition(ExactMatchDefinition, MolecularMixinMatchDefinition):
+class MolecularExactMatchDefinition(ExactMatchDefinition, MolecularMixinMatchDefinition):
     def init_graph(self, graph):
         MolecularMixinMatchDefinition.init_graph(self, graph)
         ExactMatchDefinition.init_graph(self, graph)
 
 
-class BondMatchDefinition(MolecularMatchDefinition):
+class BondMatchDefinition(MolecularSubgraphMatchDefinition):
     def __init__(self, criteria_sets, node_tags={}):
         subgraph = Graph([frozenset([0, 1])], [0, 1])
-        MolecularMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+        MolecularSubgraphMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
 
 
-class BendingAngleMatchDefinition(MolecularMatchDefinition):
+class BendingAngleMatchDefinition(MolecularSubgraphMatchDefinition):
     def __init__(self, criteria_sets, node_tags={}):
         subgraph = Graph([
             frozenset([0, 1]),
             frozenset([1, 2]),
         ], [0, 1, 2])
-        MolecularMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+        MolecularSubgraphMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
 
 
-class DihedralAngleMatchDefinition(MolecularMatchDefinition):
+class DihedralAngleMatchDefinition(MolecularSubgraphMatchDefinition):
     def __init__(self, criteria_sets, node_tags={}):
         subgraph = Graph([
             frozenset([0, 1]),
             frozenset([1, 2]),
             frozenset([2, 3]),
         ], [0, 1, 2, 3])
-        MolecularMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+        MolecularSubgraphMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
 
 
-class OutOfPlaneMatchDefinition(MolecularMatchDefinition):
+class OutOfPlaneMatchDefinition(MolecularSubgraphMatchDefinition):
     def __init__(self, criteria_sets, node_tags={}):
         subgraph = Graph([
             frozenset([0, 1]),
             frozenset([0, 2]),
             frozenset([0, 3]),
         ], [0, 1, 2, 3])
-        MolecularMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+        MolecularSubgraphMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
 
 
-class TetraMatchDefinition(MolecularMatchDefinition):
+class TetraMatchDefinition(MolecularSubgraphMatchDefinition):
     def __init__(self, criteria_sets, node_tags={}):
         subgraph = Graph([
             frozenset([0, 1]),
@@ -221,4 +231,46 @@ class TetraMatchDefinition(MolecularMatchDefinition):
             frozenset([0, 3]),
             frozenset([0, 4]),
         ], [0, 1, 2, 3, 4])
-        MolecularMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+        MolecularSubgraphMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+
+
+
+class FullMatchError(Exception):
+    pass
+
+
+def full_match(graph1, graph2):
+    # given the graphs of two geometries of the same set of molecules, return
+    # the global match between the two numberings
+    mgs1 = [graph1.subgraph(group) for group in graph1.get_nodes_per_independent_graph()]
+    mgs2 = [graph2.subgraph(group) for group in graph2.get_nodes_per_independent_graph()]
+    
+    if len(mgs1) != len(mgs2):
+        return
+    
+    matches = []
+    
+    while len(mgs1) > 0:
+        subgraph1 = mgs1.pop()
+        atom_criteria = dict((index, HasAtomNumber(number)) for index, number in zip(subgraph1.nodes, subgraph1.molecule.numbers))
+        md = MolecularExactMatchDefinition(subgraph1, [CriteriaSet("foo", atom_criteria)])
+        matched = False
+        for subgraph2 in mgs2:
+            if len(subgraph1.nodes) != len(subgraph2.nodes): continue
+            if len(subgraph1.pairs) != len(subgraph2.pairs): continue
+            try:
+                match = MatchGenerator(md)(subgraph2).next()
+                matches.append(match)
+                mgs2.remove(subgraph2)
+                matched = True
+                break
+            except StopIteration:
+                pass
+        if not matched:
+            return
+
+    result = OneToOne()
+    for match in matches:
+        result.add_relations(match.forward.items())
+    return result
+

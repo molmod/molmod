@@ -145,6 +145,10 @@ class Graph(object):
         self.symmetry_cycles = None
         self.symmetries = None
         self.equivalent_nodes = None
+    
+    def subgraph(self, subnodes):
+        tmp = set(subnodes)
+        return Graph([pair for pair in self.pairs if pair.issubset(tmp)], subnodes)
 
     def init_nodes(self):
         if self.nodes is not None: return
