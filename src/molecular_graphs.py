@@ -112,7 +112,7 @@ class MolecularAnd(object):
 class HasAtomNumber(MolecularCriterion):
     def __init__(self, number):
         self.number = number
-    
+
     def __call__(self, atom):
         return self.graph.molecule.numbers[self.graph.index[atom]] == self.number
 
@@ -244,12 +244,12 @@ def full_match(graph1, graph2):
     # the global match between the two numberings
     mgs1 = [graph1.subgraph(group) for group in graph1.get_nodes_per_independent_graph()]
     mgs2 = [graph2.subgraph(group) for group in graph2.get_nodes_per_independent_graph()]
-    
+
     if len(mgs1) != len(mgs2):
         return
-    
+
     matches = []
-    
+
     while len(mgs1) > 0:
         subgraph1 = mgs1.pop()
         atom_criteria = dict((index, HasAtomNumber(number)) for index, number in zip(subgraph1.nodes, subgraph1.molecule.numbers))

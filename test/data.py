@@ -21,7 +21,7 @@
 
 
 from molmod.data import periodic, bonds, BOND_SINGLE
-from molmod.units import from_angstrom, from_unified, from_picometer
+from molmod.units import from_angstrom, from_unified
 
 import unittest
 
@@ -50,9 +50,5 @@ class Data(unittest.TestCase):
 
         self.assertEqual(periodic[1], periodic["H"])
         self.assertEqual(periodic[1], periodic["h"])
-
-    def test_periodic(self):
-        self.assertAlmostEqual(bonds.lengths[BOND_SINGLE][frozenset([1,1])], from_picometer(74), 3)
-
 
 

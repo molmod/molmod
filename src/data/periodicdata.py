@@ -92,7 +92,7 @@ class PeriodicData(object):
                         self.max_radius = atom_info.radius
                 lines_read += 1
         f.close()
-        
+
     def add_atom_info(self, atom_info):
         self.atoms_by_number[atom_info.number] = atom_info
         self.atoms_by_symbol[atom_info.symbol.lower()] = atom_info
