@@ -145,7 +145,7 @@ class Graph(object):
         self.symmetry_cycles = None
         self.symmetries = None
         self.equivalent_nodes = None
-    
+
     def subgraph(self, subnodes):
         tmp = set(subnodes)
         return Graph([pair for pair in self.pairs if pair.issubset(tmp)], subnodes)
@@ -262,20 +262,28 @@ class Graph(object):
 
     def get_nodes_per_independent_graph(self):
         self.init_nodes()
-        self.init_trees_and_shells()
-        nodes = set(self.nodes)
+        self.init_neighbors()
+        candidates = set(self.nodes)
 
         result = []
-        while len(nodes) > 0:
-            pivot = nodes.pop()
-            tmp = []
-            for shell in self.shells[pivot]:
-                tmp.extend(shell)
-            for node in tmp:
-                nodes.discard(node)
+        while len(candidates) > 0:
+            pivot = candidates.pop()
+            previous = set([pivot])
+            group = set([pivot])
+            while len(previous) > 0:
+                new = []
+                for previous_node in previous:
+                    for neighbor in self.neighbors[previous_node]:
+                        if neighbor not in group:
+                            new.append(neighbor)
+                            group.add(neighbor)
+                previous = set(new)
+            candidates -= group
+
             # this sort makes sure that the order of the nodes is respected
-            tmp.sort(key=(lambda node: self.nodes.index(node)))
-            result.append(tmp)
+            group = list(group)
+            group.sort(key=(lambda node: self.nodes.index(node)))
+            result.append(group)
         return result
 
 
@@ -398,15 +406,41 @@ class SubgraphMatchDefinition(MatchDefinition):
         # only returns true for ecaxtly one set of new_relations from all the
         # ones that are symmetrically equivalent
         if self.node_tags is not None: # only do this test when symmetry matters
+            # The first test is related to duplicates that could be generated
+            # when the central node of a subgraph has symmetric equivalents.
+
+            # For example: Assume that A and B are equivalent central nodes in
+            # the subgraph, and A is (arbitrarily) 'the' central node. Assume
+            # that and C and D are two nodes in the subject graph, i.e. the one
+            # we are investigating for patterns that match the subgraph. Also
+            # assume that some matches exists that contain A->C,B->D or
+            # A->D,B->C.
+
+            # For each match that contains A->C,B->D, one can find a completely
+            # equivalent match contains A->D,B->C, since there exists a
+            # permutation in the subgraph that maps A to B.
+
+            # This type of duplicates can be avoided by requiring, that from all
+            # the nodes in the subject graph that are mapped to equivalent
+            # central nodes in the subgraph, that the one that corresponds to
+            # 'the' central node, has the lowest id().
+            mapped_to_central = next_match.forward.get(self.subgraph.central_node)
+            for other_central in self.subgraph.equivalent_nodes[self.subgraph.central_node]:
+                mapped_to_other_central = next_match.forward.get(other_central)
+                if mapped_to_other_central is not None and id(mapped_to_central) > id(mapped_to_other_central):
+                    return False
+
+            # The second test eliminates duplicates that can be constructed by
+            # exchanging new_relations that start from the same node.
             for new_node0, new_node1 in new_relations:
                 for equivalent_node0 in self.subgraph.equivalent_nodes[new_node0]:
-                    # the test only makes sense if the equivalent_node1 in the 
+                    # the test only makes sense if the equivalent_node1 in the
                     # user graph does exist
                     equivalent_node1 = next_match.forward.get(equivalent_node0)
                     if equivalent_node1 is None: continue
                     # the test is only applicable to a pair of new relations
                     # between nodes that have one or more common neighbors. It
-                    # is safe to consider only the common neighbours in the 
+                    # is safe to consider only the common neighbors in the
                     # subgraph
                     common_neighbors = (
                         self.subgraph.neighbors[new_node0] &
@@ -783,8 +817,8 @@ class MatchGenerator(object):
                 return False
             back_neigbors0 = self.match_definition.subgraph_neighbors(neighbor0)
             back_neighbors1 = self.match_definition.graph_neighbors(neighbor1)
-            for back_neigbour0 in back_neigbors0:
-                test1 = input_match.forward.get(back_neigbour0)
+            for back_neighbor0 in back_neigbors0:
+                test1 = input_match.forward.get(back_neighbor0)
                 if test1 is not None and test1 not in back_neighbors1:
                     self.print_debug("no equal back neighbors: %s and %s" % (neighbor0, neighbor1))
                     return False
