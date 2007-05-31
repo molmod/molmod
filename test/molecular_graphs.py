@@ -205,3 +205,7 @@ class MolecularGraphs(unittest.TestCase):
             yield d, c, b, a
 
         self.verify(expected_results, test_results, yield_alternatives)
+
+    def test_randomized_molecule(self):
+        self.load_graph("input/tpa.xyz")
+        self.molecular_graph.randomized_molecule()

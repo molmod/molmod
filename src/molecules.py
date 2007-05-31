@@ -27,7 +27,7 @@ from StringIO import StringIO
 import numpy, math
 
 
-__all__ = ["Molecule"]
+__all__ = ["Molecule", "random_dimer"]
 
 
 class Molecule:
@@ -120,3 +120,31 @@ class Molecule:
             bbox_num[2],
             numpy.array([0, 0, grid_spacing], float)
         )
+
+
+def random_dimer(molecule1, molecule2, dmin=5, dmax=20, max_iter=1000, nonbond_threshold_factor=2.0):
+    from molmod.vectors import random_unit
+    from molmod.data import periodic
+
+    radii1 = numpy.array([periodic[number].radius for number in molecule1.numbers], float)
+    radii2 = numpy.array([periodic[number].radius for number in molecule2.numbers], float)
+
+    def check(c1, c2):
+        for i1, r1 in enumerate(c1):
+            for i2, r2 in enumerate(c2):
+                if numpy.linalg.norm(r1 - r2) < nonbond_threshold_factor*(radii1[i1] + radii2[i2]):
+                    return False
+        return True
+
+    distance = numpy.random.uniform(dmin, dmax)
+    for counter in xrange(max_iter):
+        delta = random_unit(3)*distance
+
+        c1 = molecule1.coordinates
+        c2 = molecule2.coordinates + delta
+
+        if check(c1, c2):
+            result = Molecule()
+            result.numbers = numpy.concatenate((molecule1.numbers, molecule2.numbers))
+            result.coordinates = numpy.concatenate((c1, c2))
+            return result

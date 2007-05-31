@@ -39,6 +39,14 @@ def angle(a, b):
     return math.acos(cosine(a, b))
 
 
+def random_unit(size):
+    while True:
+        result = numpy.random.uniform(-1, 1, size)
+        length = numpy.linalg.norm(result)
+        if length <= 1.0 and length > 1e-3:
+            return result/length
+
+
 normal_fns = [
     lambda a: numpy.array([0.0, -a[2], a[1]]),
     lambda a: numpy.array([a[2], 0.0, -a[0]]),
@@ -51,6 +59,7 @@ def random_orthonormal(normal):
     v = numpy.cross(normal, u)
     angle = random.uniform(0.0, math.pi*2)
     return math.cos(angle)*u + math.sin(angle)*v
+
 
 def trivial_orthonormal(normal):
     u = normal_fns[numpy.argmin(numpy.fabs(normal))](normal)

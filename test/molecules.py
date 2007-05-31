@@ -20,26 +20,17 @@
 # --
 
 
-import init_files
+from molmod.molecules import *
 
-from molmod import context
-context.share_path = "../share/"
+from ccop.xyz import XYZFile
 
 import unittest
 
-from binning import *
-from graphs import *
-from molecules import *
-from molecular_graphs import *
-from internal_coordinates import *
-from lone_pairs import *
-from pairff import *
-from data import *
-from unit_cell import *
-from clusters import *
-from transformations import *
-from environments import *
-from descriptors import *
 
-unittest.main()
+__all__ = ["Molecules"]
 
+
+class Molecules(unittest.TestCase):
+    def test_random_dimer(self):
+        molecule = XYZFile("input/tpa.xyz").get_molecule()
+        random_dimer(molecule, molecule)
