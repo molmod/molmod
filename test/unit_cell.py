@@ -27,10 +27,10 @@ import numpy
 import unittest, math
 
 
-__all__ = ["CellParameters"]
+__all__ = ["UnitCellTestCase"]
 
 
-class CellParameters(unittest.TestCase):
+class UnitCellTestCase(unittest.TestCase):
     def test_set(self):
         #print
         for counter in xrange(100):
@@ -62,4 +62,14 @@ class CellParameters(unittest.TestCase):
             self.assertAlmostEqual(sum((in_lengths - out_lengths)**2), 0.0, 5, "Lengths mismatch.")
             self.assertAlmostEqual(sum((in_angles - out_angles)**2), 0.0, 5, "Angles mismatch: %s and %s" % (in_angles, out_angles))
             self.assert_(det_before * det_after > 0, "Handedness has changed.")
+
+    def test_add_periodicities(self):
+        for counter in xrange(100):
+            #print counter
+            uc = UnitCell()
+            uc.cell = numpy.random.uniform(-1, 1, (3, 3))
+            uc.cell_active[:] = False
+            uc.add_cell_vector(numpy.random.uniform(-2,2,3))
+            uc.add_cell_vector(numpy.random.uniform(-2,2,3))
+            uc.add_cell_vector(numpy.random.uniform(-2,2,3))
 

@@ -34,7 +34,7 @@ __all__ = ["check_cell", "UnitCell"]
 def check_cell(cell, norm_threshold=1e-6, volume_threshold=1e-6):
     cell = cell.copy()
     for col, name in enumerate(["A", "B", "C"]):
-        norm = math.sqrt(numpy.dot(cell[:,col], cell[:,col]))
+        norm = numpy.linalg.norm(cell[:,col])
         if norm < norm_threshold:
             raise ValueError("The length of ridge %s is (nearly) zero." % name)
         cell[:,col] /= norm
@@ -116,7 +116,7 @@ class UnitCell(object):
         active, inactive = self.get_active_inactive()
         if len(active) == 3:
             raise ValueError("The unit cell already has three axes.")
-        norm_vector = math.sqrt(numpy.dot(vector, vector))
+        norm_vector = numpy.linalg.norm(vector)
         if norm_vector < norm_threshold:
             raise ValueError("The norm of the proposed vector must be significantly larger than zero.")
         if len(active) == 0:
@@ -124,14 +124,14 @@ class UnitCell(object):
             self.cell[:,0] = vector
             self.cell_active[0] = True
             # Make sure that the unused vectors are not linearly dependent
-            normal = vector/norm_vector
-            self.cell[:,1] = random_orthonormal(normal)
+            direction = vector/norm_vector
+            self.cell[:,1] = random_orthonormal(direction)
             self.cell[:,2] = numpy.cross(self.cell[:,0], self.cell[:,1])
-            self.cell[:,1] *= length
             # update
             self.update_reciproke()
+            return
         a = self.cell[:,active[0]]
-        norm_a = math.sqrt(numpy.dot(a, a))
+        norm_a = numpy.linalg.norm(a)
         if len(active) == 1:
             if 1 - abs(numpy.dot(a, vector) / (norm_vector * norm_a)) < volume_threshold:
                 raise ValueError("Can not add the vector since it is colinear with the existing unit cell axis.")
@@ -143,8 +143,9 @@ class UnitCell(object):
                 self.cell[:,2] = numpy.cross(self.cell[:,0], self.cell[:,1])
                 # update
                 self.update_reciproke()
+                return
         b = self.cell[:,active[1]]
-        norm_b = math.sqrt(numpy.dot(b, b))
+        norm_b = numpy.linalg.norm(b)
         if len(active) == 2:
             backup = self.cell[:,inactive[0]].copy()
             self.cell[:,inactive[0]] = vector
@@ -157,9 +158,9 @@ class UnitCell(object):
                 return True
 
     def get_parameters(self):
-        length_a = math.sqrt(numpy.dot(self.cell[:,0], self.cell[:,0]))
-        length_b = math.sqrt(numpy.dot(self.cell[:,1], self.cell[:,1]))
-        length_c = math.sqrt(numpy.dot(self.cell[:,2], self.cell[:,2]))
+        length_a = numpy.linalg.norm(self.cell[:,0])
+        length_b = numpy.linalg.norm(self.cell[:,1])
+        length_c = numpy.linalg.norm(self.cell[:,2])
         alpha = math.acos(numpy.dot(self.cell[:,1], self.cell[:,2]) / (length_b * length_c))
         beta = math.acos(numpy.dot(self.cell[:,2], self.cell[:,0]) / (length_c * length_a))
         gamma = math.acos(numpy.dot(self.cell[:,0], self.cell[:,1]) / (length_a * length_b))
@@ -178,7 +179,7 @@ class UnitCell(object):
         new_cell = self.cell.copy()
 
         # use the same direction for the old last axis
-        c_normal = new_cell[:,2] / math.sqrt(numpy.dot(new_cell[:,2], new_cell[:,2]))
+        c_normal = new_cell[:,2] / numpy.linalg.norm(new_cell[:,2])
         new_cell[:,2] = c_normal * lengths[2]
         #print " (((c_normal))) "
         #print c_normal
@@ -186,7 +187,7 @@ class UnitCell(object):
         # the secocond cell vector lies in the half plane defined by the old
         # last and second axis
         b_ortho = new_cell[:,1] - c_normal*numpy.dot(c_normal, new_cell[:,1])
-        b_orthonormal = b_ortho / math.sqrt(numpy.dot(b_ortho, b_ortho))
+        b_orthonormal = b_ortho / numpy.linalg.norm(b_ortho)
         new_cell[:,1] = (c_normal * math.cos(angles[0]) + b_orthonormal * math.sin(angles[0])) * lengths[1]
         #print " (((b_orthonormal))) "
         #print b_orthonormal
