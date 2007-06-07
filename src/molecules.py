@@ -20,7 +20,7 @@
 # --
 
 from molmod.data import periodic
-from molmod.units import from_angstrom, to_angstrom
+from molmod.units import angstrom
 
 from StringIO import StringIO
 
@@ -42,7 +42,7 @@ class Molecule:
         self.title = None
 
     def dump_atoms(self, stream):
-        for number, coordinate in zip(self.numbers, to_angstrom(self.coordinates)):
+        for number, coordinate in zip(self.numbers, self.coordinates/angstrom):
             atom_info = periodic[number]
             if atom_info is None:
                 symbol = "X"

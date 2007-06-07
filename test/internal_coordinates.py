@@ -418,7 +418,7 @@ class Chainrule(unittest.TestCase):
         self.errors = []
 
         for icn, internal_coordinate in enumerate(internal_coordinates):
-            for index in xrange(100):
+            for index in xrange(10):
                 mod1_ethene = mutate_ethene(3, self.ethene)
                 mod2_ethene = mutate_ethene(1e-5, mod1_ethene)
                 self.tangent_test(icn, index, 99, internal_coordinate, mod1_ethene, mod2_ethene)
