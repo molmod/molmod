@@ -35,7 +35,7 @@ class MolecularGraphException(Exception):
 
 
 class MolecularGraph(Graph):
-    def __init__(self, molecule, labels=None):
+    def __init__(self, molecule, labels=None, unit_cell=None):
         self.molecule = molecule
         if labels is None:
             labels = range(len(molecule.numbers))
@@ -48,6 +48,8 @@ class MolecularGraph(Graph):
 
         def compare_function(positioned1, positioned2):
             delta = positioned2.coordinate - positioned1.coordinate
+            if unit_cell is not None:
+                delta = unit_cell.shortest_vector(delta)
             distance = numpy.sqrt(numpy.dot(delta, delta))
             if distance < binned_atoms.gridsize:
                 bond_order = bonds.bonded(self.molecule.numbers[positioned1.id], self.molecule.numbers[positioned2.id], distance)
@@ -57,7 +59,7 @@ class MolecularGraph(Graph):
         bond_data = list(
             (frozenset([labels[positioned.id] for positioned in key]), data)
             for key, data
-            in IntraAnalyseNeighboringObjects(binned_atoms, compare_function)()
+            in IntraAnalyseNeighboringObjects(binned_atoms, compare_function)(unit_cell)
         )
         pairs = set(key for key, data in bond_data)
         self.bond_orders = dict([(key, data[0]) for key, data in bond_data])
@@ -332,6 +334,7 @@ def full_match(graph1, graph2):
     mgs2 = [graph2.subgraph(group) for group in graph2.get_nodes_per_independent_graph()]
 
     if len(mgs1) != len(mgs2):
+        #print "not same number of molecules"
         return
 
     matches = []
@@ -342,18 +345,27 @@ def full_match(graph1, graph2):
         md = MolecularExactMatchDefinition(subgraph1, [CriteriaSet("foo", atom_criteria)])
         matched = False
         for subgraph2 in mgs2:
-            if len(subgraph1.nodes) != len(subgraph2.nodes): continue
-            if len(subgraph1.pairs) != len(subgraph2.pairs): continue
+            if len(subgraph1.nodes) != len(subgraph2.nodes):
+                #print "size differ", len(subgraph1.nodes), len(subgraph2.nodes)
+                continue
+            if len(subgraph1.pairs) != len(subgraph2.pairs):
+                #print "bonds differ", len(subgraph1.pairs), len(subgraph2.pairs)
+                continue
             try:
                 match = MatchGenerator(md)(subgraph2).next()
                 matches.append(match)
                 mgs2.remove(subgraph2)
                 matched = True
+                #print "match"
                 break
             except StopIteration:
                 pass
+            #print "not match"
+            subgraph1.molecule.write_to_file("test1.xyz")
+            subgraph2.molecule.write_to_file("test2.xyz")
         if not matched:
             return
+
 
     result = OneToOne()
     for match in matches:
