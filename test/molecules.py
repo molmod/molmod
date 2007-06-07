@@ -27,10 +27,10 @@ from ccop.xyz import XYZFile
 import unittest
 
 
-__all__ = ["Molecules"]
+__all__ = ["MoleculeTestCase"]
 
 
-class Molecules(unittest.TestCase):
+class MoleculeTestCase(unittest.TestCase):
     def test_random_dimer(self):
         molecule = XYZFile("input/tpa.xyz").get_molecule()
         random_dimer(molecule, molecule)

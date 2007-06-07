@@ -23,7 +23,7 @@ import molmod.pairff
 
 import unittest, numpy, math
 
-__all__ = ["PairFFExample", "CoulombFFExample"]
+__all__ = ["PairFFTestCase", "CoulombFFTestCase"]
 
 
 class Debug1FF(molmod.pairff.PairFF):
@@ -70,7 +70,7 @@ class Debug4FF(molmod.pairff.PairFF):
         yield 2, numpy.array([[2, 0, 0], [0, 0, 0], [0, 0, 0]], float)
 
 
-class PairFFExample(unittest.TestCase):
+class PairFFTestCase(unittest.TestCase):
     def make_coulombff(self, do_charges, do_dipoles, do_excludes):
         coordinates = numpy.array([
             [ 0.5, 2.5, 0.1],
@@ -348,7 +348,7 @@ class PairFFExample(unittest.TestCase):
         self.assertAlmostEqual(error, 0.0, 3, "2b) The off-diagonal blocks of the analytical hessian are incorrect: % 12.8f / %12.8f" % (error, reference))
 
 
-class CoulombFFExample(unittest.TestCase):
+class CoulombFFTestCase(unittest.TestCase):
     def test_cc1(self):
         coordinates = numpy.array([
             [ 0.0,  0.0,  0.0],

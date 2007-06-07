@@ -27,10 +27,10 @@ from ccop.xyz import XYZFile
 
 import unittest, copy
 
-__all__ = ["MolecularGraphs"]
+__all__ = ["MolecularGraphTestCase"]
 
 
-class MolecularGraphs(unittest.TestCase):
+class MolecularGraphTestCase(unittest.TestCase):
     def load_graph(self, filename):
         self.molecule = XYZFile(filename).get_molecule()
         self.molecular_graph = MolecularGraph(self.molecule)

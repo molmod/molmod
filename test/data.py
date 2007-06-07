@@ -20,19 +20,19 @@
 # --
 
 
+import unittest
+
 from molmod.data import periodic, bonds, BOND_SINGLE
 from molmod.units import from_angstrom, from_unified
 
-import unittest
 
-__all__ = ["Data"]
+__all__ = ["DataTestCase"]
 
 
-class Data(unittest.TestCase):
-    # assert that the most important fields have been loaded
-    # and that the conversions are done correctly
-
+class DataTestCase(unittest.TestCase):
     def test_periodic(self):
+        # assert that the most important fields have been loaded
+        # and that the conversions are done correctly
         self.assertEqual(periodic[1].name, "Hydrogen")
         self.assertEqual(periodic[1].symbol, "H")
         self.assertEqual(periodic[1].number, 1)
@@ -49,5 +49,4 @@ class Data(unittest.TestCase):
 
         self.assertEqual(periodic[1], periodic["H"])
         self.assertEqual(periodic[1], periodic["h"])
-
 

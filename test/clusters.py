@@ -27,11 +27,11 @@ import numpy
 import unittest, random
 
 
-__all__ = ["ClusterExample"]
+__all__ = ["ClusterTestCase"]
 
 
-class ClusterExample(unittest.TestCase):
-    def test_clusters(self):
+class ClusterTestCase(unittest.TestCase):
+    def test_blind(self):
         cf = ClusterFactory()
         for counter in xrange(1000):
             a = random.randint(0, 100)

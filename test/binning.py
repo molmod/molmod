@@ -31,10 +31,11 @@ from ccop.xyz import XYZFile
 import math, numpy
 import unittest
 
-__all__ = ["Distances"]
+
+__all__ = ["BinningTestCase"]
 
 
-class Distances(unittest.TestCase):
+class BinningTestCase(unittest.TestCase):
     gridsize = periodic.max_radius*2
 
     def load_binned_atoms(self, filename):

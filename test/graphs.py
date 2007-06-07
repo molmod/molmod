@@ -26,10 +26,10 @@ from molmod.graphs import OneToOne, Graph, MatchGenerator, EgoMatchDefinition,\
 import unittest, copy
 
 
-__all__ = ["ExampleGraphs"]
+__all__ = ["GraphsTestCase"]
 
 
-class ExampleGraphs(unittest.TestCase):
+class GraphsTestCase(unittest.TestCase):
     def setUp(self):
         self.graphs = [
             (

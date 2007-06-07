@@ -31,10 +31,10 @@ import numpy
 import unittest, math, random
 
 
-__all__ = ["Descriptors"]
+__all__ = ["DescriptorTestCase"]
 
 
-class Descriptors(unittest.TestCase):
+class DescriptorTestCase(unittest.TestCase):
     def load_molecule(self, filename):
         m = XYZFile("input/"+filename).get_molecule()
         return m.coordinates, numpy.array([

@@ -19,6 +19,7 @@
 #
 # --
 
+
 from molmod.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
 from molmod.molecular_graphs import MolecularGraph, atom_criteria
 from molmod.graphs import CriteriaSet
@@ -29,10 +30,11 @@ from ccop.xyz import XYZFile
 
 import unittest, math, copy, numpy, sys
 
-__all__ = ["InternalCoordinatesTPA", "Chainrule"]
+
+__all__ = ["InternalCoordinatesTestCase", "ChainruleTestCase"]
 
 
-class InternalCoordinatesTPA(unittest.TestCase):
+class InternalCoordinatesTestCase(unittest.TestCase):
     def setUp(self):
         self.molecule = XYZFile("input/tpa_optimized.xyz").get_molecule()
         graph = MolecularGraph(self.molecule)
@@ -120,7 +122,7 @@ class InternalCoordinatesTPA(unittest.TestCase):
 
 
 
-class Chainrule(unittest.TestCase):
+class ChainruleTestCase(unittest.TestCase):
     def setUp(self):
         self.ethene = XYZFile("input/ethene.xyz").get_molecule()
         graph = MolecularGraph(self.ethene)

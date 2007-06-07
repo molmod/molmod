@@ -28,11 +28,11 @@ from ccop.xyz import XYZFile
 import unittest, random
 
 
-__all__ = ["EnvironmentsExample"]
+__all__ = ["EnvironmentTestCase"]
 
 
-class EnvironmentsExample(unittest.TestCase):
-    def test_environments(self):
+class EnvironmentTestCase(unittest.TestCase):
+    def test_blind(self):
         m = XYZFile("input/precursor.xyz").get_molecule()
         def yield_positioned_objects():
             for row, coordinate in enumerate(m.coordinates):
