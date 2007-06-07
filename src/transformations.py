@@ -21,7 +21,6 @@
 
 
 
-from OpenGL.GL import *
 import numpy
 
 import math
@@ -51,6 +50,7 @@ class Base(object):
 
     def gl_from_matrix(self, GL_MATRIX):
         # transpose because opengl=column-major and numpy=row-major
+	from OpenGL.GL import glGetFloatv
         self.from_matrix(numpy.array(glGetFloatv(GL_MATRIX), float).transpose())
 
     def invert(self):
