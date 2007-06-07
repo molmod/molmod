@@ -21,7 +21,7 @@
 
 
 from molmod.graphs import OneToOne, Graph, MatchGenerator, EgoMatchDefinition,\
-    RingMatchDefinition
+    RingMatchDefinition, SubgraphMatchDefinition
 
 import unittest, copy
 
@@ -181,7 +181,7 @@ class GraphsTestCase(unittest.TestCase):
         ]
         self.todo = [
             (
-                "cyclopentane",
+                "pentagon",
                 Graph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 0)]),
                 []
             ), (
@@ -224,6 +224,10 @@ class GraphsTestCase(unittest.TestCase):
                 "cube",
                 Graph([(0, 1), (0, 2), (0, 3), (1, 4), (1, 6), (2, 4), (2, 5), (3, 5), (3, 6), (4, 7), (5, 7), (6, 7)]),
                 []
+            ), (
+                "pentane",
+                Graph([(0, 1), (1, 2), (2, 3), (3, 4), (4, 0), (0, 5), (0, 6), (1, 7), (1, 8), (2, 9), (2, 10), (3, 11), (3, 12), (4, 13), (4, 14), (5, 15), (5, 16)]),
+                []
             )
         ]
 
@@ -250,8 +254,7 @@ class GraphsTestCase(unittest.TestCase):
             self.assert_(len(unexpected) == 0, message())
             self.assert_(len(unsatisfied) == 0, message())
 
-
-    def do_match_generator_test(self, match_definition, verbose=False, debug=False):
+    def do_match_generator_test(self, match_definition, verbose=False, debug=False, callback=None):
         if verbose: print
         match_generator = MatchGenerator(
             match_definition,
@@ -261,15 +264,26 @@ class GraphsTestCase(unittest.TestCase):
             if verbose: print
             if verbose: print
             if verbose: print "GRAPH %s" % name
+            matches = []
             for match in match_generator(graph):
-                pass
+                matches.append(match)
                 if verbose: print "_ _ _ _ _", match, "_ _ _ _ _"
+            if callback is not None:
+                callback(name, graph, matches)
 
     def test_ego_match_definition(self):
-        self.do_match_generator_test(EgoMatchDefinition())
+        def callback(name, graph, matches):
+            self.assert_(len(matches) > 0, "Expected at least one match (graph=%s), got %i." % (name, len(matches)))
+    
+        self.do_match_generator_test(EgoMatchDefinition(), callback=callback)
 
     def test_ring_match_definition(self):
         self.do_match_generator_test(RingMatchDefinition(10))
+
+    def test_subgraph_match_definition(self):
+        for name, graph, foo in self.graphs + self.todo:
+            match_generator = MatchGenerator(SubgraphMatchDefinition(graph))
+            match_generator(graph).next()
 
     def test_symmetries(self):
         g = Graph(set([frozenset([28, 14]), frozenset([4, 28]), frozenset([20, 38]), frozenset([3, 31]), frozenset([32, 10]), frozenset([27, 38]), frozenset([37, 22]), frozenset([17, 31]), frozenset([4, 31]), frozenset([24, 39]), frozenset([1, 29]), frozenset([32, 22]), frozenset([33, 23]), frozenset([26, 36]), frozenset([33, 15]), frozenset([2, 38]), frozenset([18, 36]), frozenset([33, 42]), frozenset([2, 30]), frozenset([33, 12]), frozenset([8, 35]), frozenset([29, 5]), frozenset([11, 30]), frozenset([32, 14]), frozenset([24, 34]), frozenset([1, 37]), frozenset([25, 35]), frozenset([34, 43]), frozenset([29, 15]), frozenset([13, 31]), frozenset([32, 40]), frozenset([26, 39]), frozenset([16, 30]), frozenset([16, 34]), frozenset([41, 35]), frozenset([0, 36]), frozenset([5, 30]), frozenset([3, 39]), frozenset([27, 37]), frozenset([36, 23]), frozenset([17, 35]), frozenset([34, 6]), frozenset([28, 7]), frozenset([21, 39]), frozenset([0, 28]), frozenset([9, 29]), frozenset([19, 37]), frozenset([25, 38])]))
