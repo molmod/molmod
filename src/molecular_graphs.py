@@ -352,7 +352,7 @@ def full_match(graph1, graph2):
                 #print "bonds differ", len(subgraph1.pairs), len(subgraph2.pairs)
                 continue
             try:
-                match = MatchGenerator(md)(subgraph2).next()
+                match = MatchGenerator(md,debug=False)(subgraph2).next()
                 matches.append(match)
                 mgs2.remove(subgraph2)
                 matched = True
@@ -361,8 +361,6 @@ def full_match(graph1, graph2):
             except StopIteration:
                 pass
             #print "not match"
-            subgraph1.molecule.write_to_file("test1.xyz")
-            subgraph2.molecule.write_to_file("test2.xyz")
         if not matched:
             return
 

@@ -274,7 +274,7 @@ class GraphsTestCase(unittest.TestCase):
     def test_ego_match_definition(self):
         def callback(name, graph, matches):
             self.assert_(len(matches) > 0, "Expected at least one match (graph=%s), got %i." % (name, len(matches)))
-    
+
         self.do_match_generator_test(EgoMatchDefinition(), callback=callback)
 
     def test_ring_match_definition(self):

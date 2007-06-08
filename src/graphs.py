@@ -384,6 +384,8 @@ class SubgraphMatchDefinition(MatchDefinition):
         self.subgraph.init_central_node()
         if self.node_tags is not None:
             self.subgraph.init_symmetries()
+            graph.init_index()
+            self.subgraph.init_index()
         MatchDefinition.init_graph(self, graph)
 
     def init_matches(self):
@@ -406,6 +408,7 @@ class SubgraphMatchDefinition(MatchDefinition):
         # only returns true for ecaxtly one set of new_relations from all the
         # ones that are symmetrically equivalent
         if self.node_tags is not None: # only do this test when symmetry matters
+
             # The first test is related to duplicates that could be generated
             # when the central node of a subgraph has symmetric equivalents.
 
@@ -427,17 +430,26 @@ class SubgraphMatchDefinition(MatchDefinition):
             mapped_to_central = next_match.forward.get(self.subgraph.central_node)
             for other_central in self.subgraph.equivalent_nodes[self.subgraph.central_node]:
                 mapped_to_other_central = next_match.forward.get(other_central)
-                if mapped_to_other_central is not None and id(mapped_to_central) > id(mapped_to_other_central):
+                if mapped_to_other_central is not None and \
+                   self.graph.index[mapped_to_central] > self.graph.index[mapped_to_other_central]:
+                    #print "check_symmetry failed due to central_node"
                     return False
 
             # The second test eliminates duplicates that can be constructed by
             # exchanging new_relations that start from the same node.
             for new_node0, new_node1 in new_relations:
+                #print "="*50
+                #print "checking relation", new_node0, "->", new_node1
                 for equivalent_node0 in self.subgraph.equivalent_nodes[new_node0]:
+                    #print "-"*50
+                    #print "equivalent to", new_node0, ":::::", equivalent_node0
                     # the test only makes sense if the equivalent_node1 in the
                     # user graph does exist
                     equivalent_node1 = next_match.forward.get(equivalent_node0)
-                    if equivalent_node1 is None: continue
+                    if equivalent_node1 is None:
+                        #print "noop"
+                        continue
+                    #print "equivalent to", new_node1, ":::::", equivalent_node1
                     # the test is only applicable to a pair of new relations
                     # between nodes that have one or more common neighbors. It
                     # is safe to consider only the common neighbors in the
@@ -446,16 +458,20 @@ class SubgraphMatchDefinition(MatchDefinition):
                         self.subgraph.neighbors[new_node0] &
                         self.subgraph.neighbors[equivalent_node0]
                     )
+                    #print "common neighbours", common_neighbors
                     if len(common_neighbors) == 0: continue
                     # at least one of these common neighbors must exist in the
                     # previous iteration level
+                    #print "common neighbours in previous iterations", common_neighbors.intersection(current_match.forward)
                     if len(common_neighbors.intersection(current_match.forward)) == 0: continue
                     # for these nodes we test whether the order is respected by
                     # next_match. if not, reject these new relations since it
                     # will only result in a final match that is the symmetric
                     # equivalent does fullfill this condition.
-                    if (cmp(id(new_node1), id(equivalent_node1)) * cmp(id(new_node0), id(equivalent_node0)) < 0):
-                         return False
+                    if (cmp(self.subgraph.index[new_node0], self.subgraph.index[equivalent_node0]) *
+                        cmp(self.graph.index[new_node1], self.graph.index[equivalent_node1]) < 0):
+                        #print "check_symmetry failed due to relation_exchange"
+                        return False
         return True
 
     def complete(self, match):

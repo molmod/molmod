@@ -43,7 +43,7 @@ class MolecularGraphTestCase(unittest.TestCase):
             unexpected = []
             for test_item in test:
                 item_correct = False
-                for alternative in yield_alternatives(test_item):
+                for alternative in yield_alternatives(test_item, key):
                     if (alternative in unsatisfied):
                         correct.append(test_item)
                         unsatisfied.remove(alternative)
@@ -80,10 +80,10 @@ class MolecularGraphTestCase(unittest.TestCase):
         for match in match_generator(self.molecular_graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
-        def yield_alternatives(test_item):
+        def yield_alternatives(test_item, key):
             yield test_item
             a, b = test_item
-            if self.molecule.numbers[a] == self.molecule.numbers[b]:
+            if self.molecule.numbers[a] == self.molecule.numbers[b] or key=="long":
                 yield b, a
 
         self.verify(expected_results, test_results, yield_alternatives)
@@ -111,7 +111,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         for match in match_generator(self.molecular_graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
-        def yield_alternatives(test_item):
+        def yield_alternatives(test_item, key):
             yield test_item
             a, b, c = test_item
             if self.molecule.numbers[a] == self.molecule.numbers[c]:
@@ -136,7 +136,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         for match in match_generator(self.molecular_graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
-        def yield_alternatives(test_item):
+        def yield_alternatives(test_item, key):
             yield test_item
             a, b, c, d = test_item
             if (self.molecule.numbers[a] == self.molecule.numbers[d]) and (self.molecule.numbers[b] == self.molecule.numbers[c]):
@@ -161,7 +161,7 @@ class MolecularGraphTestCase(unittest.TestCase):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
 
-        def yield_alternatives(test_item):
+        def yield_alternatives(test_item, key):
             a, b, c, d, e = test_item
             yield test_item
             yield a, c, b, e, d
@@ -199,7 +199,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         for match in match_generator(self.molecular_graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
-        def yield_alternatives(test_item):
+        def yield_alternatives(test_item, key):
             yield test_item
             a, b, c, d = test_item
             yield d, c, b, a
@@ -209,3 +209,9 @@ class MolecularGraphTestCase(unittest.TestCase):
     def test_randomized_molecule(self):
         self.load_graph("input/tpa.xyz")
         self.molecular_graph.randomized_molecule()
+
+    def test_full_match_on_self(self):
+        self.load_graph("input/cyclopentane.xyz")
+        g1 = copy.deepcopy(self.molecular_graph)
+        g2 = copy.deepcopy(self.molecular_graph)
+        self.assert_(full_match(g1, g2) is not None)
