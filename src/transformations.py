@@ -129,9 +129,11 @@ class Translation(Base):
         return temp
 
     def gl_apply(self):
+        from OpenGL.GL import glTranslate
         glTranslate(self.t[0], self.t[1], self.t[2])
 
     def gl_apply_inverse(self):
+        from OpenGL.GL import glTranslate
         glTranslate(-self.t[0], -self.t[1], -self.t[2])
 
     def invert(self):
@@ -207,11 +209,13 @@ class Rotation(Base):
         return temp
 
     def gl_apply(self):
+        from OpenGL.GL import glMultMatrixf
         temp = numpy.identity(4, float)
         temp[0:3, 0:3] = self.r.transpose()
         glMultMatrixf(temp)
 
     def gl_apply_inverse(self):
+        from OpenGL.GL import glMultMatrixf
         temp = numpy.identity(4, float)
         temp[0:3, 0:3] = self.r
         glMultMatrixf(temp)
