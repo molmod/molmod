@@ -341,9 +341,11 @@ class Complete(Translation, Rotation):
         return temp
 
     def gl_apply(self):
+        from OpenGL.GL import glMultMatrixf
         glMultMatrixf(self.get_matrix().transpose())
 
     def gl_apply_inverse(self):
+        from OpenGL.GL import glMultMatrixf
         glMultMatrixf(self.get_inverse_matrix().transpose())
 
     def invert(self):
