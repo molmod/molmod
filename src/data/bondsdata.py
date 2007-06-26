@@ -20,7 +20,7 @@
 # --
 
 
-from molmod.units import unit
+import molmod.units as units
 
 import string, numpy
 
@@ -79,8 +79,15 @@ class BondData(object):
         where a, b, ... stand for different sources.
         """
 
+
+
         def read_units(unit_names):
-            return [unit[unit_name] for unit_name in unit_names]
+            tmp = {
+                "A": units.angstrom,
+                "pm": units.pm,
+                "nm": units.nanometer,
+            }
+            return [tmp[unit_name] for unit_name in unit_names]
 
         def read_length(BOND_TYPE, words, col):
             nlow = int(words[2])

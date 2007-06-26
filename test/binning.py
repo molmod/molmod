@@ -23,7 +23,7 @@
 from molmod.binning import InterAnalyseNeighboringObjects, \
     IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
 from molmod.unit_cell import UnitCell
-from molmod.units import from_angstrom, from_degree
+from molmod.units import angstrom, degree
 from molmod.data import periodic
 
 from ccop.xyz import XYZFile
@@ -115,8 +115,8 @@ class BinningTestCase(unittest.TestCase):
         molecule, binned_atoms = self.load_binned_atoms("lau.xyz")
         unit_cell = UnitCell()
         unit_cell.set_parameters(
-            from_angstrom(numpy.array([14.59, 12.88, 7.61])),
-            from_degree(numpy.array([90.0, 111.0, 90.0]))
+            numpy.array([14.59, 12.88, 7.61])*angstrom,
+            numpy.array([ 90.0, 111.0, 90.0])*degree,
         )
 
         distances = dict(
@@ -142,8 +142,8 @@ class BinningTestCase(unittest.TestCase):
         molecule2, binned_atoms2 = self.load_binned_atoms("lau.xyz")
         unit_cell = UnitCell()
         unit_cell.set_parameters(
-            from_angstrom(numpy.array([14.59, 12.88, 7.61])),
-            from_degree(numpy.array([90.0, 111.0, 90.0]))
+            numpy.array([14.59, 12.88, 7.61])*angstrom,
+            numpy.array([ 90.0, 111.0, 90.0])*degree,
         )
 
         distances = dict(

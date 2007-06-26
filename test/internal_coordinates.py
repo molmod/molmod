@@ -24,7 +24,7 @@ from molmod.internal_coordinates import InternalCoordinatesCache, Select, Delta,
 from molmod.molecular_graphs import MolecularGraph, atom_criteria
 from molmod.graphs import CriteriaSet
 from molmod.data import BOND_SINGLE
-from molmod.units import from_angstrom
+from molmod.units import angstrom
 
 from ccop.xyz import XYZFile
 
@@ -71,7 +71,7 @@ class InternalCoordinatesTestCase(unittest.TestCase):
         self.ic_cache.add_bond_lengths([CriteriaSet("All bonds")])
         expected_results = self.load_expected_results(
             "input/tpa_stretch.csv",
-            from_angstrom
+            (lambda x: x*angstrom),
         )
 
         def yield_alternatives(test_item):

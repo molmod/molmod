@@ -23,7 +23,7 @@
 import unittest
 
 from molmod.data import periodic, bonds, BOND_SINGLE
-from molmod.units import from_angstrom, from_unified
+from molmod.units import angstrom, unified
 
 
 __all__ = ["DataTestCase"]
@@ -38,9 +38,9 @@ class DataTestCase(unittest.TestCase):
         self.assertEqual(periodic[1].number, 1)
         self.assertEqual(periodic[1].row, 1)
         self.assertEqual(periodic[1].col, 1)
-        self.assertAlmostEqual(periodic[1].mass, from_unified(1.00794), 3)
-        self.assertAlmostEqual(periodic[1].density, 0.763, 3)
-        self.assertAlmostEqual(periodic[1].bond_radius, from_angstrom(0.3), 3)
+        self.assertAlmostEqual(periodic[1].mass, 1.00794*unified, 3)
+        self.assertAlmostEqual(periodic[1].density, 0.12411, 3)
+        self.assertAlmostEqual(periodic[1].bond_radius, 0.3*angstrom, 3)
         self.assertAlmostEqual(periodic[1].vdw_radius, 0.43, 3)
         self.assertEqual(periodic[1].artificial, False)
         self.assertAlmostEqual(periodic[1].red, 0.9, 3)

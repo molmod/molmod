@@ -19,7 +19,8 @@
 #
 # --
 
-from molmod.units import from_unit
+
+import molmod.units as units
 
 import string, numpy, copy
 
@@ -51,6 +52,14 @@ class PeriodicData(object):
 
         convertors = []
         names = []
+
+        from_unit = {
+            "u": (lambda s: float(s)*units.unified),
+            "g/cm**3": (lambda s: float(s)*(1e-3*units.g)/(units.cm**3)),
+            "a.u.": (lambda s: float(s)),
+            "A": (lambda s: float(s)*units.angstrom),
+        }
+
 
         def append_convertor(word):
             if word == "str":

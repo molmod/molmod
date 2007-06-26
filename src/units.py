@@ -20,185 +20,91 @@
 #
 # --
 #
-# Source of the conversion values: The NIST Reference on Constants, Units,
-# and Uncertainty (http://physics.nist.gov/cuu/Constants/)
-# Except for calorie: 1 calorie = 4.184 Joules
+# References for the conversion values:
+#    * B. J. Mohr and B. N. Taylor,
+#      CODATA recommended values of the fundamental physical
+#      constants: 1998, Rev. Mod. Phys. 72(2), 351 (2000)
+#    * The NIST Reference on Constants, Units, and Uncertainty
+#      (http://physics.nist.gov/cuu/Constants/)
+#    * 1 calorie = 4.184 Joules
 #
-#
-# Naming conventions in this module:
-#    * to_unit is a function that converts a value in internal units to a
-#      value in external units
-#    * unit is the value of one external unit in internal units
-#    * from_unit is a function that does the inverse of to_unit
-#  The internal units are the atomic units. External units can be anything else.
+# Naming conventions in this module: unit is the value of one external unit
+# in internal - i.e. atomic - units. e.g. If you want to have a distance of
+# five angstrom in internal units: 5*angstrom. If you want to convert a length
+# of 5 internal units to angstrom: 5/angstrom. It is recommended to perform
+# this kind of conversions, only when data is read from the input and data is
+# written to the output.
 
 
-measures = ["Length", "Energy", "Mass", "Charge", "Angle", "Time", "Dipole"]
-assert len(measures) == len(set(measures)), "Some measures have the same name."
-
-units = [
-    "au", "A", "nm", "kJ/mol", "kcal/mol", "eV", "u",
-    "rad", "deg", "ns", "ps", "fs", "D"
-]
-assert len(units) == len(set(units)), "Some units have the same name."
+from constants import avogadro
 
 
-units_by_measure = {
-    "Length": ["au", "A", "nm"],
-    "Energy": ["au", "kJ/mol", "kcal/mol", "eV"],
-    "Mass": ["au", "u"],
-    "Charge": ["au"],
-    "Angle": ["rad", "deg"],
-    "Time": ["au", "ns", "ps", "fs"],
-    "Dipole": ["au", "D"],
-}
-assert len(measures) == len(units_by_measure), "Some measures don't have units."
-assert len(units) == len(set(sum((u for u in units_by_measure.itervalues()), [])))
+# *** Charge
+
+C = 1/1.602176462e-19
+# for compatibility with previous verions
+coulomb = C
+
+# Mol
+
+mol = avogadro
+
+# *** Mass
+
+kg = 1/9.10938188e-31
+
+g = 1e-3*kg
+mg = 1e-3*g
+u = 1e-3*kg/mol
+# for compatibility with previous verions
+unified = u
+
+# *** Length
+
+m = 1/0.5291772083e-10
+
+cm = 1e-2*m
+mm = 1e-3*m
+um = 1e-6*m
+nm = 1e-9*m
+A = 1e-10*m
+pm = 1e-12*m
+# for compatibility with previous verions
+meter = m
+angstrom = A
+nanometer = nm
 
 
-# some sanity checks:
+# *** Energy
 
+J = 1/4.35974381e-18
 
-# Length
+cal = 4.184*J
+kJmol = 1e3*J/mol
+kcalmol = 1e3*cal/mol
+eV = (1.0/C)*J
+# for compatibility with previous verions
+kjmol = kJmol
+joule = J
+calorie = cal
+ev = eV
 
-angstrom = 1.8897261249
-nanometer = 18.897261249
-meter = 1.8897261249e10
-
-def to_angstrom(x): return x * 0.5291772108
-def to_nanometer(x): return x * 0.05291772108
-def to_meter(x): return x * 0.5291772108e-10
-
-def from_angstrom(x): return x * 1.8897261249
-def from_nanometer(x): return x * 18.897261249
-def from_meter(x): return x * 1.8897261249e10
-
-
-# Energy
-
-joule = 2.2937125689189235e17
-calorie = 9.596893388356777e17
-kjmol = 0.00038087988615327677
-kcalmol = 0.0015859838459422444
-ev = 0.036749324444879071
-
-def to_joule(x): return x * 4.35974417e-18
-def to_calorie(x): return x * 1.0420038647227532e-18
-def to_kjmol(x): return x * 2625.4996295540054
-def to_kcalmol(x): return x * 630.52344609846432
-def to_ev(x): return x * 27.211384565719481
-
-def from_joule(x): return x * 2.2937125689189235e17
-def from_calorie(x): return x * 9.596893388356777e17
-def from_kjmol(x): return x * 0.00038087988615327677
-def from_kcalmol(x): return x * 0.0015859838459422444
-def from_ev(x): return x * 0.036749324444879071
-
-
-# Mass
-
-unified = 1822.8884798405547
-kg = 1.0977692384992151e30
-
-def to_unified(x): return x * 0.0005485799109814269
-def to_kg(x): return x * 9.1093826e-31
-
-def from_unified(x): return x * 1822.8884798405547
-def from_kg(x): return x * 1.0977692384992151e30
-
-# Charge
-
-coulomb = 6.2415094796077179e18
-
-def to_coulomb(x): return x * 1.60217653e-19
-
-def from_coulomb(x): return x * 6.2415094796077179e18
-
-# Angles
+# *** Angles
 
 degree = 0.017453292519943295
 
-def to_degree(x): return x * 57.295779513082323
+# *** Time
 
-def from_degree(x): return x * 0.017453292519943295
+s = 1/2.418884326500e-17
 
-# Time
+ns = 1e-9*s
+fs = 1e-12*s
+ps = 1e-15*s
+# for compatibility with previous verions
+second = s
+nanosecond = ns
+picosecond = ps
+femtosecond = fs
 
-second = 41341373336561368.0
-nanosecond = 41341373.336561368
-picosecond = 41341.373336561368
-femtosecond = 41.341373336561368
 
-def to_second(x): return x * 2.418884326505e-17
-def to_nanosecond(x): return x * 2.418884326505e-8
-def to_picosecond(x): return x * 2.418884326505e-5
-def to_femtosecond(x): return x * 2.418884326505e-2
-
-def from_second(x): return x * 41341373336561368.0
-def from_nanosecond(x): return x * 41341373.336561368
-def from_picosecond(x): return x * 41341.373336561368
-def from_femtosecond(x): return x * 41.341373336561368
-
-# "Dipole"
-
-debye = 0.39343018283144093 # = 3.33564e-30*coulomb*meter
-
-def to_debye(x): return x * 2.541747033242832
-
-def from_debye(x): return x * 0.39343018283144093
-
-# In a dictionary
-
-def unity(x): return x
-
-unit = {
-    "au": 1,
-    "A": angstrom,
-    "nm": nanometer,
-    "kJ/mol": kjmol,
-    "kcal/mol": kcalmol,
-    "eV": ev,
-    "u": unified,
-    "rad": 1,
-    "deg": degree,
-    "ns": nanosecond,
-    "ps": picosecond,
-    "fs": femtosecond,
-    "D": debye,
-}
-assert len(units) == len(unit), "Some units don't have a conversion."
-
-to_unit = {
-    "au": unity,
-    "A": to_angstrom,
-    "nm": to_nanometer,
-    "kJ/mol": to_kjmol,
-    "kcal/mol": to_kcalmol,
-    "eV": to_ev,
-    "u": to_unified,
-    "rad": unity,
-    "deg": to_degree,
-    "ns": to_nanosecond,
-    "ps": to_picosecond,
-    "fs": to_femtosecond,
-    "D": to_debye,
-}
-assert len(units) == len(to_unit), "Some units don't have a to_ function."
-
-from_unit = {
-    "au": unity,
-    "A": from_angstrom,
-    "nm": from_nanometer,
-    "kJ/mol": from_kjmol,
-    "kcal/mol": from_kcalmol,
-    "eV": from_ev,
-    "u": from_unified,
-    "rad": unity,
-    "deg": from_degree,
-    "ns": from_nanosecond,
-    "ps": from_picosecond,
-    "fs": from_femtosecond,
-    "D": from_debye,
-}
-assert len(units) == len(from_unit), "Some units don't have a from_ function."
 
