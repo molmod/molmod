@@ -28,6 +28,10 @@ import numpy
 __all__ = ["Environment", "calculate_environments"]
 
 
+class Error(Exception):
+    pass
+
+
 class Environment(object):
     def __init__(self, positioned):
         self.__dict__.update(positioned.__dict__)
@@ -36,6 +40,9 @@ class Environment(object):
 
 
 def calculate_environments(sparse_binned_objects, radius, unit_cell=None):
+    if radius >= sparse_binned_objects.gridsize:
+        raise Error("The grid size of the bins is too small.")
+
     # this is a function that will extract the environment of each object
     def delta_distance(positioned1, positioned2):
         delta = positioned2.coordinate - positioned1.coordinate
@@ -70,9 +77,10 @@ def calculate_environments(sparse_binned_objects, radius, unit_cell=None):
     # point to other objects within the range of radius. Now we will
     # calculate some aditional information
     for environment in environments.itervalues():
-        n = len(environment.deltas)
+        environment.n = len(environment.deltas)
         environment.deltas = numpy.array(environment.deltas)
         environment.distances = numpy.array(environment.distances)
+        environment.neighbors = numpy.array(environment.neighbors)
         environment.directions = (environment.deltas.transpose() / (environment.distances + (environment.distances == 0.0))).transpose()
 
     return environments

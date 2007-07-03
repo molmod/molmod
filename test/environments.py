@@ -37,7 +37,7 @@ class EnvironmentTestCase(unittest.TestCase):
         def yield_positioned_objects():
             for row, coordinate in enumerate(m.coordinates):
                 yield PositionedObject(row, coordinate)
-        sbo = SparseBinnedObjects(yield_positioned_objects(), 7)
+        sbo = SparseBinnedObjects(yield_positioned_objects(), 7.1)
         environments = calculate_environments(sbo, 7)
         #print environments
         #for id, environment in environments.iteritems():
