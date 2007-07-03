@@ -268,6 +268,8 @@ class Graph(object):
                 self.equivalent_nodes[node] = (node,)
 
     def get_distance(self, node_a, node_b):
+        self.init_distances()
+        self.init_index()
         return self.distances[self.index[node_a], self.index[node_b]]
 
     def yield_shortest_paths(self, node_a, node_b):
