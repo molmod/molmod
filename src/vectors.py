@@ -25,7 +25,11 @@ import numpy
 import math, random
 
 
-__all__= ["cosine", "angle", "random_orthonormal", "trivial_orthonormal", "triangle_normal"]
+__all__= [
+    "cosine", "angle", "random_orthonormal", "trivial_orthonormal",
+    "triangle_normal", "random_normal",
+]
+
 
 
 def cosine(a, b):
@@ -75,4 +79,12 @@ def triangle_normal(a, b, c):
     else:
         normal /= norm
         return normal
+
+
+def random_normal():
+    while True:
+        result = numpy.random.uniform(-1,1,3)
+        norm = numpy.linalg.norm(result)
+        if norm < 1 and norm > 1e-4:
+            return result / norm
 
