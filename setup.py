@@ -22,7 +22,15 @@
 
 if __name__ == "__main__":
     import glob
-    from distutils.core import setup
+    from numpy.distutils.core import setup
+    from numpy.distutils.misc_util import Configuration
+    config = Configuration(
+        package_name="molmod",
+        parent_name="",
+        top_path=""
+    )
+    config.add_extension('helpers', sources=['src/helpers.f90'])
+    setup(**config.todict())
 
 
     version = '0.1.2'
@@ -52,5 +60,4 @@ if __name__ == "__main__":
             'Topic :: Science/Engineering :: Molecular Science'
         ],
     )
-
 
