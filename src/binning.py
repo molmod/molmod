@@ -73,9 +73,8 @@ class SparseBinnedObjects(object):
         Initialize a BinnedObjects instance.
 
         Arguments:
-        yield_positioned_objects -- A generator that iterates over all
-                                    PositionedObject instances that have to be
-                                    binned.
+        positioned_objects -- An iterator over the PositionedObject instances
+                              that have to be binned.
         gridsize -- Defines the size of the bins.
         """
         self.gridsize = gridsize
