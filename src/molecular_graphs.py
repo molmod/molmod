@@ -66,11 +66,12 @@ class MolecularGraph(Graph):
         self.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
         Graph.__init__(self, pairs, labels)
 
-    def subgraph(self, subindices):
+    def subgraph(self, subnodes=None, subindices=None):
+        subnodes, subindices = self._complete_args(subnodes, subindices)
         molecule = Molecule()
         molecule.numbers = self.molecule.numbers[subindices]
         molecule.coordinates = self.molecule.coordinates[subindices]
-        return MolecularGraph(molecule, subindices)
+        return MolecularGraph(molecule, subnodes)
 
     def half_molecule(self, atom1, atom2):
         atom1_new = set(self.neighbors[atom1])

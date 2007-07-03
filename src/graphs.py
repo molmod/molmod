@@ -117,6 +117,10 @@ class OneToOne(object):
         return result
 
 
+class GraphError(Exception):
+    pass
+
+
 class Graph(object):
     """
     A Graph object contains two typical pythonic (not oriented) graph
@@ -146,7 +150,21 @@ class Graph(object):
         self.symmetries = None
         self.equivalent_nodes = None
 
-    def subgraph(self, subnodes):
+    def _complete_args(self, subnodes=None, subindices=None):
+        if subnodes is None:
+            if subindices is None:
+                raise GraphError("One must pass subnodes or subindices to subgraph.")
+            else:
+                subnodes = [self.nodes[subindex] for subindex in subindices]
+        else:
+            if subindices is None:
+                subindices = numpy.array([self.index[n] for n in subnodes])
+            else:
+                raise GraphError("One must pass subnodes or subindices to subgraph.")
+        return subnodes, subindices
+
+    def subgraph(self, subnodes=None, subindices=None):
+        subnodes, subindices = self._complete_args(subnodes, subindices)
         tmp = set(subnodes)
         return Graph([pair for pair in self.pairs if pair.issubset(tmp)], subnodes)
 
