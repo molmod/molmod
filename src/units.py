@@ -98,8 +98,8 @@ degree = 0.017453292519943295
 s = 1/2.418884326500e-17
 
 ns = 1e-9*s
-fs = 1e-12*s
-ps = 1e-15*s
+fs = 1e-15*s
+ps = 1e-12*s
 # for compatibility with previous verions
 second = s
 nanosecond = ns
