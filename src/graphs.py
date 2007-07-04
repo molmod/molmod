@@ -306,6 +306,27 @@ class Graph(object):
             result.append(group)
         return result
 
+    def get_half(self, node1, node2):
+        self.init_neighbors()
+        node1_new = set(self.neighbors[node1])
+        if node2 not in node1_new:
+            raise GraphError("Node1 and node2 must be connected.")
+        node1_new.discard(node2)
+        node1_part = set([node1])
+
+        while len(node1_new) > 0:
+            pivot = node1_new.pop()
+            if pivot == node2:
+                raise GraphError("The graph can not be separated in two halfs by disconnecting node1 and node2.")
+            pivot_neighbors = set(self.neighbors[pivot])
+            pivot_neighbors -= node1_part
+            pivot_neighbors.discard(node1)
+            node1_new |= pivot_neighbors
+            node1_part.add(pivot)
+
+        return node1_part
+
+
 
 class Match(OneToOne):
     def __init__(self, init_relations):

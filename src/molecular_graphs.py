@@ -21,17 +21,13 @@
 
 
 from molmod.molecules import Molecule
-from molmod.graphs import Graph, SubgraphMatchDefinition, ExactMatchDefinition, Match, OneToOne, MatchGenerator, CriteriaSet
+from molmod.graphs import Graph, GraphError, SubgraphMatchDefinition, ExactMatchDefinition, Match, OneToOne, MatchGenerator, CriteriaSet
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
 from molmod.data import bonds, periodic
 from molmod.transformations import rotation_around_center
 from molmod.vectors import random_orthonormal
 
 import numpy, copy
-
-
-class MolecularGraphException(Exception):
-    pass
 
 
 class MolecularGraph(Graph):
@@ -73,25 +69,6 @@ class MolecularGraph(Graph):
         molecule.coordinates = self.molecule.coordinates[subindices]
         return MolecularGraph(molecule, subnodes)
 
-    def half_molecule(self, atom1, atom2):
-        atom1_new = set(self.neighbors[atom1])
-        if atom2 not in atom1_new:
-            raise MolecularGraphException("A bond must connect atom1 and atom2.")
-        atom1_new.discard(atom2)
-        atom1_part = set([atom1])
-
-        while len(atom1_new) > 0:
-            pivot = atom1_new.pop()
-            if pivot == atom2:
-                raise MolecularGraphException("The bond between atom1 and atom2 does not separate the two halfs. (There are other bonds that connect the two halfs.)")
-            pivot_neighbors = set(self.neighbors[pivot])
-            pivot_neighbors -= atom1_part
-            pivot_neighbors.discard(atom1)
-            atom1_new |= pivot_neighbors
-            atom1_part.add(pivot)
-
-        return atom1_part
-
     def randomized_molecule(self, max_tries=1000, bond_fraction=0.2, dihedral_rotation=numpy.pi, bending_rotation=0.14, nonbond_threshold_factor=2.0):
         self.init_distances()
         radii = numpy.array([periodic[number].radius for number in self.molecule.numbers], float)
@@ -111,8 +88,8 @@ class MolecularGraph(Graph):
             for atom1, atom2 in self.pairs:
                 delta = result.coordinates[atom1] - result.coordinates[atom2]
                 try:
-                    half_atoms = self.half_molecule(atom1, atom2)
-                except MolecularGraphException:
+                    half_atoms = self.get_half(atom1, atom2)
+                except GraphError:
                     continue
                 if half_atoms is not None:
                     # Random bond stretch
