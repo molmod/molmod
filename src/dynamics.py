@@ -147,11 +147,14 @@ class VerletIntegrator(TrajectoryMaker):
         except KeyboardInterrupt:
             print "The iteration has been interupted."
 
-    def initialize_kinetic_energy(self, initial_state, kinetic_energy):
+    def initialize_kinetic_energy(self, initial_state, kinetic_energy, exact=False):
         initial_velocities = numpy.random.normal(0.0, 1.0, self.dof)*numpy.sqrt(2*kinetic_energy/self.masses)
+        if exact:
+            factor = numpy.sqrt(kinetic_energy*self.dof/(0.5*(self.masses*initial_velocities**2).sum()))
+            initial_velocities *= factor
         self.initialize_state(initial_state, initial_velocities)
 
-    def initialize_temperature(self, initial_state, temperature):
+    def initialize_temperature(self, initial_state, temperature, exact=False):
         self.initialize_kinetic_energy(initial_state, temperature*boltzman)
 
 
