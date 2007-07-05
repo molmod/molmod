@@ -155,7 +155,7 @@ class VerletIntegrator(TrajectoryMaker):
         self.initialize_state(initial_state, initial_velocities)
 
     def initialize_temperature(self, initial_state, temperature, exact=False):
-        self.initialize_kinetic_energy(initial_state, temperature*boltzman)
+        self.initialize_kinetic_energy(initial_state, temperature*boltzman, exact)
 
 
 class ConjugateGradientOptimizer(TrajectoryMaker):
