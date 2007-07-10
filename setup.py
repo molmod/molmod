@@ -33,24 +33,21 @@ if __name__ == "__main__":
     setup(**config.todict())
 
 
-    version = '0.1.2'
-
     from distutils.core import setup
     setup(name='MolMod',
-        version=version,
+        version='0.1.3',
         description='MolMod is a collection of molecular modelling tools for python.',
         author='Toon Verstraelen',
         author_email='Toon.Verstraelen@UGent.be',
         url='http://molmod.ugent.be/projects/molmod',
         package_dir = {'molmod': 'src'},
         data_files=[
-            ('share/molmod/%s' % version, glob.glob('share/*.csv')),
+            ('share/molmod', glob.glob('share/*.csv')),
         ],
         packages=[
             'molmod',
             'molmod.data',
         ],
-        scripts=['scripts/mrandomize'],
         classifiers=[
             'Development Status :: 3 - Alpha',
             'Environment :: Console',
