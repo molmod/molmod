@@ -36,10 +36,10 @@
 # written to the output.
 
 
-from constants import avogadro
+from constants import avogadro, lightspeed
 
 
-# *** Charge
+# *** Charge ***
 
 C = 1/1.602176462e-19
 # for compatibility with previous verions
@@ -49,7 +49,7 @@ coulomb = C
 
 mol = avogadro
 
-# *** Mass
+# *** Mass ***
 
 kg = 1/9.10938188e-31
 
@@ -59,7 +59,7 @@ u = 1e-3*kg/mol
 # for compatibility with previous verions
 unified = u
 
-# *** Length
+# *** Length ***
 
 m = 1/0.5291772083e-10
 
@@ -75,7 +75,7 @@ angstrom = A
 nanometer = nm
 
 
-# *** Energy
+# *** Energy ***
 
 J = 1/4.35974381e-18
 
@@ -89,11 +89,11 @@ joule = J
 calorie = cal
 ev = eV
 
-# *** Angles
+# *** Angles ***
 
 degree = 0.017453292519943295
 
-# *** Time
+# *** Time ***
 
 s = 1/2.418884326500e-17
 
@@ -106,5 +106,13 @@ nanosecond = ns
 picosecond = ps
 femtosecond = fs
 
+# *** Frequency ***
+
+invcm = lightspeed/(0.01*meter)
+
+# *** Temperature ***
+
+K = 1
+kelvin = K
 
 

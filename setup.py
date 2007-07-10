@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
 
     version = '0.1.2'
-    
+
     from distutils.core import setup
     setup(name='MolMod',
         version=version,
