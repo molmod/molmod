@@ -26,7 +26,7 @@ from molmod.unit_cell import UnitCell
 from molmod.units import angstrom, degree
 from molmod.data import periodic
 
-from ccop.xyz import XYZFile
+from ccio.xyz import XYZFile
 
 import math, numpy
 import unittest

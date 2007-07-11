@@ -26,7 +26,7 @@ from molmod.graphs import CriteriaSet
 from molmod.data import BOND_SINGLE
 from molmod.units import angstrom
 
-from ccop.xyz import XYZFile
+from ccio.xyz import XYZFile
 
 import unittest, math, copy, numpy, sys
 

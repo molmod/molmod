@@ -21,7 +21,7 @@
 
 
 from molmod.flexff import *
-from ccop.xyz import XYZFile
+from ccio.xyz import XYZFile
 from molmod.molecular_graphs import MolecularGraph, HasAtomNumber, MolecularAnd, HasNeighborNumbers
 from molmod.molecules import Molecule
 from molmod.unit_cell import UnitCell

@@ -22,7 +22,7 @@
 
 from molmod.molecules import *
 
-from ccop.xyz import XYZFile
+from ccio.xyz import XYZFile
 
 import unittest
 

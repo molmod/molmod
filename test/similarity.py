@@ -24,7 +24,7 @@ from molmod.molecular_graphs import MolecularGraph
 from molmod.units import angstrom
 from molmod.similarity import *
 
-from ccop.xyz import XYZFile
+from ccio.xyz import XYZFile
 
 import unittest, numpy
 

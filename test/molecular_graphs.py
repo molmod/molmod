@@ -23,7 +23,7 @@ from molmod.molecular_graphs import *
 from molmod.graphs import MatchGenerator, CriteriaSet
 from molmod.data import BOND_SINGLE
 
-from ccop.xyz import XYZFile
+from ccio.xyz import XYZFile
 
 import unittest, copy
 

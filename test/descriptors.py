@@ -24,7 +24,7 @@ from molmod.data import periodic
 from molmod.descriptors import MolecularDescriptorTV1, sph_harmonics
 from molmod.transformations import Complete
 
-from ccop.xyz import XYZFile
+from ccio.xyz import XYZFile
 
 import numpy
 

@@ -23,7 +23,7 @@
 from molmod.binning import PositionedObject, SparseBinnedObjects
 from molmod.environments import calculate_environments
 
-from ccop.xyz import XYZFile
+from ccio.xyz import XYZFile
 
 import unittest, random
 
