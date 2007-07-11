@@ -3,13 +3,13 @@ Section: science
 Priority: extra
 Maintainer: Toon Verstraelen <Toon.Verstraelen@UGent.be>
 Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5), python (>= 2.4),
- python-support (>= 0.3), python-all-dev, python-numpy (>= 1.0.1)
+ python-support (>= 0.5.3), python-all-dev (>= 2.3.5-11), python-numpy (>= 1.0.1)
 Standards-Version: 3.7.2
 
-Package: molmod
+Package: python-molmod
 Architecture: any
-Depends: ${python:Depends}, ${shlibs:Depends}, python-numpy (>= 1.0.1),
- python-scipy
+Python-Depends: python-numpy (>= 1.0.1), python-scipy
+Depends: ${python:Depends}, ${shlibs:Depends}
 Provides: ${python:Provides}
 Description: A collection of molecular modelling tools for python.
  This package mainly focusses on preparing and analyzing molecular structures
