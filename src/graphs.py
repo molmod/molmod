@@ -347,10 +347,11 @@ class MatchDefinitionError(Exception):
 class MatchDefinition(object):
     MatchClass = Match
 
-    def init_graph(self, graph):
+    def init_graph(self, graph, one_match):
         "Checks initialy whether it makes sense to match the graph."
         self.graph = graph
         self.graph.init_neighbors()
+        self.one_match = one_match
 
     def init_matches(self):
         "Yields the initial matches to start with."
@@ -419,15 +420,15 @@ class SubgraphMatchDefinition(MatchDefinition):
             self.node_tags = node_tags
         MatchDefinition.__init__(self)
 
-    def init_graph(self, graph):
+    def init_graph(self, graph, one_match):
         self.subgraph.init_neighbors()
         self.subgraph.init_distances()
         self.subgraph.init_central_node()
-        if self.node_tags is not None:
+        if self.node_tags is not None and not one_match:
             self.subgraph.init_symmetries()
             graph.init_index()
             self.subgraph.init_index()
-        MatchDefinition.init_graph(self, graph)
+        MatchDefinition.init_graph(self, graph, one_match)
 
     def init_matches(self):
         node0 = self.subgraph.central_node
@@ -448,7 +449,8 @@ class SubgraphMatchDefinition(MatchDefinition):
     def check_symmetry(self, new_relations, current_match, next_match):
         # only returns true for ecaxtly one set of new_relations from all the
         # ones that are symmetrically equivalent
-        if self.node_tags is not None: # only do this test when symmetry matters
+        if self.node_tags is not None and not self.one_match:
+            # only do this test when symmetry matters
 
             # The first test is related to duplicates that could be generated
             # when the central node of a subgraph has symmetric equivalents.
@@ -519,7 +521,7 @@ class SubgraphMatchDefinition(MatchDefinition):
         return len(match) == len(self.subgraph.nodes)
 
     def yield_final_matches(self, graph_match):
-        if self.node_tags is None:
+        if self.node_tags is None or self.one_match:
             yield graph_match
         else:
             for criteria_set in self.criteria_sets:
@@ -556,7 +558,7 @@ class ExactMatch(Match):
 class ExactMatchDefinition(SubgraphMatchDefinition):
     MatchClass = ExactMatch
 
-    def init_graph(self, graph):
+    def init_graph(self, graph, one_match):
         graph.init_index()
         self.subgraph.init_index()
         if len(self.subgraph.nodes) != len(graph.nodes):
@@ -565,7 +567,7 @@ class ExactMatchDefinition(SubgraphMatchDefinition):
             raise MatchDefinitionError("It does not make sense to find an exact match between two graphs if the number of relations is different")
         graph.init_trees_and_shells()
         self.subgraph.init_trees_and_shells()
-        SubgraphMatchDefinition.init_graph(self, graph)
+        SubgraphMatchDefinition.init_graph(self, graph, one_match)
 
     def new_pools(self, partial_match):
         # for an exact match, the matching nodes come from matching shells.
@@ -646,9 +648,9 @@ class EgoMatchDefinition(ExactMatchDefinition):
     def __init__(self):
         ExactMatchDefinition.__init__(self, None)
 
-    def init_graph(self, graph):
+    def init_graph(self, graph, one_match):
         self.subgraph = graph
-        ExactMatchDefinition.init_graph(self, graph)
+        ExactMatchDefinition.init_graph(self, graph, one_match)
 
 
 class RingMatchError(Exception):
@@ -776,10 +778,10 @@ class RingMatchDefinition(MatchDefinition):
     def __init__(self, max_size):
         self.max_size = max_size
 
-    def init_graph(self, graph):
+    def init_graph(self, graph, one_match):
         graph.init_trees_and_shells()
         graph.init_distances()
-        MatchDefinition.init_graph(self, graph)
+        MatchDefinition.init_graph(self, graph, one_match)
 
     def init_matches(self):
         node0 = 0
@@ -844,13 +846,22 @@ class MatchGenerator(object):
         self.match_definition = match_definition
         self.debug = debug
 
-    def __call__(self, graph):
-        self.match_definition.init_graph(graph)
+    def __call__(self, graph, one_match=False):
+        """Yields all match of self.match_definition in the given graph.
+
+        Arguments:
+            graph  --  The graph in which the matches according to
+                       self.matchdefinition have to be found.
+            one_match --  If True, only one match will be returned. This
+                          allows certain optimizations.
+        """
+        self.match_definition.init_graph(graph, one_match)
         for init_match in self.match_definition.init_matches():
             for match in self.yield_matches(init_match):
                 for final_match in self.match_definition.yield_final_matches(match):
                     self.print_debug("final_match: %s" % final_match)
                     yield final_match
+                    if one_match: return
 
     def print_debug(self, text, indent=0):
         if self.debug:

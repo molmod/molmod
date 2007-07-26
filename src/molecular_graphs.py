@@ -243,15 +243,15 @@ class MolecularMixinMatchDefinition(object):
 
 
 class MolecularSubgraphMatchDefinition(SubgraphMatchDefinition, MolecularMixinMatchDefinition):
-    def init_graph(self, graph):
+    def init_graph(self, graph, one_match):
         MolecularMixinMatchDefinition.init_graph(self, graph)
-        SubgraphMatchDefinition.init_graph(self, graph)
+        SubgraphMatchDefinition.init_graph(self, graph, one_match)
 
 
 class MolecularExactMatchDefinition(ExactMatchDefinition, MolecularMixinMatchDefinition):
-    def init_graph(self, graph):
+    def init_graph(self, graph, one_match):
         MolecularMixinMatchDefinition.init_graph(self, graph)
-        ExactMatchDefinition.init_graph(self, graph)
+        ExactMatchDefinition.init_graph(self, graph, one_match)
 
 
 class BondMatchDefinition(MolecularSubgraphMatchDefinition):
@@ -330,7 +330,7 @@ def full_match(graph1, graph2):
                 #print "bonds differ", len(subgraph1.pairs), len(subgraph2.pairs)
                 continue
             try:
-                match = MatchGenerator(md,debug=False)(subgraph2).next()
+                match = MatchGenerator(md,debug=False)(subgraph2,one_match=True).next()
                 matches.append(match)
                 mgs2.remove(subgraph2)
                 matched = True
