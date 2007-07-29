@@ -152,7 +152,7 @@ class BondData(object):
                         deviation = new_deviation
         return result
 
-    def get_length(self, n1, n2, bond_type):
+    def get_length(self, n1, n2, bond_type=BOND_SINGLE):
         """
         Return the length of a bond between n1 and n2 of type bond_type.
 
