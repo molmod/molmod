@@ -41,6 +41,7 @@ from transformations import *
 from environments import *
 from descriptors import *
 from similarity import *
+from tunneling import *
 
 unittest.main()
 
