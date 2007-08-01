@@ -86,8 +86,8 @@ class TunnelingTestCase(unittest.TestCase):
         for Ef, Er, fs, cs in zip(forward, reverse, frequencies, eckart_corrections):
             for f, c in zip(fs, cs):
                 our = eckart(T, nu=f, Ef=Ef, Er=Er)[0]
-                #self.assert_(abs(our-c)/c < 0.09)
-                if not (("%.1e" % our)==("%.1e" % c)):
-                    print "%.1e" % our, "%.1e" % c
+                self.assert_(abs(our-c)/c < 0.09)
+                #if not (("%.1e" % our)==("%.1e" % c)):
+                #    print "%.1e" % our, "%.1e" % c
 
 
