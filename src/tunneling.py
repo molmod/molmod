@@ -24,10 +24,10 @@ A set of tools to calculate tunneling corrections.
 This is an example script (or input file as you may want to call it), that
 shows how the tunneling module works:
 
->>> from molmod.units import kcalmol, kjmol, invcm, unified
+>>> from molmod.units import kcalmol, kjmol, invcm
 >>> from molmod.tunneling import *
 >>>
->>> factor, error = eckart(T=400, Ef=30.33*kjmol, Er=69.13*kjmol, nu=845.9*invcm, mu=1.0854*unified)
+>>> factor, error = eckart(T=400, Ef=30.33*kjmol, Er=69.13*kjmol, nu=845.9*invcm)
 >>> print factor, error
 1.51895388399 8.63859902856e-07
 >>> print eckart(T=400, Ef=30.33*kjmol, Er=69.13*kjmol, nu=845.9*invcm)
@@ -37,7 +37,7 @@ shows how the tunneling module works:
 >>>
 >>> import numpy
 >>> temperatures = numpy.arange(25, 1101, 250)
->>> print_batch("1-2(H)", temperatures, eckart, Ef=30.33*kjmol, Er=69.13*kjmol, nu=845.9*invcm, mu=1.0854*unified)
+>>> print_batch("1-2(H)", temperatures, eckart, Ef=30.33*kjmol, Er=69.13*kjmol, nu=845.9*invcm)
    label    T[K]   eckart-correction       error
     1-2(H)    25    6.594304538e+50    7.494871739e+42
     1-2(H)   275    2.506815637e+00    6.945792866e-06
@@ -72,7 +72,7 @@ __all__ = ["eckart", "wigner", "print_batch"]
 
 h = 2*numpy.pi
 
-def eckart(T, Ef, Er, nu, mu=None):
+def eckart(T, Ef, Er, nu):
     """Computes the Eckart correction factor for the given parameters.
 
     Arguments
@@ -80,22 +80,19 @@ def eckart(T, Ef, Er, nu, mu=None):
         Ef  --  the forward energy barrier
         Er  --  the reverse energy barrier
         nu  --  the imaginary frequency (as a real number)
-        mu  --  the reduced mass associated with the reaction coordinate
-                (defaults to the mass of a proton, i.e. 1.0854*unified)
 
     Returns: factor, error
         factor  --  the Eckart correction factor
         error  -- the error on the correction factor
     """
 
-    if mu is None: mu = 1.0854*unified
-    l =  (Ef**(-0.5) + Er**(-0.5))**(-1)*numpy.sqrt( 2/ mu / nu**2)
+    l = (Ef**(-0.5) + Er**(-0.5))**(-1)*numpy.sqrt(2) / nu
 
     def alpha(E):
-        return numpy.sqrt(2*mu*l**2*E/h**2)
+        return numpy.sqrt(2*l**2*E/h**2)
 
     def beta(E):
-        return numpy.sqrt(2*mu*l**2*(E -(Ef-Er))/h**2)
+        return numpy.sqrt(2*l**2*(E -(Ef-Er))/h**2)
 
     def delta(E):
         return numpy.sqrt(4*Ef*Er/(h*nu)**2-0.25)
@@ -116,10 +113,11 @@ def eckart(T, Ef, Er, nu, mu=None):
     energies = numpy.arange(emin, emax, 1*kjmol)
     integranda = numpy.array([integrandum(energy) for energy in energies])
     if max(integranda) * 1e-5 < max([integranda[0], integranda[-1]]):
-        print "check", integranda[0] / max(integranda), integranda[-1] / max(integranda)
+        print "Integrandum is not negligible at borders.", integranda[0] / max(integranda), integranda[-1] / max(integranda)
 
     integral, error = quad(integrandum, emin, emax)
-    return integral/(boltzman*T), error/(boltzman*T)
+    factor = 1.0/(boltzman*T)
+    return integral*factor, error*factor
 eckart.label = "eckart"
 
 
