@@ -72,24 +72,25 @@ def quaternion_from_rotation_matrix(rotation_matrix):
         c2 = 0.0
     c = math.sqrt(c2)
     r2 = 0.5*(1 + factor*numpy.diagonal(rotation_matrix)) - c2
+    #print "check", r2.sum()+c2
     r = numpy.zeros(3, float)
-    for index, r_comp in enumerate(r2):
-        if r_comp < 0:
+    for index, r2_comp in enumerate(r2):
+        if r2_comp < 0:
             continue
         else:
             row, col = off_diagonals[index]
             if (rotation_matrix[row, col] + rotation_matrix[col, row] < 0):
-                r[index] = -r_comp
+                r[index] = -numpy.sqrt(r2_comp)
             else:
-                r[index] = +r_comp
+                r[index] = +numpy.sqrt(r2_comp)
     return factor, numpy.array([c, r[0], r[1], r[2]], float)
 
 
 def quaternion_to_rotation_matrix(quaternion):
     c, x, y, z = quaternion
-    return 2*numpy.array(
-        [[0.5 - y*y - z*z, x*y - c*z,       x*z + c*y      ],
-         [x*y + c*z      , 0.5 - x*x - z*z, y*z - c*x      ],
-         [x*z - c*y      , y*z + c*x      , 0.5 - x*x - y*y]],
+    return numpy.array(
+        [[c*c + x*x - y*y - z*z, 2*x*y - 2*c*z,         2*x*z + 2*c*y        ],
+         [2*x*y + 2*c*z,         c*c - x*x + y*y - z*z, 2*y*z - 2*c*x        ],
+         [2*x*z - 2*c*y,         2*y*z + 2*c*x,         c*c - x*x - y*y + z*z]],
         float)
 
