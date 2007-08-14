@@ -122,7 +122,7 @@ eckart.label = "eckart"
 
 
 def wigner(T, nu):
-    """Returns the Wigner tunneling corrections.
+    """Returns the Wigner tunneling correction.
 
     Arguments
         T  --  The temperature
