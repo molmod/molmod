@@ -1,44 +1,78 @@
-Pychem 0.1.2 Readme
+MolMod 0.001 README
+===================
 
-LICENSE
+Contents of this README File:
+ * Short description
+ * How to install
+ * How to get technical support
+ * Become a registered user
+
+
+Short description
+-----------------
+
+MolMod is a python package that is used by Zeobuilder. Zeobuilder is a GUI
+toolkit for the interactive construction of complex molecular models. MolMod
+groups a series of modules that are usefull for analyzing molecular modeling
+simulations, and for setting op complex input files. MolMod can also be used as
+a library for batch work.
+
+More information about MolMod can be found on the Zeobuilder website:
+http://molmod.UGent.be/zeobuilder
+
+
+License
 -------
 
-MolMod is distributed under the GNU GPL license.
-For details read the file COPYING.
+MolMod is distributed as open source software under the conditions of the GPL
+license version 3. Read the file COPYING for more details, or visit
+http://www.gnu.org/licenses/
 
-DOCUMENTATION and SUPPORT
--------------------------
 
-If you have problems with using or installing MolMod, consult
-the online documentation and support at http://molmod.UGent.be/code/molmod/
+How to install
+--------------
 
-Most of the source code is self-documented. For example the documentation
-about molmod.moldata can be read using the python interpreter with the following
-two commands:
->>> import molmod.data
->>> help(molmod.data)
+There are several ways to install MolMod, which are all documented
+at the homepage: http://molmod.UGent.be/zeobuilder
 
-INSTALLING
-----------
+To perform a standard installation from source, use the following
+command:
 
-MolMod depends on:
-    - python 2.4
-    - Numeric
-    
-To install Pychem on your system, run this command:
-$ python setup.py install
+python setup.py install
 
-AUTHORS
--------
+For more information on the installation script, see:
+http://docs.python.org/dist/dist.html
 
-* Main author
 
-  Toon Verstraelen
-  Centre for Molecular Modeling
-  Ghent University
-  Proeftuinstraat 86
-  9000 Gent
-  Belgium
-  Tel: 09/264.65.56
-  E-mail: Toon.Verstraelen@UGent.be
+How to get technical support
+----------------------------
+
+Technical support is availlable for all registered Zeobuilder users. All
+information can be found at: http://molmod.UGent.be/zeobuilder
+
+
+Become a registered user
+------------------------
+
+There are 5 good reasons to become a registered user:
+
+ 1.  Through your registration, we can prove that people are really using
+ Zeobuilder and the related packages for their scientific work. This facilitates
+ the fund-raising process and guarantees the continuity of this project.
+
+ 2. It blocks spammers from unauthorized access to all online Zeobuilder
+ services.
+ 
+ 3. A registered user can subscribe to the Zeobuilder mailing lists.
+ 
+ 4. A registered user is allowed to edit the wiki pages to increase the
+ visibility of his/her Zeobuilder-related work.
+ 
+ 5. Registered users are allowed to submit bugs. If time permits, we will fix
+ your problems in the next bug-fix release of Zeobuilder.
+
+
+If you think this software is useful, consider to register as a Zeobuilder user:
+http://molmod.UGent.be/zeobuilder/registration/
+
 
