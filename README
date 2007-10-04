@@ -3,9 +3,11 @@ MolMod 0.001 README
 
 Contents of this README File:
  * Short description
+ * Software dependencies
  * How to install
  * How to get technical support
  * Become a registered user
+ * Author
 
 
 Short description
@@ -15,10 +17,10 @@ MolMod is a python package that is used by Zeobuilder. Zeobuilder is a GUI
 toolkit for the interactive construction of complex molecular models. MolMod
 groups a series of modules that are usefull for analyzing molecular modeling
 simulations, and for setting op complex input files. MolMod can also be used as
-a library for batch work.
+a library for batch work, independent of Zeobuilder.
 
 More information about MolMod can be found on the Zeobuilder website:
-http://molmod.UGent.be/zeobuilder
+https://molmod.UGent.be/zeobuilder
 
 
 License
@@ -29,26 +31,28 @@ license version 3. Read the file COPYING for more details, or visit
 http://www.gnu.org/licenses/
 
 
+Software dependencies
+---------------------
+
+The following software has to be installed on your system before you can use
+MolMod:
+ 1) Python (>=2.4, <3.0): see http://www.python.org/
+ 2) Numpy (>=1.0.1): see http://www.scipy.org/
+ 3) Scipy (>=0.5.2): see http://www.scipy.org/
+
+
 How to install
 --------------
 
 There are several ways to install MolMod, which are all documented
-at the homepage: http://molmod.UGent.be/zeobuilder
-
-To perform a standard installation from source, use the following
-command:
-
-python setup.py install
-
-For more information on the installation script, see:
-http://docs.python.org/dist/dist.html
+at the homepage: https://molmod.UGent.be/zeobuilder
 
 
 How to get technical support
 ----------------------------
 
 Technical support is availlable for all registered Zeobuilder users. All
-information can be found at: http://molmod.UGent.be/zeobuilder
+information can be found at: https://molmod.UGent.be/zeobuilder
 
 
 Become a registered user
@@ -73,6 +77,16 @@ There are 5 good reasons to become a registered user:
 
 
 If you think this software is useful, consider to register as a Zeobuilder user:
-http://molmod.UGent.be/zeobuilder/registration/
+https://molmod.UGent.be/zeobuilder/registration/
 
+
+Author
+------
+
+Toon Verstraelen <Toon.Verstraelen@UGent.be>
+Center for Molecular Modeling
+Ghent University
+Proeftuinstraat 86
+9000 Gent, Belgium
+Tel: +32 (0)9 264 65 56
 

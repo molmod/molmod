@@ -10,10 +10,6 @@ rm -vr python-build-stamp-*
 rm -vr test/output
 rm -v test/molmod
 
-rm -vr extensions/build
-rm -v extensions/*.so
-rm -v extensions/*.c
-
 rm -v MANIFEST
 rm -vr dist
 rm -vr build

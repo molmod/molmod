@@ -9,8 +9,8 @@ Standards-Version: 3.7.2
 
 Package: python-molmod
 Architecture: any
-Python-Depends: python-numpy (>= 1.0.1), python-scipy
-Depends: ${python:Depends}, ${shlibs:Depends}
+Depends: ${python:Depends}, ${shlibs:Depends}, python-numpy (>= 1.0.1), 
+ python-scipy (>= 0.5.2)
 Provides: ${python:Provides}
 Description: A collection of molecular modelling tools for python.
  This package mainly focusses on preparing and analyzing molecular structures
