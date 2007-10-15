@@ -30,33 +30,46 @@ import numpy, copy
 
 
 class MolecularGraph(Graph):
-    def __init__(self, molecule, labels=None, unit_cell=None):
+    def __init__(self, molecule, labels=None, unit_cell=None, pairs=None):
         self.molecule = molecule
         if labels is None:
             labels = range(len(molecule.numbers))
 
-        def yield_positioned_atoms():
-            for index in xrange(len(labels)):
-                yield PositionedObject(index, self.molecule.coordinates[index])
+        if pairs is None:
+            def yield_positioned_atoms():
+                for index in xrange(len(labels)):
+                    yield PositionedObject(index, self.molecule.coordinates[index])
 
-        binned_atoms = SparseBinnedObjects(yield_positioned_atoms(), bonds.max_length*bonds.bond_tolerance)
+            binned_atoms = SparseBinnedObjects(yield_positioned_atoms(), bonds.max_length*bonds.bond_tolerance)
 
-        def compare_function(positioned1, positioned2):
-            delta = positioned2.coordinate - positioned1.coordinate
-            if unit_cell is not None:
-                delta = unit_cell.shortest_vector(delta)
-            distance = numpy.sqrt(numpy.dot(delta, delta))
-            if distance < binned_atoms.gridsize:
-                bond_order = bonds.bonded(self.molecule.numbers[positioned1.id], self.molecule.numbers[positioned2.id], distance)
-                if bond_order != None:
-                    return bond_order, distance
+            def compare_function(positioned1, positioned2):
+                delta = positioned2.coordinate - positioned1.coordinate
+                if unit_cell is not None:
+                    delta = unit_cell.shortest_vector(delta)
+                distance = numpy.linalg.norm(delta)
+                if distance < binned_atoms.gridsize:
+                    bond_order = bonds.bonded(self.molecule.numbers[positioned1.id], self.molecule.numbers[positioned2.id], distance)
+                    if bond_order != None:
+                        return bond_order, distance
 
-        bond_data = list(
-            (frozenset([labels[positioned.id] for positioned in key]), data)
-            for key, data
-            in IntraAnalyseNeighboringObjects(binned_atoms, compare_function)(unit_cell)
-        )
-        pairs = set(key for key, data in bond_data)
+            bond_data = list(
+                (frozenset([labels[positioned.id] for positioned in key]), data)
+                for key, data
+                in IntraAnalyseNeighboringObjects(binned_atoms, compare_function)(unit_cell)
+            )
+            pairs = set(key for key, data in bond_data)
+        else:
+            pairs = set(frozenset(pair) for pair in pairs)
+            bond_data = []
+            for pair in pairs:
+                a,b = pair
+                delta = molecule.coordinates[a] - molecule.coordinates[b]
+                if unit_cell is not None:
+                    delta = unit_cell.shortest_vector(delta)
+                distance = numpy.linalg.norm(delta)
+                bond_order = bonds.bonded(self.molecule.numbers[a], self.molecule.numbers[b], distance)
+                bond_data.append((pair, (bond_order, distance)))
+
         self.bond_orders = dict([(key, data[0]) for key, data in bond_data])
         self.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
         Graph.__init__(self, pairs, labels)
