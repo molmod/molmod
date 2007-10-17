@@ -57,8 +57,8 @@ class BondData(object):
     def __init__(self, filename, periodic_data):
         self.lengths = dict([bond_type, {}] for bond_type in bond_types)
         self.periodic_data = periodic_data
-        self.load_bond_data(filename)
-        self.approximate_unkown_bond_lengths()
+        self._load_bond_data(filename)
+        self._approximate_unkown_bond_lengths()
         self.max_length = max(
             max(lengths.itervalues())
             for lengths
@@ -66,15 +66,12 @@ class BondData(object):
             if len(lengths) > 0
         )
 
-    def load_bond_data(self, filename):
-        """
-        Load the bond data from the given file.
+    def _load_bond_data(self, filename):
+        """Load the bond data from the given file.
 
         It's assumed that the uncommented lines in the data file have the
         following format:
-        "symbol1 symbol2 number1 number2 bond_length_single_a\
-        bond_length_double_a bond_length_triple_a bond_length_single_b\
-        bond_length_double_b bond_length_triple_b ..."
+        symbol1 symbol2 number1 number2 bond_length_single_a bond_length_double_a bond_length_triple_a bond_length_single_b bond_length_double_b bond_length_triple_b ..."
         where a, b, ... stand for different sources.
         """
 
@@ -109,7 +106,8 @@ class BondData(object):
                     read_length(BOND_TRIPLE, words, 3)
         f.close()
 
-    def approximate_unkown_bond_lengths(self):
+    def _approximate_unkown_bond_lengths(self):
+        """Completes the bond length database with approximations based on VDW radii"""
         dataset = self.lengths[BOND_SINGLE]
         for n1 in self.periodic_data.yield_numbers():
             for n2 in self.periodic_data.yield_numbers():
