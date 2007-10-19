@@ -38,7 +38,10 @@ from constants import avogadro, lightspeed
 
 
 def parse_unit(s):
-    return eval(s)
+    return float(eval(s))
+
+# *** Generic ***
+au = 1
 
 
 # *** Charge ***
