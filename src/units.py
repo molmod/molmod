@@ -37,6 +37,10 @@
 from constants import avogadro, lightspeed
 
 
+def parse_unit(s):
+    return eval(s)
+
+
 # *** Charge ***
 
 C = 1/1.602176462e-19
