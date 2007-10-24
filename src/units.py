@@ -38,7 +38,11 @@ from constants import avogadro, lightspeed
 
 
 def parse_unit(s):
-    return float(eval(s))
+    try:
+        return float(eval(s))
+    except:
+        raise ValueError("Could not interpret %s as a unit or a measure." % s)
+
 
 # *** Generic ***
 au = 1
@@ -94,6 +98,11 @@ joule = J
 calorie = cal
 ev = eV
 
+# *** Force ***
+
+N = J/m
+newton = N
+
 # *** Angles ***
 
 degree = 0.017453292519943295
@@ -111,9 +120,10 @@ nanosecond = ns
 picosecond = ps
 femtosecond = fs
 
-# *** Frequency ***
+# *** Pressure ***
 
-invcm = lightspeed/(0.01*meter)
+pascal = N/m**2
+bar = 100000*pascal
 
 # *** Temperature ***
 
