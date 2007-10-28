@@ -72,4 +72,17 @@ class UnitCellTestCase(unittest.TestCase):
             uc.add_cell_vector(numpy.random.uniform(-2,2,3))
             uc.add_cell_vector(numpy.random.uniform(-2,2,3))
 
+    def test_radius_indexes(self):
+        cell = numpy.array([
+            [1.5, 0, 0],
+            [0, 1.5, 0],
+            [0, 0, 1.5],
+        ], float)
+        uc = UnitCell(cell, numpy.array([True, True, True]))
+        self.assert_((uc.get_radius_ranges(3.1)==3).all())
+
+        uc.cell = numpy.random.uniform(-1, 1, (3, 3))
+        radius = 5.2
+        for n in uc.get_radius_indexes(radius):
+            self.assert_(numpy.linalg.norm(numpy.dot(uc.cell, n)) < radius)
 

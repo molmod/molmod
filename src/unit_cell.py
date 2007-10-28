@@ -337,3 +337,22 @@ class UnitCell(object):
         elif len(active) == 3:
             return abs(numpy.linalg.det(self.cell))
 
+    def get_radius_ranges(self, radius):
+        """Return the ranges of indexes of the periodic images that fall within
+        a sphere with the given radius
+        """
+        G = numpy.dot(self.cell.transpose(), self.cell)
+        return numpy.ceil(radius/numpy.sqrt(numpy.diag(G))).astype(int)
+
+    def get_radius_indexes(self, radius):
+        """Return the indexes of the periodic images that fall within a sphere
+        with the given radius"""
+        im, jm, km = self.get_radius_ranges(radius)
+        result = []
+        for i in xrange(-im, im+1):
+            for j in xrange(-jm, jm+1):
+                for k in xrange(-km, km+1):
+                    r = numpy.dot(self.cell, [i,j,k])
+                    if numpy.linalg.norm(r) < radius:
+                        result.append([i,j,k])
+        return numpy.array(result, int)
