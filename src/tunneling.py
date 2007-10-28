@@ -23,8 +23,10 @@ A set of tools to calculate tunneling corrections.
 This is an example script (or input file as you may want to call it), that
 shows how the tunneling module works:
 
->>> from molmod.units import kcalmol, kjmol, invcm
+>>> from molmod.units import kcalmol, kjmol, cm
+>>> from molmod.constants import lightspeed
 >>> from molmod.tunneling import *
+>>> invcm = lightspeed/cm
 >>>
 >>> factor, error = eckart(T=400, Ef=30.33*kjmol, Er=69.13*kjmol, nu=845.9*invcm)
 >>> print factor, error

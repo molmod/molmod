@@ -20,7 +20,8 @@
 
 
 from molmod.tunneling import eckart
-from molmod.units import kjmol, invcm, unified
+from molmod.units import kjmol, cm, unified
+from molmod.constants import lightspeed
 from molmod.data import periodic
 
 import unittest, numpy
@@ -28,6 +29,8 @@ import unittest, numpy
 
 __all__ = ["TunnelingTestCase"]
 
+
+invcm = lightspeed/cm
 
 class TunnelingTestCase(unittest.TestCase):
     def test_leo(self):
