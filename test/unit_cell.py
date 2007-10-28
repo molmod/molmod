@@ -72,6 +72,17 @@ class UnitCellTestCase(unittest.TestCase):
             uc.add_cell_vector(numpy.random.uniform(-2,2,3))
             uc.add_cell_vector(numpy.random.uniform(-2,2,3))
 
+    def test_shortest_vector(self):
+        for uc_counter in xrange(10):
+            #print counter
+            uc = UnitCell()
+            uc.cell = numpy.random.uniform(-1, 1, (3, 3))
+            uc.update_reciproke()
+            for r_counter in xrange(10):
+                r0 = numpy.random.normal(0, 10, 3)
+                r1 = uc.shortest_vector(r0)
+                self.assert_(numpy.linalg.norm(r0) <= numpy.linalg.norm(r1))
+
     def test_radius_indexes(self):
         cell = numpy.array([
             [1.5, 0, 0],

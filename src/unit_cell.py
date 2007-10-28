@@ -338,21 +338,30 @@ class UnitCell(object):
             return abs(numpy.linalg.det(self.cell))
 
     def get_radius_ranges(self, radius):
-        """Return the ranges of indexes of the periodic images that fall within
-        a sphere with the given radius
+        """Return the ranges of indexes of the periodic images that overlap with
+        a sphere at any point in the central cell with the given radius.
         """
         G = numpy.dot(self.cell.transpose(), self.cell)
         return numpy.ceil(radius/numpy.sqrt(numpy.diag(G))).astype(int)
 
     def get_radius_indexes(self, radius):
-        """Return the indexes of the periodic images that fall within a sphere
-        with the given radius"""
+        """Return the indexes of the periodic images that overlap with
+        a sphere at any point in the central cell with the given radius."""
         im, jm, km = self.get_radius_ranges(radius)
         result = []
         for i in xrange(-im, im+1):
+            if i > 0: ip = i-0.5
+            elif i < 0: ip = i+0.5
+            else: ip = 0
             for j in xrange(-jm, jm+1):
+                if j > 0: jp = j-0.5
+                elif j < 0: jp = j+0.5
+                else: jp = 0
                 for k in xrange(-km, km+1):
-                    r = numpy.dot(self.cell, [i,j,k])
+                    if k > 0: kp = k-0.5
+                    elif k < 0: kp = k+0.5
+                    else: kp = 0
+                    r = numpy.dot(self.cell, [ip,jp,kp])
                     if numpy.linalg.norm(r) < radius:
                         result.append([i,j,k])
         return numpy.array(result, int)
