@@ -19,7 +19,12 @@
 # --
 
 
-import init_files
+import sys
+sys.path.insert(0, "../lib")
+
+import os
+if not os.path.exists("output"):
+    os.mkdir("output")
 
 from molmod import context
 context.share_path = "../share/"

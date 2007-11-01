@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     helpers = Extension(
         name='molmod.helpers',
-        sources=['src/helpers.f90']
+        sources=['lib/molmod/helpers.f90']
     )
     setup(
         name='MolMod',
@@ -35,7 +35,7 @@ if __name__ == "__main__":
         author='Toon Verstraelen',
         author_email='Toon.Verstraelen@UGent.be',
         url='https://molmod.ugent.be/zeobuilder/',
-        package_dir = {'molmod': 'src'},
+        package_dir = {'molmod': 'lib/molmod'},
         ext_modules=[helpers],
         packages=[
             'molmod',
