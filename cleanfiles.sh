@@ -1,4 +1,4 @@
-for i in `find * | egrep "\.pyc$|\.py~$|\.pyc~$|\.bak$"` ; do rm -v ${i}; done
+for i in `find * | egrep "\.pyc$|\.py~$|\.pyc~$|\.bak$|\.so$"` ; do rm -v ${i}; done
 
 rm -vr debian/python-*
 rm -vr debian/pycompat
