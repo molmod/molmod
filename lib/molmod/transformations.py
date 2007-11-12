@@ -413,3 +413,20 @@ def rotation_around_center(center, angle, axis, invert=False):
 
     return result
 
+
+def random_rotation():
+    from molmod.vectors import random_unit, trivial_orthonormal
+    result = Rotation()
+    # first generate a random unit vector, the new x-axis
+    result.r[:,0] = random_unit(3)
+    x = result.r[:,0]
+    # generate a not so random y-axis and z-axis
+    y = trivial_orthonormal(x)
+    z = numpy.cross(x, y)
+    # rotate y,z with about the x-axis by a random angle
+    angle = numpy.random.uniform(0, 2*numpy.pi)
+    result.r[:,1] = numpy.cos(angle)*y - numpy.sin(angle)*z
+    result.r[:,2] = numpy.sin(angle)*y + numpy.cos(angle)*z
+    return result
+    
+    
