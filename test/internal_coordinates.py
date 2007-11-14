@@ -67,7 +67,7 @@ class InternalCoordinatesTestCase(unittest.TestCase):
         return result
 
     def test_bonds(self):
-        self.ic_cache.add_bond_lengths([CriteriaSet("All bonds")])
+        self.ic_cache.add_bond_lengths([CriteriaSet(tag="All bonds")])
         expected_results = self.load_expected_results(
             "input/tpa_stretch.csv",
             (lambda x: x*angstrom),
@@ -85,7 +85,7 @@ class InternalCoordinatesTestCase(unittest.TestCase):
         )
 
     def test_bond_angles(self):
-        self.ic_cache.add_bending_cosines([CriteriaSet("All bends")])
+        self.ic_cache.add_bending_cosines([CriteriaSet(tag="All bends")])
         expected_results = self.load_expected_results(
             "input/tpa_bend.csv",
             lambda x: math.cos(math.pi*x/180.0)
@@ -103,7 +103,7 @@ class InternalCoordinatesTestCase(unittest.TestCase):
         )
 
     def test_dihedral_angles(self):
-        self.ic_cache.add_dihedral_cosines([CriteriaSet("All dihedrals")])
+        self.ic_cache.add_dihedral_cosines([CriteriaSet(tag="All dihedrals")])
         expected_results = self.load_expected_results(
             "input/tpa_tors.csv",
             lambda x: math.cos(math.pi*x/180.0)
@@ -176,7 +176,7 @@ class ChainruleTestCase(unittest.TestCase):
         self.check_sanity(ethene2.coordinates, tangent2, internal_coordinate)
 
     def test_dihedral(self):
-        self.ic_cache.add_dihedral_cosines([CriteriaSet("HCCH", atom_criteria(1, 6, 6, 1))])
+        self.ic_cache.add_dihedral_cosines([CriteriaSet(atom_criteria(1, 6, 6, 1), tag="HCCH")])
         dihedral_cos = self.ic_cache["HCCH"][0]
 
         self.errors = []
@@ -201,7 +201,7 @@ class ChainruleTestCase(unittest.TestCase):
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))
 
     def test_out_of_plane_cosine(self):
-        self.ic_cache.add_out_of_plane_cosines([CriteriaSet("CC(HCl)", atom_criteria(6, 6, 1, 17))])
+        self.ic_cache.add_out_of_plane_cosines([CriteriaSet(atom_criteria(6, 6, 1, 17), tag="CC(HCl)")])
         out_of_plane_cos = self.ic_cache["CC(HCl)"][0]
 
         self.errors = []
@@ -225,7 +225,7 @@ class ChainruleTestCase(unittest.TestCase):
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))
 
     def test_out_of_plane_distance(self):
-        self.ic_cache.add_out_of_plane_distances([CriteriaSet("C(CHCl)", atom_criteria(6, 6, 1, 17))])
+        self.ic_cache.add_out_of_plane_distances([CriteriaSet(atom_criteria(6, 6, 1, 17), tag="C(CHCl)")])
         out_of_plane_distance = self.ic_cache["C(CHCl)"][0]
 
         self.errors = []
@@ -246,9 +246,9 @@ class ChainruleTestCase(unittest.TestCase):
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))
 
     def load_internal_coordinates(self):
-        self.ic_cache.add_out_of_plane_cosines([CriteriaSet("CC(HCl)", atom_criteria(6, 6, 1, 17))])
-        self.ic_cache.add_dihedral_cosines([CriteriaSet("HCCH", atom_criteria(1, 6, 6, 1))])
-        self.ic_cache.add_bond_lengths([CriteriaSet("All bonds")])
+        self.ic_cache.add_out_of_plane_cosines([CriteriaSet(atom_criteria(6, 6, 1, 17), tag="CC(HCl)")])
+        self.ic_cache.add_dihedral_cosines([CriteriaSet(atom_criteria(1, 6, 6, 1), tag="HCCH")])
+        self.ic_cache.add_bond_lengths([CriteriaSet(tag="All bonds")])
 
         result = []
         # a) test wether the source is ok

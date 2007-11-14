@@ -59,12 +59,12 @@ class MolecularGraphTestCase(unittest.TestCase):
     def test_bonds_tpa(self):
         self.load_graph("input/tpa.xyz")
         match_definition = BondMatchDefinition([
-            CriteriaSet("HC", atom_criteria(1, 6)),
-            CriteriaSet("CC", atom_criteria(6, 6)),
-            CriteriaSet("CN", atom_criteria(6, 7)),
-            CriteriaSet("C-sp3", atom_criteria(6, HasNumNeighbors(4))),
-            CriteriaSet("C-[CN]", atom_criteria(6, MolecularOr(HasAtomNumber(6), HasAtomNumber(7)))),
-            CriteriaSet("long", relation_criteria={frozenset([0,1]): BondLongerThan(2.1)}),
+            CriteriaSet(atom_criteria(1, 6), tag="HC"),
+            CriteriaSet(atom_criteria(6, 6), tag="CC"),
+            CriteriaSet(atom_criteria(6, 7), tag="CN"),
+            CriteriaSet(atom_criteria(6, HasNumNeighbors(4)), tag="C-sp3"),
+            CriteriaSet(atom_criteria(6, MolecularOr(HasAtomNumber(6), HasAtomNumber(7))), tag="C-[CN]"),
+            CriteriaSet(relation_criteria={frozenset([0,1]): BondLongerThan(2.1)}, tag="long"),
         ])
         expected_results = {
             "HC": set([(14, 1), (13, 1), (16, 2), (15, 2), (17, 3), (19, 3), (18, 3), (20, 4), (21, 4), (23, 5), (22, 5), (25, 6), (26, 6), (24, 6), (27, 7), (28, 7), (29, 8), (30, 8), (31, 9), (33, 9), (32, 9), (35, 10), (34, 10), (37, 11), (36, 11), (39, 12), (40, 12), (38, 12)]),
@@ -90,12 +90,12 @@ class MolecularGraphTestCase(unittest.TestCase):
     def test_bending_angles_tpa(self):
         self.load_graph("input/tpa.xyz")
         match_definition = BendingAngleMatchDefinition([
-            CriteriaSet("HCH", atom_criteria(1, 6, 1)),
-            CriteriaSet("HCC", atom_criteria(1, 6, 6)),
-            CriteriaSet("CCC", atom_criteria(6, 6, 6)),
-            CriteriaSet("CCN", atom_criteria(6, 6, 7)),
-            CriteriaSet("CNC", atom_criteria(6, 7, 6)),
-            CriteriaSet("HCN", atom_criteria(1, 6, 7)),
+            CriteriaSet(atom_criteria(1, 6, 1), tag="HCH"),
+            CriteriaSet(atom_criteria(1, 6, 6), tag="HCC"),
+            CriteriaSet(atom_criteria(6, 6, 6), tag="CCC"),
+            CriteriaSet(atom_criteria(6, 6, 7), tag="CCN"),
+            CriteriaSet(atom_criteria(6, 7, 6), tag="CNC"),
+            CriteriaSet(atom_criteria(1, 6, 7), tag="HCN"),
         ])
         expected_results = {
             'HCC': set([(14, 1, 2), (13, 1, 2), (16, 2, 1), (15, 2, 1), (16, 2, 3), (15, 2, 3), (17, 3, 2), (19, 3, 2), (18, 3, 2), (20, 4, 5), (21, 4, 5), (23, 5, 6), (23, 5, 4), (22, 5, 6), (22, 5, 4), (25, 6, 5), (26, 6, 5), (24, 6, 5), (27, 7, 8), (28, 7, 8), (29, 8, 9), (30, 8, 9), (29, 8, 7), (30, 8, 7), (31, 9, 8), (33, 9, 8), (32, 9, 8), (35, 10, 11), (34, 10, 11), (37, 11, 12), (36, 11, 12), (37, 11, 10), (36, 11, 10), (39, 12, 11), (40, 12, 11), (38, 12, 11)]),
@@ -121,9 +121,9 @@ class MolecularGraphTestCase(unittest.TestCase):
     def test_dihedral_angles_tpa(self):
         self.load_graph("input/tpa.xyz")
         match_definition = DihedralAngleMatchDefinition([
-            CriteriaSet("HCCH", atom_criteria(1, 6, 6, 1)),
-            CriteriaSet("HCCN", atom_criteria(1, 6, 6, 7)),
-            CriteriaSet("HCNC", atom_criteria(1, 6, 7, 6)),
+            CriteriaSet(atom_criteria(1, 6, 6, 1), tag="HCCH"),
+            CriteriaSet(atom_criteria(1, 6, 6, 7), tag="HCCN"),
+            CriteriaSet(atom_criteria(1, 6, 7, 6), tag="HCNC"),
         ])
         expected_results = {
             'HCCH': set([(16, 2, 1, 14), (15, 2, 1, 14), (16, 2, 1, 13), (15, 2, 1, 13), (17, 3, 2, 16), (19, 3, 2, 16), (18, 3, 2, 16), (17, 3, 2, 15), (19, 3, 2, 15), (18, 3, 2, 15), (23, 5, 4, 20), (22, 5, 4, 20), (23, 5, 4, 21), (22, 5, 4, 21), (25, 6, 5, 23), (26, 6, 5, 23), (24, 6, 5, 23), (25, 6, 5, 22), (26, 6, 5, 22), (24, 6, 5, 22), (29, 8, 7, 27), (30, 8, 7, 27), (29, 8, 7, 28), (30, 8, 7, 28), (31, 9, 8, 29), (33, 9, 8, 29), (32, 9, 8, 29), (31, 9, 8, 30), (33, 9, 8, 30), (32, 9, 8, 30), (37, 11, 10, 35), (36, 11, 10, 35), (37, 11, 10, 34), (36, 11, 10, 34), (39, 12, 11, 37), (40, 12, 11, 37), (38, 12, 11, 37), (39, 12, 11, 36), (40, 12, 11, 36), (38, 12, 11, 36)]),
@@ -146,7 +146,7 @@ class MolecularGraphTestCase(unittest.TestCase):
     def test_tetra_tpa(self):
         self.load_graph("input/tpa.xyz")
         match_definition = TetraMatchDefinition([
-            CriteriaSet("C-(HCCH)", atom_criteria(6, 1, 6, 6, 1))
+            CriteriaSet(atom_criteria(6, 1, 6, 6, 1), tag="C-(HCCH)")
         ], node_tags={0: 1, 1: 1})
         expected_results = {
             'C-(HCCH)': set([
@@ -180,7 +180,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         self.load_graph("input/precursor.xyz")
         self.molecular_graph.init_neighbors()
         match_definition = DihedralAngleMatchDefinition([
-            CriteriaSet("all"),
+            CriteriaSet(tag="all"),
         ])
         # construct all dihedral angles:
         all_dihedrals = set([])

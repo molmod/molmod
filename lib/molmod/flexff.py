@@ -87,7 +87,7 @@ class ValenceTerm(EnergyTerm):
 class BondStretchTerm(ValenceTerm):
     def __init__(self, label, calculate_eg, atom_criteria):
         ValenceTerm.__init__(self, label, calculate_eg, BondMatchDefinition(
-            [CriteriaSet("foo", dict((index, criterion) for index, criterion in enumerate(atom_criteria)))]
+            [CriteriaSet(dict((index, criterion) for index, criterion in enumerate(atom_criteria)))]
         ))
 
     def calculate_ic(self, coordinates):
@@ -103,7 +103,7 @@ class BondStretchTerm(ValenceTerm):
 class ThreeBodyTerm(ValenceTerm):
     def __init__(self, label, calculate_eg, atom_criteria):
         ValenceTerm.__init__(self, label, calculate_eg, BendingAngleMatchDefinition(
-            [CriteriaSet("foo", dict((index, criterion) for index, criterion in enumerate(atom_criteria)))]
+            [CriteriaSet(dict((index, criterion) for index, criterion in enumerate(atom_criteria)))]
         ))
 
 
@@ -135,7 +135,7 @@ class UreyBradleyTerm(ThreeBodyTerm):
 class FourBodyTerm(ValenceTerm):
     def __init__(self, label, calculate_eg, atom_criteria):
         ValenceTerm.__init__(self, label, calculate_eg, DihedralAngleMatchDefinition(
-            [CriteriaSet("foo", dict((index, criterion) for index, criterion in enumerate(atom_criteria)))]
+            [CriteriaSet(dict((index, criterion) for index, criterion in enumerate(atom_criteria)))]
         ))
 
 

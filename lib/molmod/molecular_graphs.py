@@ -332,7 +332,7 @@ def full_match(graph1, graph2):
     while len(mgs1) > 0:
         subgraph1 = mgs1.pop()
         atom_criteria = dict((index, HasAtomNumber(number)) for index, number in zip(subgraph1.nodes, subgraph1.molecule.numbers))
-        md = MolecularExactMatchDefinition(subgraph1, [CriteriaSet("foo", atom_criteria)])
+        md = MolecularExactMatchDefinition(subgraph1, [CriteriaSet(atom_criteria)])
         matched = False
         for subgraph2 in mgs2:
             if len(subgraph1.nodes) != len(subgraph2.nodes):

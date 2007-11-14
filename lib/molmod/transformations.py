@@ -428,5 +428,5 @@ def random_rotation():
     result.r[:,1] = numpy.cos(angle)*y - numpy.sin(angle)*z
     result.r[:,2] = numpy.sin(angle)*y + numpy.cos(angle)*z
     return result
-    
-    
+
+

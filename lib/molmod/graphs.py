@@ -390,11 +390,20 @@ class MatchDefinition(object):
 
 
 class CriteriaSet(object):
-    def __init__(self, tag, thing_criteria={}, relation_criteria={}, global_criteria={}):
-        self.tag = tag
-        self.thing_criteria = thing_criteria
-        self.relation_criteria = relation_criteria
-        self.global_criteria = global_criteria
+    def __init__(self, thing_criteria=None, relation_criteria=None, global_criteria=None, **kwargs):
+        if thing_criteria is None:
+            self.thing_criteria = {}
+        else:
+            self.thing_criteria = thing_criteria
+        if relation_criteria is None:
+            self.relation_criteria = {}
+        else:
+            self.relation_criteria = relation_criteria
+        if global_criteria is None:
+            self.global_criteria = {}
+        else:
+            self.global_criteria = global_criteria
+        self.info = kwargs
 
     def test_match(self, match):
         for node0, c in self.thing_criteria.iteritems():
@@ -524,11 +533,10 @@ class SubgraphMatchDefinition(MatchDefinition):
             yield graph_match
         else:
             for criteria_set in self.criteria_sets:
-                #print criteria_set.tag
                 satisfied_match_tags = set([])
                 for symmetry in self.subgraph.symmetries:
                     final_match = graph_match * symmetry
-                    final_match.tag = criteria_set.tag
+                    final_match.__dict__.update(criteria_set.info)
                     #print final_match
                     if criteria_set.test_match(final_match):
                         match_tags = tuple(
