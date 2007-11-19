@@ -267,13 +267,13 @@ class MolecularExactMatchDefinition(ExactMatchDefinition, MolecularMixinMatchDef
 
 
 class BondMatchDefinition(MolecularSubgraphMatchDefinition):
-    def __init__(self, criteria_sets, node_tags={}):
+    def __init__(self, criteria_sets=None, node_tags={}):
         subgraph = Graph([frozenset([0, 1])], [0, 1])
         MolecularSubgraphMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
 
 
 class BendingAngleMatchDefinition(MolecularSubgraphMatchDefinition):
-    def __init__(self, criteria_sets, node_tags={}):
+    def __init__(self, criteria_sets=None, node_tags={}):
         subgraph = Graph([
             frozenset([0, 1]),
             frozenset([1, 2]),
@@ -282,7 +282,7 @@ class BendingAngleMatchDefinition(MolecularSubgraphMatchDefinition):
 
 
 class DihedralAngleMatchDefinition(MolecularSubgraphMatchDefinition):
-    def __init__(self, criteria_sets, node_tags={}):
+    def __init__(self, criteria_sets=None, node_tags={}):
         subgraph = Graph([
             frozenset([0, 1]),
             frozenset([1, 2]),
@@ -292,7 +292,7 @@ class DihedralAngleMatchDefinition(MolecularSubgraphMatchDefinition):
 
 
 class OutOfPlaneMatchDefinition(MolecularSubgraphMatchDefinition):
-    def __init__(self, criteria_sets, node_tags={}):
+    def __init__(self, criteria_sets=None, node_tags={}):
         subgraph = Graph([
             frozenset([0, 1]),
             frozenset([0, 2]),
@@ -302,7 +302,7 @@ class OutOfPlaneMatchDefinition(MolecularSubgraphMatchDefinition):
 
 
 class TetraMatchDefinition(MolecularSubgraphMatchDefinition):
-    def __init__(self, criteria_sets, node_tags={}):
+    def __init__(self, criteria_sets=None, node_tags={}):
         subgraph = Graph([
             frozenset([0, 1]),
             frozenset([0, 2]),
