@@ -107,6 +107,8 @@ newton = N
 # *** Angles ***
 
 degree = 0.017453292519943295
+deg = degree
+rad = 1
 
 # *** Time ***
 
