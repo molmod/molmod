@@ -183,7 +183,7 @@ class UnitCell(object):
         #print " (((c_normal))) "
         #print c_normal
 
-        # the secocond cell vector lies in the half plane defined by the (old)
+        # the second cell vector lies in the half plane defined by the (old)
         # first and old second axis
         b_ortho = new_cell[:,1] - a_normal*numpy.dot(a_normal, new_cell[:,1])
         b_orthonormal = b_ortho / numpy.linalg.norm(b_ortho)
@@ -191,7 +191,7 @@ class UnitCell(object):
         #print " (((b_orthonormal))) "
         #print b_orthonormal
 
-        # Finding the first cell vector is slightly more difficult. :-)
+        # Finding the third cell vector is slightly more difficult. :-)
         # It works like this: The third cell vector lies at the intersection
         # of three spheres:
         #    - one in the origin, with radius length[0]
@@ -306,11 +306,12 @@ class UnitCell(object):
         #for index in xrange(3):
         #    #print "ZERO", numpy.dot(new_cell[:,2] - centers[index], new_cell[:,2] - centers[index]) - radii[index]**2
         if numpy.linalg.det(new_cell) * numpy.linalg.det(self.cell) < 0:
-            # wrong assumption
-            new_cell[:,0] = p - t1*n
+            # this preserves the handedness of the original cell.
+            new_cell[:,2] = p + t2*n
             #for index in xrange(3):
             #    #print "ZERO", numpy.dot(new_cell[:,2] - centers[index], new_cell[:,2] - centers[index]) - radii[index]**2
-            assert numpy.linalg.det(new_cell) * numpy.linalg.det(self.cell) > 0, "HELP. THIS SHOULD NOT HAPPEN."
+            check = numpy.linalg.det(new_cell) * numpy.linalg.det(self.cell)
+            assert check > 0, "HELP. THIS SHOULD NOT HAPPEN. check = %s" % check
 
         self.set_cell(new_cell)
 
@@ -338,15 +339,15 @@ class UnitCell(object):
             return abs(numpy.linalg.det(self.cell))
 
     def get_radius_ranges(self, radius):
-        """Return the ranges of indexes of the periodic images that overlap with
-        a sphere at any point in the central cell with the given radius.
+        """Return the ranges of indexes of the periodic cell images that overlap
+        with a sphere with the given radius and its center in the origin.
         """
         G = numpy.dot(self.cell.transpose(), self.cell)
         return numpy.ceil(radius/numpy.sqrt(numpy.diag(G))).astype(int)
 
     def get_radius_indexes(self, radius):
-        """Return the indexes of the periodic images that overlap with
-        a sphere at any point in the central cell with the given radius."""
+        """Return the indexes of the periodic images that overlap with a sphere
+        with the given radius and its center in the origin."""
         im, jm, km = self.get_radius_ranges(radius)
         result = []
         for i in xrange(-im, im+1):
@@ -361,7 +362,40 @@ class UnitCell(object):
                     if k > 0: kp = k-0.5
                     elif k < 0: kp = k+0.5
                     else: kp = 0
-                    r = numpy.dot(self.cell, [ip,jp,kp])
-                    if numpy.linalg.norm(r) < radius:
+                    # compute the position of the closest 'corner' of the
+                    # periodic image of the cell parallelepiped. In case *p is
+                    # zero, r0 is the center between two/four/eight corners.
+                    r0 = numpy.dot(self.cell, [ip,jp,kp])
+                    non_zero = (ip != 0) + (jp != 0) + (kp != 0)
+                    if non_zero==3 and numpy.linalg.norm(r0) < radius:
+                        # The closest point is always a corner of a periodic
+                        # image of the cell parallelepiped
                         result.append([i,j,k])
+                    elif non_zero==2:
+                        # The closest point lies on a line
+                        if ip==0:
+                            delta = self.cell[:,0]
+                        elif jp==0:
+                            delta = self.cell[:,1]
+                        elif kp==0:
+                            delta = self.cell[:,2]
+                        if (r0**2).sum() - numpy.dot(r0,delta)**2/(delta**2).sum() < radius**2:
+                            result.append([i,j,k])
+                    elif non_zero==1:
+                        # The closest point lies on a plane
+                        if ip!=0:
+                            deltas = self.cell[:,[1,2]]
+                        elif jp!=0:
+                            deltas = self.cell[:,[2,0]]
+                        elif kp!=0:
+                            deltas = self.cell[:,[0,1]]
+                        A = numpy.dot(deltas.transpose(), deltas)
+                        B = numpy.dot(deltas.transpose(), r0)
+                        r0 = r0 - numpy.dot(deltas, numpy.linalg.solve(A,B))
+                        if numpy.linalg.norm(r0) < radius:
+                            result.append([i,j,k])
+                    elif non_zero==0:
+                        # The closest point is the origin
+                        result.append([0,0,0])
+
         return numpy.array(result, int)
