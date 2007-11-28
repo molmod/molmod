@@ -20,6 +20,7 @@
 
 
 import molmod.units as units
+from molmod.data.masses import iupac2005
 
 import string, numpy, copy
 
@@ -102,6 +103,7 @@ class PeriodicData(object):
         f.close()
 
     def add_atom_info(self, atom_info):
+        atom_info.add_attribute("mass", iupac2005.masses.get(atom_info.number))
         self.atoms_by_number[atom_info.number] = atom_info
         self.atoms_by_symbol[atom_info.symbol.lower()] = atom_info
 
