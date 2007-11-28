@@ -21,13 +21,8 @@
 
 if __name__ == "__main__":
     import glob
-    from numpy.distutils.core import setup
-    from numpy.distutils.extension import Extension
+    from distutils.core import setup
 
-    helpers = Extension(
-        name='molmod.helpers',
-        sources=['lib/molmod/helpers.f90']
-    )
     setup(
         name='MolMod',
         version='0.001',
@@ -36,10 +31,12 @@ if __name__ == "__main__":
         author_email='Toon.Verstraelen@UGent.be',
         url='https://molmod.ugent.be/zeobuilder/',
         package_dir = {'molmod': 'lib/molmod'},
-        ext_modules=[helpers],
         packages=[
             'molmod',
             'molmod.data',
+        ],
+        data_files=[
+            ('share/molmod', glob.glob('share/*.csv')),
         ],
         classifiers=[
             'Development Status :: 3 - Alpha',
@@ -51,18 +48,4 @@ if __name__ == "__main__":
             'Topic :: Science/Engineering :: Molecular Science'
         ],
     )
-
-    from distutils.core import setup
-    setup(
-        name='MolMod',
-        version='0.001',
-        description='MolMod is a collection of molecular modelling tools for python.',
-        author='Toon Verstraelen',
-        author_email='Toon.Verstraelen@UGent.be',
-        url='https://molmod.ugent.be/zeobuilder/',
-        data_files=[
-            ('share/molmod', glob.glob('share/*.csv')),
-        ],
-    )
-
 

@@ -19,8 +19,10 @@
 # --
 
 
-import sys
-sys.path.insert(0, "../lib")
+import sys, glob, os
+retcode = os.system("(cd ..; python setup.py build)")
+if retcode != 0: sys.exit(retcode)
+sys.path.insert(0, glob.glob("../build/lib*")[0])
 
 import os
 if not os.path.exists("output"):
@@ -44,7 +46,7 @@ from clusters import *
 from transformations import *
 from environments import *
 from descriptors import *
-from similarity import *
+#from similarity import *
 from tunneling import *
 from quaternions import *
 
