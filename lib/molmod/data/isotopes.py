@@ -25,7 +25,7 @@ from molmod.units import u
 import os
 
 
-__all__ = ["ame2003", "nubtab03", "iupac_latest", "iupac2005"]
+__all__ = ["ame2003", "nubtab03"]
 
 
 class Ame2003(object):
@@ -93,24 +93,5 @@ class NubTab03(object):
 
 
 nubtab03 = NubTab03(os.path.join(context.share_path, "nubtab03.asc"))
-
-
-class IUPAC2005(object):
-    def __init__(self, filename):
-        self.masses = {}
-
-        f = file(filename)
-        for line in f:
-            if line[0] == '#': continue
-            mass = line[28:].strip()
-            if len(mass) == 0: continue
-            mass = float(mass[:mass.find('(')].replace(" ", ""))*u
-            number = int(line[0:3])
-            self.masses[number] = mass
-
-        f.close()
-
-iupac2005 = IUPAC2005(os.path.join(context.share_path, "iupac_atom_weight_2005.txt"))
-iupac_latest = iupac2005
 
 

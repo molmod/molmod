@@ -20,7 +20,7 @@
 
 from molmod.molecular_graphs import *
 from molmod.graphs import MatchGenerator, CriteriaSet
-from molmod.data import BOND_SINGLE
+from molmod.data.bonds import BOND_SINGLE
 
 from ccio.xyz import XYZFile
 

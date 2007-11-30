@@ -21,9 +21,10 @@
 
 import unittest
 
-from molmod.data import periodic, bonds, BOND_SINGLE
+from molmod.data.periodic import periodic
+from molmod.data.bonds import bonds, BOND_SINGLE
+from molmod.data.isotopes import ame2003, nubtab03
 from molmod.units import angstrom, unified
-from molmod.data.masses import ame2003, nubtab03, iupac2005
 
 
 __all__ = ["DataTestCase"]
@@ -56,10 +57,5 @@ class DataTestCase(unittest.TestCase):
 
     def test_nubtab03(self):
         self.assertAlmostEqual(nubtab03.abundances[1][1], 99.9885)
-
-    def test_iupac2005(self):
-        self.assertAlmostEqual(iupac2005.masses[1]/unified, 1.00794)
-        self.assertAlmostEqual(iupac2005.masses[6]/unified, 12.0107)
-        self.assertAlmostEqual(iupac2005.masses[91]/unified, 231.03588)
 
 

@@ -18,8 +18,9 @@
 #
 # --
 
-from molmod.data import periodic
+from molmod.data.periodic import periodic
 from molmod.units import angstrom
+from molmod.vectors import random_unit
 
 from StringIO import StringIO
 
@@ -122,8 +123,6 @@ class Molecule:
 
 
 def random_dimer(molecule1, molecule2, dmin=5, dmax=20, max_iter=1000, nonbond_threshold_factor=2.0):
-    from molmod.vectors import random_unit
-    from molmod.data import periodic
 
     radii1 = numpy.array([periodic[number].radius for number in molecule1.numbers], float)
     radii2 = numpy.array([periodic[number].radius for number in molecule2.numbers], float)

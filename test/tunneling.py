@@ -22,7 +22,7 @@
 from molmod.tunneling import eckart
 from molmod.units import kjmol, cm, unified
 from molmod.constants import lightspeed
-from molmod.data import periodic
+from molmod.data.periodic import periodic
 
 import unittest, numpy
 

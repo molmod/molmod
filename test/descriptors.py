@@ -19,7 +19,7 @@
 # --
 
 
-from molmod.data import periodic
+from molmod.data.periodic import periodic
 from molmod.descriptors import MolecularDescriptorTV1, sph_harmonics
 from molmod.transformations import Complete
 

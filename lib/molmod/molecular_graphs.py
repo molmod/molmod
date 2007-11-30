@@ -22,7 +22,7 @@
 from molmod.molecules import Molecule
 from molmod.graphs import Graph, GraphError, SubgraphMatchDefinition, ExactMatchDefinition, Match, OneToOne, MatchGenerator, CriteriaSet
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
-from molmod.data import bonds, periodic
+from molmod.data.bonds import bonds, periodic
 from molmod.transformations import rotation_around_center
 from molmod.vectors import random_orthonormal
 

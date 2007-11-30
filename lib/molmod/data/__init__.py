@@ -17,25 +17,5 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-"""
-periodic is an instance of the PeriodicData class in the module
-molmod.data.periodicdata. It represents the data in periodic.csv.
 
-bonds is an instance of the BondsData class in the module
-molmod.data.bondsdata. It represents the data in bonds.csv.
-"""
-
-from periodicdata import *
-from bondsdata import *
-
-from molmod import context
-
-__all__ = [
-    "periodic", "AtomInfo",
-    "bonds", "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "BOND_HYBRID",
-    "BOND_HYDROGEN", "bond_types"
-]
-
-periodic = PeriodicData(context.share_path + "periodic.csv")
-bonds = BondData(context.share_path + "bonds.csv", periodic)
 

@@ -20,9 +20,10 @@
 
 
 import molmod.units as units
-from molmod.data.masses import iupac2005
+from molmod import context
 
-import string, numpy, copy
+import numpy, copy
+
 
 __all__ = ["PeriodicData"]
 
@@ -80,7 +81,7 @@ class PeriodicData(object):
         f = file(filename)
         lines_read = 0
         for line in f:
-            words = string.split(line)
+            words = line.split()
             if (len(words) > 0) and (words[0][0] != "#"):
                 if lines_read == 0:
                     # load all the attribute names
@@ -103,7 +104,6 @@ class PeriodicData(object):
         f.close()
 
     def add_atom_info(self, atom_info):
-        atom_info.add_attribute("mass", iupac2005.masses.get(atom_info.number))
         self.atoms_by_number[atom_info.number] = atom_info
         self.atoms_by_symbol[atom_info.symbol.lower()] = atom_info
 
@@ -117,4 +117,7 @@ class PeriodicData(object):
     def yield_numbers(self):
         for number in self.atoms_by_number:
             yield number
+
+
+periodic = PeriodicData(context.share_path + "periodic.csv")
 

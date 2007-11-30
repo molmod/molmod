@@ -19,9 +19,11 @@
 # --
 
 
+from molmod.data.periodic import periodic
 import molmod.units as units
+from molmod import context
 
-import string, numpy
+import numpy, os
 
 
 __all__ = [
@@ -34,6 +36,7 @@ class BondType(object):
     def __init__(self, num, special):
         self.num = num
         self.special = special
+
 
 BOND_SINGLE = 1
 BOND_DOUBLE = 2
@@ -75,8 +78,6 @@ class BondData(object):
         where a, b, ... stand for different sources.
         """
 
-
-
         def read_units(unit_names):
             tmp = {
                 "A": units.angstrom,
@@ -96,7 +97,7 @@ class BondData(object):
 
         f = file(filename)
         for line in f:
-            words = string.split(line)
+            words = line.split()
             if (len(words) > 0) and (words[0][0] != "#"):
                 if words[0] == "unit":
                     conversions = read_units(words[1:])
@@ -161,4 +162,6 @@ class BondData(object):
             return None
         return dataset.get(frozenset([n1, n2]))
 
+
+bonds = BondData(os.path.join(context.share_path, "bonds.csv"), periodic)
 

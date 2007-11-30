@@ -36,7 +36,9 @@ if __name__ == "__main__":
             'molmod.data',
         ],
         data_files=[
-            ('share/molmod', glob.glob('share/*.csv')),
+            ('share/molmod', glob.glob('share/*.csv') + [
+                "share/mass.mas03", "share/nubtab03.asc",
+            ]),
         ],
         classifiers=[
             'Development Status :: 3 - Alpha',
