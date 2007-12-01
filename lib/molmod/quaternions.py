@@ -24,17 +24,19 @@ import numpy
 import math
 
 
-__all__ = ["quaternion_product", "conjugate", "conjugated", "apply_to_vector",
-           "quaternion_from_rotation_matrix", "quaternion_to_rotation_matrix"]
+__all__ = [
+  "quaternion_product", "conjugate", "conjugated", "quaternion_rotation",
+  "quaternion_from_rotation_matrix", "quaternion_to_rotation_matrix"
+]
 
 
 def quaternion_product(quat1, quat2):
-    return numpy.array(
-        [quat1[0]*quat2[0] - numpy.dot(quat1[1:], quat2[1:]),
-         quat1[0]*quat2[1] + quat2[0]*quat1[1] + quat1[2]*quat2[3] - quat1[3]*quat2[2],
-         quat1[0]*quat2[2] + quat2[0]*quat1[2] + quat1[3]*quat2[1] - quat1[1]*quat2[3],
-         quat1[0]*quat2[3] + quat2[0]*quat1[3] + quat1[1]*quat2[2] - quat1[2]*quat2[1]],
-        float)
+    return numpy.array([
+        quat1[0]*quat2[0] - numpy.dot(quat1[1:], quat2[1:]),
+        quat1[0]*quat2[1] + quat2[0]*quat1[1] + quat1[2]*quat2[3] - quat1[3]*quat2[2],
+        quat1[0]*quat2[2] + quat2[0]*quat1[2] + quat1[3]*quat2[1] - quat1[1]*quat2[3],
+        quat1[0]*quat2[3] + quat2[0]*quat1[3] + quat1[1]*quat2[2] - quat1[2]*quat2[1]
+    ], float)
 
 
 def conjugate(quat):
@@ -47,7 +49,7 @@ def conjugated(quat):
     return result
 
 
-def apply_to_vector(quat, vector):
+def quaternion_rotation(quat, vector):
     dp = numpy.dot(quat[1:], vector)
     cos = (2*quat[0]*quat[0] - 1)
     return numpy.array(
@@ -78,7 +80,7 @@ def quaternion_from_rotation_matrix(rotation_matrix):
             continue
         else:
             row, col = off_diagonals[index]
-            if (rotation_matrix[row, col] + rotation_matrix[col, row] < 0):
+            if (rotation_matrix[row, col] - rotation_matrix[col, row] < 0):
                 r[index] = -numpy.sqrt(r2_comp)
             else:
                 r[index] = +numpy.sqrt(r2_comp)
@@ -87,10 +89,10 @@ def quaternion_from_rotation_matrix(rotation_matrix):
 
 def quaternion_to_rotation_matrix(quaternion):
     c, x, y, z = quaternion
-    return numpy.array(
-        [[c*c + x*x - y*y - z*z, 2*x*y - 2*c*z,         2*x*z + 2*c*y        ],
-         [2*x*y + 2*c*z,         c*c - x*x + y*y - z*z, 2*y*z - 2*c*x        ],
-         [2*x*z - 2*c*y,         2*y*z + 2*c*x,         c*c - x*x - y*y + z*z]],
-        float)
+    return numpy.array([
+        [c*c + x*x - y*y - z*z, 2*x*y - 2*c*z,         2*x*z + 2*c*y        ],
+        [2*x*y + 2*c*z,         c*c - x*x + y*y - z*z, 2*y*z - 2*c*x        ],
+        [2*x*z - 2*c*y,         2*y*z + 2*c*x,         c*c - x*x - y*y + z*z]
+    ], float)
 
 
