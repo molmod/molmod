@@ -50,23 +50,26 @@ def conjugated(quat):
 
 
 def quaternion_rotation(quat, vector):
+    # be careful! This only works correctly for normalized quaternions!!
     dp = numpy.dot(quat[1:], vector)
     cos = (2*quat[0]*quat[0] - 1)
-    return numpy.array(
-        [2 * (quat[0] * (quat[2] * vector[2] - quat[3] * vector[1]) + quat[1] * dp) + cos * vector[0],
-         2 * (quat[0] * (quat[3] * vector[0] - quat[1] * vector[2]) + quat[2] * dp) + cos * vector[1],
-         2 * (quat[0] * (quat[1] * vector[1] - quat[2] * vector[0]) + quat[3] * dp) + cos * vector[2]],
-        float)
+    return numpy.array([
+        2 * (quat[0] * (quat[2] * vector[2] - quat[3] * vector[1]) + quat[1] * dp) + cos * vector[0],
+        2 * (quat[0] * (quat[3] * vector[0] - quat[1] * vector[2]) + quat[2] * dp) + cos * vector[1],
+        2 * (quat[0] * (quat[1] * vector[1] - quat[2] * vector[0]) + quat[3] * dp) + cos * vector[2]
+    ], float)
 
 
 off_diagonals = [[2,1], [0,2], [1,0]]
 
-def quaternion_from_rotation_matrix(rotation_matrix):
+def quaternion_from_rotation_matrix(rotation_matrix, do_invert=False):
     invert = (numpy.linalg.det(rotation_matrix) < 0)
+    factor = 1
     if invert:
-        factor = -1
-    else:
-        factor = 1
+        if do_invert:
+            rotation_matrix[:,2] *= -1
+        else:
+            factor = -1
     c2 = 0.25*(factor*numpy.trace(rotation_matrix) + 1)
     if c2 < 0:
         #print c2
