@@ -337,8 +337,8 @@ class FullMatchError(Exception):
 def full_match(graph1, graph2):
     # given the graphs of two geometries of the same set of molecules, return
     # the global match between the two numberings
-    mgs1 = [graph1.subgraph(group) for group in graph1.get_nodes_per_independent_graph()]
-    mgs2 = [graph2.subgraph(group) for group in graph2.get_nodes_per_independent_graph()]
+    mgs1 = [graph1.subgraph(group) for group in graph1.get_indexes_per_independent_graph()]
+    mgs2 = [graph2.subgraph(group) for group in graph2.get_indexes_per_independent_graph()]
 
     if len(mgs1) != len(mgs2):
         #print "not same number of molecules"

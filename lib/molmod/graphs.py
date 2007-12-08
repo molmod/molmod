@@ -307,6 +307,10 @@ class Graph(object):
             result.append(group)
         return result
 
+    def get_indexes_per_independent_graph(self):
+        groups = self.get_nodes_per_independent_graph()
+        return [[self.index[node] for node in group] for group in groups]
+
     def get_half(self, node1, node2):
         self.init_neighbors()
         node1_new = set(self.neighbors[node1])
