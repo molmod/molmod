@@ -29,119 +29,136 @@ from molmod.vectors import random_orthonormal
 import numpy, copy
 
 
+__all__ = [
+    "MolecularGraph", "generate_molecular_graph", "randomized_molecule",
+    "Anything", "MolecularCriterion", "MolecularOr", "MolecularAnd",
+    "HasAtomNumber", "HasNumNeighbors", "HasNeighborNumbers", "BondLongerThan",
+    "atom_criteria",
+    "MolecularMixinMatchDefinition", "MolecularSubgraphMatchDefinition",
+    "MolecularExactMatchDefinition", "BondMatchDefinition",
+    "BendingAngleMatchDefinition", "DihedralAngleMatchDefinition",
+    "OutOfPlaneMatchDefinition", "TetraMatchDefinition",
+    "FullMatchError", "full_match",
+]
+
+
 class MolecularGraph(Graph):
-    def __init__(self, molecule, labels=None, unit_cell=None, pairs=None):
-        self.molecule = molecule
-        if labels is None:
-            labels = range(len(molecule.numbers))
-
-        if pairs is None:
-            def yield_positioned_atoms():
-                for index in xrange(len(labels)):
-                    yield PositionedObject(index, self.molecule.coordinates[index])
-
-            binned_atoms = SparseBinnedObjects(yield_positioned_atoms(), bonds.max_length*bonds.bond_tolerance)
-
-            def compare_function(positioned1, positioned2):
-                delta = positioned2.coordinate - positioned1.coordinate
-                if unit_cell is not None:
-                    delta = unit_cell.shortest_vector(delta)
-                distance = numpy.linalg.norm(delta)
-                if distance < binned_atoms.gridsize:
-                    bond_order = bonds.bonded(self.molecule.numbers[positioned1.id], self.molecule.numbers[positioned2.id], distance)
-                    if bond_order != None:
-                        return bond_order, distance
-
-            bond_data = list(
-                (frozenset([labels[positioned.id] for positioned in key]), data)
-                for key, data
-                in IntraAnalyseNeighboringObjects(binned_atoms, compare_function)(unit_cell)
-            )
-            pairs = set(key for key, data in bond_data)
-        else:
-            pairs = set(frozenset(pair) for pair in pairs)
-            bond_data = []
-            for pair in pairs:
-                a,b = pair
-                delta = molecule.coordinates[a] - molecule.coordinates[b]
-                if unit_cell is not None:
-                    delta = unit_cell.shortest_vector(delta)
-                distance = numpy.linalg.norm(delta)
-                bond_order = bonds.bonded(self.molecule.numbers[a], self.molecule.numbers[b], distance)
-                bond_data.append((pair, (bond_order, distance)))
-
-        self.bond_orders = dict([(key, data[0]) for key, data in bond_data])
-        self.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
+    def __init__(self, pairs, numbers, labels=None):
         Graph.__init__(self, pairs, labels)
+        self.numbers = numbers
 
-    def subgraph(self, subnodes=None, subindices=None):
-        subnodes, subindices = self._complete_args(subnodes, subindices)
-        molecule = Molecule()
-        molecule.numbers = self.molecule.numbers[subindices]
-        molecule.coordinates = self.molecule.coordinates[subindices]
-        return MolecularGraph(molecule, subnodes)
+    def __mul__(self, other):
+        result = Graph.__mul__(self, other)
+        result.__class__ = MolecularGraph
+        numbers = numpy.zeros((other, len(self.numbers)), int)
+        numbers[:] = self.numbers
+        result.numbers = numbers.ravel()
+        return result
 
-    def randomized_molecule(self, max_tries=1000, bond_fraction=0.2, dihedral_rotation=numpy.pi, bending_rotation=0.14, nonbond_threshold_factor=2.0):
-        self.init_distances()
-        radii = numpy.array([periodic[number].radius for number in self.molecule.numbers], float)
+    __rmul__ = __mul__
 
-        def check(molecule):
-            # check that no atoms overlap
-            for index1, atom1 in enumerate(self.nodes):
-                for index2, atom2 in enumerate(self.nodes[:index1]):
-                    if self.get_distance(atom1, atom2) > 2:
-                        distance = numpy.linalg.norm(molecule.coordinates[index1] - molecule.coordinates[index2])
-                        if distance < nonbond_threshold_factor*(radii[index1] + radii[index2]):
-                            return False
-            return True
+    def subgraph(self, indexes=None):
+        result = Graph.subgraph(self, indexes)
+        result.__class__ = MolecularGraph
+        result.numbers = self.numbers[indexes]
+        return result
 
-        for counter in xrange(max_tries):
-            result = copy.deepcopy(self.molecule)
-            for atom1, atom2 in self.pairs:
-                delta = result.coordinates[atom1] - result.coordinates[atom2]
-                try:
-                    half_atoms = self.get_half(atom1, atom2)
-                except GraphError:
-                    continue
-                if half_atoms is not None:
-                    # Random bond stretch
-                    translation = delta*bond_fraction*numpy.random.uniform(-1, 1)
-                    for half_atom in half_atoms:
-                        result.coordinates[half_atom] += translation
-                    # Random dihedral rotation
-                    direction = delta / numpy.linalg.norm(delta)
-                    R1 = rotation_around_center(
-                        result.coordinates[atom1],
-                        numpy.random.uniform(-dihedral_rotation, dihedral_rotation),
-                        direction,
-                    )
-                    for half_atom in half_atoms:
-                        result.coordinates[half_atom] = R1.vector_apply(result.coordinates[half_atom])
-                    # Random bending angle rotation 1
-                    axis = random_orthonormal(direction)
-                    R2 = rotation_around_center(
-                        result.coordinates[atom1],
-                        numpy.random.uniform(-bending_rotation, +bending_rotation),
-                        axis,
-                    )
-                    for half_atom in half_atoms:
-                        result.coordinates[half_atom] = R2.vector_apply(result.coordinates[half_atom])
-                    # Random bending angle rotation 2
-                    axis = random_orthonormal(direction)
-                    R3 = rotation_around_center(
-                        result.coordinates[atom2],
-                        numpy.random.uniform(-bending_rotation, +bending_rotation),
-                        axis,
-                    )
-                    for half_atom in half_atoms:
-                        result.coordinates[half_atom] = R3.vector_apply(result.coordinates[half_atom])
 
-            result.coordinates -= result.coordinates.mean(axis=0)
+def generate_molecular_graph(molecule, labels=None, unit_cell=None):
+    if labels is None:
+        labels = range(len(molecule.numbers))
 
-            if not check(result):
+    def yield_positioned_atoms():
+        for index in xrange(len(labels)):
+            yield PositionedObject(index, molecule.coordinates[index])
+
+    binned_atoms = SparseBinnedObjects(yield_positioned_atoms(), bonds.max_length*bonds.bond_tolerance)
+
+    def compare_function(positioned1, positioned2):
+        delta = positioned2.coordinate - positioned1.coordinate
+        if unit_cell is not None:
+            delta = unit_cell.shortest_vector(delta)
+        distance = numpy.linalg.norm(delta)
+        if distance < binned_atoms.gridsize:
+            bond_order = bonds.bonded(molecule.numbers[positioned1.id], molecule.numbers[positioned2.id], distance)
+            if bond_order != None:
+                return bond_order, distance
+
+    bond_data = list(
+        (frozenset([labels[positioned.id] for positioned in key]), data)
+        for key, data
+        in IntraAnalyseNeighboringObjects(binned_atoms, compare_function)(unit_cell)
+    )
+    pairs = set(key for key, data in bond_data)
+
+    result = MolecularGraph(pairs, molecule.numbers, labels)
+    result.bond_data = bond_data
+    result.bond_orders = dict([(key, data[0]) for key, data in bond_data])
+    result.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
+    return result
+
+
+def randomized_molecule(graph, molecule, max_tries=1000, bond_fraction=0.2, dihedral_rotation=numpy.pi, bending_rotation=0.14, nonbond_threshold_factor=2.0):
+    graph.init_distances()
+    radii = numpy.array([periodic[number].radius for number in molecule.numbers], float)
+
+    def check(molecule):
+        # check that no atoms overlap
+        for index1, atom1 in enumerate(graph.nodes):
+            for index2, atom2 in enumerate(graph.nodes[:index1]):
+                if graph.get_distance(atom1, atom2) > 2:
+                    distance = numpy.linalg.norm(molecule.coordinates[index1] - molecule.coordinates[index2])
+                    if distance < nonbond_threshold_factor*(radii[index1] + radii[index2]):
+                        return False
+        return True
+
+    for counter in xrange(max_tries):
+        result = copy.deepcopy(molecule)
+        for atom1, atom2 in graph.pairs:
+            delta = result.coordinates[atom1] - result.coordinates[atom2]
+            try:
+                half_atoms = graph.get_half(atom1, atom2)
+            except GraphError:
                 continue
+            if half_atoms is not None:
+                # Random bond stretch
+                translation = delta*bond_fraction*numpy.random.uniform(-1, 1)
+                for half_atom in half_atoms:
+                    result.coordinates[half_atom] += translation
+                # Random dihedral rotation
+                direction = delta / numpy.linalg.norm(delta)
+                R1 = rotation_around_center(
+                    result.coordinates[atom1],
+                    numpy.random.uniform(-dihedral_rotation, dihedral_rotation),
+                    direction,
+                )
+                for half_atom in half_atoms:
+                    result.coordinates[half_atom] = R1.vector_apply(result.coordinates[half_atom])
+                # Random bending angle rotation 1
+                axis = random_orthonormal(direction)
+                R2 = rotation_around_center(
+                    result.coordinates[atom1],
+                    numpy.random.uniform(-bending_rotation, +bending_rotation),
+                    axis,
+                )
+                for half_atom in half_atoms:
+                    result.coordinates[half_atom] = R2.vector_apply(result.coordinates[half_atom])
+                # Random bending angle rotation 2
+                axis = random_orthonormal(direction)
+                R3 = rotation_around_center(
+                    result.coordinates[atom2],
+                    numpy.random.uniform(-bending_rotation, +bending_rotation),
+                    axis,
+                )
+                for half_atom in half_atoms:
+                    result.coordinates[half_atom] = R3.vector_apply(result.coordinates[half_atom])
 
-            return result
+        result.coordinates -= result.coordinates.mean(axis=0)
+
+        if not check(result):
+            continue
+
+        return result
 
 # molecular criteria
 
@@ -192,7 +209,7 @@ class HasAtomNumber(MolecularCriterion):
         self.number = number
 
     def __call__(self, atom):
-        return self.graph.molecule.numbers[self.graph.index[atom]] == self.number
+        return self.graph.numbers[self.graph.index[atom]] == self.number
 
 
 class HasNumNeighbors(MolecularCriterion):
@@ -212,7 +229,7 @@ class HasNeighborNumbers(MolecularCriterion):
         neighbors = self.graph.neighbors[atom]
         if not len(neighbors) == len(self.numbers):
             return
-        neighbors = [self.graph.molecule.numbers[self.graph.index[neighbor]] for neighbor in neighbors]
+        neighbors = [self.graph.numbers[self.graph.index[neighbor]] for neighbor in neighbors]
         neighbors.sort()
         return neighbors == self.numbers
 
@@ -331,7 +348,7 @@ def full_match(graph1, graph2):
 
     while len(mgs1) > 0:
         subgraph1 = mgs1.pop()
-        atom_criteria = dict((index, HasAtomNumber(number)) for index, number in zip(subgraph1.nodes, subgraph1.molecule.numbers))
+        atom_criteria = dict((index, HasAtomNumber(number)) for index, number in zip(subgraph1.nodes, subgraph1.numbers))
         md = MolecularExactMatchDefinition(subgraph1, [CriteriaSet(atom_criteria)])
         matched = False
         for subgraph2 in mgs2:

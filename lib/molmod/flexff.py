@@ -196,7 +196,7 @@ class NonbondTerm(EnergyTerm):
     def yield_pairs(self, graph):
         self.atom0_criterion.init_graph(graph)
         self.atom1_criterion.init_graph(graph)
-        n = len(graph.molecule.numbers)
+        n = len(graph.numbers)
         for atom0 in xrange(n):
             for atom1 in xrange(n):
                 if ((self.atom0_criterion(atom0) and self.atom1_criterion(atom1)) or
@@ -212,7 +212,7 @@ class NonbondTerm(EnergyTerm):
         # The nonbonding pairs are enumerated here
         self.indices = numpy.array(list(self.yield_pairs(graph)), int)
         #for row in self.indices:
-        #    print [graph.molecule.numbers[index] for index in row]
+        #    print [graph.numbers[index] for index in row]
 
     def _get_neighbor_cells(self, unit_cell):
         # enumerate all periodic images that might be relevant for the nonbonding

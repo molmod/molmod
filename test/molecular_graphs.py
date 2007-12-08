@@ -24,7 +24,7 @@ from molmod.data.bonds import BOND_SINGLE
 
 from ccio.xyz import XYZFile
 
-import unittest, copy
+import unittest, copy, numpy
 
 __all__ = ["MolecularGraphTestCase"]
 
@@ -32,7 +32,7 @@ __all__ = ["MolecularGraphTestCase"]
 class MolecularGraphTestCase(unittest.TestCase):
     def load_graph(self, filename):
         self.molecule = XYZFile(filename).get_molecule()
-        self.molecular_graph = MolecularGraph(self.molecule)
+        self.molecular_graph = generate_molecular_graph(self.molecule)
 
     def verify(self, expected_results, test_results, yield_alternatives):
         for key in test_results.iterkeys():
@@ -207,7 +207,7 @@ class MolecularGraphTestCase(unittest.TestCase):
 
     def test_randomized_molecule(self):
         self.load_graph("input/tpa.xyz")
-        self.molecular_graph.randomized_molecule()
+        randomized_molecule(self.molecular_graph, self.molecule)
 
     def test_full_match_on_self(self):
         self.load_graph("input/cyclopentane.xyz")
@@ -215,3 +215,13 @@ class MolecularGraphTestCase(unittest.TestCase):
         g2 = copy.deepcopy(self.molecular_graph)
         self.assert_(full_match(g1, g2) is not None)
 
+    def test_multiply(self):
+        numbers = numpy.array([12, 8, 8, 8, 8])
+        pairs = [(0,1), (0,2), (0,3), (0,4)]
+        mgraph = MolecularGraph(set([frozenset([a,b]) for a,b in pairs]), numbers)
+
+        check_pairs = [(0,1), (0,2), (0,3), (0,4), (5, 6), (5, 7), (5, 8), (5, 9), (10, 11), (10, 12), (10, 13), (10, 14)]
+        check_pairs = set([frozenset([a,b]) for a,b in check_pairs])
+        for check in [mgraph*3, 3*mgraph]:
+            self.assertEqual(len(check.pairs), 12)
+            self.assertEqual(check.pairs, check_pairs)

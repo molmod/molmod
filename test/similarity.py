@@ -19,7 +19,7 @@
 # --
 
 
-from molmod.molecular_graphs import MolecularGraph
+from molmod.molecular_graphs import generate_molecular_graph
 from molmod.units import angstrom
 from molmod.similarity import *
 
@@ -35,7 +35,7 @@ class SimilarityTestCase(unittest.TestCase):
     def get_molecules(self):
         tpa = XYZFile("input/tpa.xyz").get_molecule()
         tpa.title = "tpa"
-        graph = MolecularGraph(tpa)
+        graph = generate_molecular_graph(tpa)
         tpa1 = graph.randomized_molecule(1000, 0.1, 0.2, 0.07)
         tpa1.title = "tpa1"
         tpa2 = graph.randomized_molecule(1000, 0.2, 0.3, 0.1)

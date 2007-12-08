@@ -20,7 +20,7 @@
 
 
 from molmod.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
-from molmod.molecular_graphs import MolecularGraph, atom_criteria
+from molmod.molecular_graphs import generate_molecular_graph, atom_criteria
 from molmod.graphs import CriteriaSet
 from molmod.data.bonds import BOND_SINGLE
 from molmod.units import angstrom
@@ -36,7 +36,7 @@ __all__ = ["InternalCoordinatesTestCase", "ChainruleTestCase"]
 class InternalCoordinatesTestCase(unittest.TestCase):
     def setUp(self):
         self.molecule = XYZFile("input/tpa_optimized.xyz").get_molecule()
-        graph = MolecularGraph(self.molecule)
+        graph = generate_molecular_graph(self.molecule)
         self.ic_cache = InternalCoordinatesCache(graph)
 
     def verify(self, expected_results, internal_coordinates, yield_alternatives):
@@ -124,7 +124,7 @@ class InternalCoordinatesTestCase(unittest.TestCase):
 class ChainruleTestCase(unittest.TestCase):
     def setUp(self):
         self.ethene = XYZFile("input/ethene.xyz").get_molecule()
-        graph = MolecularGraph(self.ethene)
+        graph = generate_molecular_graph(self.ethene)
         self.ic_cache = InternalCoordinatesCache(graph)
 
     def create_external_basis(self, coordinates):

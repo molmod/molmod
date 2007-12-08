@@ -21,7 +21,7 @@
 
 from molmod.flexff import *
 from ccio.xyz import XYZFile
-from molmod.molecular_graphs import MolecularGraph, HasAtomNumber, MolecularAnd, HasNeighborNumbers
+from molmod.molecular_graphs import generate_molecular_graph, HasAtomNumber, MolecularAnd, HasNeighborNumbers
 from molmod.molecules import Molecule
 from molmod.unit_cell import UnitCell
 from molmod.units import angstrom
@@ -44,7 +44,7 @@ class FlexFFTestCase(unittest.TestCase):
                 ])*angstrom,
                 numpy.array([True, True, True], bool),
             )
-            molecular_graph = MolecularGraph(molecule)
+            molecular_graph = generate_molecular_graph(molecule)
             return molecule.coordinates, molecular_graph, unit_cell
         elif name == "sodalite_ethane":
             molecule = XYZFile("input/sodalite_ethane.xyz").get_molecule()
@@ -56,7 +56,7 @@ class FlexFFTestCase(unittest.TestCase):
                 ])*angstrom,
                 numpy.array([True, True, True], bool),
             )
-            molecular_graph = MolecularGraph(molecule)
+            molecular_graph = generate_molecular_graph(molecule)
             return molecule.coordinates, molecular_graph, unit_cell
         else:
             raise Exception("Unknown system.")

@@ -135,8 +135,14 @@ class Graph(object):
         pairs -- [frozenset([node1, node2]), ...]
 
         """
-        self.nodes = ordered_nodes
-        self.pairs = pairs
+        for pair in pairs:
+            if not (isinstance(pair, frozenset) and len(pair) == 2):
+                raise TypeError("The pairs must by frozen sets of exactly 2 elements each.")
+        self.pairs = set(pairs)
+        if ordered_nodes is None:
+            self.nodes = None
+        else:
+            self.nodes = numpy.array(ordered_nodes)
 
         self.index = None
         self.neighbors = None
@@ -149,23 +155,23 @@ class Graph(object):
         self.symmetries = None
         self.equivalent_nodes = None
 
-    def _complete_args(self, subnodes=None, subindices=None):
-        if subnodes is None:
-            if subindices is None:
-                raise GraphError("One must pass subnodes or subindices to subgraph.")
-            else:
-                subnodes = [self.nodes[subindex] for subindex in subindices]
-        else:
-            if subindices is None:
-                subindices = numpy.array([self.index[n] for n in subnodes])
-            else:
-                raise GraphError("One must pass subnodes or subindices to subgraph.")
-        return subnodes, subindices
+    def __mul__(self, repeat):
+        if not isinstance(repeat, int):
+            raise TypeError("Can only multiply a graph with an integer")
+        self.init_nodes()
+        self.init_index()
+        new_pairs = set([])
+        stride = len(self.nodes)
+        for i in xrange(repeat):
+            for node1, node2 in self.pairs:
+                new_pairs.add(frozenset([self.index[node1]+i*stride,self.index[node2]+i*stride]))
+        return Graph(new_pairs)
 
-    def subgraph(self, subnodes=None, subindices=None):
-        subnodes, subindices = self._complete_args(subnodes, subindices)
-        tmp = set(subnodes)
-        return Graph([pair for pair in self.pairs if pair.issubset(tmp)], subnodes)
+    __rmul__ = __mul__
+
+    def subgraph(self, indexes=None):
+        tmp = set(indexes)
+        return Graph([pair for pair in self.pairs if pair.issubset(tmp)], self.nodes[indexes])
 
     def init_nodes(self):
         if self.nodes is not None: return
@@ -174,12 +180,8 @@ class Graph(object):
         for a, b in self.pairs:
             tmp.add(a)
             tmp.add(b)
-        if self.nodes is None:
-            self.nodes = list(tmp)
-            self.nodes.sort()
-        else:
-            assert tmp.issubset(self.nodes)
-            assert len(tmp) == len(self.nodes)
+        self.nodes = numpy.array(list(tmp))
+        self.nodes.sort()
 
     def init_index(self):
         if (self.index is not None): return
@@ -301,7 +303,7 @@ class Graph(object):
 
             # this sort makes sure that the order of the nodes is respected
             group = list(group)
-            group.sort(key=(lambda node: self.nodes.index(node)))
+            group.sort(key=(lambda node: self.index[node]))
             result.append(group)
         return result
 

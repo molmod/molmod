@@ -39,7 +39,9 @@ class Molecule:
     def __init__(self, numbers=None, coordinates=None, title=None):
         self.numbers = numbers
         self.coordinates = coordinates
-        self.title = None
+        self.title = title
+
+    size = property(lambda self: self.numbers.shape[0])
 
     def dump_atoms(self, stream):
         for number, coordinate in zip(self.numbers, self.coordinates/angstrom):
