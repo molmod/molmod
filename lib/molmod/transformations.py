@@ -50,7 +50,7 @@ class Base(object):
     def gl_from_matrix(self, GL_MATRIX):
         # transpose because opengl=column-major and numpy=row-major
         from OpenGL.GL import glGetFloatv
-        self.from_matrix(numpy.array(glGetFloatv(GL_MATRIX), float).transpose())
+        self.from_matrix(glGetFloatv(GL_MATRIX))
 
     def invert(self):
         raise NotImplementedError
@@ -118,12 +118,12 @@ class Translation(Base):
         self.t = m[0:3, 3]
 
     def get_matrix(self):
-        temp = numpy.identity(4, float)
+        temp = numpy.array(numpy.identity(4, float), order='FORTRAN')
         temp[0:3, 3] = self.t
         return temp
 
     def get_inverse_matrix(self):
-        temp = numpy.identity(4, float)
+        temp = numpy.array(numpy.identity(4, float), order='FORTRAN')
         temp[0:3, 3] = -self.t
         return temp
 
@@ -198,24 +198,24 @@ class Rotation(Base):
         self.r = m[0:3, 0:3]
 
     def get_matrix(self):
-        temp = numpy.identity(4, float)
+        temp = numpy.array(numpy.identity(4, float), order='FORTRAN')
         temp[0:3, 0:3] = self.r
         return temp
 
     def get_inverse_matrix(self):
-        temp = numpy.identity(4, float)
+        temp = numpy.array(numpy.identity(4, float), order='FORTRAN')
         temp[0:3, 0:3] = self.r.transpose()
         return temp
 
     def gl_apply(self):
         from OpenGL.GL import glMultMatrixf
-        temp = numpy.identity(4, float)
+        temp = numpy.array(numpy.identity(4, float), order='FORTRAN')
         temp[0:3, 0:3] = self.r.transpose()
         glMultMatrixf(temp)
 
     def gl_apply_inverse(self):
         from OpenGL.GL import glMultMatrixf
-        temp = numpy.identity(4, float)
+        temp = numpy.array(numpy.identity(4, float), order='FORTRAN')
         temp[0:3, 0:3] = self.r
         glMultMatrixf(temp)
 
@@ -341,11 +341,11 @@ class Complete(Translation, Rotation):
 
     def gl_apply(self):
         from OpenGL.GL import glMultMatrixf
-        glMultMatrixf(self.get_matrix().transpose())
+        glMultMatrixf(self.get_matrix())
 
     def gl_apply_inverse(self):
         from OpenGL.GL import glMultMatrixf
-        glMultMatrixf(self.get_inverse_matrix().transpose())
+        glMultMatrixf(self.get_inverse_matrix())
 
     def invert(self):
         self.r = self.r.transpose()
