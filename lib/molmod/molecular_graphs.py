@@ -43,8 +43,8 @@ __all__ = [
 
 
 class MolecularGraph(Graph):
-    def __init__(self, pairs, numbers, labels=None):
-        Graph.__init__(self, pairs, labels)
+    def __init__(self, pairs, numbers, ordered_nodes=None):
+        Graph.__init__(self, pairs, ordered_nodes)
         self.numbers = numbers
 
     def __mul__(self, other):

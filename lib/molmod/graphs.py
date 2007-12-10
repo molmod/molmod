@@ -171,7 +171,7 @@ class Graph(object):
 
     def subgraph(self, indexes=None):
         tmp = set(indexes)
-        return Graph([pair for pair in self.pairs if pair.issubset(tmp)], self.nodes[indexes])
+        return Graph(set([pair for pair in self.pairs if pair.issubset(tmp)]), self.nodes[indexes])
 
     def init_nodes(self):
         if self.nodes is not None: return
