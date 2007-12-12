@@ -8,6 +8,3 @@ include /usr/share/cdbs/1/class/python-distutils.mk
 
 # Add here any variable or target overrides you need.
 
-# Uncommend this line for builds on the amd64 architecture
-# with numpy < 1.0.3
-export FARCH='-march=nocona'
