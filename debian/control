@@ -3,8 +3,7 @@ Section: science
 Priority: extra
 Maintainer: Toon Verstraelen <Toon.Verstraelen@UGent.be>
 Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5), python (>= 2.4),
- python-support (>= 0.5.3), python-all-dev (>= 2.3.5-11), 
- python-numpy-dev (>= 1.0.1)
+ python-support (>= 0.5.3)
 Standards-Version: 3.7.2
 
 Package: python-molmod
