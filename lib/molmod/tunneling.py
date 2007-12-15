@@ -63,7 +63,7 @@ shows how the tunneling module works:
 
 
 from molmod.units import unified, kjmol
-from molmod.constants import boltzman
+from molmod.constants import boltzmann
 
 from scipy.integrate import quad, Inf
 import numpy
@@ -108,7 +108,7 @@ def eckart(T, Ef, Er, nu):
         )
 
     def integrandum(E):
-        return P(E)*numpy.exp(-(E-Ef)/(boltzman*T))
+        return P(E)*numpy.exp(-(E-Ef)/(boltzmann*T))
     emin=max([0, Ef-Er])
     emax=500*kjmol
     energies = numpy.arange(emin, emax, 1*kjmol)
@@ -117,7 +117,7 @@ def eckart(T, Ef, Er, nu):
         print "Integrandum is not negligible at borders.", integranda[0] / max(integranda), integranda[-1] / max(integranda)
 
     integral, error = quad(integrandum, emin, emax)
-    factor = 1.0/(boltzman*T)
+    factor = 1.0/(boltzmann*T)
     return integral*factor, error*factor
 eckart.label = "eckart"
 
@@ -134,7 +134,7 @@ def wigner(T, nu):
         error  --  Always zero
     """
 
-    return 1 + (h*nu/(boltzman*T))**2/24, 0.0
+    return 1 + (h*nu/(boltzmann*T))**2/24, 0.0
 wigner.label = "wigner"
 
 

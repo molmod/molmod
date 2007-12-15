@@ -20,7 +20,7 @@
 
 # Some useful physicochemical constants in atomic units:
 
-boltzman = 3.1668154051341965e-06
+boltzmann = 3.1668154051341965e-06
 avogadro = 6.0221415e23
 lightspeed = 137.03599975303575
 
