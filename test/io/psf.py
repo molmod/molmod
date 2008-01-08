@@ -19,18 +19,26 @@
 # --
 
 
-from molmod.molecules import *
-
+from molmod.io.psf import PSFFile
 from molmod.io.xyz import XYZFile
 
-import unittest
+import numpy, unittest
 
 
-__all__ = ["MoleculeTestCase"]
+__all__ = ["PSFTestCase"]
 
 
-class MoleculeTestCase(unittest.TestCase):
-    def test_random_dimer(self):
-        molecule = XYZFile("input/tpa.xyz").get_molecule()
-        random_dimer(molecule, molecule)
+class PSFTestCase(unittest.TestCase):
+    def test_load(self):
+        p = PSFFile("input/thf.psf")
+        self.assert_(p.bonds.shape[0] == 832)
+        self.assert_(p.bends.shape[0] == 1600)
+        self.assert_(p.dihedrals.shape[0] == 2112)
+        g = p.get_graph()
+
+    def test_dump(self):
+        m = XYZFile("input/thf.xyz").get_molecule()
+        p = PSFFile()
+        p.add_molecule(m)
+        p.write_to_file("output/thf.psf")
 

@@ -23,7 +23,7 @@ from molmod.molecular_graphs import generate_molecular_graph
 from molmod.units import angstrom
 from molmod.similarity import *
 
-from ccio.xyz import XYZFile
+from molmod.io.xyz import XYZFile
 
 import unittest, numpy
 

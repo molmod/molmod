@@ -20,7 +20,7 @@
 
 
 from molmod.flexff import *
-from ccio.xyz import XYZFile
+from molmod.io.xyz import XYZFile
 from molmod.molecular_graphs import generate_molecular_graph, HasAtomNumber, MolecularAnd, HasNeighborNumbers
 from molmod.molecules import Molecule
 from molmod.unit_cell import UnitCell

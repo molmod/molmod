@@ -34,6 +34,9 @@ if __name__ == "__main__":
         packages=[
             'molmod',
             'molmod.data',
+            'molmod.io',
+            'molmod.io.gaussian03',
+            'molmod.io.mpqc',
         ],
         data_files=[
             ('share/molmod', glob.glob('share/*.csv') + [

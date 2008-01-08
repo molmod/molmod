@@ -19,18 +19,18 @@
 # --
 
 
-from molmod.molecules import *
-
-from molmod.io.xyz import XYZFile
+from molmod.io.gdma import *
 
 import unittest
 
 
-__all__ = ["MoleculeTestCase"]
+__all__ = ["GDMAExample"]
 
 
-class MoleculeTestCase(unittest.TestCase):
-    def test_random_dimer(self):
-        molecule = XYZFile("input/tpa.xyz").get_molecule()
-        random_dimer(molecule, molecule)
+class GDMAExample(unittest.TestCase):
+    def test_gdma(self):
+        foo = GDMA("input/2TOH.geom0.gdma.out")
+        #print foo.multipoles
+
+
 

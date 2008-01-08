@@ -19,18 +19,8 @@
 # --
 
 
-from molmod.molecules import *
-
-from molmod.io.xyz import XYZFile
-
-import unittest
+from fchk import *
+from file_parsers import *
 
 
-__all__ = ["MoleculeTestCase"]
-
-
-class MoleculeTestCase(unittest.TestCase):
-    def test_random_dimer(self):
-        molecule = XYZFile("input/tpa.xyz").get_molecule()
-        random_dimer(molecule, molecule)
 

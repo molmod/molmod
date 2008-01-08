@@ -23,7 +23,7 @@ from molmod.data.periodic import periodic
 from molmod.descriptors import MolecularDescriptorTV1, sph_harmonics
 from molmod.transformations import Complete
 
-from ccio.xyz import XYZFile
+from molmod.io.xyz import XYZFile
 
 import numpy
 
