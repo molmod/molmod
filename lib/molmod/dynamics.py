@@ -19,7 +19,7 @@
 # --
 
 
-from molmod.constants import boltzman
+from molmod.constants import boltzmann
 import numpy, pickle
 
 
@@ -75,7 +75,7 @@ class Fix(object):
 
 class VelocityScaler(Fix):
     def __init__(self, skip, temperature):
-        self.ke = temperature*boltzman
+        self.ke = temperature*boltzmann
         Fix.__init__(self, skip)
 
     def run(self, vi):
@@ -124,7 +124,7 @@ class VerletIntegrator(TrajectoryMaker):
         self.energies.append(potential_energy + kinetic_energy)
         step = len(self.times)
         self.times.append(step*self.time_step)
-        self.temperatures.append(kinetic_energy/boltzman/self.dof)
+        self.temperatures.append(kinetic_energy/boltzmann/self.dof)
         self.gradients.append(self.gradient)
 
         self.verbose()
@@ -154,7 +154,7 @@ class VerletIntegrator(TrajectoryMaker):
         self.initialize_state(initial_state, initial_velocities)
 
     def initialize_temperature(self, initial_state, temperature, exact=False):
-        self.initialize_kinetic_energy(initial_state, temperature*boltzman, exact)
+        self.initialize_kinetic_energy(initial_state, temperature*boltzmann, exact)
 
 
 class ConjugateGradientOptimizer(TrajectoryMaker):
