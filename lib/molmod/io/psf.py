@@ -105,7 +105,6 @@ class PSFFile(object):
             tmp.extend(int(word) for word in line.split())
         self.dihedrals = numpy.reshape(numpy.array(tmp), (-1,4))-1
 
-
     def _get_name(self, graph, group=None):
         #print "numbers", graph.numbers
         if group is not None:
@@ -121,7 +120,6 @@ class PSFFile(object):
         self.name_cache[name] = graph
         #print "-"*20
         return name
-
 
     def write_to_file(self, filename):
         f = file(filename, 'w')
@@ -287,4 +285,11 @@ class PSFFile(object):
     def get_molecular_graph(self, labels=None):
         return MolecularGraph(set(frozenset(bond) for bond in self.bonds), self.numbers, labels)
 
-
+    def get_groups(self):
+        groups = []
+        for a_index, m_index in enumerate(self.molecules):
+            if m_index >= len(groups):
+                groups.append([a_index])
+            else:
+                groups[m_index].append(a_index)
+        return groups
