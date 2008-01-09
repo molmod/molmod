@@ -42,7 +42,7 @@ def parse_unit(expression):
         g = globals()
         return float(eval(expression, g))
     except:
-        raise ValueError("Could not interpret %s as a unit or a measure." % s)
+        raise ValueError("Could not interpret '%s' as a unit or a measure." % expression)
 
 
 # *** Generic ***
