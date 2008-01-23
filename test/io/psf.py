@@ -42,3 +42,10 @@ class PSFTestCase(unittest.TestCase):
         p.add_molecule(m)
         p.write_to_file("output/thf.psf")
 
+    def test_tetra(self):
+        molecule = XYZFile("input/tetra.xyz").get_molecule()
+        psf = PSFFile()
+        psf.add_molecule(molecule)
+        self.assert_(psf.bonds.shape[0] == 4)
+        self.assert_(psf.bends.shape[0] == 6)
+

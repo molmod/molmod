@@ -239,7 +239,7 @@ class PSFFile(object):
 
 
         # add bonds
-        match_generator = MatchGenerator(BondMatchDefinition())
+        match_generator = MatchGenerator(BondMatchDefinition([CriteriaSet()]))
         tmp = numpy.array([[
             match.get_destination(0),
             match.get_destination(1),
@@ -251,7 +251,7 @@ class PSFFile(object):
             self.bonds[-len(tmp):] = tmp
             self.bonds[-len(tmp):] += offset
 
-        match_generator = MatchGenerator(BendingAngleMatchDefinition())
+        match_generator = MatchGenerator(BendingAngleMatchDefinition([CriteriaSet()]))
         tmp = numpy.array([[
             match.get_destination(0),
             match.get_destination(1),
@@ -265,7 +265,7 @@ class PSFFile(object):
             self.bends[-len(tmp):] += offset
 
 
-        match_generator = MatchGenerator(DihedralAngleMatchDefinition())
+        match_generator = MatchGenerator(DihedralAngleMatchDefinition([CriteriaSet()]))
         tmp = numpy.array([[
             match.get_destination(0),
             match.get_destination(1),
