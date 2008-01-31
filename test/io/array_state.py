@@ -18,9 +18,31 @@
 #
 # --
 
-from cp2k import *
-from gaussian03 import *
-from gdma import *
-from psf import *
-from array_state import *
 
+from common import BaseTestCase
+
+from molmod.io.array_state import *
+
+import numpy, unittest
+
+
+__all__ = ["ArrayStateTestCase"]
+
+
+class TestObject(object):
+    def __init__(self):
+        self.a = numpy.random.normal(0, 1, (5, 3))
+        self.b = numpy.random.randint(0, 40, (4, 7, 9))
+        self.state = ArrayState()
+        self.state.set_field("a", self.a)
+        self.state.set_field("b", self.b)
+
+
+class ArrayStateTestCase(BaseTestCase):
+    def test_consistency(self):
+        test1 = TestObject()
+        test1.state.dump("output/test")
+        test2 = TestObject()
+        test2.state.load("output/test")
+        self.assertArraysAlmostEqual(test1.a, test2.a, 1e-10)
+        self.assertArraysAlmostEqual(test1.b, test2.b, 1e-10)
