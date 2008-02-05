@@ -75,7 +75,7 @@ class ArrayState(object):
                 print >> f
         f.close()
 
-    def load(self, filename):
+    def load(self, filename, subset=None):
         f = file(filename, "r")
         array = None
         name = None
@@ -113,13 +113,14 @@ class ArrayState(object):
                 counter = 0
                 counter_limit = array.size
 
-                self._fields[name]
+                skip = ((subset is not None) and (name not in subset))
             else:
                 words = line.split()
                 for word in words:
                     if counter >= counter_limit:
                         raise FileError("Wrong array data: too many values.")
-                    array.flat[counter] = float(word)
+                    if not skip:
+                        array.flat[counter] = float(word)
                     counter += 1
                 if counter == counter_limit:
                     # time for the next array

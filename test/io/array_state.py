@@ -46,3 +46,6 @@ class ArrayStateTestCase(BaseTestCase):
         test2.state.load("output/test")
         self.assertArraysAlmostEqual(test1.a, test2.a, 1e-10)
         self.assertArraysAlmostEqual(test1.b, test2.b, 1e-10)
+        test2.b[:] = 0.0
+        test2.state.load("output/test", ["a"])
+        self.assertAlmostEqual(abs(test2.b).max(), 0.0)
