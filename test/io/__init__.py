@@ -22,5 +22,5 @@ from cp2k import *
 from gaussian03 import *
 from gdma import *
 from psf import *
-from array_state import *
+from number_state import *
 

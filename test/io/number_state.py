@@ -21,24 +21,28 @@
 
 from common import BaseTestCase
 
-from molmod.io.array_state import *
+from molmod.io.number_state import *
 
 import numpy, unittest
 
 
-__all__ = ["ArrayStateTestCase"]
+__all__ = ["NumberStateTestCase"]
 
 
 class TestObject(object):
     def __init__(self):
         self.a = numpy.random.normal(0, 1, (5, 3))
         self.b = numpy.random.randint(0, 40, (4, 7, 9))
-        self.state = ArrayState()
-        self.state.set_field("a", self.a)
-        self.state.set_field("b", self.b)
+        self.c = numpy.random.normal(0, 2)
+        self.d = numpy.random.randint(0, 10)
+        self.state = NumberState()
+        self.state.set_field("a", ArrayAttr(self.a))
+        self.state.set_field("b", ArrayAttr(self.b))
+        self.state.set_field("c", ImmutableAttr(self, "c"))
+        self.state.set_field("d", ImmutableAttr(self, "d"))
 
 
-class ArrayStateTestCase(BaseTestCase):
+class NumberStateTestCase(BaseTestCase):
     def test_consistency(self):
         test1 = TestObject()
         test1.state.dump("output/test")
@@ -46,6 +50,14 @@ class ArrayStateTestCase(BaseTestCase):
         test2.state.load("output/test")
         self.assertArraysAlmostEqual(test1.a, test2.a, 1e-10)
         self.assertArraysAlmostEqual(test1.b, test2.b, 1e-10)
-        test2.b[:] = 0.0
-        test2.state.load("output/test", ["a"])
+        self.assertAlmostEqual(test1.c, test2.c)
+        self.assertAlmostEqual(test1.d, test2.d)
+        test2.a[:] = 0.0
+        test2.b[:] = 0
+        test2.c = 0.0
+        test2.d = 0
+        test2.state.load("output/test", ["a", "d"])
+        self.assertArraysAlmostEqual(test1.a, test2.a, 1e-10)
         self.assertAlmostEqual(abs(test2.b).max(), 0.0)
+        self.assertAlmostEqual(test2.c, 0.0)
+        self.assertAlmostEqual(test1.d, test2.d)
