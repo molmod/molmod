@@ -34,10 +34,10 @@ class FileError(Exception):
 class StateAttr(object):
     def get(self, copy=False):
         raise NotImplementedError
-    
+
     def get_kind(self, value):
         raise NotImplementedError
-    
+
     def set(self, value):
         raise NotImplementedError
 
@@ -46,18 +46,18 @@ class ImmutableAttr(StateAttr):
     def __init__(self, owner, name):
         self.owner = owner
         self.name = name
-    
+
     def get(self, copy=False):
         return getattr(self.owner, self.name)
-    
+
     def get_kind(self, value):
         if isinstance(value, float):
             return 'f'
         elif isinstance(value, int) or isinstance(value, long):
-            return 'i'        
+            return 'i'
         else:
             raise ValueError("Only integer or floating point values can be stored.")
-    
+
     def set(self, value):
         setattr(self.owner, self.name, value)
 
@@ -73,16 +73,16 @@ class ArrayAttr(StateAttr):
         self.array = array
         if array.dtype.fields is not None:
             raise ValueError("Record arrays are not supported yet.")
-    
+
     def get(self, copy=False):
         if copy:
             return self.array.copy()
         else:
             return self.array
-    
+
     def get_kind(self, value):
         return value.dtype.kind
-    
+
     def set(self, value):
         self.array[:] = value
 
@@ -102,7 +102,7 @@ class ArrayAttr(StateAttr):
                 print >> f
         if counter % 4 != 0:
             print >> f
-    
+
     def load(self, f, skip):
         counter = 0
         counter_limit = self.array.size
@@ -196,7 +196,7 @@ class NumberState(object):
                         attr.set(float(words[2][6:]))
             else:
                 raise FileError("Malformatted array header line. (shape/value)")
-            
+
             num_names += 1
 
         if num_names != len(self._fields) and subset is None:
