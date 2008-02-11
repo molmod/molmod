@@ -23,7 +23,9 @@ import numpy
 from molmod.data.periodic import periodic
 from molmod.units import unified
 from molmod.graphs import CriteriaSet, MatchGenerator
-from molmod.molecular_graphs import MolecularGraph, generate_molecular_graph, BondMatchDefinition, BendingAngleMatchDefinition, DihedralAngleMatchDefinition, full_match
+from molmod.molecular_graphs import MolecularGraph, generate_molecular_graph, \
+    BondMatchDefinition, BendingAngleMatchDefinition, \
+    DihedralAngleMatchDefinition, MolecularExactMatchDefinition, HasAtomNumber
 from molmod.graphs import Graph
 
 
@@ -106,6 +108,17 @@ class PSFFile(object):
         self.dihedrals = numpy.reshape(numpy.array(tmp), (-1,4))-1
 
     def _get_name(self, graph, group=None):
+        def compare(g1, g2):
+            if len(g1.pairs) != len(g2.pairs): return False
+            if len(g1.nodes) != len(g2.nodes): return False
+            atom_criteria = dict((index, HasAtomNumber(number)) for index, number in zip(g1.nodes, g1.numbers))
+            md = MolecularExactMatchDefinition(g1, [CriteriaSet(atom_criteria)])
+            try:
+                match = MatchGenerator(md,debug=False)(g2,one_match=True).next()
+                return True
+            except StopIteration:
+                return False
+
         #print "numbers", graph.numbers
         if group is not None:
             #print "selecting", group
@@ -113,8 +126,10 @@ class PSFFile(object):
         #print "numbers", graph.numbers
         for name, ref_graph in self.name_cache.iteritems():
             #print "trying", name, ref_graph, "==", graph
-            if full_match(graph, ref_graph) is not None:
+            if compare(graph, ref_graph) is not None:
+                #print "YES", name
                 return name
+            #print "NO"
         name = "NM%02i" % len(self.name_cache)
         #print "setting", name, graph
         self.name_cache[name] = graph
