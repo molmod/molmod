@@ -16,6 +16,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
+# Contact information:
+#
+# Supervisors
+#
+# Prof. Dr. Michel Waroquier and Prof. Dr. Ir. Veronique Van Speybroeck
+#
+# Center for Molecular Modeling
+# Ghent University
+# Proeftuinstraat 86, B-9000 GENT - BELGIUM
+# Tel: +32 9 264 65 59
+# Fax: +32 9 264 65 60
+# Email: Michel.Waroquier@UGent.be
+# Email: Veronique.VanSpeybroeck@UGent.be
+#
+# Author
+#
+# Ir. Toon Verstraelen
+# Center for Molecular Modeling
+# Ghent University
+# Proeftuinstraat 86, B-9000 GENT - BELGIUM
+# Tel: +32 9 264 65 56
+# Email: Toon.Verstraelen@UGent.be
+#
 # --
 
 
@@ -84,5 +107,6 @@ class Apply(unittest.TestCase):
                 t = numpy.dot(tt1.r, -numpy.dot(numpy.transpose(tt2.r), tt2.t)) + tt1.t
                 translation_error = numpy.sum((t - temp.t)**2)/3.0
                 self.assertAlmostEqual(translation_error, 0)
+
 
 

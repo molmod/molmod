@@ -16,6 +16,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
+# Contact information:
+#
+# Supervisors
+#
+# Prof. Dr. Michel Waroquier and Prof. Dr. Ir. Veronique Van Speybroeck
+#
+# Center for Molecular Modeling
+# Ghent University
+# Proeftuinstraat 86, B-9000 GENT - BELGIUM
+# Tel: +32 9 264 65 59
+# Fax: +32 9 264 65 60
+# Email: Michel.Waroquier@UGent.be
+# Email: Veronique.VanSpeybroeck@UGent.be
+#
+# Author
+#
+# Ir. Toon Verstraelen
+# Center for Molecular Modeling
+# Ghent University
+# Proeftuinstraat 86, B-9000 GENT - BELGIUM
+# Tel: +32 9 264 65 56
+# Email: Toon.Verstraelen@UGent.be
+#
 # --
 
 
@@ -53,3 +76,4 @@ class BaseTestCase(unittest.TestCase):
     def assertArrayAlmostZero(self, arr, abserr_threshold):
         abserr = abs(arr).max()
         self.assert_(abserr <= abserr_threshold, "The absolute error is larger than given threshold: %5.3e > %5.3e" % (abserr, abserr_threshold))
+

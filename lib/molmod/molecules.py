@@ -16,6 +16,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
+# Contact information:
+#
+# Supervisors
+#
+# Prof. Dr. Michel Waroquier and Prof. Dr. Ir. Veronique Van Speybroeck
+#
+# Center for Molecular Modeling
+# Ghent University
+# Proeftuinstraat 86, B-9000 GENT - BELGIUM
+# Tel: +32 9 264 65 59
+# Fax: +32 9 264 65 60
+# Email: Michel.Waroquier@UGent.be
+# Email: Veronique.VanSpeybroeck@UGent.be
+#
+# Author
+#
+# Ir. Toon Verstraelen
+# Center for Molecular Modeling
+# Ghent University
+# Proeftuinstraat 86, B-9000 GENT - BELGIUM
+# Tel: +32 9 264 65 56
+# Email: Toon.Verstraelen@UGent.be
+#
 # --
 
 from molmod.data.periodic import periodic
@@ -148,4 +171,5 @@ def random_dimer(molecule1, molecule2, dmin=5, dmax=20, max_iter=1000, nonbond_t
             result.numbers = numpy.concatenate((molecule1.numbers, molecule2.numbers))
             result.coordinates = numpy.concatenate((c1, c2))
             return result
+
 

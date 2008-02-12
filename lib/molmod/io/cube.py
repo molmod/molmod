@@ -16,6 +16,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
+# Contact information:
+#
+# Supervisors
+#
+# Prof. Dr. Michel Waroquier and Prof. Dr. Ir. Veronique Van Speybroeck
+#
+# Center for Molecular Modeling
+# Ghent University
+# Proeftuinstraat 86, B-9000 GENT - BELGIUM
+# Tel: +32 9 264 65 59
+# Fax: +32 9 264 65 60
+# Email: Michel.Waroquier@UGent.be
+# Email: Veronique.VanSpeybroeck@UGent.be
+#
+# Author
+#
+# Ir. Toon Verstraelen
+# Center for Molecular Modeling
+# Ghent University
+# Proeftuinstraat 86, B-9000 GENT - BELGIUM
+# Tel: +32 9 264 65 56
+# Email: Toon.Verstraelen@UGent.be
+#
 # --
 
 
@@ -130,6 +153,7 @@ class Cube(Grid):
                 volumes += abs(numpy.linalg.det(numpy.array([x, y, z], float)))
 
         Grid.__init__(self, points, volumes, {label: data})
+
 
 
 
