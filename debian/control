@@ -7,7 +7,7 @@ Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5), python (>= 2.4),
 Standards-Version: 3.7.2
 
 Package: python-molmod
-Architecture: any
+Architecture: all
 Depends: ${python:Depends}, ${shlibs:Depends}, python-numpy (>= 1.0.1), 
  python-scipy (>= 0.5.2)
 Provides: ${python:Provides}

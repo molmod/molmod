@@ -16,29 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-# Contact information:
-#
-# Supervisors
-#
-# Prof. Dr. Michel Waroquier and Prof. Dr. Ir. Veronique Van Speybroeck
-#
-# Center for Molecular Modeling
-# Ghent University
-# Proeftuinstraat 86, B-9000 GENT - BELGIUM
-# Tel: +32 9 264 65 59
-# Fax: +32 9 264 65 60
-# Email: Michel.Waroquier@UGent.be
-# Email: Veronique.VanSpeybroeck@UGent.be
-#
-# Author
-#
-# Ir. Toon Verstraelen
-# Center for Molecular Modeling
-# Ghent University
-# Proeftuinstraat 86, B-9000 GENT - BELGIUM
-# Tel: +32 9 264 65 56
-# Email: Toon.Verstraelen@UGent.be
-#
 # --
 
 
@@ -257,5 +234,6 @@ class GraphsTestCase(unittest.TestCase):
         )
         result = g.get_nodes_per_independent_graph()
         self.assert_(result == [[0, 2, 4, 1, 3, 5], [6, 8, 10, 7, 9, 11]])
+
 
 

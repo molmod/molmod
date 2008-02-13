@@ -7,20 +7,21 @@ Contents of this README File:
  * How to install
  * How to get technical support
  * Become a registered user
- * Author
+ * Contact information
 
 
 Short description
 -----------------
 
-MolMod is a python package that is used by Zeobuilder. Zeobuilder is a GUI
-toolkit for the interactive construction of complex molecular models. MolMod
-groups a series of modules that are usefull for analyzing molecular modeling
-simulations, and for setting op complex input files. MolMod can also be used as
-a library for batch work, independent of Zeobuilder.
+MolMod is a python package that is used by Zeobuilder and Tracks. Zeobuilder is
+a GUI toolkit for the interactive construction of complex molecular models. 
+Tracks is a collection of molecular dynamics and monte carlo analysis scripts.
+MolMod groups a series of modules that are usefull for analyzing molecular
+modeling simulations, and for setting op complex input files. MolMod can also
+be used as a library for batch work, independent of Zeobuilder or Tracks.
 
-More information about MolMod can be found on the Zeobuilder website:
-https://molmod.UGent.be/zeobuilder
+More information about MolMod can be found on the CMM Code website:
+https://molmod.UGent.be/code/
 
 
 License
@@ -45,14 +46,14 @@ How to install
 --------------
 
 There are several ways to install MolMod, which are all documented
-at the homepage: https://molmod.UGent.be/zeobuilder
+at the homepage: https://molmod.UGent.be/code/
 
 
 How to get technical support
 ----------------------------
 
-Technical support is availlable for all registered Zeobuilder users. All
-information can be found at: https://molmod.UGent.be/zeobuilder
+Technical support is availlable for all registered CMM Code users. All
+information can be found at: https://molmod.UGent.be/code/
 
 
 Become a registered user
@@ -61,27 +62,42 @@ Become a registered user
 There are 5 good reasons to become a registered user:
 
  1.  Through your registration, we can prove that people are really using
- Zeobuilder and the related packages for their scientific work. This facilitates
- the fund-raising process and guarantees the continuity of this project.
+ softwarde developed at the Center for Molecular Modeling for their 
+ scientific work. This facilitates the fund-raising process and guarantees 
+ the continuity of these projects.
 
- 2. It blocks spammers from unauthorized access to all online Zeobuilder
+ 2. It blocks spammers from unauthorized access to all online CMM Code
  services.
  
- 3. A registered user can subscribe to the Zeobuilder mailing lists.
+ 3. A registered user can subscribe to the CMM Code mailing lists.
  
  4. A registered user is allowed to edit the wiki pages to increase the
- visibility of his/her Zeobuilder-related work.
+ visibility of his/her related work.
  
  5. Registered users are allowed to submit bugs. If time permits, we will fix
- your problems in the next bug-fix release of Zeobuilder.
+ your problems in the next bug-fix release of MolMod.
 
 
-If you think this software is useful, consider to register as a Zeobuilder user:
-https://molmod.UGent.be/zeobuilder/registration/
+If you think this software is useful, consider to register as a CMM Code user:
+https://molmod.UGent.be/code/registration/
 
 
-Author
-------
+Contact information
+-------------------
+
+Supervisors:
+
+Prof. Dr. Michel Waroquier and Prof. Dr. Ir. Veronique Van Speybroeck
+
+Center for Molecular Modeling
+Ghent University
+Proeftuinstraat 86, B-9000 GENT - BELGIUM
+Tel: +32 9 264 65 59
+Fax: +32 9 264 65 60
+Email: Michel.Waroquier@UGent.be
+Email: Veronique.VanSpeybroeck@UGent.be 
+
+Author:
 
 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 Center for Molecular Modeling

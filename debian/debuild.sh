@@ -1,2 +1,2 @@
 #!/bin/bash
-debuild --check-dirname-regex 'molmod(-.*)?' -us -uc
+debuild --check-dirname-regex 'molmod(-.*)?'

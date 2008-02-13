@@ -16,29 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-# Contact information:
-#
-# Supervisors
-#
-# Prof. Dr. Michel Waroquier and Prof. Dr. Ir. Veronique Van Speybroeck
-#
-# Center for Molecular Modeling
-# Ghent University
-# Proeftuinstraat 86, B-9000 GENT - BELGIUM
-# Tel: +32 9 264 65 59
-# Fax: +32 9 264 65 60
-# Email: Michel.Waroquier@UGent.be
-# Email: Veronique.VanSpeybroeck@UGent.be
-#
-# Author
-#
-# Ir. Toon Verstraelen
-# Center for Molecular Modeling
-# Ghent University
-# Proeftuinstraat 86, B-9000 GENT - BELGIUM
-# Tel: +32 9 264 65 56
-# Email: Toon.Verstraelen@UGent.be
-#
 # --
 
 import unittest, numpy
@@ -80,6 +57,7 @@ class QuaternionTestCase(unittest.TestCase):
         r3 = numpy.dot(r1, r2)
         foo, q3_check = quaternion_from_rotation_matrix(r3)
         self.assert_((abs(q3-q3_check).max() < 1e-10) or (abs(q3+q3_check).max() < 1e-10))
+
 
 
 
