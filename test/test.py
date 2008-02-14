@@ -19,12 +19,17 @@
 # --
 
 
-import sys, glob, os
-retcode = os.system("(cd ..; python setup.py build)")
-if retcode != 0: sys.exit(retcode)
-sys.path.insert(0, glob.glob("../build/lib*")[0])
+import sys, os
 
-import os
+if '-i' in sys.argv:
+    # use the installed library for testing
+    sys.argv.remove('-i')
+else:
+    import glob
+    retcode = os.system("(cd ..; python setup.py build)")
+    if retcode != 0: sys.exit(retcode)
+    sys.path.insert(0, glob.glob("../build/lib*")[0])
+
 if not os.path.exists("output"):
     os.mkdir("output")
 
