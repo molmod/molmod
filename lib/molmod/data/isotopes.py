@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -93,6 +93,7 @@ class NubTab03(object):
 
 
 nubtab03 = NubTab03(os.path.join(context.share_path, "nubtab03.asc"))
+
 
 
 

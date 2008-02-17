@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -389,6 +389,7 @@ def random_rotation():
     result.r[:,1] = numpy.cos(angle)*y - numpy.sin(angle)*z
     result.r[:,2] = numpy.sin(angle)*y + numpy.cos(angle)*z
     return result
+
 
 
 

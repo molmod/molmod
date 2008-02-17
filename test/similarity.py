@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -74,6 +74,7 @@ class SimilarityTestCase(unittest.TestCase):
                 similarity = calculate_similarity(molecule1.distances, molecule2.distances, margin, radius)/molecule1.norm/molecule2.norm
                 if verbose: print ("%14.3f" % similarity),
             if verbose: print
+
 
 
 

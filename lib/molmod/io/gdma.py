@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -117,6 +117,7 @@ class GDMA(object):
                     return norm_lines, poles_lines, line
             else:
                 last_poles.extend(float(word) for index, word in enumerate(words) if index%2 == 1)
+
 
 
 

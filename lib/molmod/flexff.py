@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -314,6 +314,7 @@ class ForceField(object):
         for term in self.terms:
             energy_sum += term(coordinates, gradient_sum, self.unit_cell)
         return energy_sum, gradient_sum
+
 
 
 

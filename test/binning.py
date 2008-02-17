@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -151,6 +151,7 @@ class BinningTestCase(unittest.TestCase):
             in InterAnalyseNeighboringObjects(binned_atoms1, binned_atoms2, self.compare_function)(unit_cell)
         )
         self.verify_inter(molecule1, molecule2, distances, unit_cell)
+
 
 
 

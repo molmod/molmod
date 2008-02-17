@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -84,6 +84,7 @@ class Apply(unittest.TestCase):
                 t = numpy.dot(tt1.r, -numpy.dot(numpy.transpose(tt2.r), tt2.t)) + tt1.t
                 translation_error = numpy.sum((t - temp.t)**2)/3.0
                 self.assertAlmostEqual(translation_error, 0)
+
 
 
 

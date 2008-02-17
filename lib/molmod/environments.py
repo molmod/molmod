@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -83,6 +83,7 @@ def calculate_environments(sparse_binned_objects, radius, unit_cell=None):
         environment.directions = (environment.deltas.transpose() / (environment.distances + (environment.distances == 0.0))).transpose()
 
     return environments
+
 
 
 

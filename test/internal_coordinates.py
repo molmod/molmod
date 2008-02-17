@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -426,6 +426,7 @@ class ChainruleTestCase(unittest.TestCase):
                 self.curvature_test(icn, index, 99, internal_coordinate, mod1_ethene)
 
         self.assertEqual(len(self.errors), 0, "\n".join(self.errors))
+
 
 
 

@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -225,5 +225,6 @@ class MolecularGraphTestCase(unittest.TestCase):
         for check in [mgraph*3, 3*mgraph]:
             self.assertEqual(len(check.pairs), 12)
             self.assertEqual(check.pairs, check_pairs)
+
 
 

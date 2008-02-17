@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -232,6 +232,7 @@ class FlexFFTestCase(unittest.TestCase):
                 if error > 0:
                     #print error/oom, error, oom
                     self.assert_(error/oom < 1e-2, "error=%s, oom=%s" % (error, oom))
+
 
 
 

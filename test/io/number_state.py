@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -61,5 +61,6 @@ class NumberStateTestCase(BaseTestCase):
         self.assertAlmostEqual(abs(test2.b).max(), 0.0)
         self.assertAlmostEqual(test2.c, 0.0)
         self.assertAlmostEqual(test1.d, test2.d)
+
 
 

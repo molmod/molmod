@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -53,6 +53,7 @@ if __name__ == "__main__":
             'Topic :: Science/Engineering :: Molecular Science'
         ],
     )
+
 
 
 

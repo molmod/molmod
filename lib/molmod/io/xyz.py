@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -207,6 +207,7 @@ class XYZFile(object):
         xyz_writer = XYZWriter(f, symbols, file_unit=file_unit)
         for coordinates in self.geometries:
             xyz_writer.dump(coordinates)
+
 
 
 

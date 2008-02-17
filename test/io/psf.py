@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -48,6 +48,7 @@ class PSFTestCase(unittest.TestCase):
         psf.add_molecule(molecule)
         self.assert_(psf.bonds.shape[0] == 4)
         self.assert_(psf.bends.shape[0] == 6)
+
 
 
 

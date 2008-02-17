@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -43,6 +43,7 @@ class ClusterTestCase(unittest.TestCase):
             tmp = numpy.array(cluster.members) % 2
             #print tmp
             self.assert_((tmp == 0).all() or (tmp == 1).all())
+
 
 
 

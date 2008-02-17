@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -83,6 +83,7 @@ class Gaussian03(unittest.TestCase):
         #print fchk.molecule.coordinates
         #print fchk.optimization_coordinates()
         #print fchk.optimized_molecule()
+
 
 
 

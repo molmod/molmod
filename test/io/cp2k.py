@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -122,6 +122,7 @@ class CP2KTestCase(unittest.TestCase):
             self.assertEqual(line1, line2)
         f1.close()
         f2.close()
+
 
 
 

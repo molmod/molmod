@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -234,6 +234,7 @@ class GraphsTestCase(unittest.TestCase):
         )
         result = g.get_nodes_per_independent_graph()
         self.assert_(result == [[0, 2, 4, 1, 3, 5], [6, 8, 10, 7, 9, 11]])
+
 
 
 

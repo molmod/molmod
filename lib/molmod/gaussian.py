@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -37,6 +37,7 @@ def normalization(p, a):
             (-1)**(p[0]+p[1]) + (-1)**(p[1]+p[2]) + (-1)**(p[2]+p[0]) +
             (-1)**(p[0]+p[1]+p[2])
     ))/8.0
+
 
 
 

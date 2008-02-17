@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -148,6 +148,7 @@ def random_dimer(molecule1, molecule2, dmin=5, dmax=20, max_iter=1000, nonbond_t
             result.numbers = numpy.concatenate((molecule1.numbers, molecule2.numbers))
             result.coordinates = numpy.concatenate((c1, c2))
             return result
+
 
 
 

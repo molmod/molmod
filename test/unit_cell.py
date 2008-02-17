@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -92,6 +92,7 @@ class UnitCellTestCase(unittest.TestCase):
         uc = UnitCell(cell, numpy.array([True, True, True]))
         self.assert_((uc.get_radius_ranges(3.1)==3).all())
         self.assertEqual(len(uc.get_radius_indexes(3.1)), 81)
+
 
 
 

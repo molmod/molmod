@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -385,6 +385,7 @@ class LUMOParser(MOParser):
 class HOMOParser(MOParser):
     def __init__(self, label="homo", condition=None):
         MOParser.__init__(self, label, "HOMO", condition)
+
 
 
 

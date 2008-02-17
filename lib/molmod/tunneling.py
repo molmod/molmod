@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -154,6 +154,7 @@ def print_batch(label, temperatures, correction, *args, **kwargs):
     for temperature in temperatures:
         factor, error = correction(temperature, *args, **kwargs)
         print "% 10s % 5.0f   % 12.9e   % 12.9e" % (label, temperature, factor, error)
+
 
 
 

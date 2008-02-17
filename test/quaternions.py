@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -57,6 +57,7 @@ class QuaternionTestCase(unittest.TestCase):
         r3 = numpy.dot(r1, r2)
         foo, q3_check = quaternion_from_rotation_matrix(r3)
         self.assert_((abs(q3-q3_check).max() < 1e-10) or (abs(q3+q3_check).max() < 1e-10))
+
 
 
 

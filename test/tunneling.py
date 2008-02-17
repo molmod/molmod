@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -91,6 +91,7 @@ class TunnelingTestCase(unittest.TestCase):
                 self.assert_(abs(our-c)/c < 0.09)
                 #if not (("%.1e" % our)==("%.1e" % c)):
                 #    print "%.1e" % our, "%.1e" % c
+
 
 
 

@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -23,6 +23,7 @@
 boltzmann = 3.1668154051341965e-06
 avogadro = 6.0221415e23
 lightspeed = 137.03599975303575
+
 
 
 

@@ -1,5 +1,5 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolMod.
 #
@@ -235,6 +235,7 @@ class DispersionFF(PairFF):
         strength = self.strengths[index1, index2]
         distance = self.distances[index1, index2]
         yield 42*strength*distance**(-8), numpy.zeros((3,3))
+
 
 
 
