@@ -29,7 +29,7 @@ if __name__ == "__main__":
         description='MolMod is a collection of molecular modelling tools for python.',
         author='Toon Verstraelen',
         author_email='Toon.Verstraelen@UGent.be',
-        url='https://molmod.ugent.be/zeobuilder/',
+        url='http://molmod.ugent.be/code/',
         package_dir = {'molmod': 'lib/molmod'},
         packages=[
             'molmod',
