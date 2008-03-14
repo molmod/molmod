@@ -30,17 +30,17 @@ __all__ = ["PSFTestCase"]
 
 class PSFTestCase(unittest.TestCase):
     def test_load(self):
-        p = PSFFile("input/thf.psf")
-        self.assert_(p.bonds.shape[0] == 832)
-        self.assert_(p.bends.shape[0] == 1600)
-        self.assert_(p.dihedrals.shape[0] == 2112)
-        g = p.get_graph()
+        psf = PSFFile("input/thf.psf")
+        self.assert_(psf.bonds.shape[0] == 832)
+        self.assert_(psf.bends.shape[0] == 1600)
+        self.assert_(psf.dihedrals.shape[0] == 2112)
+        g = psf.get_graph()
 
     def test_dump(self):
         m = XYZFile("input/thf.xyz").get_molecule()
-        p = PSFFile()
-        p.add_molecule(m)
-        p.write_to_file("output/thf.psf")
+        psf = PSFFile()
+        psf.add_molecule(m)
+        psf.write_to_file("output/thf.psf")
 
     def test_tetra(self):
         molecule = XYZFile("input/tetra.xyz").get_molecule()
@@ -48,7 +48,15 @@ class PSFTestCase(unittest.TestCase):
         psf.add_molecule(molecule)
         self.assert_(psf.bonds.shape[0] == 4)
         self.assert_(psf.bends.shape[0] == 6)
+        psf.write_to_file("output/tetra.psf")
 
-
+    def test_many_separate(self):
+        psf = PSFFile()
+        molecule = XYZFile("input/ethene.xyz").get_molecule()
+        psf.add_molecule(molecule)
+        psf.add_molecule(molecule)
+        molecule = XYZFile("input/tea.xyz").get_molecule()
+        psf.add_molecule(molecule)
+        psf.write_to_file("output/many_separate.psf")
 
 

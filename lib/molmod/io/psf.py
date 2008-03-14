@@ -126,7 +126,7 @@ class PSFFile(object):
         #print "numbers", graph.numbers
         for name, ref_graph in self.name_cache.iteritems():
             #print "trying", name, ref_graph, "==", graph
-            if compare(graph, ref_graph) is not None:
+            if compare(graph, ref_graph):
                 #print "YES", name
                 return name
             #print "NO"
@@ -156,7 +156,7 @@ class PSFFile(object):
         if len(self.numbers) > 0:
             for index, (number, symbol, name, molecule) in enumerate(zip(self.numbers,self.symbols,self.names,self.molecules)):
                 atom = periodic[number]
-                print >> f, "% 7i % 4s % 4i NAME % 2s    % 2s 0.0 % 12.6f 0" % (
+                print >> f, "% 7i % 4s % 4i NAME % 6s % 6s 0.0 % 12.6f 0" % (
                     index + 1,
                     name,
                     molecule + 1,
@@ -241,9 +241,9 @@ class PSFFile(object):
                     group_indices[index] = group_index
             self.names.extend([names[group_index] for group_index in group_indices])
             if prev == 0:
-                self.molecules[-new:] = group_indices
+                self.molecules[:] = group_indices
             else:
-                self.molecules[-new:] = self.molecules[-new]+group_indices
+                self.molecules[-new:] = self.molecules[-new]+group_indices+1
         else:
             if prev == 0:
                 self.molecules[-new:] = 0

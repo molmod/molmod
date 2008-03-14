@@ -62,5 +62,16 @@ class NumberStateTestCase(BaseTestCase):
         self.assertAlmostEqual(test2.c, 0.0)
         self.assertAlmostEqual(test1.d, test2.d)
 
+        test1 = TestObject()
+        test2 = TestObject()
+        subset = set(["a", "d"])
+        state = test1.state.get(subset)
+        self.assertEqual(len(state), 2)
+        self.assert_("a" in state)
+        self.assert_("d" in state)
+        test2.state.set(state, subset)
+        self.assertArraysAlmostEqual(test1.a, test2.a, 1e-10)
+        self.assertAlmostEqual(test1.d, test2.d)
+
 
 

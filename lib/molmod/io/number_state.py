@@ -129,17 +129,28 @@ class NumberState(object):
             raise ValueError("Name can count at most 40 characters.")
         self._fields[name] = attr
 
-    def get(self):
-        return dict((name, attr.get(copy=True)) for name, attr in self._fields.iteritems())
+    def get(self, subset=None):
+        if subset is None:
+            return dict((name, attr.get(copy=True)) for name, attr in self._fields.iteritems())
+        else:
+            return dict((name, attr.get(copy=True)) for name, attr in self._fields.iteritems() if name in subset)
 
-    def set(self, new_fields):
+    def set(self, new_fields, subset=None):
         for name in new_fields:
-            if name not in self._fields:
-                raise ValueError("new_fields contains an unknown field.")
-        if len(new_fields) != len(self._fields):
-            raise ValueError("new_fields contains too many fields.")
+            if name not in self._fields and (subset is None or name in subset):
+                raise ValueError("new_fields contains an unknown field '%s'." % name)
+        if subset is not None:
+            for name in subset:
+                if name not in self._fields:
+                    raise ValueError("name '%s' in subset is not a known field in self._fields." % name)
+                if name not in new_fields:
+                    raise ValueError("name '%s' in subset is not a known field in new_fields." % name)
+        if subset is None:
+            if len(new_fields) != len(self._fields):
+                raise ValueError("new_fields contains too many fields.")
         for name, attr in self._fields.iteritems():
-            attr.set(new_fields[name])
+            if name in subset:
+                attr.set(new_fields[name])
 
     def dump(self, filename):
         f = file(filename, "w")
