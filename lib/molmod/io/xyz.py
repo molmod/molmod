@@ -196,17 +196,17 @@ class XYZFile(object):
         result.coordinates = self.geometries[index]
         return result
 
-    def write_to_file(self, f):
+    def write_to_file(self, f, file_unit=angstrom):
         symbols = []
         for number in self.numbers:
             atom_info = periodic[number]
             if atom_info is None:
-                self.symbols.append("X")
+                symbols.append("X")
             else:
-                self.symbols.append(atom_info.symbol)
+                symbols.append(atom_info.symbol)
         xyz_writer = XYZWriter(f, symbols, file_unit=file_unit)
-        for coordinates in self.geometries:
-            xyz_writer.dump(coordinates)
+        for index, coordinates in enumerate(self.geometries):
+            xyz_writer.dump("Step %i" % index, coordinates)
 
 
 
