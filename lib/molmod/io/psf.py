@@ -255,10 +255,11 @@ class PSFFile(object):
 
         # add bonds
         match_generator = MatchGenerator(BondMatchDefinition([CriteriaSet()]))
-        tmp = numpy.array([[
+        tmp = [(
             match.get_destination(0),
             match.get_destination(1),
-        ] for match in match_generator(molecular_graph)], int)
+        ) for match in match_generator(molecular_graph)]
+        tmp.sort()
         new = len(tmp)
         if new > 0:
             prev = len(self.bonds)
@@ -266,12 +267,14 @@ class PSFFile(object):
             self.bonds[-len(tmp):] = tmp
             self.bonds[-len(tmp):] += offset
 
+        # add bends
         match_generator = MatchGenerator(BendingAngleMatchDefinition([CriteriaSet()]))
-        tmp = numpy.array([[
+        tmp = [(
             match.get_destination(0),
             match.get_destination(1),
             match.get_destination(2),
-        ] for match in match_generator(molecular_graph)], int)
+        ) for match in match_generator(molecular_graph)]
+        tmp.sort()
         new = len(tmp)
         if new > 0:
             prev = len(self.bends)
@@ -279,14 +282,15 @@ class PSFFile(object):
             self.bends[-len(tmp):] = tmp
             self.bends[-len(tmp):] += offset
 
-
+        # add dihedrals
         match_generator = MatchGenerator(DihedralAngleMatchDefinition([CriteriaSet()]))
-        tmp = numpy.array([[
+        tmp = [(
             match.get_destination(0),
             match.get_destination(1),
             match.get_destination(2),
             match.get_destination(3),
-        ] for match in match_generator(molecular_graph)], int)
+        ) for match in match_generator(molecular_graph)]
+        tmp.sort()
         new = len(tmp)
         if new > 0:
             prev = len(self.dihedrals)
