@@ -19,11 +19,12 @@
 # --
 
 
-
-import numpy
+from molmod.io.common import slice_match
 from molmod.data.periodic import periodic
 from molmod.molecules import Molecule
 from molmod.units import angstrom
+
+import numpy
 
 
 __all__ = ["Error", "XYZReader", "XYZWriter", "XYZFile"]
@@ -65,21 +66,6 @@ class XYZReader(object):
         if self._auto_close:
             self._file.close()
 
-    def _is_sub(self):
-        if self._sub.start is not None and self._counter < self._sub.start:
-            return False
-        if self._sub.stop is not None and self._counter >= self._sub.stop:
-            raise StopIteration
-            #return False
-        if self._sub.step is not None:
-            if self._sub.start is None:
-                if self._counter % self._sub.step != 0:
-                    return False
-            else:
-                if (self._counter - self._sub.start) % self._sub.step != 0:
-                    return False
-        return True
-
     def _read(self):
         def read_size():
             try:
@@ -87,7 +73,7 @@ class XYZReader(object):
             except ValueError:
                 raise StopIteration
 
-        while not self._is_sub():
+        while not slice_match(self._sub, self._counter):
             size = read_size()
             for i in xrange(size+1):
                 line = self._file.readline()
@@ -207,11 +193,4 @@ class XYZFile(object):
         xyz_writer = XYZWriter(f, symbols, file_unit=file_unit)
         for index, coordinates in enumerate(self.geometries):
             xyz_writer.dump("Step %i" % index, coordinates)
-
-
-
-
-
-
-
 

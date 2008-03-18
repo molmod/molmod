@@ -18,13 +18,25 @@
 #
 # --
 
-from cp2k import *
-from gaussian03 import *
-from gdma import *
-from psf import *
-from number_state import *
-from atrj import *
+
+__all__ = ["slice_match"]
 
 
+def slice_match(sub, counter):
+    """Efficiently test if counter is in xrange(*sub)
 
+    The function raises a StopIteration if counter is beyond sub.stop.
+    """
 
+    if sub.start is not None and counter < sub.start:
+        return False
+    if sub.stop is not None and counter >= sub.stop:
+        raise StopIteration
+    if sub.step is not None:
+        if sub.start is None:
+            if counter % sub.step != 0:
+                return False
+        else:
+            if (counter - sub.start) % sub.step != 0:
+                return False
+    return True
