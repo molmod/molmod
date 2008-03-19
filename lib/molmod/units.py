@@ -131,7 +131,7 @@ bar = 100000*pascal
 
 # *** Temperature ***
 
-K = 1
+K = 1.0
 kelvin = K
 
 
