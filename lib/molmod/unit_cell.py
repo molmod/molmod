@@ -102,7 +102,7 @@ class UnitCell(object):
     def to_index(self, coordinate):
         return numpy.floor(self.to_fractional(coordinate)).astype(int)
 
-    def to_coordinate(self, fractional):
+    def to_cartesian(self, fractional):
         return numpy.dot(self.cell, fractional)
 
     def move_to_cell(self, delta, index):
