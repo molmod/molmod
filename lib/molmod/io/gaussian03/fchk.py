@@ -26,23 +26,19 @@ import numpy
 import copy
 
 
-__all__ = ["ReadError", "FormattedCheckpoint"]
+__all__ = ["ReadError", "FCHKFile"]
 
 
 class ReadError(Exception):
     pass
 
 
-class FormattedCheckpoint(object):
+class FCHKFile(object):
     def __init__(self, filename):
-        self.read_filename(filename)
+        self._read(filename)
+        self._analyze()
 
-    def read_filename(self, filename):
-        f = file(filename, 'r')
-        self.title = f.readline()[:-1]
-        self.command, self.lot, self.basis = f.readline().split()
-        self.fields = {}
-
+    def _read(self, filename):
         def read_field(f):
             line = f.readline()
             if line == "":
@@ -80,12 +76,17 @@ class FormattedCheckpoint(object):
             self.fields[label] = value
             return True
 
+        f = file(filename, 'r')
+        self.title = f.readline()[:-1]
+        self.command, self.lot, self.basis = f.readline().split()
+        self.fields = {}
+
         while read_field(f):
             pass
 
-        self.analyze()
+        f.close()
 
-    def analyze(self):
+    def _analyze(self):
         self.molecule = Molecule()
         self.molecule.numbers = self.fields["Atomic numbers"]
         self.molecule.coordinates = numpy.reshape(self.fields["Current cartesian coordinates"], (-1,3))

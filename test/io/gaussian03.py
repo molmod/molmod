@@ -78,7 +78,7 @@ class Gaussian03(unittest.TestCase):
         #    print "DOF coords: % 3i" % (len(coordinates)*3)
 
     def test_fchk(self):
-        fchk = FormattedCheckpoint("input/1TOH.b3lyp.fchk")
+        fchk = FCHKFile("input/1TOH.b3lyp.fchk")
         #print fchk.molecule.numbers
         #print fchk.molecule.coordinates
         #print fchk.optimization_coordinates()
