@@ -19,120 +19,73 @@
 # --
 
 
-from molmod.molecules import Molecule
-from molmod.units import angstrom
-from molmod.grids import Grid
-
 import numpy
 
 
-class ReadError(Exception):
-    pass
+__all__ = ["CubeReader"]
 
 
-class Cube(Grid):
-    def __init__(self, filename, label, grid_conversion=1, volume_filename=None):
-        f = file(filename, 'r')
+class CubeReader(object):
+    def __init__(self, filename):
+        self.f = file(filename)
+        # skip the first two lines
+        self.f.readline()
+        self.f.readline()
 
-        # 1) skip the first two lines
-        self.label1 = f.readline()[:-1]
-        if self.label1 == "": raise ReadError("Unexpected EOF, expected first comment line.")
-        self.label2 = f.readline()[:-1]
-        if self.label2 == "": raise ReadError("Unexpected EOF, Expected second comment line.")
+        def read_header_line(line):
+          words = line.split()
+          return (
+              int(words[0]),
+              numpy.array([float(words[1]), float(words[2]), float(words[3])], float)
+          )
 
-        # 2) read grid specification
+        # number of atoms and origin of the grid
+        self.num_atoms, self.origin = read_header_line(self.f.readline())
+        # numer of grid points in A direction and step vector A, and so on
+        self.num_a, self.vector_a = read_header_line(self.f.readline())
+        self.num_b, self.vector_b = read_header_line(self.f.readline())
+        self.num_c, self.vector_c = read_header_line(self.f.readline())
 
-        # 2a) origin line
-        line = f.readline()
-        if line == "": raise ReadError("Unexpected EOF, expected line with origin.")
-        words = line.split()
-        num_atoms = int(words[0])
-        origin = numpy.array([float(words[1]), float(words[2]), float(words[3])], float)*grid_conversion
+        def read_header_line(line):
+          words = line.split()
+          return (
+              int(words[0]),
+              numpy.array([float(words[2]), float(words[3]), float(words[4])], float)
+          )
 
-        # 2b) x line
-        line = f.readline()
-        if line == "": raise ReadError("Unexpected EOF, expected line with x-axis.")
-        words = line.split()
-        nx = int(words[0])
-        x = numpy.array([float(words[1]), float(words[2]), float(words[3])], float)*grid_conversion
+        self.numbers = numpy.zeros(self.num_atoms, int)
+        self.coordinates = numpy.zeros((self.num_atoms, 3), float)
+        for i in xrange(self.num_atoms):
+            self.numbers[i], self.coordinates[i] = read_header_line(self.f.readline())
 
-        # 2c) y line
-        line = f.readline()
-        if line == "": raise ReadError("Unexpected EOF, expected line with y-axis.")
-        words = line.split()
-        ny = int(words[0])
-        y = numpy.array([float(words[1]), float(words[2]), float(words[3])], float)*grid_conversion
+        self.counter_a = 0
+        self.counter_b = 0
+        self.counter_c = 0
+        self.values = []
 
-        # 2d) z line
-        line = f.readline()
-        if line == "": raise ReadError("Unexpected EOF, expected line with z-axis.")
-        words = line.split()
-        nz = int(words[0])
-        z = numpy.array([float(words[1]), float(words[2]), float(words[3])], float)*grid_conversion
+    def __del__(self):
+        self.f.close()
 
-        # 3) read atoms xyz data
-        self.molecule = Molecule()
-        self.molecule.numbers = numpy.zeros(num_atoms, int)
-        self.molecule.coordinates = numpy.zeros((num_atoms,3), float)
-        for index in xrange(num_atoms):
-            line = f.readline()
-            if line == "": raise ReadError("Unexpected EOF, expected line with atom (%i)." % index)
-            words = line.split()
-            self.molecule.numbers[index] = int(words[0])
-            self.molecule.coordinates[index,0] = float(words[2])
-            self.molecule.coordinates[index,1] = float(words[3])
-            self.molecule.coordinates[index,2] = float(words[4])
+    def __iter__(self):
+        return self
 
-        user_points = (sum(origin**2) + sum(x**2) + sum(y**2) + sum(z**2) == 0.0)
-
-        if user_points:
-            # 4a) read user points
-            points = numpy.zeros((nx, 3), float)
-            data = numpy.zeros(nx, float)
-            for index in xrange(nx):
-                line = f.readline()
-                if line == "": raise ReadError("Unexpected EOF, expected line with grid data (index=%i)" % index)
-                words = line.split()
-                points[index] = [float(word) for word in words[:3]]
-                points[index] *= angstrom
-                data[index] = float(words[3])
-        else:
-            # 4) read grid values
-            n = nx*ny*nz
-            points = numpy.zeros((n, 3), float)
-            data = numpy.zeros(n, float)
-            buffer = []
-            counter = 0
-            for i in xrange(nx):
-                for j in xrange(ny):
-                    for k in xrange(nz):
-                        if len(buffer) == 0:
-                            line = f.readline()
-                            if line == "": raise ReadError("Unexpected EOF, expected line with grid data (i=%i,j=%i,k=%i)." % (i,j,k))
-                            buffer = [float(word) for word in line.split()]
-                        points[counter] = origin + i*x + j*y + k*z
-                        data[counter] = buffer.pop(0)
-                        counter += 1
-
-        f.close()
-
-        if volume_filename is not None:
-            volumes = numpy.zeros(len(points), float)
-            f = file(volume_filename)
-            for index, line in enumerate(f):
-                volumes[index] = float(line)
-            f.close()
-        else:
-            if user_points:
-                volumes = None
-            else:
-                volumes = numpy.zeros(len(points), float)
-                volumes += abs(numpy.linalg.det(numpy.array([x, y, z], float)))
-
-        Grid.__init__(self, points, volumes, {label: data})
-
-
-
-
+    def next(self):
+        if len(self.values) == 0:
+            line = self.f.readline()
+            if len(line) == 0:
+                raise StopIteration
+            self.values = [float(word) for word in line.split()]
+        value = self.values.pop(0)
+        vector = self.origin + self.counter_a*self.vector_a + self.counter_b*self.vector_b + self.counter_c*self.vector_c
+        self.counter_c += 1
+        if self.counter_c >= self.num_c:
+            self.counter_c = 0
+            self.counter_b += 1
+            if self.counter_b >= self.num_b:
+                self.counter_b = 0
+                self.counter_a += 1
+                if self.counter_a >= self.num_a:
+                    raise StopIteration
+        return value, vector
 
 
