@@ -20,7 +20,7 @@
 
 
 from molmod.graphs import OneToOne, Graph, MatchGenerator, EgoMatchDefinition,\
-    RingMatchDefinition, SubgraphMatchDefinition
+    RingMatchDefinition, SubgraphMatchDefinition, GraphError
 
 import unittest, copy
 
@@ -221,7 +221,15 @@ class GraphsTestCase(unittest.TestCase):
             match_generator(case.graph).next()
 
     def test_symmetries(self):
-        pairs = [(28,14), (28,4), (3,31), (32,10), (27,37), (27,38), (37,22), (33,15), (4,31), (24,39), (1,29), (32,22), (33,23), (26,36), (17,31), (2,38), (18,36), (33,42), (2,30), (33,12), (8,35), (29,5), (11,30), (32,14), (24,34), (25,35), (34,43), (29,15), (13,31), (32,40), (26,39), (16,30), (16,34), (0,36), (5,30), (3,39), (20,38), (36,23), (17,35), (34,6), (28,7), (25,38), (41,35), (0,28), (21,39), (9,29), (19,37), (1,37)]
+        pairs = [
+            (28,14), (28,4), (3,31), (32,10), (27,37), (27,38), (37,22),
+            (33,15), (4,31), (24,39), (1,29), (32,22), (33,23), (26,36),
+            (17,31), (2,38), (18,36), (33,42), (2,30), (33,12), (8,35),
+            (29,5), (11,30), (32,14), (24,34), (25,35), (34,43), (29,15),
+            (13,31), (32,40), (26,39), (16,30), (16,34), (0,36), (5,30),
+            (3,39), (20,38), (36,23), (17,35), (34,6), (28,7), (25,38),
+            (41,35), (0,28), (21,39), (9,29), (19,37), (1,37)
+        ]
         g = Graph(set([frozenset([a,b]) for a,b in pairs]))
         for match in MatchGenerator(EgoMatchDefinition(), debug=False)(g):
             pass
@@ -235,6 +243,86 @@ class GraphsTestCase(unittest.TestCase):
         result = g.get_nodes_per_independent_graph()
         self.assert_(result == [[0, 2, 4, 1, 3, 5], [6, 8, 10, 7, 9, 11]])
 
+    def test_halfs(self):
+        pairs1 = [(0,1), (1,2), (2,3), (3,4), (4,0), (2,5), (3,6), (3,7)]
+        graph1 = Graph(set([frozenset([a,b]) for a,b in pairs1]))
+        pairs2 = [(0,1), (1,2), (2,3), (1,4), (1,5), (5,6), (3,7), (7,8), (8,9), (9,3)]
+        graph2 = Graph(set([frozenset([a,b]) for a,b in pairs2]))
+
+        try:
+            graph1.get_halfs(2,3)
+            self.fail("graph1.get_halfs(2,3) should have raised a GraphError.")
+        except GraphError:
+            pass
+
+        try:
+            graph2.get_halfs(7,8)
+            self.fail("graph2.get_halfs(7,8) should have raised a GraphError.")
+        except GraphError:
+            pass
+
+        part1, part2 = graph2.get_halfs(2,3)
+        self.assertEqual(part1, set([0,1,2,4,5,6]))
+        self.assertEqual(part2, set([3,7,8,9]))
+        part1, part2 = graph2.get_halfs(5,6)
+        self.assertEqual(part1, set([0,1,2,3,4,5,7,8,9]))
+        self.assertEqual(part2, set([6]))
+        part1, part2 = graph2.get_halfs(1,2)
+        self.assertEqual(part1, set([0,1,4,5,6]))
+        self.assertEqual(part2, set([2,3,7,8,9]))
+        part1, part2 = graph1.get_halfs(3,7)
+        self.assertEqual(part1, set([0,1,2,3,4,5,6]))
+        self.assertEqual(part2, set([7]))
+
+        part1, part2, hinges = graph1.get_halfs_double(0,1,2,3)
+        self.assertEqual(part1, set([0,4,3,6,7]))
+        self.assertEqual(part2, set([1,2,5]))
+        self.assertEqual(hinges, (0,1,3,2))
+        part1, part2, hinges = graph2.get_halfs_double(3,7,8,9)
+        self.assertEqual(part1, set([0,1,2,3,4,5,6,9]))
+        self.assertEqual(part2, set([7,8]))
+        self.assertEqual(hinges, (3,7,9,8))
+
+        try:
+            part1, part2, hinges = graph1.get_halfs_double(0,2,1,3)
+            self.fail("graph1.get_halfs_double(0,2,1,3) should raise a GraphError")
+        except GraphError:
+            pass
+
+        try:
+            part1, part2, hinges = graph1.get_halfs_double(0,1,1,2)
+            self.fail("graph1.get_halfs_double(0,1,1,2) should raise a GraphError")
+        except GraphError:
+            pass
+
+        try:
+            part1, part2, hinges = graph1.get_halfs_double(0,1,2,5)
+            self.fail("graph1.get_halfs_double(0,1,2,5) should raise a GraphError")
+        except GraphError:
+            pass
+
+        try:
+            part1, part2, hinges = graph2.get_halfs_double(0,1,2,3)
+            self.fail("graph2.get_halfs_double(0,1,2,3) should raise a GraphError")
+        except GraphError:
+            pass
+
+        try:
+            part1, part2, hinges = graph2.get_halfs_double(1,0,2,3)
+            self.fail("graph2.get_halfs_double(1,0,2,3) should raise a GraphError")
+        except GraphError:
+            pass
+
+        pairs3 = [
+            (9,4),(8,1),(3,12),(2,6),(1,4),(3,4),(2,3),
+            (1,7),(2,5),(11,3),(10,4),(0,2),(0,1)
+        ]
+        graph3 = Graph(set([frozenset([a,b]) for a,b in pairs3]))
+
+        part1, part2, hinges = graph3.get_halfs_double(1,4,2,3)
+        self.assertEqual(part1, set([0,1,2,5,6,7,8]))
+        self.assertEqual(part2, set([3,4,9,10,11,12]))
+        self.assertEqual(hinges, (1,4,2,3))
 
 
 

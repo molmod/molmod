@@ -55,6 +55,7 @@ from descriptors import *
 from tunneling import *
 from quaternions import *
 from io import *
+from randomize import *
 
 unittest.main()
 

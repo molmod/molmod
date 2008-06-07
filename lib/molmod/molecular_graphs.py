@@ -22,15 +22,13 @@
 from molmod.molecules import Molecule
 from molmod.graphs import Graph, GraphError, SubgraphMatchDefinition, ExactMatchDefinition, Match, OneToOne, MatchGenerator, CriteriaSet
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
-from molmod.data.bonds import bonds, periodic
-from molmod.transformations import rotation_around_center
-from molmod.vectors import random_orthonormal
+from molmod.data.bonds import bonds
 
 import numpy, copy
 
 
 __all__ = [
-    "MolecularGraph", "generate_molecular_graph", "randomized_molecule",
+    "MolecularGraph", "generate_molecular_graph",
     "Anything", "MolecularCriterion", "MolecularOr", "MolecularAnd",
     "HasAtomNumber", "HasNumNeighbors", "HasNeighborNumbers", "BondLongerThan",
     "atom_criteria",
@@ -97,68 +95,6 @@ def generate_molecular_graph(molecule, labels=None, unit_cell=None):
     result.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
     return result
 
-
-def randomized_molecule(graph, molecule, max_tries=1000, bond_fraction=0.2, dihedral_rotation=numpy.pi, bending_rotation=0.14, nonbond_threshold_factor=2.0):
-    graph.init_distances()
-    radii = numpy.array([periodic[number].radius for number in molecule.numbers], float)
-
-    def check(molecule):
-        # check that no atoms overlap
-        for index1, atom1 in enumerate(graph.nodes):
-            for index2, atom2 in enumerate(graph.nodes[:index1]):
-                if graph.get_distance(atom1, atom2) > 2:
-                    distance = numpy.linalg.norm(molecule.coordinates[index1] - molecule.coordinates[index2])
-                    if distance < nonbond_threshold_factor*(radii[index1] + radii[index2]):
-                        return False
-        return True
-
-    for counter in xrange(max_tries):
-        result = copy.deepcopy(molecule)
-        for atom1, atom2 in graph.pairs:
-            delta = result.coordinates[atom1] - result.coordinates[atom2]
-            try:
-                half_atoms = graph.get_half(atom1, atom2)
-            except GraphError:
-                continue
-            if half_atoms is not None:
-                # Random bond stretch
-                translation = delta*bond_fraction*numpy.random.uniform(-1, 1)
-                for half_atom in half_atoms:
-                    result.coordinates[half_atom] += translation
-                # Random dihedral rotation
-                direction = delta / numpy.linalg.norm(delta)
-                R1 = rotation_around_center(
-                    result.coordinates[atom1],
-                    numpy.random.uniform(-dihedral_rotation, dihedral_rotation),
-                    direction,
-                )
-                for half_atom in half_atoms:
-                    result.coordinates[half_atom] = R1.vector_apply(result.coordinates[half_atom])
-                # Random bending angle rotation 1
-                axis = random_orthonormal(direction)
-                R2 = rotation_around_center(
-                    result.coordinates[atom1],
-                    numpy.random.uniform(-bending_rotation, +bending_rotation),
-                    axis,
-                )
-                for half_atom in half_atoms:
-                    result.coordinates[half_atom] = R2.vector_apply(result.coordinates[half_atom])
-                # Random bending angle rotation 2
-                axis = random_orthonormal(direction)
-                R3 = rotation_around_center(
-                    result.coordinates[atom2],
-                    numpy.random.uniform(-bending_rotation, +bending_rotation),
-                    axis,
-                )
-                for half_atom in half_atoms:
-                    result.coordinates[half_atom] = R3.vector_apply(result.coordinates[half_atom])
-
-        result.coordinates -= result.coordinates.mean(axis=0)
-
-        if not check(result):
-            continue
-
-        return result
 
 # molecular criteria
 

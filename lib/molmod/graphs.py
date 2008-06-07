@@ -311,7 +311,14 @@ class Graph(object):
         groups = self.get_nodes_per_independent_graph()
         return [[self.index[node] for node in group] for group in groups]
 
-    def get_half(self, node1, node2):
+    def get_halfs(self, node1, node2):
+        """Compute the two parts of the graph separated by the pair (node1, node2)
+
+        If this is not possible (due to loops connecting both ends), a GraphError
+        is raised.
+
+        Returns the nodes in both halfs.
+        """
         self.init_neighbors()
         node1_new = set(self.neighbors[node1])
         if node2 not in node1_new:
@@ -325,12 +332,92 @@ class Graph(object):
                 raise GraphError("The graph can not be separated in two halfs by disconnecting node1 and node2.")
             pivot_neighbors = set(self.neighbors[pivot])
             pivot_neighbors -= node1_part
-            pivot_neighbors.discard(node1)
             node1_new |= pivot_neighbors
             node1_part.add(pivot)
 
-        return node1_part
+        # find node_b_part: easy, is just the rest
+        self.init_nodes()
+        node2_part = set(self.nodes) - node1_part
 
+        return node1_part, node2_part
+
+    def get_halfs_double(self, node_a1, node_b1, node_a2, node_b2):
+        """Compute the two parts separated by (node_a1, node_b1) and (node_a2, node_b2)
+
+        Raise a GraphError when (node_a1, node_b1) and (node_a2, node_b2) do not
+        separate the graph in two disconnected parts. The pairs must be
+        neigbors. If not a GraphError is raised. The for nodes must not coincide
+        or a GraphError is raised.
+
+        Returns the nodes of the two halfs and the four 'hinge' nodes in the
+        correct order, i.e. both node_a1 and node_a2 are in the first half and
+        both node_b1 and node_b2 are in the second half.
+        """
+        self.init_neighbors()
+        if node_a1 not in self.neighbors[node_b1]:
+            raise GraphError("Node_a1 must be a neighbor of node_b1.")
+        if node_a2 not in self.neighbors[node_b2]:
+            raise GraphError("Node_a2 must be a neighbor of node_b2.")
+        if node_a1 == node_a2 or node_a1 == node_b2 or node_b1 == node_a2 or node_b1 == node_b2:
+            raise GraphError("Some nodes coincide, got (%s,%s), (%s,%s)" % (node_a1, node_b1, node_a2, node_b2))
+
+        # find node_a_part (and possibly switch node_a2, node_b2)
+        node_a_new = set(self.neighbors[node_a1])
+        node_a_new.discard(node_b1)
+        node_a_part = set([node_a1])
+
+        touched = False # True if (the switched) node_a2 has been reached.
+        while len(node_a_new) > 0:
+            pivot = node_a_new.pop()
+            if pivot == node_b1:
+                raise GraphError("The graph can not be separated in two halfs. node_b1 reached by node_a1.")
+            node_a_part.add(pivot)
+            pivot_neighbors = set(self.neighbors[pivot])
+            pivot_neighbors -= node_a_part
+            if pivot == node_a2 or pivot == node_b2:
+                if pivot == node_b2:
+                    if touched:
+                        raise GraphError("The graph can not be separated in two halfs. node_b2 reached by node_a1.")
+                    else:
+                        # put them in the correct order
+                        node_a2, node_b2 = node_b2, node_a2
+                pivot_neighbors.discard(node_b2)
+                touched = True
+            node_a_new |= pivot_neighbors
+
+        if node_a2 not in node_a_part:
+            raise GraphError("The graph can not be separated in two halfs. node_a1 can not reach node_a2 trough node_a_part")
+
+        # find node_b_part: easy, is just the rest ...
+        #self.init_nodes()
+        #node_b_part = set(self.nodes) - node_a_part
+
+        # ... but we also want that there is a path in node_b_part from node_b1 to node_b2
+        node_b_new = set(self.neighbors[node_b1])
+        node_b_new.discard(node_a1)
+        node_b_part = set([node_b1])
+
+        closed = False
+        while len(node_b_new) > 0:
+            pivot = node_b_new.pop()
+            if pivot == node_b2:
+                closed = True
+                break
+            pivot_neighbors = set(self.neighbors[pivot])
+            pivot_neighbors -= node_b_part
+            node_b_new |= pivot_neighbors
+            node_b_part.add(pivot)
+
+        if not closed:
+            raise GraphError("The graph can not be separated in two halfs. node_b1 can not reach node_b2 trough node_b_part")
+
+        # finaly compute the real node_b_part, the former loop might break
+        # early for efficiency.
+        self.init_nodes()
+        node_b_part = set(self.nodes) - node_a_part
+
+        # done!
+        return node_a_part, node_b_part, (node_a1, node_b1, node_a2, node_b2)
 
 
 class Match(OneToOne):

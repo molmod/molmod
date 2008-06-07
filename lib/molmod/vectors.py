@@ -32,7 +32,7 @@ __all__= [
 
 
 def cosine(a, b):
-    result = numpy.dot(a, b) / math.sqrt(numpy.dot(a, a) * numpy.dot(b, b))
+    result = numpy.dot(a, b) / numpy.linalg.norm(a) / numpy.linalg.norm(b)
     if result <= -1: return -1
     elif result >= 1: return 1
     else: return result
@@ -58,7 +58,7 @@ normal_fns = [
 
 def random_orthonormal(normal):
     u = normal_fns[numpy.argmin(numpy.fabs(normal))](normal)
-    u /= math.sqrt(numpy.dot(u, u))
+    u /= numpy.linalg.norm(u)
     v = numpy.cross(normal, u)
     angle = random.uniform(0.0, math.pi*2)
     return math.cos(angle)*u + math.sin(angle)*v
@@ -66,13 +66,13 @@ def random_orthonormal(normal):
 
 def trivial_orthonormal(normal):
     u = normal_fns[numpy.argmin(numpy.fabs(normal))](normal)
-    u /= math.sqrt(numpy.dot(u, u))
+    u /= numpy.linalg.norm(u)
     return u
 
 
 def triangle_normal(a, b, c):
     normal = numpy.cross(a - c, b - c)
-    norm = math.sqrt(numpy.dot(normal, normal))
+    norm = numpy.linalg.norm(normal)
     if norm <= 1e-8:
         return numpy.zeros(3, float)
     else:
@@ -81,13 +81,6 @@ def triangle_normal(a, b, c):
 
 
 def random_normal():
-    while True:
-        result = numpy.random.uniform(-1,1,3)
-        norm = numpy.linalg.norm(result)
-        if norm < 1 and norm > 1e-4:
-            return result / norm
-
-
-
+    return random_unit(3)
 
 

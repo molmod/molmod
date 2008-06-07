@@ -205,10 +205,6 @@ class MolecularGraphTestCase(unittest.TestCase):
 
         self.verify(expected_results, test_results, yield_alternatives)
 
-    def test_randomized_molecule(self):
-        self.load_graph("input/tpa.xyz")
-        randomized_molecule(self.molecular_graph, self.molecule)
-
     def test_full_match_on_self(self):
         self.load_graph("input/cyclopentane.xyz")
         g1 = copy.deepcopy(self.molecular_graph)
