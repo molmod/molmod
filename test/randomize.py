@@ -20,6 +20,7 @@
 
 from molmod.randomize import *
 from molmod.molecular_graphs import generate_molecular_graph
+from molmod.units import A
 
 from molmod.io.xyz import XYZFile
 
@@ -51,4 +52,24 @@ class RandomizeTestCase(unittest.TestCase):
                 for cls, count in zip([RandomStretch, RandomTorsion, RandomBend, RandomDoubleStretch], counts):
                     got = sum(isinstance(mpl, cls) for mpl in manipulations)
                     self.assertEqual(got, count, "%s count problem, should be %i, got %i" % (str(cls), count, got))
+
+    def test_random_dimer(self):
+        thresholds = {
+            (1,1): 2.0*A,
+            (1,6): 3.0*A,
+            (1,7): 3.0*A,
+            (1,8): 3.0*A,
+            (6,6): 4.0*A,
+            (6,7): 4.0*A,
+            (6,8): 4.0*A,
+            (7,7): 4.0*A,
+            (7,8): 4.0*A,
+            (8,8): 4.0*A,
+        }
+        for molecule1, graph1 in self.yield_test_molecules():
+            for molecule2, graph2 in self.yield_test_molecules():
+                dimer = random_dimer(molecule1, molecule2, thresholds, 0.5*A)
+                self.assertEqual(dimer.coordinates.shape, (molecule1.coordinates.shape[0] + molecule2.coordinates.shape[0], 3))
+                self.assertEqual(dimer.numbers.shape, (molecule1.numbers.shape[0] + molecule2.numbers.shape[0],))
+                dimer.write_to_file(os.path.join("output", "%s_%s" % (molecule1.filename, molecule2.filename)))
 
