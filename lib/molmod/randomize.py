@@ -25,7 +25,7 @@ from molmod.molecules import Molecule
 from molmod.graphs import GraphError
 from molmod.data.bonds import bonds
 from molmod.data.periodic import periodic
-from molmod.transformations import rotation_around_center, Translation
+from molmod.transformations import rotation_around_center, Translation, Rotation, Complete
 from molmod.vectors import random_orthonormal, random_unit
 
 import numpy, copy
@@ -43,12 +43,51 @@ __all__ = [
 
 
 class MolecularTransformation(object):
-    def __init__(self, affected_atoms, transformation, molecule):
+    @classmethod
+    def read_from_file(cls, filename):
+        f = file(filename)
+        lines = list(line for line in f if line[0] != '#')
+        f.close()
+        r = []
+        t = []
+        for line in lines[:3]:
+            values = list(float(word) for word in line.split())
+            r.append(values[:3])
+            t.append(values[3])
+        transformation = Complete()
+        transformation.r[:] = r
+        transformation.t[:] = t
+        affected_atoms = set(int(word) for word in lines[3].split())
+        return cls(affected_atoms, transformation)
+
+    def __init__(self, affected_atoms, transformation, molecule=None):
         self.affected_atoms = affected_atoms
         self.transformation = transformation
 
-        for i in affected_atoms:
-            molecule.coordinates[i] = transformation.vector_apply(molecule.coordinates[i])
+        if molecule is not None:
+            for i in affected_atoms:
+                molecule.coordinates[i] = transformation.vector_apply(molecule.coordinates[i])
+
+    def write_to_file(self, filename):
+        if isinstance(self.transformation, Rotation):
+            r = self.transformation.r
+        else:
+            r = numpy.identity(3, float)
+        if isinstance(self.transformation, Translation):
+            t = self.transformation.t
+        else:
+            t = numpy.zeros(3, float)
+        f = file(filename, "w")
+        print >> f, "# A (random) transformation of a part of a molecule:"
+        print >> f, "# The translation vector is in atomic units."
+        print >> f, "#     Rx             Ry             Rz              T"
+        print >> f, "% 15.9e % 15.9e % 15.9e % 15.9e" % (r[0,0], r[0,1], r[0,2], t[0])
+        print >> f, "% 15.9e % 15.9e % 15.9e % 15.9e" % (r[1,0], r[1,1], r[1,2], t[1])
+        print >> f, "% 15.9e % 15.9e % 15.9e % 15.9e" % (r[2,0], r[2,1], r[2,2], t[2])
+        print >> f, "# The indexes of the affected atoms:"
+        print >> f, " ".join(str(i) for i in self.affected_atoms)
+        f.close()
+
 
 
 class RandomManipulation(object):
@@ -178,46 +217,63 @@ def yield_halfs_double(graph):
 
 
 
-def generate_manipulations(graph, molecule, bond_stretch_factor=0.15, torsion_amplitude=numpy.pi, bending_amplitude=0.30):
+def generate_manipulations(
+    graph, molecule, bond_stretch_factor=0.15, torsion_amplitude=numpy.pi,
+    bending_amplitude=0.30, do_stretch=False, do_torsion=False, do_bend=False,
+    do_double_stretch=False, do_double_bend=False
+):
+    # If all do_* arguments are False, revert them to True
+    if not (do_stretch or do_torsion or do_bend or do_double_stretch or do_double_bend):
+        do_stretch = True
+        do_torsion = True
+        do_bend = True
+        do_double_stretch = True
+        do_double_bend = True
     results = []
     # A) all manipulations that require one bond that cuts the molecule in half
-    for affected_atoms1, affected_atoms2, hinge_atoms in yield_halfs_bond(graph):
-        length = numpy.linalg.norm(
-            molecule.coordinates[hinge_atoms[0]] -
-            molecule.coordinates[hinge_atoms[1]]
-        )
-        results.append(RandomStretch(
-            affected_atoms1, length*bond_stretch_factor, hinge_atoms
-        ))
-        if len(affected_atoms1) > 1 and len(affected_atoms2) > 1:
-            results.append(RandomTorsion(
-                affected_atoms1, torsion_amplitude, hinge_atoms
-            ))
+    if do_stretch or do_torsion:
+        for affected_atoms1, affected_atoms2, hinge_atoms in yield_halfs_bond(graph):
+            if do_stretch:
+                length = numpy.linalg.norm(
+                    molecule.coordinates[hinge_atoms[0]] -
+                    molecule.coordinates[hinge_atoms[1]]
+                )
+                results.append(RandomStretch(
+                    affected_atoms1, length*bond_stretch_factor, hinge_atoms
+                ))
+            if do_torsion and len(affected_atoms1) > 1 and len(affected_atoms2) > 1:
+                results.append(RandomTorsion(
+                    affected_atoms1, torsion_amplitude, hinge_atoms
+                ))
     # B) all manipulations that require a bending angle that cuts the molecule
     #    in two parts
-    for affected_atoms, hinge_atoms in yield_halfs_bend(graph):
-        results.append(RandomBend(
-            affected_atoms, bending_amplitude, hinge_atoms
-        ))
+    if do_bend:
+        for affected_atoms, hinge_atoms in yield_halfs_bend(graph):
+            results.append(RandomBend(
+                affected_atoms, bending_amplitude, hinge_atoms
+            ))
     # C) all manipulations that require two bonds that separate two halfs
-    for affected_atoms1, affected_atoms2, hinge_atoms in yield_halfs_double(graph):
-        length1 = numpy.linalg.norm(
-            molecule.coordinates[hinge_atoms[0]] -
-            molecule.coordinates[hinge_atoms[1]]
-        )
-        length2 = numpy.linalg.norm(
-            molecule.coordinates[hinge_atoms[2]] -
-            molecule.coordinates[hinge_atoms[3]]
-        )
-        results.append(RandomDoubleStretch(
-            affected_atoms1, 0.5*(length1+length2)*bond_stretch_factor, hinge_atoms
-        ))
-        results.append(RandomTorsion(
-            affected_atoms1, bending_amplitude, (hinge_atoms[0], hinge_atoms[2])
-        ))
-        results.append(RandomTorsion(
-            affected_atoms2, bending_amplitude, (hinge_atoms[1], hinge_atoms[3])
-        ))
+    if do_double_stretch or do_double_bend:
+        for affected_atoms1, affected_atoms2, hinge_atoms in yield_halfs_double(graph):
+            if do_double_stretch:
+                length1 = numpy.linalg.norm(
+                    molecule.coordinates[hinge_atoms[0]] -
+                    molecule.coordinates[hinge_atoms[1]]
+                )
+                length2 = numpy.linalg.norm(
+                    molecule.coordinates[hinge_atoms[2]] -
+                    molecule.coordinates[hinge_atoms[3]]
+                )
+                results.append(RandomDoubleStretch(
+                    affected_atoms1, 0.5*(length1+length2)*bond_stretch_factor, hinge_atoms
+                ))
+            if do_double_bend and len(affected_atoms1) > 2 and len(affected_atoms2) > 2:
+                results.append(RandomTorsion(
+                    affected_atoms1, bending_amplitude, (hinge_atoms[0], hinge_atoms[2])
+                ))
+                results.append(RandomTorsion(
+                    affected_atoms2, bending_amplitude, (hinge_atoms[1], hinge_atoms[3])
+                ))
     # Neglect situations where three or more cuts are required.
     return results
 

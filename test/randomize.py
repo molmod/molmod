@@ -18,9 +18,12 @@
 #
 # --
 
+from common import BaseTestCase
+
 from molmod.randomize import *
 from molmod.molecular_graphs import generate_molecular_graph
 from molmod.units import A
+from molmod.transformations import Translation, Rotation
 
 from molmod.io.xyz import XYZFile
 
@@ -29,7 +32,7 @@ import unittest, numpy, os
 __all__ = ["RandomizeTestCase"]
 
 
-class RandomizeTestCase(unittest.TestCase):
+class RandomizeTestCase(BaseTestCase):
     def yield_test_molecules(self):
         for filename in ["tpa.xyz", "water.xyz", "thf_single.xyz"]:
             molecule = XYZFile(os.path.join("input", filename)).get_molecule()
@@ -72,4 +75,18 @@ class RandomizeTestCase(unittest.TestCase):
                 self.assertEqual(dimer.coordinates.shape, (molecule1.coordinates.shape[0] + molecule2.coordinates.shape[0], 3))
                 self.assertEqual(dimer.numbers.shape, (molecule1.numbers.shape[0] + molecule2.numbers.shape[0],))
                 dimer.write_to_file(os.path.join("output", "%s_%s" % (molecule1.filename, molecule2.filename)))
+
+    def test_single_manipulation(self):
+        for molecule, graph in self.yield_test_molecules():
+            manipulations = generate_manipulations(graph, molecule)
+            for i in xrange(100):
+                randomized_molecule, mol_transformation = single_random_manipulation(molecule, graph, manipulations)
+                randomized_molecule.write_to_file(os.path.join("output", molecule.filename))
+                mol_transformation.write_to_file(os.path.join("output", "tmp"))
+                check_transformation = MolecularTransformation.read_from_file(os.path.join("output", "tmp"))
+                self.assertEqual(mol_transformation.affected_atoms, check_transformation.affected_atoms)
+                if isinstance(mol_transformation.transformation, Rotation):
+                    self.assertArraysAlmostEqual(mol_transformation.transformation.r, check_transformation.transformation.r, 1e-5, doabs=True)
+                if isinstance(mol_transformation.transformation, Translation):
+                    self.assertArraysAlmostEqual(mol_transformation.transformation.t, check_transformation.transformation.t, 1e-5, doabs=True)
 
