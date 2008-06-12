@@ -62,21 +62,19 @@ class MolecularTransformation(object):
 
     def __init__(self, affected_atoms, transformation, molecule=None):
         self.affected_atoms = affected_atoms
-        self.transformation = transformation
+        self.transformation = Complete()
+        if isinstance(transformation, Rotation):
+            self.transformation.r[:] = transformation.r
+        if isinstance(transformation, Translation):
+            self.transformation.t[:] = transformation.t
 
         if molecule is not None:
             for i in affected_atoms:
                 molecule.coordinates[i] = transformation.vector_apply(molecule.coordinates[i])
 
     def write_to_file(self, filename):
-        if isinstance(self.transformation, Rotation):
-            r = self.transformation.r
-        else:
-            r = numpy.identity(3, float)
-        if isinstance(self.transformation, Translation):
-            t = self.transformation.t
-        else:
-            t = numpy.zeros(3, float)
+        r = self.transformation.r
+        t = self.transformation.t
         f = file(filename, "w")
         print >> f, "# A (random) transformation of a part of a molecule:"
         print >> f, "# The translation vector is in atomic units."

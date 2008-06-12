@@ -85,8 +85,6 @@ class RandomizeTestCase(BaseTestCase):
                 mol_transformation.write_to_file(os.path.join("output", "tmp"))
                 check_transformation = MolecularTransformation.read_from_file(os.path.join("output", "tmp"))
                 self.assertEqual(mol_transformation.affected_atoms, check_transformation.affected_atoms)
-                if isinstance(mol_transformation.transformation, Rotation):
-                    self.assertArraysAlmostEqual(mol_transformation.transformation.r, check_transformation.transformation.r, 1e-5, doabs=True)
-                if isinstance(mol_transformation.transformation, Translation):
-                    self.assertArraysAlmostEqual(mol_transformation.transformation.t, check_transformation.transformation.t, 1e-5, doabs=True)
+                self.assertArraysAlmostEqual(mol_transformation.transformation.r, check_transformation.transformation.r, 1e-5, doabs=True)
+                self.assertArraysAlmostEqual(mol_transformation.transformation.t, check_transformation.transformation.t, 1e-5, doabs=True)
 
