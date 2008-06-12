@@ -94,11 +94,11 @@ class TransformationsTestCase(BaseTestCase):
         references = [ # a list of 2-tuples: (points, degenerate)
             (numpy.random.normal(0, 5, (n, 3)), False) for n in xrange(4, 40)
         ] + [
-            #(numpy.array([[0,0,0]], float), True),
-            #(numpy.array([[0,0,0],[0,0,1]], float), True),
-            #(numpy.array([[0,0,0],[0,0,1],[0,0,2]], float), True),
-            #(numpy.array([[0,0,0],[0,0,1],[0,0,2],[0,0,4]], float), True),
-            #(numpy.random.normal(0, 5, (3, 3)), False)
+            (numpy.array([[0,0,1]], float), True),
+            (numpy.array([[0,0,0],[0,0,1]], float), True),
+            (numpy.array([[0,0,0],[0,0,1],[0,0,2]], float), True),
+            (numpy.array([[0,0,0],[0,0,1],[0,0,2],[0,0,4]], float), True),
+            (numpy.random.normal(0, 5, (3, 3)), True)
         ]
 
         # Do a random transformation on the points
@@ -108,7 +108,7 @@ class TransformationsTestCase(BaseTestCase):
             angle = numpy.random.uniform(0, numpy.pi*2)
             transformation = Complete()
             transformation.set_rotation_properties(angle, axis, False)
-            transformation.t[:] = numpy.random.normal(0, 5, 3)
+            transformation.t[:] = 0#numpy.random.normal(0, 5, 3)
             randomized.append((
                 numpy.array([transformation.vector_apply(p) for p in points]),
                 transformation
@@ -130,6 +130,15 @@ class TransformationsTestCase(BaseTestCase):
                 self.assertArraysAlmostEqual(numpy.dot(transf.r, check_transf.r), numpy.identity(3, float), 1e-5)
                 self.assertArrayAlmostZero(tmp.t, 1e-5)
 
+
+        # Add some distortion to the transformed points
+        randomized = []
+        for tr_points, transf in randomized:
+            tr_points[:] += numpy.random.normal(0, 1.0, len(tr_points))
+
+        # Do a blind test
+        for (ref_points, degenerate), (tr_points, transf) in zip(references, randomized):
+            coincide(ref_points, tr_points)
 
 
 

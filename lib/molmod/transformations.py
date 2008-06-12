@@ -20,9 +20,7 @@
 
 
 
-import numpy
-
-import math
+import numpy, math
 
 
 __all__ = [
@@ -425,10 +423,6 @@ def coincide(ras, rbs, maxiter=100):
     Ap = numpy.dot(dm.transpose(), dm)
     Bp = numpy.dot(dm.transpose(), ev)
     Cp = numpy.dot(ev, ev)
-    # If A contains nearly zero eigenvalues, the algorithm below doesn't work.
-    # Why?
-    if (abs(numpy.linalg.eigvals(Ap)) < 1e-10).any():
-        raise ValueError("The given points rbs are degenerate. Use more points!")
     # contruct the terms for the lagrange multipliers
     # The matrices M and constants m are constructed in such a way that the
     # constraints reduce to the following simple form:
@@ -449,7 +443,7 @@ def coincide(ras, rbs, maxiter=100):
     ms = numpy.array(ms)
     # Find the lagrange multiplieres (lambdas), starting from zero with the
     # Newton-Raphson scheme.
-    from molmod.linalg import safe_solve
+    from molmod.linalg import safe_solve, extended_solve
     #safe_solve = numpy.linalg.solve
     lambdas = numpy.zeros(6, float) # lagrange multipliers
     g = numpy.zeros(6, float) # constraint functions
@@ -464,9 +458,6 @@ def coincide(ras, rbs, maxiter=100):
     A = numpy.zeros(Ap.shape, float)
     done = False
 
-    def solve_x(lambdas):
-        return x, g, G, K
-
     for counter in xrange(maxiter):
         # Make a linear approximation of the lambdas that solve the constraints.
         # (this is the Newton-Raphson algo)
@@ -476,7 +467,14 @@ def coincide(ras, rbs, maxiter=100):
             A[:9,:9] += lambdas[i]*Ms[i]
         # solve locally with SVD, in case someone is aligning two linear
         # molecules.
-        x = safe_solve(A, Bp, 1e-10)
+        x, null_space = extended_solve(A, Bp, 1e-10)
+        if len(null_space) > 0:
+            # this is a nasty situation. we must use the vectors from the null
+            # space to satisfy the constraints as good as possible
+            alpha = opt_constraints(Ms, ms, x[:9].copy(), null_space[:9])
+            x += numpy.dot(null_space, alpha)
+        #x += numpy.dot(null_space, numpy.random.normal(0, 1, null_space.shape[1]))
+        # xp is a shortcut
         xp = x[:9]
         # compute the derivative of x towards the lambdas
         for i in xrange(6):
@@ -493,10 +491,17 @@ def coincide(ras, rbs, maxiter=100):
             g[i] = 0.5*numpy.dot(xp, Mxp) - ms[i]
             G[i] = numpy.dot(Mxp, K)
 
-        if numpy.linalg.norm(g) < 1e-10:
+        #print "norm(g)", numpy.linalg.norm(g)
+        if numpy.linalg.norm(g) < 1e-9:
+            #ssd = numpy.dot(x, numpy.dot(Ap, x) -2*Bp) + Cp
+            #print "ssd", ssd
             done = True
+            break
+
         step = -safe_solve(G, g, 1e-10)
         lambdas += step
+        #low = 0.1
+        #lambdas[lambdas < low] = low
 
     if not done:
         raise CoincideError("The constrained optimization could not be solved!")
@@ -505,4 +510,42 @@ def coincide(ras, rbs, maxiter=100):
     trans.r[:] = x[:9].reshape((3,3))
     trans.t[:] = x[9:]
     return trans
+
+
+def opt_constraints(Ms, ms, x0, N):
+    gradient_x = numpy.zeros(9, float)
+    hessian_x = numpy.zeros((9, 9), float)
+    while True:
+        # Try a few initial guesses until an orthogonal system is found.
+        alpha = numpy.random.normal(0, 1, N.shape[1])
+        while True:
+            x = x0 + numpy.dot(N, alpha)
+            error = 0
+            gradient_x[:] = 0
+            hessian_x[:] = 0
+            #print x
+            for i in xrange(6):
+                Mx = numpy.dot(Ms[i], x)
+                xMxm = 0.5*numpy.dot(x, Mx) - ms[i]
+                #print "xMxm", xMxm
+                error += xMxm**2
+                gradient_x[:] += 2*xMxm*Mx
+                hessian_x[:] += 2*(numpy.outer(Mx, Mx) + xMxm*Ms[i])
+            #print "error", error
+            gradient_alpha = numpy.dot(gradient_x, N)
+            hessian_alpha = numpy.dot(numpy.dot(N.transpose(), hessian_x), N)
+            #print numpy.linalg.norm(gradient_alpha)
+            if numpy.linalg.norm(gradient_alpha) < 1e-10:
+                break
+            #print "evals", numpy.linalg.eigvals(hessian_alpha)
+            step = -0.5*numpy.linalg.solve(hessian_alpha, gradient_alpha)
+            if numpy.dot(step, gradient_alpha) > 0:
+                #print "SD"
+                step = -0.1*gradient_alpha/numpy.linalg.norm(gradient_alpha)
+            #print "step", step
+            alpha += step
+        #print "error", error
+        if abs(error) < 1e-10:
+            break
+    return alpha
 

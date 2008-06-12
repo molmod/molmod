@@ -22,20 +22,27 @@
 import numpy
 
 
-__all__ = ["safe_solve"]
+__all__ = ["safe_solve", "extended_solve"]
 
 
 def safe_solve(A, b, cutoff=0.0):
-    V, S, Wt = numpy.linalg.svd(A, True)
-    #print "S", S
-    rank = sum(abs(S)>(max(abs(S))*cutoff))
-    S = S[:rank]
-    V = V[:,:rank]
-    #nullspace = Wt[rank:].transpose()
-    Wt = Wt[:rank]
-    return numpy.dot(Wt.transpose(), (numpy.dot(V.transpose(), b)/S))
-    #error = ((numpy.dot(A, particular) - b)**2).sum()
-    #return particular, nullspace, error
+    U, W, Vt = numpy.linalg.svd(A, full_matrices=False)
+    rank = sum(abs(W)>(max(abs(W))*cutoff))
+    W = W[:rank]
+    Ut = U[:,:rank].transpose()
+    V = Vt[:rank].transpose()
+    return numpy.dot(V, (numpy.dot(Ut, b)/W))
+
+
+def extended_solve(A, b, cutoff=0.0):
+    U, W, Vt = numpy.linalg.svd(A, full_matrices=True)
+    rank = sum(abs(W)>(max(abs(W))*cutoff))
+    W = W[:rank]
+    Ut = U[:,:rank].transpose()
+    nullspace = Vt[rank:].transpose()
+    V = Vt[:rank].transpose()
+    solution = numpy.dot(V, (numpy.dot(Ut, b)/W))
+    return solution, nullspace
 
 
 
