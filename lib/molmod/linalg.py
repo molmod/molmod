@@ -22,18 +22,20 @@
 import numpy
 
 
-def generic_solve(A, b, cutoff=0.0):
+__all__ = ["safe_solve"]
+
+
+def safe_solve(A, b, cutoff=0.0):
     V, S, Wt = numpy.linalg.svd(A, True)
-    print S
+    #print "S", S
     rank = sum(abs(S)>(max(abs(S))*cutoff))
     S = S[:rank]
     V = V[:,:rank]
-    nullspace = Wt[rank:].transpose()
+    #nullspace = Wt[rank:].transpose()
     Wt = Wt[:rank]
-    particular = numpy.dot(Wt.transpose(), (numpy.dot(V.transpose(), b)/S))
-    error = ((numpy.dot(A, particular) - b)**2).sum()
-
-    return particular, nullspace, error
+    return numpy.dot(Wt.transpose(), (numpy.dot(V.transpose(), b)/S))
+    #error = ((numpy.dot(A, particular) - b)**2).sum()
+    #return particular, nullspace, error
 
 
 

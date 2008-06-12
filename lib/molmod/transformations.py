@@ -25,7 +25,10 @@ import numpy
 import math
 
 
-__all__ = ["Base", "Translation", "Rotation", "Complete", "rotation_around_center"]
+__all__ = [
+    "Base", "Translation", "Rotation", "Complete", "rotation_around_center",
+    "CoincideError", "coincide",
+]
 
 
 class Base(object):
@@ -391,6 +394,115 @@ def random_rotation():
     return result
 
 
+class CoincideError(Exception):
+    pass
 
+def coincide(ras, rbs, maxiter=100):
+    """Compute the transformation that minimizes the RMSD between the points ras and rbs
 
+    Both ras and rbs are Nx3 numpy arrays. Each row corresponds to a 3D
+    coordinate and corresponding rows contain the points that are brought
+    into overlap.
+    """
+    # This is a constrained least squares problem. The constraints are non-
+    # linear, while the overlap equations are linear. The rbs are the atom
+    # coordinates to be transformed, while the ras remain fixed in space.
+    dm = [] # design_matrix
+    ev = [] # expected_values
+    # parameters are ordered as follows: R11, R12, R13, R21, R22, R23, R31, R32, R33, T1, T2, T3
+    for ra, rb in zip(ras, rbs):
+        # per atom pair, there are three equations, equaling x, y and z.
+        dm.append(numpy.array([rb[0], rb[1], rb[2], 0, 0, 0, 0, 0, 0, 1, 0, 0]))
+        dm.append(numpy.array([0, 0, 0, rb[0], rb[1], rb[2], 0, 0, 0, 0, 1, 0]))
+        dm.append(numpy.array([0, 0, 0, 0, 0, 0, rb[0], rb[1], rb[2], 0, 0, 1]))
+        ev.extend(ra)
+    dm = numpy.array(dm)
+    ev = numpy.array(ev)
+    # We take the (ugly) approach with the normal equations to simplify the
+    # treatment of the lagrange multipliers. An SVD based approach should
+    # also be possible, but is definitely more complicated and total
+    # overkill for the purpose of this function.
+    Ap = numpy.dot(dm.transpose(), dm)
+    Bp = numpy.dot(dm.transpose(), ev)
+    Cp = numpy.dot(ev, ev)
+    # If A contains nearly zero eigenvalues, the algorithm below doesn't work.
+    # Why?
+    if (abs(numpy.linalg.eigvals(Ap)) < 1e-10).any():
+        raise ValueError("The given points rbs are degenerate. Use more points!")
+    # contruct the terms for the lagrange multipliers
+    # The matrices M and constants m are constructed in such a way that the
+    # constraints reduce to the following simple form:
+    # 0.5 x^T M x - m = 0
+    # where x containts the first nign elements of the parameter vector
+    # above. The derivative of this constraint is trivial.
+    Ms = []
+    ms = []
+    for i1 in xrange(3):
+        for i2 in xrange(i1,3):
+            M = numpy.zeros((9,9), float)
+            Ms.append(M)
+            for k1 in xrange(3):
+                M[k1*3+i1,k1*3+i2] += 1
+                M[k1*3+i2,k1*3+i1] += 1
+            ms.append(int(i1==i2))
+    Ms = numpy.array(Ms)
+    ms = numpy.array(ms)
+    # Find the lagrange multiplieres (lambdas), starting from zero with the
+    # Newton-Raphson scheme.
+    from molmod.linalg import safe_solve
+    #safe_solve = numpy.linalg.solve
+    lambdas = numpy.zeros(6, float) # lagrange multipliers
+    g = numpy.zeros(6, float) # constraint functions
+    G = numpy.zeros((6,6), float) # derivatives of constraint functions
+    # towards lagrange multipliers. Each row corresponds to one constraint
+    # function while each column corresponds to a lagrange multiplier.
+    K = numpy.zeros((9,6), float) # derivatives of the first nign elements
+    # of the solution towards the lambdas. The rows correspond to components
+    # of the solution, while the columns correspond to the lagrange
+    # multipliers.
+    tmp = numpy.zeros(12, float)
+    A = numpy.zeros(Ap.shape, float)
+    done = False
+
+    def solve_x(lambdas):
+        return x, g, G, K
+
+    for counter in xrange(maxiter):
+        # Make a linear approximation of the lambdas that solve the constraints.
+        # (this is the Newton-Raphson algo)
+        A[:] = Ap
+        for i in xrange(6):
+            # loop over the lagrange multipliers
+            A[:9,:9] += lambdas[i]*Ms[i]
+        # solve locally with SVD, in case someone is aligning two linear
+        # molecules.
+        x = safe_solve(A, Bp, 1e-10)
+        xp = x[:9]
+        # compute the derivative of x towards the lambdas
+        for i in xrange(6):
+            # loop over the lagrange multipliers
+            tmp[:9] = numpy.dot(Ms[i], xp)
+            tmp[9:] = 0
+            tmp[:] = -safe_solve(A, tmp, 1e-10)
+            K[:,i] = tmp[:9]
+        # compute constraint functions and compute the derivative of these
+        # constraint functions with respect to the lambdas
+        for i in xrange(6):
+            # loop over constraint functions
+            Mxp = numpy.dot(Ms[i], xp)
+            g[i] = 0.5*numpy.dot(xp, Mxp) - ms[i]
+            G[i] = numpy.dot(Mxp, K)
+
+        if numpy.linalg.norm(g) < 1e-10:
+            done = True
+        step = -safe_solve(G, g, 1e-10)
+        lambdas += step
+
+    if not done:
+        raise CoincideError("The constrained optimization could not be solved!")
+    # wrap the solution in a fancy data structure
+    trans = Complete()
+    trans.r[:] = x[:9].reshape((3,3))
+    trans.t[:] = x[9:]
+    return trans
 

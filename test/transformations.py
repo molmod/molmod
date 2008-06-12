@@ -19,16 +19,19 @@
 # --
 
 
-from molmod.transformations import Complete
+from common import BaseTestCase
+
+from molmod.transformations import Complete, coincide
+from molmod.vectors import random_unit
 
 import numpy, copy, random, math
 import unittest
 
 
-__all__ = ["Apply"]
+__all__ = ["TransformationsTestCase"]
 
 
-class Apply(unittest.TestCase):
+class TransformationsTestCase(BaseTestCase):
     def setUp(self):
         self.test_transformations = []
         for i in xrange(20):
@@ -85,6 +88,47 @@ class Apply(unittest.TestCase):
                 translation_error = numpy.sum((t - temp.t)**2)/3.0
                 self.assertAlmostEqual(translation_error, 0)
 
+    def test_coincide(self):
+        # create a few test sets with random data points, including degenerate
+        # situations. (e.g. one point, two points, linear points)
+        references = [ # a list of 2-tuples: (points, degenerate)
+            (numpy.random.normal(0, 5, (n, 3)), False) for n in xrange(4, 40)
+        ] + [
+            #(numpy.array([[0,0,0]], float), True),
+            #(numpy.array([[0,0,0],[0,0,1]], float), True),
+            #(numpy.array([[0,0,0],[0,0,1],[0,0,2]], float), True),
+            #(numpy.array([[0,0,0],[0,0,1],[0,0,2],[0,0,4]], float), True),
+            #(numpy.random.normal(0, 5, (3, 3)), False)
+        ]
+
+        # Do a random transformation on the points
+        randomized = []
+        for points, degenerate in references:
+            axis = random_unit(3)
+            angle = numpy.random.uniform(0, numpy.pi*2)
+            transformation = Complete()
+            transformation.set_rotation_properties(angle, axis, False)
+            transformation.t[:] = numpy.random.normal(0, 5, 3)
+            randomized.append((
+                numpy.array([transformation.vector_apply(p) for p in points]),
+                transformation
+            ))
+
+        for (ref_points, degenerate), (tr_points, transf) in zip(references, randomized):
+            check_transf = coincide(ref_points, tr_points)
+            # first check whether check_transf brings the tr_points back to the ref_points
+            check_points = numpy.dot(tr_points, check_transf.r.transpose()) + check_transf.t
+            self.assertArraysAlmostEqual(ref_points, check_points, 1e-5)
+            # check whether the rotation matrix is orthogonal
+            self.assertArraysAlmostEqual(numpy.dot(check_transf.r, check_transf.r.transpose()), numpy.identity(3, float), 1e-5)
+            if not degenerate:
+                # if the set of points is not degenerate, check whether transf and check_transf
+                # are each other inverses
+                tmp = Complete()
+                tmp.apply_before(transf)
+                tmp.apply_before(check_transf)
+                self.assertArraysAlmostEqual(numpy.dot(transf.r, check_transf.r), numpy.identity(3, float), 1e-5)
+                self.assertArrayAlmostZero(tmp.t, 1e-5)
 
 
 
