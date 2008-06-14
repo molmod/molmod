@@ -40,36 +40,43 @@ class FCHKFile(object):
 
     def _read(self, filename):
         def read_field(f):
-            line = f.readline()
-            if line == "":
-                return False
+            datatype = None
+            while datatype is None:
+                # find a sane header line
+                line = f.readline()
+                if line == "":
+                    return False
 
-            label = line[:43].strip()
-            line = line[43:]
-            words = line.split()
+                label = line[:43].strip()
+                line = line[43:]
+                words = line.split()
 
-            if words[0] == 'I':
-                datatype = int
-            elif words[0] == 'R':
-                datatype = float
-            else:
-                raise ReadError("Unexpected datatype in formatted checkpoint file %s\n%s" % (filename, words[1]))
+                if words[0] == 'I':
+                    datatype = int
+                elif words[0] == 'R':
+                    datatype = float
 
             if len(words) == 2:
-                value = datatype(words[1])
+                try:
+                    value = datatype(words[1])
+                except ValueError:
+                    return True
             elif len(words) == 3:
                 if words[1] != "N=":
                     raise ReadError("Unexpected line in formatted checkpoint file %s\n%s" % (filename, line[:-1]))
                 length = int(words[2])
                 value = numpy.zeros(length, datatype)
                 counter = 0
-                while counter < length:
-                    line = f.readline()
-                    if line == "":
-                        raise ReadError("Unexpected end of formatted checkpoint file %s" % filename)
-                    for word in line.split():
-                        value[counter] = datatype(word)
-                        counter += 1
+                try:
+                    while counter < length:
+                        line = f.readline()
+                        if line == "":
+                            raise ReadError("Unexpected end of formatted checkpoint file %s" % filename)
+                        for word in line.split():
+                            value[counter] = datatype(word)
+                            counter += 1
+                except ValueError:
+                    return True
             else:
                 raise ReadError("Unexpected line in formatted checkpoint file %s\n%s" % (filename, line[:-1]))
 
