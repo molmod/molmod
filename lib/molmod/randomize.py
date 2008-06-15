@@ -276,26 +276,33 @@ def generate_manipulations(
     return results
 
 
-def check_nonbond(molecule, graph, nonbond_factor=2.0):
+def check_nonbond(molecule, graph, thresholds):
     """Check whether all nonbonded atoms are well separated.
 
     If a nonbond atom pair is found that has an interatomic distance below
-    the sum of their van der waals radii times the nonbond_factor, return
-    False. Otherwise return True.
+    the given thresholds. The thresholds dictionary has the following format:
+    {frozenset([atom_number1, atom_number2]): distance}
+
+    When random geometries are generated for sampling the conformational space
+    of a molecule without strong repulsive nonbonding interactions, try to
+    underestimate the thresholds at first instance and exclude bond stretches
+    and bending motions for the random manipuulations. Then compute the forces
+    projected on the nonbonding distance gradients. The distance for which the
+    absolute value of these gradients drops below 100 kJ/mol is a rough guess
+    of a proper threshold value.
     """
 
-    radii = numpy.array([periodic[number].radius for number in molecule.numbers], float)
     # check that no atoms overlap
     for index1, atom1 in enumerate(graph.nodes):
         for index2, atom2 in enumerate(graph.nodes[:index1]):
             if graph.get_distance(atom1, atom2) > 2:
                 distance = numpy.linalg.norm(molecule.coordinates[index1] - molecule.coordinates[index2])
-                if distance < nonbond_factor*(radii[index1] + radii[index2]):
+                if distance < thresholds[frozenset([molecule.numbers[index1], molecule.numbers[index2]])]:
                     return False
     return True
 
 
-def randomize_molecule(molecule, graph, manipulations, max_tries=1000, nonbond_factor=2.0):
+def randomize_molecule(molecule, graph, manipulations, nonbond_thresholds, max_tries=1000):
     """Return a randomized copy of the molecule.
 
     If no randomized molecule can be generated that survives the nonbond check
@@ -304,7 +311,7 @@ def randomize_molecule(molecule, graph, manipulations, max_tries=1000, nonbond_f
     """
     for m in xrange(max_tries):
         random_molecule = randomize_molecule_low(molecule, manipulations)
-        if check_nonbond(random_molecule, graph, nonbond_factor):
+        if check_nonbond(random_molecule, graph, nonbond_thresholds):
             return random_molecule
     return None
 
@@ -320,7 +327,7 @@ def randomize_molecule_low(molecule, manipulations):
     return randomized_molecule
 
 
-def single_random_manipulation(molecule, graph, manipulations, max_tries=1000, nonbond_factor=2.0):
+def single_random_manipulation(molecule, graph, manipulations, nonbond_thresholds, max_tries=1000):
     """Apply a single random manipulation.
 
     If no randomized molecule can be generated that survives the nonbond check
@@ -330,7 +337,7 @@ def single_random_manipulation(molecule, graph, manipulations, max_tries=1000, n
     """
     for m in xrange(max_tries):
         random_molecule, transformation = single_random_manipulation_low(molecule, manipulations)
-        if check_nonbond(random_molecule, graph, nonbond_factor):
+        if check_nonbond(random_molecule, graph, nonbond_thresholds):
             return random_molecule, transformation
     return None
 
@@ -353,7 +360,8 @@ def random_dimer(molecule1, molecule2, thresholds, shoot_max, max_tries=1000):
     Then the molecules are given an additional separation in the range
     [0,shoot_max].
 
-    thresholds has the following format: {(N1, N2): distance, ...}
+    thresholds has the following format:
+    {frozenset([atom_number1, atom_number2]): distance}
     """
 
     # apply a random rotation to molecule2
@@ -380,9 +388,7 @@ def random_dimer(molecule1, molecule2, thresholds, shoot_max, max_tries=1000):
     distance_mat = numpy.zeros((len(molecule1.numbers), len(molecule2.numbers)), float)
     for i1, n1 in enumerate(molecule1.numbers):
         for i2, n2 in enumerate(molecule2.numbers):
-            threshold = thresholds.get((n1,n2))
-            if threshold is None:
-                threshold = thresholds.get((n2,n1))
+            threshold = thresholds.get(frozenset([n1,n2]))
             threshold_mat[i1,i2] = threshold**2
     while True:
         delta += 0.1*direction

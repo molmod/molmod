@@ -31,6 +31,21 @@ import unittest, numpy, os
 
 __all__ = ["RandomizeTestCase"]
 
+# These threshold values are not good for serious applications!!!
+# Just for testing the code, they are OK.
+nonbond_thresholds = {
+    frozenset([1,1]): 0.9*A,
+    frozenset([1,6]): 1.4*A,
+    frozenset([1,7]): 1.4*A,
+    frozenset([1,8]): 1.4*A,
+    frozenset([6,6]): 2.2*A,
+    frozenset([6,7]): 2.2*A,
+    frozenset([6,8]): 2.2*A,
+    frozenset([7,7]): 2.2*A,
+    frozenset([7,8]): 2.2*A,
+    frozenset([8,8]): 2.2*A,
+}
+
 
 class RandomizeTestCase(BaseTestCase):
     def yield_test_molecules(self):
@@ -48,7 +63,7 @@ class RandomizeTestCase(BaseTestCase):
         }
         for molecule, graph in self.yield_test_molecules():
             manipulations = generate_manipulations(graph, molecule)
-            randomized_molecule = randomize_molecule(molecule, graph, manipulations)
+            randomized_molecule = randomize_molecule(molecule, graph, manipulations, nonbond_thresholds)
             randomized_molecule.write_to_file(os.path.join("output", molecule.filename))
             counts = all_counts.get(molecule.filename)
             if counts is not None:
@@ -57,21 +72,9 @@ class RandomizeTestCase(BaseTestCase):
                     self.assertEqual(got, count, "%s count problem, should be %i, got %i" % (str(cls), count, got))
 
     def test_random_dimer(self):
-        thresholds = {
-            (1,1): 2.0*A,
-            (1,6): 3.0*A,
-            (1,7): 3.0*A,
-            (1,8): 3.0*A,
-            (6,6): 4.0*A,
-            (6,7): 4.0*A,
-            (6,8): 4.0*A,
-            (7,7): 4.0*A,
-            (7,8): 4.0*A,
-            (8,8): 4.0*A,
-        }
         for molecule1, graph1 in self.yield_test_molecules():
             for molecule2, graph2 in self.yield_test_molecules():
-                dimer = random_dimer(molecule1, molecule2, thresholds, 0.5*A)
+                dimer = random_dimer(molecule1, molecule2, nonbond_thresholds, 0.5*A)
                 self.assertEqual(dimer.coordinates.shape, (molecule1.coordinates.shape[0] + molecule2.coordinates.shape[0], 3))
                 self.assertEqual(dimer.numbers.shape, (molecule1.numbers.shape[0] + molecule2.numbers.shape[0],))
                 dimer.write_to_file(os.path.join("output", "%s_%s" % (molecule1.filename, molecule2.filename)))
@@ -80,7 +83,7 @@ class RandomizeTestCase(BaseTestCase):
         for molecule, graph in self.yield_test_molecules():
             manipulations = generate_manipulations(graph, molecule)
             for i in xrange(100):
-                randomized_molecule, mol_transformation = single_random_manipulation(molecule, graph, manipulations)
+                randomized_molecule, mol_transformation = single_random_manipulation(molecule, graph, manipulations, nonbond_thresholds)
                 randomized_molecule.write_to_file(os.path.join("output", molecule.filename))
                 mol_transformation.write_to_file(os.path.join("output", "tmp"))
                 check_transformation = MolecularTransformation.read_from_file(os.path.join("output", "tmp"))
