@@ -29,14 +29,6 @@ __all__ = ["CP2KTestCase"]
 
 
 class CP2KTestCase(unittest.TestCase):
-    def test_cell_reader(self):
-        cr = CellReader("input/md.cell")
-        a = numpy.array(list(cr))/angstrom
-        self.assertAlmostEqual(a[0,0,0], 20.0, 5)
-        self.assertAlmostEqual(a[1,0,0], 19.9997567998, 5)
-        self.assertAlmostEqual(a[1,1,0], 0.0, 5)
-        self.assertAlmostEqual(a[1,1,1], 19.9997567998, 5)
-
     def test_input_file(self):
         cp2k_input = InputFile.read_from_file("input/water_md.inp")
         self.assert_(cp2k_input._consistent())

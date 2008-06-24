@@ -24,27 +24,7 @@ from molmod.units import angstrom
 import numpy
 
 
-__all__ = ["CellReader", "FileFormatError", "Section", "Keyword", "InputFile"]
-
-
-class CellReader(object):
-    def __init__(self, filename):
-        self.f = file(filename)
-
-    def __del__(self):
-        self.f.close()
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        # skip the blablabla
-        self.f.next()
-        data = []
-        data.append([float(word) for word in self.f.next().split()])
-        data.append([float(word) for word in self.f.next().split()])
-        data.append([float(word) for word in self.f.next().split()])
-        return numpy.array(data)*angstrom
+__all__ = ["FileFormatError", "Section", "Keyword", "InputFile"]
 
 
 class FileFormatError(Exception):
