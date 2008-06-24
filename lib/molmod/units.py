@@ -128,6 +128,7 @@ femtosecond = fs
 
 pascal = N/m**2
 bar = 100000*pascal
+atm = 1.01325*bar
 
 # *** Temperature ***
 
