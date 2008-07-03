@@ -52,16 +52,16 @@ class DumpReader(object):
         self.units = units
         self.sub = sub
         self.counter = 0
-    
+
     def __del__(self):
         self._f.close()
-    
+
     def __iter__(self):
         return self
-    
+
     def next(self):
         # Read one frame, we assume that the current file position is at the
-        # line 'ITEM: TIMESTEP' and that this line marks the beginning of a 
+        # line 'ITEM: TIMESTEP' and that this line marks the beginning of a
         # time frame.
         line = self._f.next()
         if line != 'ITEM: TIMESTEP\n':
@@ -71,7 +71,7 @@ class DumpReader(object):
             step = int(line)
         except ValueError:
             raise Error("Could not read the step number. Expected an integer. Got '%s'" % line[:-1])
-        
+
         # Now we assume that the next section contains (again) the number of
         # atoms.
         line = self._f.next()
@@ -84,11 +84,11 @@ class DumpReader(object):
             raise Error("Could not read the number of atoms. Expected an integer. Got '%s'" % line[:-1])
         if num_atoms != self.num_atoms:
             raise Error("A variable number of atoms is not supported.")
-        
+
         # The next section contains the box boundaries. We will skip it
         for i in xrange(4):
             self._f.next()
-        
+
         # The next and last section contains the atom related properties
         line = self._f.next()
         if line != 'ITEM: ATOMS\n':
@@ -100,7 +100,7 @@ class DumpReader(object):
             for j in xrange(len(fields)):
                 fields[j].append(float(words[j]))
         fields = [step] + [numpy.array(field)*unit for field, unit in zip(fields, self.units)]
-        
+
         return fields
 
 
