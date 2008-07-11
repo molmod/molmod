@@ -217,16 +217,14 @@ def yield_halfs_double(graph):
 
 def generate_manipulations(
     graph, molecule, bond_stretch_factor=0.15, torsion_amplitude=numpy.pi,
-    bending_amplitude=0.30, do_stretch=False, do_torsion=False, do_bend=False,
-    do_double_stretch=False, do_double_bend=False
+    bending_amplitude=0.30
 ):
-    # If all do_* arguments are False, revert them to True
-    if not (do_stretch or do_torsion or do_bend or do_double_stretch or do_double_bend):
-        do_stretch = True
-        do_torsion = True
-        do_bend = True
-        do_double_stretch = True
-        do_double_bend = True
+    do_stretch = (bond_stretch_factor > 0)
+    do_double_stretch = (bond_stretch_factor > 0)
+    do_bend = (bending_amplitude > 0)
+    do_double_bend = (bending_amplitude > 0)
+    do_torsion = (torsion_amplitude > 0)
+
     results = []
     # A) all manipulations that require one bond that cuts the molecule in half
     if do_stretch or do_torsion:
@@ -351,10 +349,10 @@ def single_random_manipulation_low(molecule, manipulations):
     return randomized_molecule, transformation
 
 
-def random_dimer(molecule1, molecule2, thresholds, shoot_max, max_tries=1000):
+def random_dimer(molecule0, molecule1, thresholds, shoot_max, max_tries=1000):
     """Create a random dimer.
 
-    molecule1 and molecule2 are placed in one reference frame at random relative
+    molecule0 and molecule1 are placed in one reference frame at random relative
     positions. Interatomic distances are above the thresholds. Initially a dimer
     is created where one interatomic distance approximates the threshold value.
     Then the molecules are given an additional separation in the range
@@ -364,54 +362,58 @@ def random_dimer(molecule1, molecule2, thresholds, shoot_max, max_tries=1000):
     {frozenset([atom_number1, atom_number2]): distance}
     """
 
-    # apply a random rotation to molecule2
+    # apply a random rotation to molecule1
     center = numpy.zeros(3, float)
     angle = numpy.random.uniform(0, 2*numpy.pi)
     axis = random_unit(3)
     rotation = rotation_around_center(center, angle, axis)
-    molecule2.coordinates = numpy.dot(molecule2.coordinates, rotation.r)
+    molecule1.coordinates = numpy.dot(molecule1.coordinates, rotation.r)
 
     # select a random atom in each molecule
+    atom0 = numpy.random.randint(len(molecule0.numbers))
     atom1 = numpy.random.randint(len(molecule1.numbers))
-    atom2 = numpy.random.randint(len(molecule2.numbers))
 
-    # define a translation of molecule2 that brings both atoms in overlap
-    delta = molecule1.coordinates[atom1] - molecule2.coordinates[atom2]
+    # define a translation of molecule1 that brings both atoms in overlap
+    delta = molecule0.coordinates[atom0] - molecule1.coordinates[atom1]
+    molecule1.coordinates += delta
 
     # define a random direction
     direction = random_unit(3)
-    delta += 1*direction
+    molecule1.coordinates += 1*direction
 
-    # move molecule2 along this direction until all intermolecular atomic
+    # move molecule1 along this direction until all intermolecular atomic
     # distances are above the threshold values
-    threshold_mat = numpy.zeros((len(molecule1.numbers), len(molecule2.numbers)), float)
-    distance_mat = numpy.zeros((len(molecule1.numbers), len(molecule2.numbers)), float)
-    for i1, n1 in enumerate(molecule1.numbers):
-        for i2, n2 in enumerate(molecule2.numbers):
+    threshold_mat = numpy.zeros((len(molecule0.numbers), len(molecule1.numbers)), float)
+    distance_mat = numpy.zeros((len(molecule0.numbers), len(molecule1.numbers)), float)
+    for i1, n1 in enumerate(molecule0.numbers):
+        for i2, n2 in enumerate(molecule1.numbers):
             threshold = thresholds.get(frozenset([n1,n2]))
             threshold_mat[i1,i2] = threshold**2
     while True:
-        delta += 0.1*direction
+        molecule1.coordinates += 0.1*direction
         distance_mat[:] = 0
         for i in 0,1,2:
-            distance_mat += numpy.subtract.outer(molecule1.coordinates[:,i], molecule2.coordinates[:,i]+delta[i])**2
+            distance_mat += numpy.subtract.outer(molecule0.coordinates[:,i], molecule1.coordinates[:,i])**2
         if (distance_mat > threshold_mat).all():
             break
 
     # translate over a random distance [0,shoot] along the same direction
     # (if necessary repeat until no overlap is found)
     while True:
-        delta_shoot = delta + direction*numpy.random.uniform(0,shoot_max)
+        molecule1.coordinates += direction*numpy.random.uniform(0,shoot_max)
         distance_mat[:] = 0
         for i in 0,1,2:
-            distance_mat += numpy.subtract.outer(molecule1.coordinates[:,i], molecule2.coordinates[:,i]+delta_shoot[i])**2
+            distance_mat += numpy.subtract.outer(molecule0.coordinates[:,i], molecule1.coordinates[:,i])**2
         if (distance_mat > threshold_mat).all():
             break
 
     # done
     dimer = Molecule()
-    dimer.coordinates = numpy.concatenate([molecule1.coordinates, molecule2.coordinates + delta_shoot])
-    dimer.numbers = numpy.concatenate([molecule1.numbers, molecule2.numbers])
+    dimer.coordinates = numpy.concatenate([molecule0.coordinates, molecule1.coordinates])
+    dimer.numbers = numpy.concatenate([molecule0.numbers, molecule1.numbers])
+    dimer.direction = direction
+    dimer.atom0 = atom0
+    dimer.atom1 = atom1
     return dimer
 
 
