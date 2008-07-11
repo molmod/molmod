@@ -515,7 +515,7 @@ def coincide(ras, rbs, maxiter=100):
 def opt_constraints(Ms, ms, x0, N):
     gradient_x = numpy.zeros(9, float)
     hessian_x = numpy.zeros((9, 9), float)
-    while True:
+    for i in xrange(10):
         # Try a few initial guesses until an orthogonal system is found.
         alpha = numpy.random.normal(0, 1, N.shape[1])
         while True:
