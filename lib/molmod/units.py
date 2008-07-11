@@ -74,6 +74,7 @@ amu = u
 
 m = 1/0.5291772083e-10
 
+dm = 1e-1*m
 cm = 1e-2*m
 mm = 1e-3*m
 um = 1e-6*m
@@ -85,6 +86,10 @@ meter = m
 angstrom = A
 nanometer = nm
 
+# *** Volume ***
+
+l = dm**3
+liter = l
 
 # *** Energy ***
 
