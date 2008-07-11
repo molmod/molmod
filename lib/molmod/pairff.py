@@ -22,6 +22,10 @@
 import math, numpy
 
 
+__all__ = [
+    "PairFF", "CoulombFF", "DispersionFF", "PauliRepulsionFF",
+]
+
 class PairFF(object):
     """
     Evaluates the energy, gradient and hessian of a energetic model consisting
@@ -37,9 +41,12 @@ class PairFF(object):
     points whos interactions have to be excluded, and userdefined data that
     specifies the interactions in the derived classes.
     """
-    def __init__(self, coordinates, exclude_pairs=[]):
+    def __init__(self, coordinates, exclude_pairs=None):
         self.update_coordinates(coordinates)
-        self.exclude_pairs = exclude_pairs
+        if exclude_pairs is None:
+            self.exclude_pairs = set([])
+        else:
+            self.exclude_pairs = exclude_pairs
 
     def update_coordinates(self, coordinates=None):
         if coordinates is not None:
@@ -155,7 +162,7 @@ class PairFF(object):
 
 
 class CoulombFF(PairFF):
-    def __init__(self, coordinates, charges=None, dipoles=None, exclude_pairs=[]):
+    def __init__(self, coordinates, charges=None, dipoles=None, exclude_pairs=None):
         PairFF.__init__(self, coordinates, exclude_pairs)
         self.charges = charges
         self.dipoles = dipoles
@@ -217,7 +224,7 @@ class CoulombFF(PairFF):
 
 
 class DispersionFF(PairFF):
-    def __init__(self, coordinates, strengths, exclude_pairs=[]):
+    def __init__(self, coordinates, strengths, exclude_pairs=None):
         PairFF.__init__(self, coordinates, exclude_pairs)
         self.strengths = strengths
 
@@ -235,6 +242,27 @@ class DispersionFF(PairFF):
         strength = self.strengths[index1, index2]
         distance = self.distances[index1, index2]
         yield 42*strength*distance**(-8), numpy.zeros((3,3))
+
+
+class PauliRepulsionFF(PairFF):
+    def __init__(self, coordinates, strengths, exclude_pairs=None):
+        PairFF.__init__(self, coordinates, exclude_pairs)
+        self.strengths = strengths
+
+    def yield_pair_energies(self, index1, index2):
+        strength = self.strengths[index1, index2]
+        distance = self.distances[index1, index2]
+        yield strength*distance**(-12), 1
+
+    def yield_pair_gradients(self, index1, index2):
+        strength = self.strengths[index1, index2]
+        distance = self.distances[index1, index2]
+        yield -12*strength*distance**(-13), numpy.zeros(3)
+
+    def yield_pair_hessians(self, index1, index2):
+        strength = self.strengths[index1, index2]
+        distance = self.distances[index1, index2]
+        yield 12*13*strength*distance**(-14), numpy.zeros((3,3))
 
 
 

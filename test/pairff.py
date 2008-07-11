@@ -138,6 +138,28 @@ class PairFFTestCase(unittest.TestCase):
     def test_dispersionff_ex(self):
         self.ff_test(self.make_dispersionff(do_excludes=True))
 
+    def make_pauliff(self, do_excludes):
+        atom_strengths = numpy.array([0.3, 0.5, 0.8], float)
+        strengths = numpy.outer(atom_strengths, atom_strengths)
+        coordinates = numpy.array([
+            [ 0.5, 2.5, 0.1],
+            [-1.2, 0.4, 0.3],
+            [ 0.3, 0.9, 0.7]], float
+        )
+
+        if do_excludes:
+            exclude_pairs = [set([0,2]), set([0,1])]
+        else:
+            exclude_pairs = []
+
+        return molmod.pairff.DispersionFF(coordinates, strengths, exclude_pairs=exclude_pairs)
+
+    def test_pauliff(self):
+        self.ff_test(self.make_pauliff(do_excludes=False))
+
+    def test_pauliff_ex(self):
+        self.ff_test(self.make_pauliff(do_excludes=True))
+
     def make_debug1ff(self, do_excludes):
         coordinates = numpy.array([
             [ 0.5, 2.5, 0.1],
