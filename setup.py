@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     setup(
         name='MolMod',
-        version='0.002',
+        version='0.003',
         description='MolMod is a collection of molecular modelling tools for python.',
         author='Toon Verstraelen',
         author_email='Toon.Verstraelen@UGent.be',
