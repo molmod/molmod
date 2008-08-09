@@ -358,12 +358,12 @@ class Graph(object):
             raise GraphError("Node_a1 must be a neighbor of node_b1.")
         if node_a2 not in self.neighbors[node_b2]:
             raise GraphError("Node_a2 must be a neighbor of node_b2.")
-        if node_a1 == node_a2 or node_a1 == node_b2 or node_b1 == node_a2 or node_b1 == node_b2:
-            raise GraphError("Some nodes coincide, got (%s,%s), (%s,%s)" % (node_a1, node_b1, node_a2, node_b2))
 
         # find node_a_part (and possibly switch node_a2, node_b2)
         node_a_new = set(self.neighbors[node_a1])
         node_a_new.discard(node_b1)
+        if node_a1 == node_a2: node_a_new.discard(node_b2) # in case there is overlap
+        if node_a1 == node_b2: node_a_new.discard(node_a2) # in case there is overlap
         node_a_part = set([node_a1])
 
         touched = False # True if (the switched) node_a2 has been reached.
@@ -393,20 +393,23 @@ class Graph(object):
         #node_b_part = set(self.nodes) - node_a_part
 
         # ... but we also want that there is a path in node_b_part from node_b1 to node_b2
-        node_b_new = set(self.neighbors[node_b1])
-        node_b_new.discard(node_a1)
-        node_b_part = set([node_b1])
+        if node_b1 == node_b2:
+            closed = True
+        else:
+            node_b_new = set(self.neighbors[node_b1])
+            node_b_new.discard(node_a1)
+            node_b_part = set([node_b1])
 
-        closed = False
-        while len(node_b_new) > 0:
-            pivot = node_b_new.pop()
-            if pivot == node_b2:
-                closed = True
-                break
-            pivot_neighbors = set(self.neighbors[pivot])
-            pivot_neighbors -= node_b_part
-            node_b_new |= pivot_neighbors
-            node_b_part.add(pivot)
+            closed = False
+            while len(node_b_new) > 0:
+                pivot = node_b_new.pop()
+                if pivot == node_b2:
+                    closed = True
+                    break
+                pivot_neighbors = set(self.neighbors[pivot])
+                pivot_neighbors -= node_b_part
+                node_b_new |= pivot_neighbors
+                node_b_part.add(pivot)
 
         if not closed:
             raise GraphError("The graph can not be separated in two halfs. node_b1 can not reach node_b2 trough node_b_part")

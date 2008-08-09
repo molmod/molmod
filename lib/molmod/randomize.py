@@ -204,9 +204,6 @@ def yield_halfs_double(graph):
     pairs = list(graph.pairs)
     for index1, (atom_a1, atom_b1) in enumerate(pairs):
         for atom_a2, atom_b2 in pairs[:index1]:
-            if atom_a1 == atom_a2 or atom_a1 == atom_b2 or \
-               atom_b1 == atom_a2 or atom_b1 == atom_b2:
-                continue
             try:
                 affected_atoms1, affected_atoms2, hinge_atoms = graph.get_halfs_double(atom_a1, atom_b1, atom_a2, atom_b2)
                 yield affected_atoms1, affected_atoms2, hinge_atoms
@@ -264,12 +261,14 @@ def generate_manipulations(
                     affected_atoms1, 0.5*(length1+length2)*bond_stretch_factor, hinge_atoms
                 ))
             if do_double_bend and len(affected_atoms1) > 2 and len(affected_atoms2) > 2:
-                results.append(RandomTorsion(
-                    affected_atoms1, bending_amplitude, (hinge_atoms[0], hinge_atoms[2])
-                ))
-                results.append(RandomTorsion(
-                    affected_atoms2, bending_amplitude, (hinge_atoms[1], hinge_atoms[3])
-                ))
+                if hinge_atoms[0] != hinge_atoms[2]:
+                    results.append(RandomTorsion(
+                        affected_atoms1, bending_amplitude, (hinge_atoms[0], hinge_atoms[2])
+                    ))
+                if hinge_atoms[1] != hinge_atoms[3]:
+                    results.append(RandomTorsion(
+                        affected_atoms2, bending_amplitude, (hinge_atoms[1], hinge_atoms[3])
+                    ))
     # Neglect situations where three or more cuts are required.
     return results
 

@@ -290,12 +290,6 @@ class GraphsTestCase(unittest.TestCase):
             pass
 
         try:
-            part1, part2, hinges = graph1.get_halfs_double(0,1,1,2)
-            self.fail("graph1.get_halfs_double(0,1,1,2) should raise a GraphError")
-        except GraphError:
-            pass
-
-        try:
             part1, part2, hinges = graph1.get_halfs_double(0,1,2,5)
             self.fail("graph1.get_halfs_double(0,1,2,5) should raise a GraphError")
         except GraphError:

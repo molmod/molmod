@@ -59,7 +59,7 @@ class RandomizeTestCase(BaseTestCase):
         all_counts = {
             "tpa.xyz": (12+4*7, 12, 13*6, 0),
             "water.xyz": (2,0,1,0), # Stretch, Torsion, Bend, DoubleStretch
-            "thf_single.xyz": (8, 10, 5*4, 5),
+            "thf_single.xyz": (8, 14, 5*4, 10),
         }
         for molecule, graph in self.yield_test_molecules():
             manipulations = generate_manipulations(graph, molecule)
