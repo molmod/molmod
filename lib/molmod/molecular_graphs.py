@@ -99,15 +99,18 @@ def generate_molecular_graph(molecule, labels=None, unit_cell=None):
 # molecular criteria
 
 
-class Anything(object):
-    def __call__(self, id):
-        return True
-
-
 class MolecularCriterion(object):
     def init_graph(self, graph):
         self.graph = graph
         graph.init_index()
+
+    def __call__(self, id):
+        raise NotImplementedError
+
+
+class Anything(MolecularCriterion):
+    def __call__(self, id):
+        return True
 
 
 class MolecularOr(object):
