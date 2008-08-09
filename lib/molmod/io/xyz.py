@@ -180,6 +180,7 @@ class XYZFile(object):
         result = Molecule()
         result.numbers = self.numbers
         result.coordinates = self.geometries[index]
+        result.title = self.titles[index]
         return result
 
     def write_to_file(self, f, file_unit=angstrom):
