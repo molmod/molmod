@@ -120,7 +120,7 @@ Who cares about the title?
 
 
 def mkinput_multiopt(
-    molecule, charge, spin, lot_mem_pairs, post, nproc, maxdisk, com_filename, 
+    molecule, charge, spin, lot_mem_pairs, post, nproc, maxdisk, com_filename,
     center=True, overwrite=False
 ):
     destdir = os.path.dirname(com_filename)
