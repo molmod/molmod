@@ -155,6 +155,10 @@ class HasNumNeighbors(MolecularCriterion):
     def __init__(self, number):
         self.number = number
 
+    def init_graph(self, graph):
+        graph.init_neighbors()
+        MolecularCriterion.init_graph(self, graph)
+
     def __call__(self, atom):
         return len(self.graph.neighbors[self.graph.index[atom]]) == self.number
 
@@ -163,6 +167,10 @@ class HasNeighborNumbers(MolecularCriterion):
     def __init__(self, numbers):
         self.numbers = list(numbers)
         self.numbers.sort()
+
+    def init_graph(self, graph):
+        graph.init_neighbors()
+        MolecularCriterion.init_graph(self, graph)
 
     def __call__(self, atom):
         neighbors = self.graph.neighbors[atom]
