@@ -95,6 +95,7 @@ class FCHKFile(object):
 
     def _analyze(self):
         self.molecule = Molecule()
+        self.molecule.title = self.title
         self.molecule.numbers = self.fields["Atomic numbers"]
         self.molecule.coordinates = numpy.reshape(self.fields["Current cartesian coordinates"], (-1,3))
 
@@ -137,11 +138,14 @@ class FCHKFile(object):
         else:
             return opt_grad[-1]
 
+    def get_esp_charges(self):
+        return self.fields.get("ESP Charges")
+
     def get_npa_charges(self):
         return self.fields.get("NPA Charges")
 
     def get_mulliken_charges(self):
-        return self.fields.get("Mullike Charges")
+        return self.fields.get("Mulliken Charges")
 
     def get_gradient(self):
         tmp = self.fields.get("Cartesian Gradient")
