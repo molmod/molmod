@@ -209,7 +209,11 @@ class Section(object):
                 self.append(keyword)
 
 
-    def load(self, f, line):
+    def load(self, f, line=None):
+        if line is None:
+            # in case the file contains only a fragment of an input file,
+            # this is useful.
+            line = f.readlin()
         words = line[1:].split()
         self.__name = words[0].upper()
         self.section_parameters = " ".join(words[1:])
@@ -220,30 +224,39 @@ class Section(object):
 
 
 class Keyword(object):
-    def __init__(self, name="", value=""):
+    def __init__(self, name="", value="", unit=None):
         self.__name = name.upper()
         self.__value = value
+        self.__unit = unit
 
     def __eq__(self, other):
         #print (self.name, other.name), (self.value, other.value)
         return (
             isinstance(other, Keyword) and
             self.name == other.name and
-            self.value == other.value
+            self.value == other.value and
+            self.unit == other.unit
         )
 
     def dump(self, f, indent=''):
-        print >> f, ("%s%s %s" % (indent, self.__name, self.__value)).rstrip()
+        if self.__unit is None:
+            print >> f, ("%s%s %s" % (indent, self.__name, self.__value)).rstrip()
+        else:
+            print >> f, ("%s%s [%s] %s" % (indent, self.__name, self.__unit, self.__value)).rstrip()
 
     def load(self, line):
         words = line.split()
         try:
             float(words[0])
-            self.__name == ""
+            self.__name = ""
             self.__value = " ".join(words)
         except ValueError:
             self.__name = words[0].upper()
-            self.__value = " ".join(words[1:])
+            if len(words) > 2 and words[1][0]=="[" and words[1][-1]=="]":
+                self.unit = words[1][1:-1]
+                self.__value = " ".join(words[2:])
+            else:
+                self.__value = " ".join(words[1:])
 
 
     def set_value(self, value):
@@ -257,8 +270,12 @@ class Keyword(object):
     def get_value(self):
         return self.__value
 
+    def get_unit(self):
+        return self.__unit
+
     value = property(get_value, set_value)
     name = property(get_name)
+    unit = property(get_unit)
 
 
 class InputFile(Section):
