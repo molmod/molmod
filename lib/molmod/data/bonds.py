@@ -116,8 +116,9 @@ class BondData(object):
                     pair = frozenset([n1, n2])
                     atom1 = self.periodic_data[n1]
                     atom2 = self.periodic_data[n2]
-                    if (pair not in dataset) and (atom1.radius is not None) and (atom2.radius is not None):
-                        dataset[pair] = (atom1.radius + atom2.radius)
+                    #if (pair not in dataset) and hasattr(atom1, "covalent_radius") and hasattr(atom2, "covalent_radius"):
+                    if (pair not in dataset) and (atom1.covalent_radius is not None) and (atom2.covalent_radius is not None):
+                        dataset[pair] = (atom1.covalent_radius + atom2.covalent_radius)
                     #print "%3i  %3i  %s %30s %30s" % (n1, n2, dataset.get(pair), atom1, atom2)
 
     def bonded(self, n1, n2, distance):

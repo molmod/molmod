@@ -59,6 +59,7 @@ class PeriodicData(object):
             "g/cm**3": (lambda s: float(s)*(1e-3*units.g)/(units.cm**3)),
             "a.u.": (lambda s: float(s)),
             "A": (lambda s: float(s)*units.angstrom),
+            "pm": (lambda s: float(s)*units.pm),
         }
 
 
@@ -76,7 +77,7 @@ class PeriodicData(object):
                 if convertor is not None:
                     convertors.append(lambda s: convertor(float(s)))
                 else:
-                    convertors.append(float)
+                    raise TypeError("Can not interpret unit %s." % word)
 
         f = file(filename)
         lines_read = 0
