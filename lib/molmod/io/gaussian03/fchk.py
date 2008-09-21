@@ -40,6 +40,8 @@ class FCHKFile(object):
         except ReadError:
             if ignore_errors:
                 return
+            else:
+                raise
         self._analyze()
 
     def _read(self, filename):
