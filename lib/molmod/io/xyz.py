@@ -58,9 +58,7 @@ class XYZReader(object):
                 else:
                     self.numbers[index] = atom_info.number
         except StopIteration:
-            self._first = None
-            self.symbols = []
-            self.numbers = numpy.array([], int)
+            raise Error("Could not read first frame from XYZ file. Incorrect file format.")
 
     def __del__(self):
         if self._auto_close:
