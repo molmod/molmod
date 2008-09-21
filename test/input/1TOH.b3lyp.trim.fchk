@@ -1,0 +1,55 @@
+opt                                                                     
+FOpt      RB3LYP                                                      6-311+G(d,p)        
+Number of atoms                            I                9
+Charge                                     I                0
+Multiplicity                               I                1
+Number of electrons                        I               50
+Number of alpha electrons                  I               25
+Number of beta electrons                   I               25
+Number of basis functions                  I              142
+Number of independant functions            I              142
+Number of point charges in /Mol/           I                0
+Number of translation vectors              I                0
+Info1-9                                    I   N=           9
+          41          40           0           0           0         111
+           2          18        -501
+Num ILSW                                   I              100
+ILSW                                       I   N=         100
+           0           0           0           0           2           0
+           0           0           0           0         402      200000
+           0           0           0           0           0           0
+           0      800000           0           0           1           0
+           1           1           0           0     1000000           0
+           0           0           0           0          -1           0
+           0           0           0           0           0           0
+           0           0           0           1           0           0
+           0           0           1      720000      810000           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0
+Number of contracted shells                I               53
+Highest angular momentum                   I                2
+Largest degree of contraction              I                6
+Number of primitive shells                 I              100
+Pure/Cartesian d shells                    I                0
+Pure/Cartesian f shells                    I                0
+Virial Ratio                               R      2.002408027154329E+00
+SCF Energy                                 R     -5.931311727510147E+02
+Total Energy                               R     -5.931311727510147E+02
+RMS Force                                  R      3.297793172831015E-06
+RMS Density                                R      6.262735181005949E-09
+Atomic numbers                             I   N=           9
+           8          14           8           8           8           1
+           1           1           1
+Nuclear charges                            R   N=           9
+  8.00000000E+00  1.40000000E+01  8.00000000E+00  8.00000000E+00  8.00000000E+00
+  1.00000000E+00  1.00000000E+00  1.00000000E+00  1.00000000E+00
+Current cartesian coordinates              R   N=          27
+ -1.22166133E-01 -7.76846132E-02  2.18269387E-02  2.73897634E-04 -7.83119835E-04
+  3.12916345E+00  2.85013528E+00  7.51246138E-02  4.37365470E+00 -1.32111802E+00
+ -2.63535370E+00  4.123

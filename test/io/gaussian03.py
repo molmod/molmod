@@ -79,6 +79,7 @@ class Gaussian03(unittest.TestCase):
 
     def test_fchk(self):
         fchk = FCHKFile("input/1TOH.b3lyp.fchk")
+        fchk = FCHKFile("input/1TOH.b3lyp.trim.fchk", ignore_errors=True)
         #print fchk.molecule.numbers
         #print fchk.molecule.coordinates
         #print fchk.optimization_coordinates()

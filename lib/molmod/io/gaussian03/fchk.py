@@ -34,8 +34,12 @@ class ReadError(Exception):
 
 
 class FCHKFile(object):
-    def __init__(self, filename):
-        self._read(filename)
+    def __init__(self, filename, ignore_errors=False):
+        try:
+            self._read(filename)
+        except ReadError:
+            if ignore_errors:
+                return
         self._analyze()
 
     def _read(self, filename):
