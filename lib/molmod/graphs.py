@@ -137,7 +137,7 @@ class Graph(object):
         """
         for pair in pairs:
             if not (isinstance(pair, frozenset) and len(pair) == 2):
-                raise TypeError("The pairs must by frozen sets of exactly 2 elements each.")
+                raise TypeError("The pairs must be frozen sets of exactly 2 elements each.")
         self.pairs = set(pairs)
         if ordered_nodes is None:
             self.nodes = None
