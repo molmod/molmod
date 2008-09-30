@@ -34,20 +34,20 @@ __all__ = ["load_cml", "dump_cml"]
 
 class CMLMoleculeLoader(ContentHandler):
     def __init__(self):
-        self.molecules = {}
+        self.molecules = []
         self.curmol = None # current molecule
-    
+
     atom_exclude = frozenset(['id', 'elementType', 'x3', 'y3', 'z3', 'x2', 'y2'])
     bond_exclude = frozenset(['id', 'atomRefs2', 'order'])
     molecule_exclude = frozenset(['id', 'xmlns'])
-    
+
     def get_extra(self, attrs, exclude):
         result = {}
         for key in attrs.getNames():
             if key not in exclude:
                 result[key] = attrs[key]
         return result
-    
+
     def startElement(self, name, attrs):
         #print "START", name, attrs
         # If it's not a comic element, ignore it
@@ -89,36 +89,32 @@ class CMLMoleculeLoader(ContentHandler):
     def endElement(self, name):
         #print "END", name
         if name == 'molecule':
-            if self.curmol.title in self.molecules:
-                counter = 0
-                while self.curmol.title + str(counter) in self.molecules:
-                    counter += 1
-                self.curmol.title += str(counter)
-            self.curmol.numbers = numpy.array(self.curmol.numbers)
-            self.curmol.coordinates = numpy.array(self.curmol.coordinates)*angstrom
-            
-            name_to_index = {}
-            for counter, name in enumerate(self.curmol.atom_names):
-                name_to_index[name] = counter
+            if len(self.curmol.numbers) > 0:
+                self.curmol.numbers = numpy.array(self.curmol.numbers)
+                self.curmol.coordinates = numpy.array(self.curmol.coordinates)*angstrom
 
-            pairs = set()
-            self.curmol.bonds_extra = {}
-            for name1, name2, extra in self.curmol.bonds:
-                i1 = name_to_index.get(name1)
-                i2 = name_to_index.get(name2)
-                if i1 is not None and i2 is not None:
-                    pair = frozenset([i1,i2])
-                    if len(extra) > 0:
-                        self.curmol.bonds_extra[pair] = extra
-                    pairs.add(pair)
-            if len(pairs) == 0:
-                self.curmol.graph = None
-            else:
-                self.curmol.graph = MolecularGraph(pairs, self.curmol.numbers)
-            del self.curmol.atom_names
-            del self.curmol.bonds
-            
-            self.molecules[self.curmol.title] = self.curmol
+                name_to_index = {}
+                for counter, name in enumerate(self.curmol.atom_names):
+                    name_to_index[name] = counter
+
+                pairs = set()
+                self.curmol.bonds_extra = {}
+                for name1, name2, extra in self.curmol.bonds:
+                    i1 = name_to_index.get(name1)
+                    i2 = name_to_index.get(name2)
+                    if i1 is not None and i2 is not None:
+                        pair = frozenset([i1,i2])
+                        if len(extra) > 0:
+                            self.curmol.bonds_extra[pair] = extra
+                        pairs.add(pair)
+                if len(pairs) == 0:
+                    self.curmol.graph = None
+                else:
+                    self.curmol.graph = MolecularGraph(pairs, self.curmol.numbers)
+                del self.curmol.atom_names
+                del self.curmol.bonds
+
+                self.molecules.append(self.curmol)
             self.curmol = None
 
 
@@ -139,9 +135,9 @@ def dump_cml_molecule(f, molecule):
     atoms_extra = getattr(molecule, "atoms_extra", {})
     for counter, number, coordinate in zip(xrange(molecule.size), molecule.numbers, molecule.coordinates/angstrom):
         atom_extra = atoms_extra.get(counter, {})
-        attr_str = " ".join("%s='%s'" % (key,value) for key,value in atom_extra.iteritems())        
+        attr_str = " ".join("%s='%s'" % (key,value) for key,value in atom_extra.iteritems())
         f.write("   <atom id='a%i' elementType='%s' x3='%s' y3='%s' z3='%s' %s />\n" % (
-            counter, periodic[number].symbol, coordinate[0],  coordinate[1],  
+            counter, periodic[number].symbol, coordinate[0],  coordinate[1],
             coordinate[2], attr_str,
         ))
     f.write("  </atomArray>\n")
@@ -150,17 +146,17 @@ def dump_cml_molecule(f, molecule):
         f.write("  <bondArray>\n")
         for pair in molecule.graph.pairs:
             bond_extra = bonds_extra.get(pair, {})
-            attr_str = " ".join("%s='%s'" % (key,value) for key,value in bond_extra.iteritems())        
+            attr_str = " ".join("%s='%s'" % (key,value) for key,value in bond_extra.iteritems())
             i1,i2 = pair
             f.write("   <bond atomRefs2='a%i a%i' %s />\n" % (i1, i2, attr_str))
-        f.write("  </bondArray>\n")    
+        f.write("  </bondArray>\n")
     f.write(" </molecule>\n")
 
 
 def dump_cml(f, molecules):
     f.write("<?xml version='1.0'?>\n")
     f.write("<list xmlns='http://www.xml-cml.org/schema'>\n")
-    for molecule in molecules.itervalues():
+    for molecule in molecules:
         dump_cml_molecule(f, molecule)
     f.write("</list>\n")
 
