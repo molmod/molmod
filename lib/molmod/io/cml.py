@@ -45,7 +45,7 @@ class CMLMoleculeLoader(ContentHandler):
         result = {}
         for key in attrs.getNames():
             if key not in exclude:
-                result[key] = attrs[key]
+                result[key] = str(attrs[key])
         return result
 
     def startElement(self, name, attrs):
@@ -154,9 +154,16 @@ def dump_cml_molecule(f, molecule):
 
 
 def dump_cml(f, molecules):
+    if isinstance(f, basestring):
+        f = file(f, "w")
+        close = True
+    else:
+        close = False
     f.write("<?xml version='1.0'?>\n")
     f.write("<list xmlns='http://www.xml-cml.org/schema'>\n")
     for molecule in molecules:
         dump_cml_molecule(f, molecule)
     f.write("</list>\n")
+    if close:
+        f.close()
 
