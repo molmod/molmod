@@ -34,9 +34,14 @@ class ReadError(Exception):
 
 
 class FCHKFile(object):
-    def __init__(self, filename, ignore_errors=False):
+    def __init__(self, filename, ignore_errors=False, field_labels=None):
+        self.filename = filename
         try:
-            self._read(filename)
+            if field_labels is not None:
+                field_labels = set(field_labels)
+                field_labels.add("Atomic numbers")
+                field_labels.add("Current cartesian coordinates")
+            self._read(filename, field_labels)
         except ReadError:
             if ignore_errors:
                 return
@@ -44,7 +49,8 @@ class FCHKFile(object):
                 raise
         self._analyze()
 
-    def _read(self, filename):
+    def _read(self, filename, field_labels=None):
+        # if fields is None, all fields are read
         def read_field(f):
             datatype = None
             while datatype is None:
@@ -54,6 +60,13 @@ class FCHKFile(object):
                     return False
 
                 label = line[:43].strip()
+                if field_labels is not None:
+                    if len(field_labels) == 0:
+                        return False
+                    elif label not in field_labels:
+                        return True
+                    else:
+                        field_labels.discard(label)
                 line = line[43:]
                 words = line.split()
 
