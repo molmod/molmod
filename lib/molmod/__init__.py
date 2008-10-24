@@ -19,15 +19,23 @@
 # --
 
 
-import sys
+import sys, os
 
 
 __all__ = ["context"]
 
 
+class Error(Exception):
+    pass
+
+
 class Context(object):
     def __init__(self):
         self.share_path = "%s/share/molmod/" % (sys.prefix)
+        if not os.path.isdir(self.share_path):
+            self.share_path = "%s/share/molmod/" % os.getenv("HOME")
+        if not os.path.isdir(self.share_path):
+            raise Error("Could not find shared files.")
 
 context = Context()
 
