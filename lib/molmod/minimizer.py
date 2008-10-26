@@ -22,145 +22,57 @@
 import numpy
 
 
-__all__ = ["Minimizer", "minimize"]
+__all__ = [
+    "GoldenLineSearch", "NewtonLineSearch", "NewtonGLineSearch", "Minimizer"
+]
 
 
 phi = 0.5*(1+numpy.sqrt(5))
 
 
-class Minimizer(object):
-    def __init__(
-        self, x_init, fun, ftol_fine, ftol_coarse, xtol, epsilon_init=1e-3, 
-        num_line_scan=61, max_step=5.0, callback=None, max_iter_cg=100, 
-        do_scan=False
-    ):
-        self.x = x_init.copy()
-        self.fun = fun
-        self.ftol_coarse = ftol_coarse
-        self.ftol_fine = ftol_fine
-        self.xtol = xtol
-        self.epsilon = epsilon_init
-        self.step_size = 1
-
-        self.num_line_scan = num_line_scan
+class LineSearch(object):
+    def __init__(self, qtol, max_step):
+        self.qtol = qtol
         self.max_step = max_step
-        self.callback = callback
-        self.max_iter_cg = max_iter_cg
-        self.do_scan = do_scan
 
-        self.log = []
-        self.direction_cg = numpy.zeros(self.x.shape, float)
-        self.direction_sd = numpy.zeros(self.x.shape, float)
-        self.direction_sd_old = numpy.zeros(self.x.shape, float)
+    def limit_step(self, step):
+        if step > self.max_step: return self.max_step
+        if step < -self.max_step: return -self.max_step
+        return step
 
-    def set_coarse(self, coarse):
-        self.coarse = coarse
-        if coarse:
-            self.ftol = self.ftol_coarse
-        else:
-            self.ftol = self.ftol_fine
+    def get_extra_log_dtypes(self):
+        return []
 
-    def opt_cg(self, label):
-        return self.line_opt(self.direction_cg, label)
+    def get_extra_log(self):
+        return ()
 
-    def update_cg(self):
-        self.direction_sd_old[:] = self.direction_sd
-        self.update_direction_sd()
-        self.beta = (
-            numpy.dot(self.direction_sd, self.direction_sd) /# - self.direction_sd_old) /
-            numpy.dot(self.direction_sd_old, self.direction_sd_old)
-        )
-        if self.beta < 0:
-            self.beta = 0
-        self.direction_cg[:] *= self.beta
-        self.direction_cg[:] += self.direction_sd
 
-    def update_sd(self):
-        self.update_direction_sd()
-        self.direction_cg[:] = self.direction_sd
-        self.beta = 0
 
-    def line_scan_global(self):
-        delta_xs = numpy.arange(self.num_line_scan, dtype=float)/(self.num_line_scan-1)*2*self.max_step - self.max_step
-        fs = []
-        for delta_x in delta_xs:
-            fs.append(self.fun(self.x + delta_x))
-        fs = numpy.array(fs)
-        m = fs.argmin()
-        if (self.f-fs[m])/self.f < 1e-16:
-            print "  'Global scan'         No Improvement"
-            self.fun(self.x) # reset the internal state of the function
-            return False
-        print "  'Global scan'        ",
-        return self.handle_new_solution(self.x + delta_xs[m], fs[m])
+class GoldenLineSearch(LineSearch):
+    def __init__(self, qtol, max_step):
+        LineSearch.__init__(self, qtol, max_step)
+        self.num_bracket = 0
+        self.num_golden = 0
 
-    def line_scan_parameter(self, index=None):
-        delta_xs = numpy.arange(self.num_line_scan, dtype=float)/(self.num_line_scan-1)*2*self.max_step - self.max_step
-        xnew = self.x.copy()
-        fs = []
-        for delta_x in delta_xs:
-            xnew[:] = self.x
-            xnew[index] += delta_x
-            fs.append(self.fun(xnew))
-        fs = numpy.array(fs)
-        m = fs.argmin()
-        if (self.f-fs[m])/self.f < 1e-16:
-            print "  'Parameter %03i scan'  No Improvement" % index
-            self.fun(self.x) # reset the internal state of the function
-            return False
-        print "  'Parameter %03i scan' " % index,
-        xnew[:] = self.x
-        xnew[index] += delta_xs[m]
-        return self.handle_new_solution(xnew, fs[m])
+    def get_extra_log_dtypes(self):
+        return [("num_bracket", int), ("num_golden", int)]
 
-    def update_direction_sd(self):
-        tmp = self.x.copy()
-        for j in xrange(len(self.x)):
-            tmp[j] += self.epsilon
-            self.direction_sd[j] = -(self.fun(tmp) - self.f)/self.epsilon
-            tmp[j] = self.x[j]
-        self.fun(self.x) # reset the internal state of the function
-
-    def line_opt(self, direction, label):
-        if numpy.linalg.norm(direction) == 0:
-            print "  'Opt% 3s'              Direction zero" % label
-            return False 
-        direction = direction/numpy.linalg.norm(direction)
-        def fun_aux(q):
-            xq = self.x + q*direction
-            return self.fun(xq)
-
-        # bracket the minimum
-        triplet = self.bracket(self.step_size, self.f, fun_aux)
-        if triplet is None:
-            # returning the old x and f, means that the optimization failed
-            print "  'Opt% 3s'              No bracket found" % label
-            self.fun(self.x) # reset the internal state of the function
-            return False
-        # do a golden section optimization
-        qopt, fopt = self.golden(triplet, fun_aux)
-        if qopt > self.max_step: qopt = self.max_step
-        if qopt < -self.max_step: qopt = -self.max_step
-        fopt = fun_aux(qopt)
-        print "  'Opt% 3s'             " % label,
-        return self.handle_new_solution(self.x + qopt*direction, fopt)
-
-    def handle_new_solution(self, xnew, fnew):
-        self.step_size = numpy.linalg.norm(self.x - xnew)
-        relative_decrease = (self.f - fnew)/self.f
-        print "step=% 9.7e   reldecr=% 9.7e   fnew=% 9.7e" % (self.step_size, relative_decrease, fnew)
-        if self.step_size < self.xtol:
-            result = False
-        if relative_decrease < self.ftol:
-            result = False
-        else:
-            result = True
-        if relative_decrease > 0:
-            self.x = xnew
-            self.f = fnew
-        else:
-            self.fun(self.x) # reset the internal state of the function
+    def get_extra_log(self):
+        result = (self.num_bracket, self.num_golden)
+        self.num_bracket = 0
+        self.num_golden = 0
         return result
+
+    def __call__(self, fun, f0, last_step_size, epsilon):
+        # bracket the minimum
+        triplet = self.bracket(last_step_size, f0, fun)
+        if triplet is None:
+            return False, 0.0, f0
+        # do a golden section optimization
+        qopt, fopt = self.golden(triplet, fun)
+        qopt = self.limit_step(qopt)
+        fopt = fun(qopt)
+        return True, qopt, fopt
 
     def bracket(self, qinit, f0, fun):
         self.num_bracket = 0
@@ -173,7 +85,7 @@ class Minimizer(object):
                 qb, fb = qa, fa
                 qa /= 1+phi
                 fa = fun(qa)
-                if qa < self.xtol:
+                if qa < self.qtol:
                     return
                 if fa < f0:
                     return (0, f0), (qa, fa), (qb, fb)
@@ -208,100 +120,298 @@ class Minimizer(object):
             else:
                 #print "golden b"
                 (qa, fa), (qc, fc) = (qd, fd), (qa, fa)
-            if abs(qa-qb) < self.xtol:
+            if abs(qa-qb) < self.qtol:
                 return qc, fc
 
-    def append_log(self, cg):
-        if self.callback is not None:
-            extra_fields = tuple(self.callback())
+
+class NewtonLineSearch(LineSearch):
+    def __init__(self, qtol, max_step):
+        LineSearch.__init__(self, qtol, max_step)
+        self.num_reduce = 0
+
+    def get_extra_log_dtypes(self):
+        return [("num_reduce", int)]
+
+    def get_extra_log(self):
+        result = (self.num_reduce,)
+        self.num_reduce = 0
+        return result
+
+    def __call__(self, fun, f0, last_step_size, epsilon):
+        # determine the curvature:
+        fl = fun(-epsilon)
+        fh = fun(+epsilon)
+
+        f_d1 = (fh-fl)/(2*epsilon)
+        f_d2 = (fh+fl-2*f0)/epsilon
+        if f_d2 > 0:
+            qopt = -f_d1/f_d2
         else:
-            extra_fields = ()
+            qopt = last_step_size*1.5
+        qopt = self.limit_step(qopt)
+        self.num_reduce = 0
+        while True:
+            if qopt < self.qtol:
+                return False, 0.0, f0
+            fopt = fun(qopt)
+            if fopt < f0:
+                break
+            qopt *= 0.5
+            self.num_reduce += 1
+        return True, qopt, fopt
+
+
+class NewtonGLineSearch(LineSearch):
+    def __init__(self, qtol, max_step):
+        LineSearch.__init__(self, qtol, max_step)
+        self.num_reduce = 0
+
+    def get_extra_log_dtypes(self):
+        return [("num_reduce", int)]
+
+    def get_extra_log(self):
+        result = (self.num_reduce,)
+        self.num_reduce = 0
+        return result
+
+    def __call__(self, fun, f0, last_step_size, epsilon):
+        # determine the curvature:
+        fl, dl = fun(-epsilon, do_gradient=True)
+        fh, dh = fun(+epsilon, do_gradient=True)
+
+        f_d1 = 0.5*(dl+dh)
+        f_d2 = (dh-dl)/(2*epsilon)
+        if f_d2 > 0:
+            qopt = -f_d1/f_d2
+        else:
+            qopt = last_step_size*1.5
+        qopt = self.limit_step(qopt)
+        self.num_reduce = 0
+        while True:
+            if qopt < self.qtol:
+                return False, 0.0, f0
+            fopt = fun(qopt)
+            if fopt < f0:
+                break
+            qopt *= 0.5
+            self.num_reduce += 1
+        return True, qopt, fopt
+
+
+
+
+class Minimizer(object):
+    def __init__(
+        self, x_init, fun, LineSearchCls, ftol, xtol, max_step, max_iter,
+        do_gradient=False, epsilon_init=1e-6, verbose=True, callback=None, 
+        min_iter=0, extra_log_dtypes=None
+    ):
+        self.x = x_init.copy()
+        self.fun = fun
+        self.line_search = LineSearchCls(xtol, max_step)
+        self.ftol = ftol
+        self.xtol = xtol
+        self.max_step = max_step
+        self.do_gradient = do_gradient
+        self.callback = callback
+        self.epsilon = epsilon_init
+        self.epsilon_max = epsilon_init
+        self.verbose = verbose
+        self.min_iter = min_iter
+
+        self.extra_log_dtypes = self.line_search.get_extra_log_dtypes()
+        if extra_log_dtypes is not None:
+            self.extra_log_dtypes.extend(extra_log_dtypes)
+
+        self.log = []
+        self.step_size = 1
+        self.direction_cg = numpy.zeros(self.x.shape, float)
+        self.direction_sd = numpy.zeros(self.x.shape, float)
+        self.direction_sd_old = numpy.zeros(self.x.shape, float)
+
+        self.iterate(max_iter)
+
+    def screen(self, s, newline=True):
+        if self.verbose:
+            if newline:
+                print s
+            else:
+                print s,
+
+    def step_cg(self, label):
+        return self.line_opt(self.direction_cg, label)
+
+    def update_cg(self):
+        self.direction_sd_old[:] = self.direction_sd
+        self.update_direction_sd()
+        self.beta = (
+            numpy.dot(self.direction_sd, self.direction_sd - self.direction_sd_old) /
+            numpy.dot(self.direction_sd_old, self.direction_sd_old)
+        )
+        if self.beta < 0:
+            self.beta = 0
+        self.direction_cg[:] *= self.beta
+        self.direction_cg[:] += self.direction_sd
+
+    def update_sd(self):
+        self.update_direction_sd()
+        self.direction_cg[:] = self.direction_sd
+        self.beta = 0
+
+    #def line_scan_global(self):
+    #    delta_xs = numpy.arange(self.num_line_scan, dtype=float)/(self.num_line_scan-1)*2*self.max_step - self.max_step
+    #    fs = []
+    #    for delta_x in delta_xs:
+    #        fs.append(self.fun(self.x + delta_x))
+    #    fs = numpy.array(fs)
+    #    m = fs.argmin()
+    #    if (self.f-fs[m])/self.f < 1e-16:
+    #        print "  'Global scan'         No Improvement"
+    #        self.fun(self.x) # reset the internal state of the function
+    #        return False
+    #    print "  'Global scan'        ",
+    #    return self.handle_new_solution(self.x + delta_xs[m], fs[m])
+
+    #def line_scan_parameter(self, index=None):
+    #    delta_xs = numpy.arange(self.num_line_scan, dtype=float)/(self.num_line_scan-1)*2*self.max_step - self.max_step
+    #    xnew = self.x.copy()
+    #    fs = []
+    #    for delta_x in delta_xs:
+    #        xnew[:] = self.x
+    #        xnew[index] += delta_x
+    #        fs.append(self.fun(xnew))
+    #    fs = numpy.array(fs)
+    #    m = fs.argmin()
+    #    if (self.f-fs[m])/self.f < 1e-16:
+    #        print "  'Parameter %03i scan'  No Improvement" % index
+    #        self.fun(self.x) # reset the internal state of the function
+    #        return False
+    #    print "  'Parameter %03i scan' " % index,
+    #    xnew[:] = self.x
+    #    xnew[index] += delta_xs[m]
+    #    return self.handle_new_solution(xnew, fs[m])
+
+    def line_opt(self, direction, label):
+        if numpy.linalg.norm(direction) == 0:
+            self.screen("  'Opt% 3s'              Direction zero" % label)
+            return False
+        direction = direction/numpy.linalg.norm(direction)
+        def fun_aux(q, do_gradient=False):
+            xq = self.x + q*direction
+            if do_gradient:
+                fq, gq = self.fun(xq, do_gradient=True)
+                return fq, numpy.dot(direction, gq)
+            else:
+                return self.fun(xq)
+
+        success, qopt, fopt = self.line_search(fun_aux, self.f, self.step_size, self.epsilon)
+        if success:
+            self.screen("  'Opt% 3s'             " % label, False)
+            return self.handle_new_solution(self.x + qopt*direction, fopt)
+        else:
+            # returning the old x and f, means that the optimization failed
+            self.screen("  'Opt% 3s'              Line search failed" % label)
+            self.fun(self.x) # reset the internal state of the function
+            return False
+
+
+    def update_direction_sd(self):
+        if self.do_gradient:
+            self.f, tmp = self.fun(self.x, do_gradient=True)
+            self.direction_sd[:] = -tmp
+            #print self.direction_sd
+        else:
+        #if True:
+            tmp = self.x.copy()
+            for j in xrange(len(self.x)):
+                tmp[j] += self.epsilon
+                self.direction_sd[j] = -(self.fun(tmp) - self.f)/self.epsilon
+                tmp[j] = self.x[j]
+            self.fun(self.x) # reset the internal state of the function
+            #print self.direction_sd
+        #sys.exit()
+
+    def handle_new_solution(self, xnew, fnew):
+        self.step_size = numpy.linalg.norm(self.x - xnew)
+        self.relative_decrease = (self.f - fnew)/self.f
+        self.screen("step=% 9.7e   reldecr=% 9.7e   fnew=% 9.7e" % (self.step_size, self.relative_decrease, fnew))
+        if self.step_size < self.xtol:
+            result = False
+        if self.relative_decrease < self.ftol:
+            result = False
+        else:
+            result = True
+        if self.relative_decrease > 0:
+            self.x = xnew
+            self.f = fnew
+        else:
+            self.fun(self.x) # reset the internal state of the function
+        return result
+
+    def append_log(self):
+        extra_fields = self.line_search.get_extra_log()
+        if self.callback is not None:
+            extra_fields = extra_fields + tuple(self.callback(self.x))
         self.log.append((
             self.f, self.step_size, self.beta,
             numpy.linalg.norm(self.direction_sd),
             numpy.linalg.norm(self.direction_cg),
-            cg, self.num_bracket, self.num_golden,
             self.x.copy(),
         ) + extra_fields)
 
-    def iterate(self):
+    def iterate(self, max_iter):
         self.f = self.fun(self.x)
-        print "Init      ",
-        self.set_coarse(True)
-        self.line_scan_global()
-        callback()
 
-        counter = 0
-        while True:
-            # the cg loop
-            self.beta = 0
-            self.num_golden = 0
-            self.num_bracket = 0
-            self.update_direction_sd()
-            self.direction_cg[:] = self.direction_sd
-            last_sd = True
-            cg_lower = False
-            for i in xrange(self.max_iter_cg):
-                print "Iter % 5i" % counter,
-                counter += 1
-                if last_sd:
-                    lower = self.opt_cg("SD")
-                else:
-                    lower = self.opt_cg("CG")
-                cg_lower |= lower
-                self.append_log(True)
-                if lower:
-                    self.update_cg()
-                    last_sd = False
-                else:
-                    if last_sd:
-                        break
-                    self.update_sd()
-                    last_sd = True
-                callback()
-                if self.step_size > 0:
-                    self.epsilon = self.step_size*1e-2
-            
-            if not cg_lower and not self.coarse:
-                break
+        self.beta = 0
+        self.update_direction_sd()
+        self.direction_cg[:] = self.direction_sd
+        last_reset = True
+        cg_lower = False
+        # the cg loop
+        for counter in xrange(max_iter):
+            self.screen("Iter % 5i of % 5i" % (counter, max_iter), False)
+            if last_reset:
+                lower = self.step_cg("SD")
+            else:
+                lower = self.step_cg("CG")
+            self.append_log()
+            lower = lower or (counter < self.min_iter and self.relative_decrease > 0)
+            if lower:
+                self.update_cg()
+                last_reset = False
+            else:
+                if last_reset:
+                    break
+                self.update_sd()
+                last_reset = True
+            if self.step_size > 0:
+                self.epsilon = min(self.step_size*1e-2, self.epsilon_max)
 
-            if self.coarse and last_sd:
-                self.set_coarse(False)
-            
-            if self.do_scan:
-                # the parameter scan loop
-                self.num_bracket = 0
-                self.num_golden = 0
-                scan_lower = False
-                print "Iter % 5i" % counter,
-                scan_lower |= self.line_scan_global()
-                self.append_log(False)
-                counter += 1
-                for parameter_index in xrange(len(self.x)):
-                    print "Iter % 5i" % counter,
-                    scan_lower |= self.line_scan_parameter(parameter_index)
-                    self.append_log(False)
-                    callback()
-                    counter += 1
-                
-                if not scan_lower:
-                    self.set_coarse(False)
+            #if self.do_scan:
+            #    # the parameter scan loop
+            #    self.num_bracket = 0
+            #    self.num_golden = 0
+            #    scan_lower = False
+            #    print "Iter % 5i of % 5i" % (counter, max_iter),
+            #    scan_lower |= self.line_scan_global()
+            #    self.append_log(False)
+            #    counter += 1
+            #    for parameter_index in xrange(len(self.x)):
+            #        print "Iter % 5i of % 5i" % (counter, max_iter),
+            #        scan_lower |= self.line_scan_parameter(parameter_index)
+            #        self.append_log(False)
+            #        counter += 1
 
-        print "Done"
+            #    if not scan_lower:
+            #        self.set_coarse(False)
+
+        self.screen("Done")
         return self.x
 
     def get_log(self):
         return numpy.array(self.log, [
             ("f", float), ("step_size", float), ("beta", float),
-            ("norm_sd", float), ("norm_cg", float), ("cg", bool),
-            ("num_bracket", int), ("num_golden", int),
-            ("x", float, self.x.shape), ("solution", float, self.fun.solution.shape),
-        ])
-
-
-def minmize(*args, **kwargs):
-    minmizer = Minimizer(*args, **kwargs)
-    x_opt = minmizer.iterate
-    return x_opt, minimizer
+            ("norm_sd", float), ("norm_cg", float), ("x", float, self.x.shape),
+        ] + self.extra_log_dtypes)
 
 
