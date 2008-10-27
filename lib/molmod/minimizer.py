@@ -203,7 +203,7 @@ class NewtonGLineSearch(LineSearch):
 class Minimizer(object):
     def __init__(
         self, x_init, fun, LineSearchCls, ftol, xtol, max_step, max_iter,
-        do_gradient=False, epsilon_init=1e-6, verbose=True, callback=None, 
+        do_gradient=False, epsilon_init=1e-6, verbose=True, callback=None,
         min_iter=0, extra_log_dtypes=None
     ):
         self.x = x_init.copy()

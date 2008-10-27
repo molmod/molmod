@@ -68,7 +68,7 @@ class SDFReader(object):
                 num_bonds = int(words[1])
             except ValueError:
                 raise SDFError("Expecting at least two numbers at fourth line.")
-                
+
             numbers = numpy.zeros(num_atoms, int)
             coordinates = numpy.zeros((num_atoms,3), float)
             for i in xrange(num_atoms):
@@ -86,7 +86,7 @@ class SDFReader(object):
                     raise SDFError("Unrecognized atom symbol: %s" % words[3])
                 numbers[i] = atom.number
             coordinates *= angstrom
-            
+
             pairs = set([])
             for i in xrange(num_bonds):
                 words = self.f.next().split()
@@ -101,7 +101,7 @@ class SDFReader(object):
             for line in self.f:
                 if line == "$$$$\n":
                     break
-            
+
             molecule = Molecule(numbers, coordinates, title)
             molecule.graph = MolecularGraph(pairs, numbers)
             return molecule
