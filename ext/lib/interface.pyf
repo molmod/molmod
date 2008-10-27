@@ -78,12 +78,12 @@ interface
 !! graphs.c
 !!
 
-  subroutine floyd_warshall(n,dm)
-    intent(c) floyd_warshall
+  subroutine graphs_floyd_warshall(n,dm)
+    intent(c) graphs_floyd_warshall
     intent(c)
     integer intent(hide), depend(dm) :: n=len(dm)
     integer intent(inout) :: dm(n,n)
-  end subroutine floyd_warshall
+  end subroutine graphs_floyd_warshall
 
 end interface
 end python module ext

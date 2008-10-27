@@ -232,12 +232,12 @@ class Graph(object):
 
     def init_distances(self):
         if self.distances is not None: return
-        from molmod.ext import floyd_warshall
+        from molmod.ext import graph_floyd_warshall
         self.distances = numpy.zeros((len(self.nodes), len(self.nodes)), numpy.int32)
         for i,j in self.pairs:
             self.distances[i,j] = 1
             self.distances[j,i] = 1
-        floyd_warshall(self.distances)
+        grahps_floyd_warshall(self.distances)
 
     def init_central_node(self):
         if self.central_node is not None: return
