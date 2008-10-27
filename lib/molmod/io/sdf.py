@@ -43,6 +43,8 @@ class SDFReader(object):
         elif isinstance(f, file):
             self.f = f
             self._auto_close = False
+        else:
+            raise SDFError("First argument must be a file ore filename.")
 
     def __del__(self):
         if self._auto_close:
