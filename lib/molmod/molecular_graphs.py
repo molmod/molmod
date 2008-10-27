@@ -22,7 +22,9 @@
 from molmod.molecules import Molecule
 from molmod.graphs import Graph, GraphError, SubgraphMatchDefinition, ExactMatchDefinition, Match, OneToOne, MatchGenerator, CriteriaSet
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
-from molmod.data.bonds import bonds
+from molmod.units import angstrom
+
+from molmodext.ff import ff_dm_quad, ff_dm_reci, ff_bond_quad, ff_bond_hyper
 
 import numpy, copy
 
@@ -176,9 +178,41 @@ class MolecularGraph(Graph):
 
         return solutions[0]
 
+    def guess_geometry(self):
+        N = len(self.numbers)
+        from molmod.minimizer import Minimizer, NewtonGLineSearch
+
+        ff = ToyFF(self)
+        x_init = numpy.random.normal(0,1,N*3)
+
+        #  level 1 geometry optimization
+        ff.dm_quad = 1.0
+        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-6, 1e-10, 2*N, 500, do_gradient=True, verbose=False)
+        x_init = minimizer.x
+
+        #  level 2 geometry optimization
+        ff.dm_quad = 0.0
+        ff.dm_reci = 0.1
+        ff.bond_quad = 1.0
+        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-4, 1e-10, 2*N, 500, do_gradient=True, verbose=False)
+        x_init = minimizer.x
+
+        #  level 3 geometry optimization
+        ff.bond_quad = 0.0
+        ff.bond_hyper = 1.0
+        ff.span_quad = 10.0
+        ff.dm_reci = 0.5
+        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-5, 1e-10, 2*N, 500, do_gradient=True, verbose=False)
+        x_init = minimizer.x
+
+        x_opt = x_init
+
+        mol = Molecule(self.numbers, x_opt.reshape((N,3)))
+        return mol
 
 
 def generate_molecular_graph(molecule, labels=None, unit_cell=None):
+    from molmod.data.bonds import bonds
     if labels is None:
         labels = range(len(molecule.numbers))
 
@@ -282,6 +316,89 @@ class AtomTreeNode(object):
         for child in self.children:
             for v in child.yield_children():
                 yield v
+
+
+# initial geometry based on graph
+
+
+class ToyFF(object):
+    def __init__(self, graph):
+        from molmod.data.bonds import bonds
+
+        graph.init_distances()
+        self.dm0 = graph.distances.astype(numpy.int32)
+        self.numbers = graph.numbers.astype(numpy.int32)
+
+        num_bonds = len(graph.pairs)
+        bond_pairs = []
+        bond_lengths = []
+        for counter, (i,j) in enumerate(graph.pairs):
+            bond_pairs.append((i,j))
+            bond_lengths.append(bonds.get_length(graph.numbers[i],graph.numbers[j]))
+        self.bond_pairs = numpy.array(bond_pairs, numpy.int32)
+        self.bond_lengths = numpy.array(bond_lengths, float)
+
+        graph.init_neighbors()
+        span_pairs = []
+        span_lengths = []
+        for i, neighbors in graph.neighbors.iteritems():
+            number_i = graph.numbers[i]
+            if (number_i >= 5 and number_i <=8):
+                order = len(neighbors) + abs(number_i-6)
+            elif number_i >= 13 and number_i <= 16:
+                order = len(neighbors) + abs(number_i-14)
+            else:
+                order = -1
+            if order < 2:
+                angle = numpy.pi/180.0*115.0
+            elif order == 2:
+                angle = numpy.pi
+            elif order == 3:
+                angle = numpy.pi/180.0*125.0
+            elif order == 4:
+                angle = numpy.pi/180.0*109.0
+            elif order == 5:
+                angle = numpy.pi/180.0*100.0
+            elif order == 6:
+                angle = numpy.pi/180.0*90.0
+            for j in neighbors:
+                number_j = graph.numbers[j]
+                for k in neighbors:
+                    if j<k and not frozenset([j,k]) in graph.pairs:
+                        number_k = graph.numbers[k]
+                        dj = bonds.get_length(number_i,number_j)
+                        dk = bonds.get_length(number_i,number_k)
+                        d = numpy.sqrt(dj**2+dk**2-2*dj*dk*numpy.cos(angle))
+                        span_pairs.append((j,k))
+                        span_lengths.append(d)
+        self.span_pairs = numpy.array(span_pairs, numpy.int32)
+        self.span_lengths = numpy.array(span_lengths, float)
+
+        self.dm_quad = 0.0
+        self.dm_reci = 0.0
+        self.bond_quad = 0.0
+        self.span_quad = 0.0
+        self.bond_hyper = 0.0
+
+    def __call__(self, x, do_gradient=False):
+        x = x.reshape((-1,3))
+        result = 0.0
+
+        gradient = numpy.zeros(x.shape, float)
+        if self.dm_quad > 0.0:
+            result += ff_dm_quad(self.numbers, x, self.dm0, 1.5*angstrom, self.dm_quad, gradient)
+        if self.dm_reci:
+            result += ff_dm_reci(self.numbers, x, self.dm0, self.dm_reci, gradient)
+        if self.bond_quad:
+            result += ff_bond_quad(x, self.bond_pairs, self.bond_lengths, self.bond_quad, gradient)
+        if self.span_quad:
+            result += ff_bond_quad(x, self.span_pairs, self.span_lengths, self.span_quad, gradient)
+        if self.bond_hyper:
+            result += ff_bond_hyper(x, self.bond_pairs, self.bond_lengths, 10.0, self.bond_hyper, gradient)
+        if do_gradient:
+            return result, gradient.ravel()
+        else:
+            return result
 
 
 # molecular criteria

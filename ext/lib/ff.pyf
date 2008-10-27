@@ -1,0 +1,75 @@
+! MolModExt contains a few extension modules for the MolMod package.
+! Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+!
+! This file is part of MolModExt.
+!
+! MolModExt is free software; you can redistribute it and/or
+! modify it under the terms of the GNU General Public License
+! as published by the Free Software Foundation; either version 3
+! of the License, or (at your option) any later version.
+!
+! MolModExt is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program; if not, see <http://www.gnu.org/licenses/>
+!
+! --
+
+
+python module ff
+interface
+
+double precision function ff_dm_quad(n,number,cor,dm0,R0,amp,gradient)
+    intent(c) ff_dm_quad
+    intent(c)
+    integer intent(hide), depend(cor) :: n=len(cor)
+    integer intent(in) :: number(n)
+    double precision intent(in) :: cor(n,3)
+    integer intent(in) :: dm0(n,n)
+    double precision intent(in) :: R0
+    double precision intent(in) :: amp
+    double precision intent(inout) :: gradient(n,3)
+  end function ff_dm_quad
+
+  double precision function ff_dm_reci(n,number,cor,dm0,amp,gradient)
+    intent(c) ff_dm_reci
+    intent(c)
+    integer intent(hide), depend(cor) :: n=len(cor)
+    integer intent(in) :: number(n)
+    double precision intent(in) :: cor(n,3)
+    integer intent(in) :: dm0(n,n)
+    double precision intent(in) :: amp
+    double precision intent(inout) :: gradient(n,3)
+  end function ff_dm_reci
+
+  double precision function ff_bond_quad(m,n,cor,pairs,lengths,amp,gradient)
+    intent(c) ff_bond_quad
+    intent(c)
+    integer intent(hide), depend(pairs) :: m=len(pairs)
+    integer intent(hide), depend(cor) :: n=len(cor)
+    double precision intent(in) :: cor(n,3)
+    integer intent(in) :: pairs(m,2)
+    double precision intent(in) :: lengths(m)
+    double precision intent(in) :: amp
+    double precision intent(inout) :: gradient(n,3)
+  end function ff_bond_quad
+
+  double precision function ff_bond_hyper(m,n,cor,pairs,lengths,scale,amp,gradient)
+    intent(c) ff_bond_hyper
+    intent(c)
+    integer intent(hide), depend(pairs) :: m=len(pairs)
+    integer intent(hide), depend(cor) :: n=len(cor)
+    double precision intent(in) :: cor(n,3)
+    integer intent(in) :: pairs(m,2)
+    double precision intent(in) :: lengths(m)
+    double precision intent(in) :: scale
+    double precision intent(in) :: amp
+    double precision intent(inout) :: gradient(n,3)
+  end function ff_bond_hyper
+
+end interface
+end python module ff
+

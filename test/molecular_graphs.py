@@ -266,4 +266,11 @@ class MolecularGraphTestCase(unittest.TestCase):
     def test_canonical_thf(self):
         self.check_canonical("input/thf_single.xyz")
 
+    def test_guess_geometry(self):
+        from molmod.io.sdf import SDFReader
+        sdf_reader = SDFReader("input/example.sdf")
+        for input_mol in sdf_reader:
+            output_mol = input_mol.graph.guess_geometry()
+            output_mol.title = input_mol.title
+            output_mol.write_to_file("output/%s.xyz" % input_mol.title)
 

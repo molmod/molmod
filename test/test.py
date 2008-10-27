@@ -28,6 +28,8 @@ else:
     import glob
     retcode = os.system("(cd ..; python setup.py build)")
     if retcode != 0: sys.exit(retcode)
+    retcode = os.system("(cd ../ext; python setup.py build; cp -ar build/lib* ../build/)")
+    if retcode != 0: sys.exit(retcode)
     sys.path.insert(0, glob.glob("../build/lib*")[0])
 
 if not os.path.exists("output"):
