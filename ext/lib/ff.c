@@ -1,4 +1,4 @@
-// MolModExt contains a few extension modules for the MolMod package.
+// MolModExt implements a few number crunching routines for the molmod package in C.
 // Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 //
 // This file is part of MolModExt.

@@ -232,14 +232,12 @@ class Graph(object):
 
     def init_distances(self):
         if self.distances is not None: return
-        self.init_trees_and_shells()
-        self.init_index()
-
-        self.distances = numpy.zeros((len(self.nodes), len(self.nodes)), int)
-        for node, shells in self.shells.iteritems():
-            for distance, shell in enumerate(shells):
-                for shell_node in shell:
-                    self.distances[self.index[node], self.index[shell_node]] = distance
+        from molmod.ext import floyd_warshall
+        self.distances = numpy.zeros((len(self.nodes), len(self.nodes)), numpy.int32)
+        for i,j in self.pairs:
+            self.distances[i,j] = 1
+            self.distances[j,i] = 1
+        floyd_warshall(self.distances)
 
     def init_central_node(self):
         if self.central_node is not None: return

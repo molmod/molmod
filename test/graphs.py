@@ -22,7 +22,7 @@
 from molmod.graphs import OneToOne, Graph, MatchGenerator, EgoMatchDefinition,\
     RingMatchDefinition, SubgraphMatchDefinition, GraphError
 
-import unittest, copy
+import unittest, copy, numpy
 
 
 __all__ = ["GraphsTestCase"]
@@ -318,5 +318,19 @@ class GraphsTestCase(unittest.TestCase):
         self.assertEqual(part2, set([3,4,9,10,11,12]))
         self.assertEqual(hinges, (1,4,2,3))
 
-
+    def test_distances(self):
+        pairs = [(0,1), (1,2), (2,3), (3,4), (4,0), (2,5), (3,6), (3,7)]
+        graph = Graph(set([frozenset([a,b]) for a,b in pairs]))
+        graph.init_distances()
+        expecting = numpy.array([
+            [0, 1, 2, 2, 1, 3, 3, 3],
+            [1, 0, 1, 2, 2, 2, 3, 3],
+            [2, 1, 0, 1, 2, 1, 2, 2],
+            [2, 2, 1, 0, 1, 2, 1, 1],
+            [1, 2, 2, 1, 0, 3, 2, 2],
+            [3, 2, 1, 2, 3, 0, 3, 3],
+            [3, 3, 2, 1, 2, 3, 0, 2],
+            [3, 3, 2, 1, 2, 3, 2, 0],
+        ])
+        self.assert_((expecting==graph.distances).all())
 

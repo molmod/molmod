@@ -1,4 +1,4 @@
-# MolModExt contains a few extension modules for the MolMod package.
+# MolModExt implements a few number crunching routines for the molmod package in C.
 # Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
 # This file is part of MolModExt.
@@ -26,15 +26,15 @@ from numpy.distutils.extension import Extension
 setup(
     name='MolModExt',
     version='0.001',
-    description='MolModExt contains a few extension modules for the MolMod package.',
+    description='MolModExt implements a few number crunching routines for the molmod package in C.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
     url='http://molmod.ugent.be/code/',
     ext_modules=[
-        Extension("molmodext.ff", ["lib/ff.c", "lib/ff.pyf"]),
+        Extension("molmod.ext", ["lib/ff.c", "lib/graphs.c", "lib/interface.pyf"]),
     ],
-    packages=['molmodext'],
-    package_dir={'molmodext': 'lib'},
+    packages=['molmod'],
+    package_dir={'molmod': 'lib'},
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
