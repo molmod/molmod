@@ -222,5 +222,48 @@ class MolecularGraphTestCase(unittest.TestCase):
             self.assertEqual(len(check.pairs), 12)
             self.assertEqual(check.pairs, check_pairs)
 
+    def check_canonical(self, filename):
+        self.load_graph(filename)
+        rep1 = self.molecular_graph.get_canonical()
+        self.molecular_graph.init_nodes()
+        neworder = numpy.random.permutation(len(self.molecular_graph.nodes))
+        revorder = numpy.zeros(len(neworder), int)
+        for i in xrange(len(neworder)):
+            revorder[neworder[i]] = i
+        my_pairs = set([frozenset([revorder[i],revorder[j]]) for i,j in self.molecular_graph.pairs])
+        my_numbers = numpy.array([self.molecular_graph.numbers[neworder[i]] for i in xrange(len(neworder))])
+        my_graph = MolecularGraph(my_pairs, my_numbers)
+        rep2 = my_graph.get_canonical()
+        my_graph.init_nodes()
+        #for pair1, pair2 in zip(rep1[1], rep2[1]):
+        #    if pair1 != pair2:
+        #        print pair1, pair2
+
+        #self.molecule.coordinates = self.molecule.coordinates[rep1[2]]
+        #self.molecule.numbers = self.molecule.numbers[rep1[2]]
+        #self.molecule.write_to_file("output/tmp.xyz")
+        self.assertEqual(rep1[0],rep2[0])
+        self.assertEqual(rep1[1],rep2[1])
+
+    def test_canonical_funny(self):
+        self.check_canonical("input/funny.xyz")
+
+    def test_canonical_precursor(self):
+        self.check_canonical("input/precursor.xyz")
+
+    def test_canonical_ethene(self):
+        self.check_canonical("input/ethene.xyz")
+
+    def test_canonical_tetra(self):
+        self.check_canonical("input/tetra.xyz")
+
+    def test_canonical_tea(self):
+        self.check_canonical("input/tea.xyz")
+
+    def test_canonical_tpa(self):
+        self.check_canonical("input/tpa.xyz")
+
+    def test_canonical_thf(self):
+        self.check_canonical("input/thf_single.xyz")
 
 

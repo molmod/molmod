@@ -61,6 +61,122 @@ class MolecularGraph(Graph):
         result.numbers = self.numbers[indexes]
         return result
 
+    def get_canonical(self):
+        """Returns a canonical representation of the molecular graph.
+
+        This means that two graphs that only differ in the order of the nodes
+        and their specific numbers, will result in the same canonical representation.
+
+        The result is a tuple of two lists. The first list contains the atom
+        numbers. The second list contains two-tuples that describe the bonds.
+        """
+
+        # To make this work, we need a unique starting point. If necessary,
+        # symmetries will be used to make this more efficient.
+        self.init_distances()
+        self.init_neighbors()
+        self.init_nodes()
+
+        # pick the most central atom(s)
+        longest_distances = self.distances.sum(axis=0)
+        starting_atoms = (longest_distances == longest_distances.min()).nonzero()[0]
+        #print "starting_atoms", starting_atoms
+
+        if len(starting_atoms) > 1:
+            # pick the heaviest atom(s)
+            atom_numbers = self.numbers[starting_atoms]
+            starting_atoms = starting_atoms[atom_numbers == atom_numbers.max()]
+            #print "starting_atoms", starting_atoms
+
+        #if len(starting_atoms) > 1:
+        #    self.init_symmetries()
+        #    # pick the atom(s) with the least number of symmetric equivalents
+        #    num_equivalents = numpy.array([len(self.equivalent_nodes[i]) for i in starting_atoms])
+        #    starting_atoms = starting_atoms[num_equivalents == num_equivalents.min()]
+        #    print "starting_atoms", starting_atoms
+
+            # if symmetric equivalents exist, pick from each group just one atom
+        #    groups = set([])
+        #    for i in starting_atoms:
+        #        groups.add(frozenset(self.equivalent_nodes[i]))
+
+        #    starting_atoms = numpy.array([min(group) for group in groups])
+        #    print "starting_atoms", starting_atoms
+
+        # It might very well be that the number of starting atoms is larger than one.
+        # We will use each one to start a canonical representation. We will sorte
+        # the representations with a consistent compare function. The first from
+        # the sorted list of representations is finally taken
+
+        def canonical_from(starting_atom):
+            todo_atoms = set(self.nodes)
+            todo_atoms.discard(starting_atom)
+            boundary_atoms = set([starting_atom])
+
+            # make a tree-representation of the molecule that starts
+            # from the starting atom. This tree representation does
+            # not contain atom indexes and is therefore independent
+            # of any atom order.
+            tree = AtomTreeNode(self.numbers[starting_atom], starting_atom)
+            done_atoms = {starting_atom: tree}
+            while len(todo_atoms) > 0:
+                new_atoms = {}
+                for b in boundary_atoms:
+                    for n in self.neighbors[b]:
+                        if n in todo_atoms and n not in new_atoms:
+                            new_atoms[n] = AtomTreeNode(self.numbers[n], n)
+                for n, node in new_atoms.iteritems():
+                    for neighbor in self.neighbors[n]:
+                        neighbor_node = done_atoms.get(neighbor)
+                        if neighbor_node is not None:
+                            neighbor_node.add_child(node)
+                for n, node in new_atoms.iteritems():
+                    for neighbor in self.neighbors[n]:
+                        neighbor_node = new_atoms.get(neighbor)
+                        if neighbor_node is not None:
+                            neighbor_node.add_sibling(node)
+                done_atoms.update(new_atoms)
+                boundary_atoms = set(new_atoms)
+                del new_atoms
+                todo_atoms -= boundary_atoms
+
+            # Now we order the lists inside the three based on
+            # the topology of the tree.
+            tree.sort()
+
+            # We iterate over the sorted tree and hence get canonically
+            # ordered atoms. They only thing that determines the order
+            # is the starting atom.
+            collected_atoms = set([starting_atom])
+            sorted_atoms = {}
+            for node in tree.yield_children():
+                i = node.index
+                if i not in collected_atoms:
+                    l = sorted_atoms.setdefault(node.depth,[])
+                    l.append(i) # make sure we respect the depth order
+                    collected_atoms.add(i)
+
+            sorted_atoms = sum((l for depth, l in sorted(sorted_atoms.iteritems())), [starting_atom])
+            # Now get the atom pairs
+            sorted_index = dict((old,new) for new,old in enumerate(sorted_atoms))
+            atom_numbers = list(self.numbers[i] for i in sorted_atoms)
+            bond_pairs = []
+            for i,j in self.pairs:
+                i,j = sorted_index[i], sorted_index[j]
+                if i > j:
+                    i,j = j,i
+                bond_pairs.append((i,j))
+            bond_pairs.sort()
+            return atom_numbers, bond_pairs#, numpy.array(sorted_atoms)
+
+        solutions = []
+        for starting_atom in starting_atoms:
+            solutions.append(canonical_from(starting_atom))
+        solutions.sort()
+
+        return solutions[0]
+
+
 
 def generate_molecular_graph(molecule, labels=None, unit_cell=None):
     if labels is None:
@@ -94,6 +210,78 @@ def generate_molecular_graph(molecule, labels=None, unit_cell=None):
     result.bond_orders = dict([(key, data[0]) for key, data in bond_data])
     result.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
     return result
+
+
+class AtomTreeNode(object):
+    """Defines a tree structure of atoms.
+
+    This class is used for the generation of a canonical graph.
+    """
+    def __init__(self, number, index):
+        self.number = number
+        self.index = index
+        self.children = []
+        self.parents = []
+        self.siblings = []
+        #self.num_parents = 0
+        #self.num_siblings = 0
+        self.depth = 0
+        self.tag = 0
+
+    num_siblings = property(lambda self: len(self.siblings))
+    num_parents = property(lambda self: len(self.parents))
+
+    def add_child(self, other_node):
+        self.children.append(other_node)
+        other_node.parents.append(self)
+        other_node.depth = self.depth+1
+
+    def add_sibling(self, other_node):
+        self.siblings.append(other_node)
+
+    def sort(self):
+        for child in self.children:
+            child.sort()
+        self.children.sort()
+        self.siblings.sort()
+
+    def __cmp__(self, other):
+        result = -cmp(
+            (self.number, self.num_parents, self.num_siblings, len(self.children)),
+            (other.number, other.num_parents, other.num_siblings, len(other.children))
+        )
+        if result != 0:
+            return result
+        for self_child, other_child in zip(self.children, other.children):
+            result = self_child.__cmp__(other_child)
+            if result != 0:
+                return result
+        if self.num_parents > 1:
+            #not (self in other.siblings):
+            result = cmp(self.index, other.index)
+            if result != 0:
+                return result
+        for self_sibling, other_sibling in zip(self.siblings, other.siblings):
+            if self_sibling.index > self.index:
+                self_tag = (self.index, self_sibling.index)
+            else:
+                self_tag = (self_sibling.index, self.index)
+            if other_sibling.index > other.index:
+                other_tag = (other.index, other_sibling.index)
+            else:
+                other_tag = (other_sibling.index, other.index)
+            result = cmp(self_tag, other_tag)
+            if result != 0:
+                return result
+
+        return 0
+
+    def yield_children(self):
+        for child in self.children:
+            yield child
+        for child in self.children:
+            for v in child.yield_children():
+                yield v
 
 
 # molecular criteria
