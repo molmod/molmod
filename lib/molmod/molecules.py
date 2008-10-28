@@ -123,6 +123,12 @@ class Molecule:
             numpy.array([0, 0, grid_spacing], float)
         )
 
+    def init_distance_matrix(self):
+        if hasattr(self, "distance_matrix"):
+            return
+        from molmod.ext import molecules_distance_matrix
+        self.distance_matrix = molecules_distance_matrix(self.coordinates)
+
 
 def random_dimer(molecule1, molecule2, dmin=5, dmax=20, max_iter=1000, nonbond_threshold_factor=2.0):
 

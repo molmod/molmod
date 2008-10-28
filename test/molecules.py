@@ -23,17 +23,24 @@ from molmod.molecules import *
 
 from molmod.io.xyz import XYZFile
 
-import unittest
+import unittest, numpy
 
 
-__all__ = ["MoleculeTestCase"]
+__all__ = ["MoleculesTestCase"]
 
 
-class MoleculeTestCase(unittest.TestCase):
+class MoleculesTestCase(unittest.TestCase):
     def test_random_dimer(self):
         molecule = XYZFile("input/tpa.xyz").get_molecule()
         random_dimer(molecule, molecule)
 
-
+    def test_distance_matrix(self):
+        molecule = XYZFile("input/tpa.xyz").get_molecule()
+        molecule.init_distance_matrix()
+        dm = 0
+        for i in 0,1,2:
+            dm += numpy.subtract.outer(molecule.coordinates[:,i],molecule.coordinates[:,i])**2
+        dm = numpy.sqrt(dm)
+        self.assert_((abs(molecule.distance_matrix - dm) < 1e-5).all(), "Wrong distance matrix")
 
 

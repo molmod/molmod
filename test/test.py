@@ -26,9 +26,9 @@ if '-i' in sys.argv:
     sys.argv.remove('-i')
 else:
     import glob
-    retcode = os.system("(cd ..; python setup.py build)")
+    retcode = os.system("(cd ..; rm -rf build; python setup.py build)")
     if retcode != 0: sys.exit(retcode)
-    retcode = os.system("(cd ../ext; python setup.py build; cp -ar build/lib* ../build/)")
+    retcode = os.system("(cd ../ext; rm -rf build; python setup.py build; cp -avr build/lib*/* ../build/lib/)")
     if retcode != 0: sys.exit(retcode)
     sys.path.insert(0, glob.glob("../build/lib*")[0])
 
@@ -53,7 +53,7 @@ from clusters import *
 from transformations import *
 from environments import *
 from descriptors import *
-#from similarity import *
+from similarity import *
 from tunneling import *
 from quaternions import *
 from io import *

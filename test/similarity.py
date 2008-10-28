@@ -21,7 +21,7 @@
 
 from molmod.molecular_graphs import generate_molecular_graph
 from molmod.units import angstrom
-from molmod.similarity import *
+from molmod.similarity import DistanceDescriptor
 
 from molmod.io.xyz import XYZFile
 
@@ -35,11 +35,6 @@ class SimilarityTestCase(unittest.TestCase):
     def get_molecules(self):
         tpa = XYZFile("input/tpa.xyz").get_molecule()
         tpa.title = "tpa"
-        graph = generate_molecular_graph(tpa)
-        tpa1 = graph.randomized_molecule(1000, 0.1, 0.2, 0.07)
-        tpa1.title = "tpa1"
-        tpa2 = graph.randomized_molecule(1000, 0.2, 0.3, 0.1)
-        tpa2.title = "tpa2"
         tea = XYZFile("input/tea.xyz").get_molecule()
         tea.title = "tea"
         water = XYZFile("input/water.xyz").get_molecule()
@@ -47,34 +42,48 @@ class SimilarityTestCase(unittest.TestCase):
         cyclopentane = XYZFile("input/cyclopentane.xyz").get_molecule()
         cyclopentane.title = "cyclopentane"
 
-        return [tpa, tpa1, tpa2, tea, water, cyclopentane]
+        return [tpa, tea, water, cyclopentane]
+        #return [water, cyclopentane]
 
-    def test_all_distances(self):
+    def test_mol(self):
         molecules = self.get_molecules()
         for molecule in molecules:
-            molecule.distances = all_distances(molecule)
-        self.do_test(molecules, margin=0.1)
+            molecule.descriptor = DistanceDescriptor(molecule)
+        self.do_test(molecules, margin=0.2*angstrom, cutoff=7.0*angstrom)
 
-    def test_cutoff_distances(self):
-        radius = 4*angstrom
+    def test_graph(self):
         molecules = self.get_molecules()
         for molecule in molecules:
-            molecule.distances = cutoff_distances(molecule, radius)
-        self.do_test(molecules, 0.05, radius)
+            molecule.graph = generate_molecular_graph(molecule)
+            molecule.descriptor = DistanceDescriptor(molecule.graph)
+        self.do_test(molecules, margin=0.2, cutoff=10.0)
 
-    def do_test(self, molecules, margin, radius=None, verbose=False):
+    def do_test(self, molecules, margin, cutoff, verbose=False):
+        if verbose:
+            print
         for molecule in molecules:
-            molecule.norm = numpy.sqrt(calculate_similarity(molecule.distances, molecule.distances, margin, radius))
+            molecule.norm = molecule.descriptor.norm(margin, cutoff)
+            if verbose:
+                print molecule.title, "norm:", molecule.norm
         if verbose:
             print
             print " "*14, "".join("%15s" % molecule.title for molecule in molecules)
+        result = []
         for index1, molecule1 in enumerate(molecules):
             if verbose: print "%15s" % molecule1.title,
+            row = []
+            result.append(row)
             for index2, molecule2 in enumerate(molecules):
-                similarity = calculate_similarity(molecule1.distances, molecule2.distances, margin, radius)/molecule1.norm/molecule2.norm
-                if verbose: print ("%14.3f" % similarity),
+                similarity = (
+                    molecule1.descriptor.similarity(molecule2.descriptor, margin, cutoff)/
+                    (molecule1.norm*molecule2.norm)
+                )
+                row.append(similarity)
+                if verbose: print ("%14.5f" % similarity),
             if verbose: print
-
+        result = numpy.array(result)
+        self.assert_((abs(numpy.diag(result) - 1) < 1e-5).all(), "Diagonal must be unity.")
+        self.assert_((abs(result - result.transpose()) < 1e-5).all(), "Result must be symmetric.")
 
 
 
