@@ -24,7 +24,7 @@ from molmod.graphs import Graph, GraphError, SubgraphMatchDefinition, ExactMatch
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
 from molmod.units import angstrom
 
-from molmodext.ff import ff_dm_quad, ff_dm_reci, ff_bond_quad, ff_bond_hyper
+from molmod.ext import ff_dm_quad, ff_dm_reci, ff_bond_quad, ff_bond_hyper
 
 import numpy, copy
 
