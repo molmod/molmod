@@ -40,11 +40,10 @@ class SDFReader(object):
             self.filename = f
             self.f = file(f)
             self._auto_close = True
-        elif isinstance(f, file):
+        else:
+            # try to treat f as a file-like object and hope for the best.
             self.f = f
             self._auto_close = False
-        else:
-            raise SDFError("First argument must be a file ore filename.")
 
     def __del__(self):
         if self._auto_close:
