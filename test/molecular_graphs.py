@@ -274,3 +274,10 @@ class MolecularGraphTestCase(unittest.TestCase):
             output_mol.title = input_mol.title
             output_mol.write_to_file("output/%s.xyz" % input_mol.title)
 
+    def test_blob(self):
+        self.load_graph("input/tpa.xyz")
+        blob = self.molecular_graph.get_blob()
+        graph = MolecularGraph.from_blob(blob)
+        self.assert_((graph.numbers==self.molecular_graph.numbers).all(), "Atom numbers do not match.")
+        self.assert_(graph.pairs==self.molecular_graph.pairs, "Pairs do not match.")
+

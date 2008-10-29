@@ -43,7 +43,20 @@ __all__ = [
 
 
 class MolecularGraph(Graph):
+    @classmethod
+    def from_blob(cls, s):
+        """Construct a molecular graph from the blob representation created with get_blob"""
+        atom_str, pair_str = s.split()
+        numbers = numpy.array([int(s) for s in atom_str.split(",")])
+        pairs = set([])
+        for s in pair_str.split(","):
+            i,j = s.split("-")
+            pairs.add(frozenset([int(i),int(j)]))
+        return cls(pairs,numbers)
+
     def __init__(self, pairs, numbers, ordered_nodes=None):
+        if ordered_nodes is None:
+            ordered_nodes = range(len(numbers))
         Graph.__init__(self, pairs, ordered_nodes)
         self.numbers = numbers
 
@@ -62,6 +75,15 @@ class MolecularGraph(Graph):
         result.__class__ = MolecularGraph
         result.numbers = self.numbers[indexes]
         return result
+
+    def get_blob(self):
+        """Create a compact text representation of the graph."""
+        atom_str = ",".join(str(number) for number in self.numbers)
+        pair_str = ",".join("%i-%i" % (i,j) for i,j in self.pairs)
+        return "%s %s" % (
+            ",".join(str(number) for number in self.numbers),
+            ",".join("%i-%i" % (i,j) for i,j in self.pairs),
+        )
 
     def get_canonical(self):
         """Returns a canonical representation of the molecular graph.
@@ -349,7 +371,7 @@ class ToyFF(object):
                 order = len(neighbors) + abs(number_i-14)
             else:
                 order = -1
-            if order < 2:
+            if order < 2 or order > 6:
                 angle = numpy.pi/180.0*115.0
             elif order == 2:
                 angle = numpy.pi
@@ -579,7 +601,6 @@ class TetraMatchDefinition(MolecularSubgraphMatchDefinition):
             frozenset([0, 4]),
         ], [0, 1, 2, 3, 4])
         MolecularSubgraphMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
-
 
 
 class FullMatchError(Exception):
