@@ -36,6 +36,13 @@ class PSFTestCase(unittest.TestCase):
         self.assert_(psf.dihedrals.shape[0] == 2112)
         g = psf.get_graph()
 
+    def test_load_vmd(self):
+        psf = PSFFile("input/pentapeptide.psf")
+        self.assert_(psf.bonds.shape[0] == 44)
+        self.assert_(psf.bends.shape[0] == 75)
+        self.assert_(psf.dihedrals.shape[0] == 98)
+        g = psf.get_graph()
+
     def test_dump(self):
         m = XYZFile("input/thf.xyz").get_molecule()
         psf = PSFFile()

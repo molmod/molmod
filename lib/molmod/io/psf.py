@@ -74,7 +74,10 @@ class PSFFile(object):
             elif "!N" in line:
                 words = line.split()
                 current_section = []
-                sections[words[1][2:]] = current_section
+                section_name = words[1][2:]
+                if section_name.endswith(":"):
+                    section_name = section_name[:-1]
+                sections[section_name] = current_section
             else:
                 current_section.append(line)
         f.close()
@@ -90,7 +93,11 @@ class PSFFile(object):
             self.charges.append(float(words[6]))
             self.names.append(words[3])
             self.molecules.append(int(words[2]))
-            self.numbers.append(periodic[words[4]].number)
+            atom = periodic[words[4]]
+            if atom is None:
+                self.numbers.append(0)
+            else:
+                self.numbers.append(periodic[words[4]].number)
         self.molecules = numpy.array(self.molecules)-1
         self.numbers = numpy.array(self.numbers)
         self.charges = numpy.array(self.charges)
