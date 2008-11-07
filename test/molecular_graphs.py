@@ -322,6 +322,14 @@ class MolecularGraphTestCase(unittest.TestCase):
             self.assert_((g0.numbers[permutation]==g1.numbers).all())
             self.assertEqual(g0.num_pairs, g1.num_pairs)
 
+    def test_subgraph_big(self):
+        mol = self.load_molecule("thf.xyz")
+        g0 = mol.graph
+        for group in g0.independent_nodes:
+            g1 = g0.get_subgraph(group, normalize=True)
+            self.assertEqual(g1.num_nodes, len(group))
+            self.assert_((g0.numbers[group]==g1.numbers).all())
+
     def test_iter_shortest_paths(self):
         molecule = self.load_molecule("precursor.xyz")
         cases = {
