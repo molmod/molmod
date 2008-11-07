@@ -20,22 +20,17 @@
 
 from molmod.data.periodic import periodic
 from molmod.units import angstrom
-from molmod.vectors import random_unit
+from molmod.graphs import cached
 
 from StringIO import StringIO
 
-import numpy, math
+import numpy
 
 
-__all__ = ["Molecule", "random_dimer"]
+__all__ = ["Molecule"]
 
 
-class Molecule:
-    """
-    A Molecule instance describes a molecule in the following representation:
-    - cartesian coordinates
-    """
-
+class Molecule(object):
     def __init__(self, numbers=None, coordinates=None, title=None):
         self.numbers = numbers
         self.coordinates = coordinates
@@ -74,87 +69,9 @@ class Molecule:
         self.dump(f)
         f.close()
 
-    def normalize(self):
-        """
-        Bring the molecule in a normalized frame. This only works if the
-        first three atoms are not colinear which is the case for general
-        molecules.
-        """
-        # first translate the first atom to the center
-        self.coordinates -= self.coordinates[0].copy()
-        # then rotate the molecule so that the second atom lies on the positive x-axis
-        # and the third atom lies in the xy-plane with positive y.
-        new_x = self.coordinates[1].copy()
-        new_x /= math.sqrt(numpy.dot(new_x, new_x))
-        third = self.coordinates[2].copy()
-        new_z = numpy.array([
-            new_x[1]*third[2]-third[1]*new_x[2],
-            new_x[2]*third[0]-third[2]*new_x[0],
-            new_x[0]*third[1]-third[0]*new_x[1]
-        ])
-        new_z /= math.sqrt(numpy.dot(new_z, new_z))
-        new_y = numpy.array([
-            new_z[1]*new_x[2]-new_x[1]*new_z[2],
-            new_z[2]*new_x[0]-new_x[2]*new_z[0],
-            new_z[0]*new_x[1]-new_x[0]*new_z[1]
-        ])
-        rotation = numpy.transpose(numpy.array([new_x, new_y, new_z]))
-        self.coordinates = numpy.dot(self.coordinates, rotation)
-
-    def bounding_box(self, margin=0.0):
-        bbox_low = self.coordinates.min(axis=0) - margin
-        bbox_high = self.coordinates.max(axis=0) + margin
-        return bbox_low, bbox_high
-
-    def surrounding_grid(self, grid_margin, grid_spacing):
-        bbox_low, bbox_high = self.bounding_box(grid_margin)
-        bbox_size = bbox_high - bbox_low
-        bbox_num = numpy.array(numpy.floor(bbox_size/grid_spacing), int)
-        bbox_cor = 0.5*(bbox_size - bbox_num*grid_spacing)
-        bbox_low += bbox_cor
-        bbox_high -= bbox_cor
-        return (
-            bbox_low,
-            bbox_num[0],
-            numpy.array([grid_spacing, 0, 0], float),
-            bbox_num[1],
-            numpy.array([0, grid_spacing, 0], float),
-            bbox_num[2],
-            numpy.array([0, 0, grid_spacing], float)
-        )
-
-    def init_distance_matrix(self):
-        if hasattr(self, "distance_matrix"):
-            return
+    @cached
+    def distance_matrix(self):
         from molmod.ext import molecules_distance_matrix
-        self.distance_matrix = molecules_distance_matrix(self.coordinates)
-
-
-def random_dimer(molecule1, molecule2, dmin=5, dmax=20, max_iter=1000, nonbond_threshold_factor=2.0):
-
-    radii1 = numpy.array([periodic[number].radius for number in molecule1.numbers], float)
-    radii2 = numpy.array([periodic[number].radius for number in molecule2.numbers], float)
-
-    def check(c1, c2):
-        for i1, r1 in enumerate(c1):
-            for i2, r2 in enumerate(c2):
-                if numpy.linalg.norm(r1 - r2) < nonbond_threshold_factor*(radii1[i1] + radii2[i2]):
-                    return False
-        return True
-
-    distance = numpy.random.uniform(dmin, dmax)
-    for counter in xrange(max_iter):
-        delta = random_unit(3)*distance
-
-        c1 = molecule1.coordinates
-        c2 = molecule2.coordinates + delta
-
-        if check(c1, c2):
-            result = Molecule()
-            result.numbers = numpy.concatenate((molecule1.numbers, molecule2.numbers))
-            result.coordinates = numpy.concatenate((c1, c2))
-            return result
-
-
+        return molecules_distance_matrix(self.coordinates)
 
 

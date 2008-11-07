@@ -36,7 +36,6 @@ class DistanceDescriptor(object):
             self.labels = labels.astype(numpy.int32)
         self.table_labels = similarity_table_labels(self.labels)
         if isinstance(mol_or_graph, Molecule):
-            mol_or_graph.init_distance_matrix()
             self.table_distances = similarity_table_distances(mol_or_graph.distance_matrix)
         elif isinstance(mol_or_graph, MolecularGraph):
             self.table_distances = similarity_table_distances(mol_or_graph.distances)

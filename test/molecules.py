@@ -30,13 +30,8 @@ __all__ = ["MoleculesTestCase"]
 
 
 class MoleculesTestCase(unittest.TestCase):
-    def test_random_dimer(self):
-        molecule = XYZFile("input/tpa.xyz").get_molecule()
-        random_dimer(molecule, molecule)
-
     def test_distance_matrix(self):
         molecule = XYZFile("input/tpa.xyz").get_molecule()
-        molecule.init_distance_matrix()
         dm = 0
         for i in 0,1,2:
             dm += numpy.subtract.outer(molecule.coordinates[:,i],molecule.coordinates[:,i])**2
