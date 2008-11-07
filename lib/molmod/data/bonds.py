@@ -164,7 +164,7 @@ class BondData(object):
         return dataset.get(frozenset([n1, n2]))
 
 
-bonds = BondData(os.path.join(context.share_path, "bonds.csv"), periodic)
+bonds = BondData(context.get_share_filename("bonds.csv"), periodic)
 
 
 

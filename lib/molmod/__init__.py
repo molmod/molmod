@@ -31,11 +31,27 @@ class Error(Exception):
 
 class Context(object):
     def __init__(self):
-        self.share_path = "%s/share/molmod/" % (sys.prefix)
-        if not os.path.isdir(self.share_path):
-            self.share_path = "%s/share/molmod/" % os.getenv("HOME")
-        if not os.path.isdir(self.share_path):
+        share_dirs = set([
+            "%s/share/molmod/" % sys.prefix,
+            "%s/local/share/molmod/" % sys.prefix,
+            "%s/share/molmod/" % os.getenv("HOME"),
+            "/usr/share/molmod/",
+            "/usr/local/share/molmod/",
+        ])
+        self._share_dirs = []
+        for share_dir in share_dirs:
+            if os.path.isdir(share_dir):
+                self._share_dirs.append(share_dir)
+        if len(self._share_dirs) == 0:
             raise Error("Could not find shared files.")
+
+    def get_share_filename(self, filename):
+        for share_dir in self._share_dirs:
+            result = os.path.join(share_dir, filename)
+            if os.path.isfile(result):
+                return result
+        raise ValueError("No file '%s' found in the share directories." % filename)
+
 
 context = Context()
 

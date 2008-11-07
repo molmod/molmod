@@ -120,7 +120,7 @@ class PeriodicData(object):
             yield number
 
 
-periodic = PeriodicData(context.share_path + "periodic.csv")
+periodic = PeriodicData(context.get_share_filename("periodic.csv"))
 
 
 

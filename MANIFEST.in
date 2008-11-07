@@ -1,7 +1,7 @@
 include COPYING
 include README
 include debian/*
-include share/awk/*.awk
 include share/*.csv
-include share/templates/gromos96_sp/*
 include test/input/*
+include test/*.py
+include test/io/*.py

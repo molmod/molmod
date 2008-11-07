@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 #
@@ -26,9 +27,12 @@ if '-i' in sys.argv:
     sys.argv.remove('-i')
 else:
     import glob
-    retcode = os.system("(cd ..; rm -rf build; python setup.py build)")
+    if '-c' in sys.argv:
+        sys.argv.remove('-c')
+        os.system("cd ../; rm -rf build; cd ext; rm -rf build")
+    retcode = os.system("(cd ..; python setup.py build)")
     if retcode != 0: sys.exit(retcode)
-    retcode = os.system("(cd ../ext; rm -rf build; python setup.py build; cp -avr build/lib*/* ../build/lib/)")
+    retcode = os.system("(cd ../ext; python setup.py build; cp -avr build/lib*/* ../build/lib/)")
     if retcode != 0: sys.exit(retcode)
     sys.path.insert(0, glob.glob("../build/lib*")[0])
 
@@ -36,7 +40,7 @@ if not os.path.exists("output"):
     os.mkdir("output")
 
 from molmod import context
-context.share_path = "../share/"
+context._share_dirs = ["../share/"]
 
 import unittest
 
