@@ -21,8 +21,8 @@
 
 import numpy
 
-from molmod.molecular_graphs import BondMatchDefinition, BendingAngleMatchDefinition, DihedralAngleMatchDefinition
-from molmod.graphs import MatchGenerator, CriteriaSet
+from molmod.molecular_graphs import BondPattern, BendingAnglePattern, DihedralAnglePattern
+from molmod.graphs import GraphSearch, CriteriaSet
 
 
 __all__ = [
@@ -65,7 +65,7 @@ class ValenceTerm(EnergyTerm):
     def init_graph(self, graph):
         # the internal coordinates are enumerated
         indices = []
-        for match in MatchGenerator(self.match_definition)(graph):
+        for match in GraphSearch(self.match_definition)(graph):
             indices.append([val for key,val in sorted(match.forward.iteritems())])
         self.indices = numpy.array(indices, int)
 
@@ -86,7 +86,7 @@ class ValenceTerm(EnergyTerm):
 
 class BondStretchTerm(ValenceTerm):
     def __init__(self, label, calculate_eg, atom_criteria):
-        ValenceTerm.__init__(self, label, calculate_eg, BondMatchDefinition(
+        ValenceTerm.__init__(self, label, calculate_eg, BondPattern(
             [CriteriaSet(dict((index, criterion) for index, criterion in enumerate(atom_criteria)))]
         ))
 
@@ -102,7 +102,7 @@ class BondStretchTerm(ValenceTerm):
 
 class ThreeBodyTerm(ValenceTerm):
     def __init__(self, label, calculate_eg, atom_criteria):
-        ValenceTerm.__init__(self, label, calculate_eg, BendingAngleMatchDefinition(
+        ValenceTerm.__init__(self, label, calculate_eg, BendingAnglePattern(
             [CriteriaSet(dict((index, criterion) for index, criterion in enumerate(atom_criteria)))]
         ))
 
@@ -134,7 +134,7 @@ class UreyBradleyTerm(ThreeBodyTerm):
 
 class FourBodyTerm(ValenceTerm):
     def __init__(self, label, calculate_eg, atom_criteria):
-        ValenceTerm.__init__(self, label, calculate_eg, DihedralAngleMatchDefinition(
+        ValenceTerm.__init__(self, label, calculate_eg, DihedralAnglePattern(
             [CriteriaSet(dict((index, criterion) for index, criterion in enumerate(atom_criteria)))]
         ))
 
@@ -194,21 +194,17 @@ class NonbondTerm(EnergyTerm):
         EnergyTerm.__init__(self, label, calculate_eg)
 
     def yield_pairs(self, graph):
-        self.atom0_criterion.init_graph(graph)
-        self.atom1_criterion.init_graph(graph)
         n = len(graph.numbers)
         for atom0 in xrange(n):
             for atom1 in xrange(n):
-                if ((self.atom0_criterion(atom0) and self.atom1_criterion(atom1)) or
-                    (self.atom0_criterion(atom1) and self.atom1_criterion(atom0))):
-                    distance = graph.get_distance(atom0, atom1)
+                if ((self.atom0_criterion(atom0, graph) and self.atom1_criterion(atom1, graph)) or
+                    (self.atom0_criterion(atom1, graph) and self.atom1_criterion(atom0, graph))):
+                    distance = graph.distances[atom0, atom1]
                     if self.nonbond_filter(distance):
                         #print atom0, atom1
                         yield atom0, atom1
 
     def init_graph(self, graph):
-        graph.init_index()
-        graph.init_distances()
         # The nonbonding pairs are enumerated here
         self.indices = numpy.array(list(self.yield_pairs(graph)), int)
         #for row in self.indices:

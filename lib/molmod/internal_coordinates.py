@@ -19,8 +19,8 @@
 # --
 
 
-from molmod.graphs import MatchGenerator
-from molmod.molecular_graphs import BondMatchDefinition, BendingAngleMatchDefinition, DihedralAngleMatchDefinition, OutOfPlaneMatchDefinition
+from molmod.graphs import GraphSearch
+from molmod.molecular_graphs import BondPattern, BendingAnglePattern, DihedralAnglePattern, OutOfPlanePattern
 
 
 import math, copy
@@ -452,7 +452,7 @@ class InternalCoordinatesCache(object):
         Arguments
         criteria_sets -- see molmod.molecular_graphs
         """
-        match_generator = MatchGenerator(BondMatchDefinition(criteria_sets))
+        match_generator = GraphSearch(BondPattern(criteria_sets))
         for match in match_generator(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1]])
             s0 = self.add(Select, id[0])
@@ -472,7 +472,7 @@ class InternalCoordinatesCache(object):
         Adds the cosines of the bending angles described in criteria_sets to the
         collection.
         """
-        match_generator = MatchGenerator(BendingAngleMatchDefinition(criteria_sets))
+        match_generator = GraphSearch(BendingAnglePattern(criteria_sets))
         for match in match_generator(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2]])
             s0 = self.add(Select, id[0])
@@ -499,7 +499,7 @@ class InternalCoordinatesCache(object):
         Adds the distances that span the bend angles described in criteria_sets
         to the collection.
         """
-        match_generator = MatchGenerator(BendingAngleMatchDefinition(criteria_sets))
+        match_generator = GraphSearch(BendingAnglePattern(criteria_sets))
         for match in match_generator(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2]])
             s0 = self.add(Select, id[0])
@@ -518,7 +518,7 @@ class InternalCoordinatesCache(object):
         """
         Adds the dihedral angles described in criteria_sets to the collection.
         """
-        match_generator = MatchGenerator(DihedralAngleMatchDefinition(criteria_sets))
+        match_generator = GraphSearch(DihedralAnglePattern(criteria_sets))
         for match in match_generator(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
@@ -561,7 +561,7 @@ class InternalCoordinatesCache(object):
         Adds the distances that span the dihedral angles described in
         criteria_sets to the collection.
         """
-        match_generator = MatchGenerator(DihedralAngleMatchDefinition(criteria_sets))
+        match_generator = GraphSearch(DihedralAnglePattern(criteria_sets))
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
@@ -581,7 +581,7 @@ class InternalCoordinatesCache(object):
         Adds the out of plane cosines described in criteria_sets to the
         collection.
         """
-        match_generator = MatchGenerator(OutOfPlaneMatchDefinition(criteria_sets, node_tags={1: 1}))
+        match_generator = GraphSearch(OutOfPlanePattern(criteria_sets, node_tags={1: 1}))
         for match in match_generator(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
@@ -622,7 +622,7 @@ class InternalCoordinatesCache(object):
         Adds the out of plane cosines described in criteria_sets to the
         collection.
         """
-        match_generator = MatchGenerator(OutOfPlaneMatchDefinition(criteria_sets))
+        match_generator = GraphSearch(OutOfPlanePattern(criteria_sets))
         for match in match_generator(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])

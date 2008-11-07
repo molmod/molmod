@@ -180,8 +180,7 @@ def yield_halfs_bond(graph):
 
 
 def yield_halfs_bend(graph):
-    graph.init_neighbors()
-    for atom2 in graph.nodes:
+    for atom2 in xrange(graph.num_nodes):
         neighbors = list(graph.neighbors[atom2])
         for index1, atom1 in enumerate(neighbors):
             for atom3 in neighbors[index1+1:]:
@@ -201,7 +200,7 @@ def yield_halfs_bend(graph):
 
 
 def yield_halfs_double(graph):
-    pairs = list(graph.pairs)
+    pairs = graph.pairs
     for index1, (atom_a1, atom_b1) in enumerate(pairs):
         for atom_a2, atom_b2 in pairs[:index1]:
             try:
@@ -290,11 +289,11 @@ def check_nonbond(molecule, graph, thresholds):
     """
 
     # check that no atoms overlap
-    for index1, atom1 in enumerate(graph.nodes):
-        for index2, atom2 in enumerate(graph.nodes[:index1]):
-            if graph.get_distance(atom1, atom2) > 2:
-                distance = numpy.linalg.norm(molecule.coordinates[index1] - molecule.coordinates[index2])
-                if distance < thresholds[frozenset([molecule.numbers[index1], molecule.numbers[index2]])]:
+    for atom1 in xrange(graph.num_nodes):
+        for atom2 in xrange(atom1):
+            if graph.distances[atom1, atom2] > 2:
+                distance = numpy.linalg.norm(molecule.coordinates[atom1] - molecule.coordinates[atom2])
+                if distance < thresholds[frozenset([molecule.numbers[atom1], molecule.numbers[atom2]])]:
                     return False
     return True
 

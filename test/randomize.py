@@ -21,7 +21,7 @@
 from common import BaseTestCase
 
 from molmod.randomize import *
-from molmod.molecular_graphs import generate_molecular_graph
+from molmod.molecular_graphs import MolecularGraph
 from molmod.units import A
 from molmod.transformations import Translation, Rotation
 
@@ -52,7 +52,7 @@ class RandomizeTestCase(BaseTestCase):
         for filename in ["tpa.xyz", "water.xyz", "thf_single.xyz"]:
             molecule = XYZFile(os.path.join("input", filename)).get_molecule()
             molecule.filename = filename
-            graph = generate_molecular_graph(molecule)
+            graph = MolecularGraph.from_geometry(molecule)
             yield molecule, graph
 
     def test_randomize_count(self):

@@ -21,7 +21,8 @@
 
 from molmod.flexff import *
 from molmod.io.xyz import XYZFile
-from molmod.molecular_graphs import generate_molecular_graph, HasAtomNumber, MolecularAnd, HasNeighborNumbers
+from molmod.graphs import CritAnd
+from molmod.molecular_graphs import MolecularGraph, HasAtomNumber, HasNeighborNumbers
 from molmod.molecules import Molecule
 from molmod.unit_cell import UnitCell
 from molmod.units import angstrom
@@ -44,7 +45,7 @@ class FlexFFTestCase(unittest.TestCase):
                 ])*angstrom,
                 numpy.array([True, True, True], bool),
             )
-            molecular_graph = generate_molecular_graph(molecule)
+            molecular_graph = MolecularGraph.from_geometry(molecule)
             return molecule.coordinates, molecular_graph, unit_cell
         elif name == "sodalite_ethane":
             molecule = XYZFile("input/sodalite_ethane.xyz").get_molecule()
@@ -56,7 +57,7 @@ class FlexFFTestCase(unittest.TestCase):
                 ])*angstrom,
                 numpy.array([True, True, True], bool),
             )
-            molecular_graph = generate_molecular_graph(molecule)
+            molecular_graph = MolecularGraph.from_geometry(molecule)
             return molecule.coordinates, molecular_graph, unit_cell
         else:
             raise Exception("Unknown system.")
@@ -64,10 +65,10 @@ class FlexFFTestCase(unittest.TestCase):
     def get_gcm(self):
         criteria = {
             "C": HasAtomNumber(6),
-            "Hc": MolecularAnd(HasAtomNumber(1),HasNeighborNumbers([6])),
+            "Hc": CritAnd(HasAtomNumber(1),HasNeighborNumbers([6])),
             "Si": HasAtomNumber(14),
             "O": HasAtomNumber(8),
-            "Ho": MolecularAnd(HasAtomNumber(1),HasNeighborNumbers([8])),
+            "Ho": CritAnd(HasAtomNumber(1),HasNeighborNumbers([8])),
         }
         def gc(*symbols):
             return [criteria[symbol] for symbol in symbols]
@@ -125,10 +126,10 @@ class FlexFFTestCase(unittest.TestCase):
     def get_reduced(self):
         criteria = {
             "C": HasAtomNumber(6),
-            "Hc": MolecularAnd(HasAtomNumber(1),HasNeighborNumbers([6])),
+            "Hc": CritAnd(HasAtomNumber(1),HasNeighborNumbers([6])),
             "Si": HasAtomNumber(14),
             "O": HasAtomNumber(8),
-            "Ho": MolecularAnd(HasAtomNumber(1),HasNeighborNumbers([8])),
+            "Ho": CritAnd(HasAtomNumber(1),HasNeighborNumbers([8])),
         }
         def gc(*symbols):
             return [criteria[symbol] for symbol in symbols]

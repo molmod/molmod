@@ -18,23 +18,45 @@
 #
 # --
 
+from molmod.units import angstrom
 from molmod.molecular_graphs import *
-from molmod.graphs import MatchGenerator, CriteriaSet
+from molmod.graphs import GraphError, GraphSearch, CriteriaSet, CritOr, RingPattern
 from molmod.data.bonds import BOND_SINGLE
-
+from molmod.io.sdf import SDFReader
 from molmod.io.xyz import XYZFile
 
-import unittest, copy, numpy
+import unittest, copy, numpy, os
 
 __all__ = ["MolecularGraphTestCase"]
 
 
 class MolecularGraphTestCase(unittest.TestCase):
-    def load_graph(self, filename):
-        self.molecule = XYZFile(filename).get_molecule()
-        self.molecular_graph = generate_molecular_graph(self.molecule)
+    # auxiliary routines
 
-    def verify(self, expected_results, test_results, yield_alternatives):
+    def load_molecule(self, xyz_fn):
+        molecule = XYZFile(os.path.join("input", xyz_fn)).get_molecule()
+        molecule.graph = MolecularGraph.from_geometry(molecule)
+        return molecule
+
+    def iter_molecules(self, allow_multi=False):
+        xyz_fns = [
+          "water.xyz", "cyclopentane.xyz", "ethene.xyz", "funny.xyz",
+          "tea.xyz", "tpa.xyz", "thf_single.xyz", "precursor.xyz",
+        ]
+        for xyz_fn in xyz_fns:
+            molecule = self.load_molecule(xyz_fn)
+            if allow_multi or len(molecule.graph.independent_nodes) == 1:
+                molecule.title = xyz_fn[:-4]
+                yield molecule
+        for sdf_fn in "example.sdf", "CID_22898828.sdf":
+            for i, molecule in enumerate(SDFReader(os.path.join("input", sdf_fn))):
+                if allow_multi or len(molecule.graph.independent_nodes) == 1:
+                    molecule.title = "%s_%i" % (sdf_fn[:-4], i)
+                    yield molecule
+
+    # graph search tests
+
+    def verify_graph_search(self, graph, expected_results, test_results, iter_alternatives):
         for key in test_results.iterkeys():
             unsatisfied = expected_results[key]
             test = test_results[key]
@@ -42,7 +64,7 @@ class MolecularGraphTestCase(unittest.TestCase):
             unexpected = []
             for test_item in test:
                 item_correct = False
-                for alternative in yield_alternatives(test_item, key):
+                for alternative in iter_alternatives(test_item, key):
                     if (alternative in unsatisfied):
                         correct.append(test_item)
                         unsatisfied.remove(alternative)
@@ -51,20 +73,22 @@ class MolecularGraphTestCase(unittest.TestCase):
                 if not item_correct:
                     unexpected.append(test_item)
             message  = "Incorrect matches (%s):\n" % key
+            message += "correct (%i): %s\n" % (len(correct), correct)
             message += "unexpected  (%i): %s\n" % (len(unexpected), unexpected)
             message += "unsatisfied (%i): %s\n" % (len(unsatisfied), unsatisfied)
+            #print message
             self.assertEqual(len(unexpected), 0, message)
             self.assertEqual(len(unsatisfied), 0, message)
 
     def test_bonds_tpa(self):
-        self.load_graph("input/tpa.xyz")
-        match_definition = BondMatchDefinition([
+        molecule = self.load_molecule("tpa.xyz")
+        pattern = BondPattern([
             CriteriaSet(atom_criteria(1, 6), tag="HC"),
             CriteriaSet(atom_criteria(6, 6), tag="CC"),
             CriteriaSet(atom_criteria(6, 7), tag="CN"),
             CriteriaSet(atom_criteria(6, HasNumNeighbors(4)), tag="C-sp3"),
-            CriteriaSet(atom_criteria(6, MolecularOr(HasAtomNumber(6), HasAtomNumber(7))), tag="C-[CN]"),
-            CriteriaSet(relation_criteria={frozenset([0,1]): BondLongerThan(2.1)}, tag="long"),
+            CriteriaSet(atom_criteria(6, CritOr(HasAtomNumber(6), HasAtomNumber(7))), tag="C-[CN]"),
+            CriteriaSet(relation_criteria={0: BondLongerThan(1.3*angstrom)}, tag="long"),
         ])
         expected_results = {
             "HC": set([(14, 1), (13, 1), (16, 2), (15, 2), (17, 3), (19, 3), (18, 3), (20, 4), (21, 4), (23, 5), (22, 5), (25, 6), (26, 6), (24, 6), (27, 7), (28, 7), (29, 8), (30, 8), (31, 9), (33, 9), (32, 9), (35, 10), (34, 10), (37, 11), (36, 11), (39, 12), (40, 12), (38, 12)]),
@@ -75,21 +99,21 @@ class MolecularGraphTestCase(unittest.TestCase):
             "long": set([(10, 0), (1, 0), (4, 0), (7, 0), (2, 1), (3, 2), (5, 4), (6, 5), (8, 7), (9, 8), (11, 10), (12, 11)]),
         }
         test_results = dict((key, []) for key in expected_results)
-        match_generator = MatchGenerator(match_definition, debug=False)
-        for match in match_generator(self.molecular_graph):
+        match_generator = GraphSearch(pattern, debug=False)
+        for match in match_generator(molecule.graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
-        def yield_alternatives(test_item, key):
+        def iter_alternatives(test_item, key):
             yield test_item
             a, b = test_item
-            if self.molecule.numbers[a] == self.molecule.numbers[b] or key=="long":
+            if molecule.numbers[a] == molecule.numbers[b] or key=="long":
                 yield b, a
 
-        self.verify(expected_results, test_results, yield_alternatives)
+        self.verify_graph_search(molecule.graph, expected_results, test_results, iter_alternatives)
 
     def test_bending_angles_tpa(self):
-        self.load_graph("input/tpa.xyz")
-        match_definition = BendingAngleMatchDefinition([
+        molecule = self.load_molecule("tpa.xyz")
+        pattern = BendingAnglePattern([
             CriteriaSet(atom_criteria(1, 6, 1), tag="HCH"),
             CriteriaSet(atom_criteria(1, 6, 6), tag="HCC"),
             CriteriaSet(atom_criteria(6, 6, 6), tag="CCC"),
@@ -106,21 +130,21 @@ class MolecularGraphTestCase(unittest.TestCase):
             'CCC': set([(3, 2, 1), (4, 5, 6), (7, 8, 9), (10, 11, 12)])
         }
         test_results = dict((key, []) for key in expected_results)
-        match_generator = MatchGenerator(match_definition, debug=False)
-        for match in match_generator(self.molecular_graph):
+        match_generator = GraphSearch(pattern, debug=False)
+        for match in match_generator(molecule.graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
-        def yield_alternatives(test_item, key):
+        def iter_alternatives(test_item, key):
             yield test_item
             a, b, c = test_item
-            if self.molecule.numbers[a] == self.molecule.numbers[c]:
+            if molecule.numbers[a] == molecule.numbers[c]:
                 yield c, b, a
 
-        self.verify(expected_results, test_results, yield_alternatives)
+        self.verify_graph_search(molecule.graph, expected_results, test_results, iter_alternatives)
 
     def test_dihedral_angles_tpa(self):
-        self.load_graph("input/tpa.xyz")
-        match_definition = DihedralAngleMatchDefinition([
+        molecule = self.load_molecule("tpa.xyz")
+        pattern = DihedralAnglePattern([
             CriteriaSet(atom_criteria(1, 6, 6, 1), tag="HCCH"),
             CriteriaSet(atom_criteria(1, 6, 6, 7), tag="HCCN"),
             CriteriaSet(atom_criteria(1, 6, 7, 6), tag="HCNC"),
@@ -131,23 +155,23 @@ class MolecularGraphTestCase(unittest.TestCase):
             'HCNC': set([(14, 1, 0, 10), (13, 1, 0, 10), (20, 4, 0, 10), (21, 4, 0, 10), (27, 7, 0, 10), (28, 7, 0, 10), (35, 10, 0, 1), (34, 10, 0, 1), (20, 4, 0, 1), (21, 4, 0, 1), (27, 7, 0, 1), (28, 7, 0, 1), (35, 10, 0, 4), (34, 10, 0, 4), (14, 1, 0, 4), (13, 1, 0, 4), (27, 7, 0, 4), (28, 7, 0, 4), (35, 10, 0, 7), (34, 10, 0, 7), (14, 1, 0, 7), (13, 1, 0, 7), (20, 4, 0, 7), (21, 4, 0, 7)])
         }
         test_results = dict((key, []) for key in expected_results)
-        match_generator = MatchGenerator(match_definition, debug=False)
-        for match in match_generator(self.molecular_graph):
+        match_generator = GraphSearch(pattern, debug=False)
+        for match in match_generator(molecule.graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
-        def yield_alternatives(test_item, key):
+        def iter_alternatives(test_item, key):
             yield test_item
             a, b, c, d = test_item
-            if (self.molecule.numbers[a] == self.molecule.numbers[d]) and (self.molecule.numbers[b] == self.molecule.numbers[c]):
+            if (molecule.numbers[a] == molecule.numbers[d]) and (molecule.numbers[b] == molecule.numbers[c]):
                 yield d, c, b, a
 
-        self.verify(expected_results, test_results, yield_alternatives)
+        self.verify_graph_search(molecule.graph, expected_results, test_results, iter_alternatives)
 
     def test_tetra_tpa(self):
-        self.load_graph("input/tpa.xyz")
-        match_definition = TetraMatchDefinition([
+        molecule = self.load_molecule("tpa.xyz")
+        pattern = TetraPattern([
             CriteriaSet(atom_criteria(6, 1, 6, 6, 1), tag="C-(HCCH)")
-        ], node_tags={0: 1, 1: 1})
+        ], node_tags={0: 1, 1: 1}) # node tags are just a silly example
         expected_results = {
             'C-(HCCH)': set([
                 ( 8, 29,  9,  7, 30), ( 8, 30,  9,  7, 29), ( 2,  1, 15, 16,  3), ( 2,  3, 15, 16,  1),
@@ -155,129 +179,228 @@ class MolecularGraphTestCase(unittest.TestCase):
             ]),
         }
         test_results = dict((key, []) for key in expected_results)
-        match_generator = MatchGenerator(match_definition, debug=False)
-        for match in match_generator(self.molecular_graph):
+        match_generator = GraphSearch(pattern, debug=False)
+        for match in match_generator(molecule.graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
 
-        def yield_alternatives(test_item, key):
+        def iter_alternatives(test_item, key):
             a, b, c, d, e = test_item
             yield test_item
             yield a, c, b, e, d
-            if (self.molecule.numbers[b] == self.molecule.numbers[e]):
+            if (molecule.numbers[b] == molecule.numbers[e]):
                 yield a, e, c, d, b
                 yield a, c, e, b, d
-            if (self.molecule.numbers[c] == self.molecule.numbers[d]):
+            if (molecule.numbers[c] == molecule.numbers[d]):
                 yield a, b, d, c, e
                 yield a, d, b, e, c
-            if (self.molecule.numbers[b] == self.molecule.numbers[e]) and (self.molecule.numbers[c] == self.molecule.numbers[d]):
+            if (molecule.numbers[b] == molecule.numbers[e]) and (molecule.numbers[c] == molecule.numbers[d]):
                 yield a, e, d, c, b
                 yield a, d, e, b, c
 
-        self.verify(expected_results, test_results, yield_alternatives)
+        self.verify_graph_search(molecule.graph, expected_results, test_results, iter_alternatives)
 
     def test_dihedral_angles_precursor(self):
-        self.load_graph("input/precursor.xyz")
-        self.molecular_graph.init_neighbors()
-        match_definition = DihedralAngleMatchDefinition([
-            CriteriaSet(tag="all"),
-        ])
+        molecule = self.load_molecule("precursor.xyz")
+        pattern = DihedralAnglePattern([CriteriaSet(tag="all")])
         # construct all dihedral angles:
         all_dihedrals = set([])
-        for b, c in self.molecular_graph.pairs:
-            for a in self.molecular_graph.neighbors[b]:
+        for b, c in molecule.graph.pairs:
+            for a in molecule.graph.neighbors[b]:
                 if a != c:
-                    for d in self.molecular_graph.neighbors[c]:
+                    for d in molecule.graph.neighbors[c]:
                         if d != b:
                             all_dihedrals.add((a, b, c, d))
         expected_results = {
             'all': all_dihedrals,
         }
         test_results = dict((key, []) for key in expected_results)
-        match_generator = MatchGenerator(match_definition, debug=False)
-        for match in match_generator(self.molecular_graph):
+        match_generator = GraphSearch(pattern, debug=False)
+        for match in match_generator(molecule.graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
-        def yield_alternatives(test_item, key):
+        def iter_alternatives(test_item, key):
             yield test_item
             a, b, c, d = test_item
             yield d, c, b, a
 
-        self.verify(expected_results, test_results, yield_alternatives)
+        self.verify_graph_search(molecule.graph, expected_results, test_results, iter_alternatives)
 
-    def test_full_match_on_self(self):
-        self.load_graph("input/cyclopentane.xyz")
-        g1 = copy.deepcopy(self.molecular_graph)
-        g2 = copy.deepcopy(self.molecular_graph)
-        self.assert_(full_match(g1, g2) is not None)
+    def test_rings_5ringOH(self):
+        molecule = self.load_molecule("5ringOH.xyz")
+        pattern = NRingPattern(10, [CriteriaSet(tag="all")])
+        expected_results = {
+            'all': set([(14, 25, 11, 26, 21, 29, 18, 28, 17, 27)])
+        }
+
+        test_results = dict((key, []) for key in expected_results)
+        match_generator = GraphSearch(pattern, debug=False)
+        for match in match_generator(molecule.graph):
+            test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
+
+        def iter_alternatives(test_item, key):
+            for i in xrange(10):
+                test_item = (test_item[-1],) + test_item[:-1]
+                yield test_item
+                yield tuple(reversed(test_item))
+
+        self.verify_graph_search(molecule.graph, expected_results, test_results, iter_alternatives)
+
+    def test_rings_precursor(self):
+        molecule = self.load_molecule("precursor.xyz")
+        pattern = RingPattern(21)
+        all_rings = {}
+        match_generator = GraphSearch(pattern, debug=False)
+        for match in match_generator(molecule.graph):
+            l = all_rings.setdefault(len(match.ring_nodes), set([]))
+            l.add(match.ring_nodes)
+
+        for size, solutions in all_rings.iteritems():
+            tag = '%i-ring' % size
+            pattern = NRingPattern(size, [CriteriaSet(tag=tag)], strong=True)
+            expected_results = {tag: solutions}
+
+            test_results = {tag: []}
+            match_generator = GraphSearch(pattern, debug=False)
+            for match in match_generator(molecule.graph):
+                test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
+
+            def iter_alternatives(test_item, key):
+                for i in xrange(size):
+                    test_item = (test_item[-1],) + test_item[:-1]
+                    yield test_item
+                    yield tuple(reversed(test_item))
+
+            self.verify_graph_search(molecule.graph, expected_results, test_results, iter_alternatives)
+
+    # test other molecular graph stuff
 
     def test_multiply(self):
-        numbers = numpy.array([12, 8, 8, 8, 8])
+        # sulfate:
         pairs = [(0,1), (0,2), (0,3), (0,4)]
-        mgraph = MolecularGraph(set([frozenset([a,b]) for a,b in pairs]), numbers)
+        numbers = numpy.array([16, 8, 8, 8, 8])
+        orders = numpy.array([1, 1, 2, 2])
+        mgraph = MolecularGraph(pairs, numbers, orders)
 
-        check_pairs = [(0,1), (0,2), (0,3), (0,4), (5, 6), (5, 7), (5, 8), (5, 9), (10, 11), (10, 12), (10, 13), (10, 14)]
-        check_pairs = set([frozenset([a,b]) for a,b in check_pairs])
+        check_pairs = [
+            (0,1), (0,2), (0,3), (0,4),
+            (5, 6), (5, 7), (5, 8), (5, 9),
+            (10, 11), (10, 12), (10, 13), (10, 14)
+        ]
+        check_pairs = tuple(frozenset(pair) for pair in check_pairs)
+        check_orders = numpy.concatenate([orders, orders, orders])
+        check_numbers = numpy.concatenate([numbers, numbers, numbers])
         for check in [mgraph*3, 3*mgraph]:
-            self.assertEqual(len(check.pairs), 12)
+            self.assertEqual(len(check.pairs), len(check_pairs))
             self.assertEqual(check.pairs, check_pairs)
+            self.assertEqual(check.numbers.shape,check_numbers.shape)
+            self.assert_((check.numbers==check_numbers).all())
+            self.assertEqual(check.orders.shape,check_orders.shape)
+            self.assert_((check.orders==check_orders).all())
 
-    def check_canonical(self, filename):
-        self.load_graph(filename)
-        rep1 = self.molecular_graph.get_canonical()
-        self.molecular_graph.init_nodes()
-        neworder = numpy.random.permutation(len(self.molecular_graph.nodes))
-        revorder = numpy.zeros(len(neworder), int)
-        for i in xrange(len(neworder)):
-            revorder[neworder[i]] = i
-        my_pairs = set([frozenset([revorder[i],revorder[j]]) for i,j in self.molecular_graph.pairs])
-        my_numbers = numpy.array([self.molecular_graph.numbers[neworder[i]] for i in xrange(len(neworder))])
-        my_graph = MolecularGraph(my_pairs, my_numbers)
-        rep2 = my_graph.get_canonical()
-        my_graph.init_nodes()
-        #for pair1, pair2 in zip(rep1[1], rep2[1]):
-        #    if pair1 != pair2:
-        #        print pair1, pair2
+    def test_fingerprints(self):
+        for mol in self.iter_molecules():
+            g0 = mol.graph
+            permutation = numpy.random.permutation(g0.num_nodes)
+            g1 = g0.get_subgraph(permutation, normalize=True)
+            for i in xrange(g0.num_nodes):
+                self.assert_((g0.node_fingerprints[permutation[i]]==g1.node_fingerprints[i]).all())
+            self.assert_((g0.fingerprint==g1.fingerprint).all())
 
-        #self.molecule.coordinates = self.molecule.coordinates[rep1[2]]
-        #self.molecule.numbers = self.molecule.numbers[rep1[2]]
-        #self.molecule.write_to_file("output/tmp.xyz")
-        self.assertEqual(rep1[0],rep2[0])
-        self.assertEqual(rep1[1],rep2[1])
+    def test_subgraph(self):
+        for mol in self.iter_molecules():
+            g0 = mol.graph
+            permutation = numpy.random.permutation(g0.num_nodes)
+            # normalize=False
+            g1 = g0.get_subgraph(permutation)
+            self.assert_((g0.numbers==g1.numbers).all())
+            self.assertEqual(g0.num_pairs, g1.num_pairs)
+            self.assertEqual(g0.pairs, g1.pairs)
+            self.assert_((g0.orders==g1.orders).all())
+            # normalize=True
+            g1 = g0.get_subgraph(permutation, normalize=True)
+            self.assert_((g0.numbers[permutation]==g1.numbers).all())
+            self.assertEqual(g0.num_pairs, g1.num_pairs)
 
-    def test_canonical_funny(self):
-        self.check_canonical("input/funny.xyz")
+    def test_iter_shortest_paths(self):
+        molecule = self.load_molecule("precursor.xyz")
+        cases = {
+            (56,65): set([(56,7,66,11,65)]),
+            (49,67): set([(49,2,53,6,56,7,60,9,59,8,67),(49,4,54,10,61,11,65,13,64,12,67)]),
+            (49,49): set([(49,)]), # just check wether the function doesn't crash on weird input
+        }
+        for (i,j), expected_results in cases.iteritems():
+            shortest_paths = set(molecule.graph.iter_shortest_paths(i,j))
+            self.assertEqual(shortest_paths, expected_results)
 
-    def test_canonical_precursor(self):
-        self.check_canonical("input/precursor.xyz")
+    def test_iter_shortest_paths_generic(self):
+        for molecule in self.iter_molecules(allow_multi=True):
+            i = numpy.random.randint(molecule.size)
+            j = numpy.random.randint(molecule.size)
+            length = None
+            for path in molecule.graph.iter_shortest_paths(i,j):
+                if length is None:
+                    length = len(path)
+                else:
+                    self.assertEqual(length, len(path))
+                for i in xrange(len(path)-1):
+                    self.assert_(path[i] in molecule.graph.neighbors[path[i+1]])
 
-    def test_canonical_ethene(self):
-        self.check_canonical("input/ethene.xyz")
+    def test_full_match_on_self(self):
+        for molecule in self.iter_molecules(allow_multi=True):
+            g1 = copy.deepcopy(molecule.graph)
+            g2 = copy.deepcopy(molecule.graph)
+            match = g1.full_match(g2)
+            self.assertNotEqual(match, None)
+            self.assertEqual(len(match), g1.num_nodes)
 
-    def test_canonical_tetra(self):
-        self.check_canonical("input/tetra.xyz")
+    def test_canonical_order(self):
+        # TODO: analogous tests voor pure graphs + fixen
+        for molecule in self.iter_molecules():
+            try:
+                g0 = molecule.graph
+                order0 = g0.canonical_order
+                g0_bis = g0.get_subgraph(order0, normalize=True)
 
-    def test_canonical_tea(self):
-        self.check_canonical("input/tea.xyz")
+                permutation = numpy.random.permutation(g0.num_nodes)
+                g1 = g0.get_subgraph(permutation, normalize=True)
+                order1 = g1.canonical_order
+                g1_bis = g1.get_subgraph(order1, normalize=True)
 
-    def test_canonical_tpa(self):
-        self.check_canonical("input/tpa.xyz")
-
-    def test_canonical_thf(self):
-        self.check_canonical("input/thf_single.xyz")
+                self.assertEqual(str(g0_bis), str(g1_bis))
+                self.assert_((g0_bis.numbers==g1_bis.numbers).all())
+                self.assert_((g0_bis.orders==g1_bis.orders).all())
+            except NotImplementedError:
+                pass
 
     def test_guess_geometry(self):
-        from molmod.io.sdf import SDFReader
-        sdf_reader = SDFReader("input/example.sdf")
-        for input_mol in sdf_reader:
+        for input_mol in self.iter_molecules(allow_multi=False):
             output_mol = input_mol.graph.guess_geometry()
             output_mol.title = input_mol.title
-            output_mol.write_to_file("output/%s.xyz" % input_mol.title)
+            output_mol.write_to_file("output/guess_%s.xyz" % input_mol.title)
 
     def test_blob(self):
-        self.load_graph("input/tpa.xyz")
-        blob = self.molecular_graph.get_blob()
-        graph = MolecularGraph.from_blob(blob)
-        self.assert_((graph.numbers==self.molecular_graph.numbers).all(), "Atom numbers do not match.")
-        self.assert_(graph.pairs==self.molecular_graph.pairs, "Pairs do not match.")
+        for molecule in self.iter_molecules(allow_multi=True):
+            blob = molecule.graph.get_blob()
+            graph = MolecularGraph.from_blob(blob)
+            self.assert_((graph.numbers==molecule.graph.numbers).all(), "Atom numbers do not match.")
+            self.assert_(graph.pairs==molecule.graph.pairs, "Pairs do not match.")
+
+    def test_halfs_double_thf(self):
+        molecule = self.load_molecule("thf_single.xyz")
+        cases = [
+            (0,2,0,1), (1,0,1,4), (4,1,4,3), (3,2,3,4), (2,3,2,0),
+            (2,3,1,4), (0,2,4,3), (3,2,1,0), (2,0,4,1), (3,4,0,1),
+        ]
+        for a1,b1,a2,b2 in cases:
+            try:
+                half1, half2, hinges = molecule.graph.get_halfs_double(a1,b1,a2,b2)
+            except GraphError:
+                self.fail_("The case (%i,%i,%i,%i) must lead to a solution." % (a1,b1,a2,b2))
+            if a1 == 0 and a2 == 0:
+                self.assertEqual(len(half1), 1)
+                self.assert_(len(half2) > 1)
+            else:
+                self.assert_(len(half1) > 1)
+                self.assert_(len(half2) > 1)
 

@@ -19,7 +19,7 @@
 # --
 
 
-from molmod.molecular_graphs import generate_molecular_graph
+from molmod.molecular_graphs import MolecularGraph
 from molmod.units import angstrom
 from molmod.similarity import DistanceDescriptor
 
@@ -54,7 +54,7 @@ class SimilarityTestCase(unittest.TestCase):
     def test_graph(self):
         molecules = self.get_molecules()
         for molecule in molecules:
-            molecule.graph = generate_molecular_graph(molecule)
+            molecule.graph = MolecularGraph.from_geometry(molecule)
             molecule.descriptor = DistanceDescriptor(molecule.graph)
         self.do_test(molecules, margin=0.2, cutoff=10.0)
 

@@ -39,7 +39,6 @@ class DistanceDescriptor(object):
             mol_or_graph.init_distance_matrix()
             self.table_distances = similarity_table_distances(mol_or_graph.distance_matrix)
         elif isinstance(mol_or_graph, MolecularGraph):
-            mol_or_graph.init_distances()
             self.table_distances = similarity_table_distances(mol_or_graph.distances)
         #order = self.table_labels.argsort(axis=0,kind='heapsort')
         order = numpy.lexsort([self.table_labels[:,1], self.table_labels[:,0]])

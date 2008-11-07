@@ -88,15 +88,32 @@ class SDFReader(object):
                 numbers[i] = atom.number
             coordinates *= angstrom
 
-            pairs = set([])
+            pairs = []
+            orders = numpy.zeros(num_bonds, int)
             for i in xrange(num_bonds):
                 words = self.f.next().split()
-                if len(words) < 2:
-                    raise SDFError("Expecting at least two numbers on a bond line.")
+                if len(words) < 3:
+                    raise SDFError("Expecting at least three numbers on a bond line.")
                 try:
-                    pairs.add(frozenset([int(words[0])-1,int(words[1])-1]))
+                    pairs.append((int(words[0])-1,int(words[1])-1))
+                    orders[i] = int(words[2])
                 except ValueError:
-                    raise SDFError("Expecting at least two numbers on a bond line.")
+                    raise SDFError("Expecting at least three numbers on a bond line.")
+
+            formal_charges = numpy.zeros(len(numbers), int)
+
+            line = self.f.next()
+            while line != "M  END\n":
+                if line.startswith("M  CHG"):
+                    words = line[6:].split()[1:] # drop the first number which is the number of charges
+                    i = 0
+                    while i < len(words)-1:
+                        try:
+                            formal_charges[int(words[i])-1] = int(words[i+1])
+                        except ValueError:
+                            raise SDFError("Expecting only integer formal charges.")
+                        i += 2
+                line = self.f.next()
 
             # Read on to the next molecule
             for line in self.f:
@@ -104,7 +121,9 @@ class SDFReader(object):
                     break
 
             molecule = Molecule(numbers, coordinates, title)
-            molecule.graph = MolecularGraph(pairs, numbers)
+            molecule.formal_charges = formal_charges
+            molecule.charge = formal_charges.sum()
+            molecule.graph = MolecularGraph(pairs, numbers, orders)
             return molecule
 
 

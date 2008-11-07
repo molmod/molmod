@@ -29,7 +29,8 @@ void graphs_floyd_warshall(int n, int* dm) {
         if (i==k) continue;
         d_ik = dm[i*n+k];
         d_kj = dm[k*n+j];
-        if (d_ik > 0 && d_kj > 0) {
+        //printf("d_ik=%i  d_kj=%i\n", d_ik, d_kj);
+        if (d_ik != 0 && d_kj != 0) {
           d_orig = dm[i*n+j];
           d_new = d_ik+d_kj;
           if (d_new < d_orig || d_orig == 0) {
@@ -41,3 +42,4 @@ void graphs_floyd_warshall(int n, int* dm) {
     }
   }
 }
+

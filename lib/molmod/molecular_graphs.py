@@ -20,7 +20,7 @@
 
 
 from molmod.molecules import Molecule
-from molmod.graphs import Graph, GraphError, SubgraphMatchDefinition, ExactMatchDefinition, Match, OneToOne, MatchGenerator, CriteriaSet
+from molmod.graphs import Graph, SubgraphPattern, EqualPattern, Match, OneToOne, GraphSearch, CriteriaSet
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
 from molmod.units import angstrom
 
@@ -30,175 +30,133 @@ import numpy, copy
 
 
 __all__ = [
-    "MolecularGraph", "generate_molecular_graph",
-    "Anything", "MolecularCriterion", "MolecularOr", "MolecularAnd",
+    "MolecularGraph", "ToyFF",
     "HasAtomNumber", "HasNumNeighbors", "HasNeighborNumbers", "BondLongerThan",
-    "atom_criteria",
-    "MolecularMixinMatchDefinition", "MolecularSubgraphMatchDefinition",
-    "MolecularExactMatchDefinition", "BondMatchDefinition",
-    "BendingAngleMatchDefinition", "DihedralAngleMatchDefinition",
-    "OutOfPlaneMatchDefinition", "TetraMatchDefinition",
-    "FullMatchError", "full_match",
+    "atom_criteria", "BondPattern", "BendingAnglePattern", "DihedralAnglePattern",
+    "OutOfPlanePattern", "TetraPattern", "NRingPattern",
 ]
 
 
 class MolecularGraph(Graph):
     @classmethod
+    def from_geometry(cls, molecule, unit_cell=None):
+        from molmod.data.bonds import bonds
+
+        def yield_positioned_atoms():
+            for index in xrange(molecule.size):
+                yield PositionedObject(index, molecule.coordinates[index])
+
+        binned_atoms = SparseBinnedObjects(yield_positioned_atoms(), bonds.max_length*bonds.bond_tolerance)
+
+        def compare_function(positioned1, positioned2):
+            delta = positioned2.coordinate - positioned1.coordinate
+            if unit_cell is not None:
+                delta = unit_cell.shortest_vector(delta)
+            distance = numpy.linalg.norm(delta)
+            if distance < binned_atoms.gridsize:
+                bond_order = bonds.bonded(molecule.numbers[positioned1.id], molecule.numbers[positioned2.id], distance)
+                if bond_order != None:
+                    return bond_order, distance
+
+        bond_data = list(
+            (frozenset([positioned.id for positioned in key]), data)
+            for key, data
+            in IntraAnalyseNeighboringObjects(binned_atoms, compare_function)(unit_cell)
+        )
+        pairs = tuple(pair for pair, data in bond_data)
+        orders = numpy.array([data[0] for pair, data in bond_data], dtype=int)
+        lengths = numpy.array([data[1] for pair, data in bond_data], dtype=float)
+
+        result = cls(pairs, molecule.numbers, orders)
+        result.bond_lengths = lengths
+        return result
+
+    @classmethod
     def from_blob(cls, s):
         """Construct a molecular graph from the blob representation created with get_blob"""
         atom_str, pair_str = s.split()
         numbers = numpy.array([int(s) for s in atom_str.split(",")])
-        pairs = set([])
+        pairs = []
+        orders = []
         for s in pair_str.split(","):
-            i,j = s.split("-")
-            pairs.add(frozenset([int(i),int(j)]))
-        return cls(pairs,numbers)
+            i,j,o = (int(w) for w in s.split("_"))
+            pairs.append((i,j))
+            orders.append(o)
+        return cls(pairs,numbers,numpy.array(orders))
 
-    def __init__(self, pairs, numbers, ordered_nodes=None):
-        if ordered_nodes is None:
-            ordered_nodes = range(len(numbers))
-        Graph.__init__(self, pairs, ordered_nodes)
+    def __init__(self, pairs, numbers, orders=None):
+        """Initialize a molecular graph
+
+        Arguments:
+          pairs -- See base class (Graph) documentation
+          numbers -- consecutive atom numbers
+          orders -- bond orders
+
+        When the nature of an atom or a bond is unclear ambiguous, set the
+        corresponding integer to zero. This means the nature of the atom or bond
+        is unspecified. When the bond orders are not given, they are all set to
+        zero.
+
+        If you want to use 'special' atom types, use negative numbers. The same
+        for bond orders. e.g. a nice choice for the bond order of a hybrid bond
+        is -1.
+        """
+        if orders is None:
+            orders = numpy.zeros(len(numbers), dtype=int)
+        elif len(orders) != len(pairs):
+            raise ValueError("The number of (bond) orders must be equal to the number of pairs")
+        Graph.__init__(self, pairs, len(numbers))
         self.numbers = numbers
+        self.orders = orders
 
-    def __mul__(self, other):
-        result = Graph.__mul__(self, other)
+    def __mul__(self, repeat):
+        result = Graph.__mul__(self, repeat)
         result.__class__ = MolecularGraph
-        numbers = numpy.zeros((other, len(self.numbers)), int)
+        numbers = numpy.zeros((repeat, len(self.numbers)), int)
         numbers[:] = self.numbers
         result.numbers = numbers.ravel()
+        orders = numpy.zeros((repeat, len(self.orders)), int)
+        orders[:] = self.orders
+        result.orders = orders.ravel()
         return result
 
     __rmul__ = __mul__
 
-    def subgraph(self, indexes=None):
-        result = Graph.subgraph(self, indexes)
+    def get_node_string(self, i):
+        number = self.numbers[i]
+        if number == 0:
+            return Graph.get_node_string(self, i)
+        else:
+            # pad with zeros to make sure that string sort is identical to number sort
+            return "%03i" % number
+
+    def get_pair_string(self, i):
+        order = self.orders[i]
+        if order == 0:
+            return Graph.get_pair_string(self, i)
+        else:
+            # pad with zeros to make sure that string sort is identical to number sort
+            return "%03i" % order
+
+    def get_subgraph(self, subnodes, normalize=False):
+        """Creates a subgraph of the current graph.
+
+        See help(Graph.get_subgraph) for more information.
+        """
+        result = Graph.get_subgraph(self, subnodes, normalize)
         result.__class__ = MolecularGraph
-        result.numbers = self.numbers[indexes]
+        if normalize:
+            result.numbers = self.numbers[result.old_node_indexes] # nodes do change
+        else:
+            result.numbers = self.numbers # nodes don't change!
+        result.orders = self.orders[result.old_pair_indexes]
         return result
 
     def get_blob(self):
         """Create a compact text representation of the graph."""
         atom_str = ",".join(str(number) for number in self.numbers)
-        pair_str = ",".join("%i-%i" % (i,j) for i,j in self.pairs)
-        return "%s %s" % (
-            ",".join(str(number) for number in self.numbers),
-            ",".join("%i-%i" % (i,j) for i,j in self.pairs),
-        )
-
-    def get_canonical(self):
-        """Returns a canonical representation of the molecular graph.
-
-        This means that two graphs that only differ in the order of the nodes
-        and their specific numbers, will result in the same canonical representation.
-
-        The result is a tuple of two lists. The first list contains the atom
-        numbers. The second list contains two-tuples that describe the bonds.
-        """
-
-        # To make this work, we need a unique starting point. If necessary,
-        # symmetries will be used to make this more efficient.
-        self.init_distances()
-        self.init_neighbors()
-        self.init_nodes()
-
-        # pick the most central atom(s)
-        longest_distances = self.distances.sum(axis=0)
-        starting_atoms = (longest_distances == longest_distances.min()).nonzero()[0]
-        #print "starting_atoms", starting_atoms
-
-        if len(starting_atoms) > 1:
-            # pick the heaviest atom(s)
-            atom_numbers = self.numbers[starting_atoms]
-            starting_atoms = starting_atoms[atom_numbers == atom_numbers.max()]
-            #print "starting_atoms", starting_atoms
-
-        #if len(starting_atoms) > 1:
-        #    self.init_symmetries()
-        #    # pick the atom(s) with the least number of symmetric equivalents
-        #    num_equivalents = numpy.array([len(self.equivalent_nodes[i]) for i in starting_atoms])
-        #    starting_atoms = starting_atoms[num_equivalents == num_equivalents.min()]
-        #    print "starting_atoms", starting_atoms
-
-            # if symmetric equivalents exist, pick from each group just one atom
-        #    groups = set([])
-        #    for i in starting_atoms:
-        #        groups.add(frozenset(self.equivalent_nodes[i]))
-
-        #    starting_atoms = numpy.array([min(group) for group in groups])
-        #    print "starting_atoms", starting_atoms
-
-        # It might very well be that the number of starting atoms is larger than one.
-        # We will use each one to start a canonical representation. We will sorte
-        # the representations with a consistent compare function. The first from
-        # the sorted list of representations is finally taken
-
-        def canonical_from(starting_atom):
-            todo_atoms = set(self.nodes)
-            todo_atoms.discard(starting_atom)
-            boundary_atoms = set([starting_atom])
-
-            # make a tree-representation of the molecule that starts
-            # from the starting atom. This tree representation does
-            # not contain atom indexes and is therefore independent
-            # of any atom order.
-            tree = AtomTreeNode(self.numbers[starting_atom], starting_atom)
-            done_atoms = {starting_atom: tree}
-            while len(todo_atoms) > 0:
-                new_atoms = {}
-                for b in boundary_atoms:
-                    for n in self.neighbors[b]:
-                        if n in todo_atoms and n not in new_atoms:
-                            new_atoms[n] = AtomTreeNode(self.numbers[n], n)
-                for n, node in new_atoms.iteritems():
-                    for neighbor in self.neighbors[n]:
-                        neighbor_node = done_atoms.get(neighbor)
-                        if neighbor_node is not None:
-                            neighbor_node.add_child(node)
-                for n, node in new_atoms.iteritems():
-                    for neighbor in self.neighbors[n]:
-                        neighbor_node = new_atoms.get(neighbor)
-                        if neighbor_node is not None:
-                            neighbor_node.add_sibling(node)
-                done_atoms.update(new_atoms)
-                boundary_atoms = set(new_atoms)
-                del new_atoms
-                todo_atoms -= boundary_atoms
-
-            # Now we order the lists inside the three based on
-            # the topology of the tree.
-            tree.sort()
-
-            # We iterate over the sorted tree and hence get canonically
-            # ordered atoms. They only thing that determines the order
-            # is the starting atom.
-            collected_atoms = set([starting_atom])
-            sorted_atoms = {}
-            for node in tree.yield_children():
-                i = node.index
-                if i not in collected_atoms:
-                    l = sorted_atoms.setdefault(node.depth,[])
-                    l.append(i) # make sure we respect the depth order
-                    collected_atoms.add(i)
-
-            sorted_atoms = sum((l for depth, l in sorted(sorted_atoms.iteritems())), [starting_atom])
-            # Now get the atom pairs
-            sorted_index = dict((old,new) for new,old in enumerate(sorted_atoms))
-            atom_numbers = list(self.numbers[i] for i in sorted_atoms)
-            bond_pairs = []
-            for i,j in self.pairs:
-                i,j = sorted_index[i], sorted_index[j]
-                if i > j:
-                    i,j = j,i
-                bond_pairs.append((i,j))
-            bond_pairs.sort()
-            return atom_numbers, bond_pairs#, numpy.array(sorted_atoms)
-
-        solutions = []
-        for starting_atom in starting_atoms:
-            solutions.append(canonical_from(starting_atom))
-        solutions.sort()
-
-        return solutions[0]
+        pair_str = ",".join("%i_%i_%i" % (i,j,o) for (i,j),o in zip(self.pairs,self.orders))
+        return "%s %s" % (atom_str, pair_str)
 
     def guess_geometry(self):
         N = len(self.numbers)
@@ -233,121 +191,12 @@ class MolecularGraph(Graph):
         return mol
 
 
-def generate_molecular_graph(molecule, labels=None, unit_cell=None):
-    from molmod.data.bonds import bonds
-    if labels is None:
-        labels = range(len(molecule.numbers))
-
-    def yield_positioned_atoms():
-        for index in xrange(len(labels)):
-            yield PositionedObject(index, molecule.coordinates[index])
-
-    binned_atoms = SparseBinnedObjects(yield_positioned_atoms(), bonds.max_length*bonds.bond_tolerance)
-
-    def compare_function(positioned1, positioned2):
-        delta = positioned2.coordinate - positioned1.coordinate
-        if unit_cell is not None:
-            delta = unit_cell.shortest_vector(delta)
-        distance = numpy.linalg.norm(delta)
-        if distance < binned_atoms.gridsize:
-            bond_order = bonds.bonded(molecule.numbers[positioned1.id], molecule.numbers[positioned2.id], distance)
-            if bond_order != None:
-                return bond_order, distance
-
-    bond_data = list(
-        (frozenset([labels[positioned.id] for positioned in key]), data)
-        for key, data
-        in IntraAnalyseNeighboringObjects(binned_atoms, compare_function)(unit_cell)
-    )
-    pairs = set(key for key, data in bond_data)
-
-    result = MolecularGraph(pairs, molecule.numbers, labels)
-    result.bond_data = bond_data
-    result.bond_orders = dict([(key, data[0]) for key, data in bond_data])
-    result.bond_lengths = dict([(key, data[1]) for key, data in bond_data])
-    return result
-
-
-class AtomTreeNode(object):
-    """Defines a tree structure of atoms.
-
-    This class is used for the generation of a canonical graph.
-    """
-    def __init__(self, number, index):
-        self.number = number
-        self.index = index
-        self.children = []
-        self.parents = []
-        self.siblings = []
-        #self.num_parents = 0
-        #self.num_siblings = 0
-        self.depth = 0
-        self.tag = 0
-
-    num_siblings = property(lambda self: len(self.siblings))
-    num_parents = property(lambda self: len(self.parents))
-
-    def add_child(self, other_node):
-        self.children.append(other_node)
-        other_node.parents.append(self)
-        other_node.depth = self.depth+1
-
-    def add_sibling(self, other_node):
-        self.siblings.append(other_node)
-
-    def sort(self):
-        for child in self.children:
-            child.sort()
-        self.children.sort()
-        self.siblings.sort()
-
-    def __cmp__(self, other):
-        result = -cmp(
-            (self.number, self.num_parents, self.num_siblings, len(self.children)),
-            (other.number, other.num_parents, other.num_siblings, len(other.children))
-        )
-        if result != 0:
-            return result
-        for self_child, other_child in zip(self.children, other.children):
-            result = self_child.__cmp__(other_child)
-            if result != 0:
-                return result
-        if self.num_parents > 1:
-            #not (self in other.siblings):
-            result = cmp(self.index, other.index)
-            if result != 0:
-                return result
-        for self_sibling, other_sibling in zip(self.siblings, other.siblings):
-            if self_sibling.index > self.index:
-                self_tag = (self.index, self_sibling.index)
-            else:
-                self_tag = (self_sibling.index, self.index)
-            if other_sibling.index > other.index:
-                other_tag = (other.index, other_sibling.index)
-            else:
-                other_tag = (other_sibling.index, other.index)
-            result = cmp(self_tag, other_tag)
-            if result != 0:
-                return result
-
-        return 0
-
-    def yield_children(self):
-        for child in self.children:
-            yield child
-        for child in self.children:
-            for v in child.yield_children():
-                yield v
-
-
 # initial geometry based on graph
-
 
 class ToyFF(object):
     def __init__(self, graph):
         from molmod.data.bonds import bonds
 
-        graph.init_distances()
         self.dm0 = graph.distances.astype(numpy.int32)
         self.numbers = graph.numbers.astype(numpy.int32)
 
@@ -360,7 +209,6 @@ class ToyFF(object):
         self.bond_pairs = numpy.array(bond_pairs, numpy.int32)
         self.bond_lengths = numpy.array(bond_lengths, float)
 
-        graph.init_neighbors()
         span_pairs = []
         span_lengths = []
         for i, neighbors in graph.neighbors.iteritems():
@@ -423,100 +271,49 @@ class ToyFF(object):
             return result
 
 
-# molecular criteria
+# basic criteria for molecular patterns
 
-
-class MolecularCriterion(object):
-    def init_graph(self, graph):
-        self.graph = graph
-        graph.init_index()
-
-    def __call__(self, id):
-        raise NotImplementedError
-
-
-class Anything(MolecularCriterion):
-    def __call__(self, id):
-        return True
-
-
-class MolecularOr(object):
-    def __init__(self, *criteria):
-        self.criteria = criteria
-
-    def init_graph(self, graph):
-        for c in self.criteria:
-            c.init_graph(graph)
-
-    def __call__(self, id):
-        for c in self.criteria:
-            if c(id):
-                return True
-        return False
-
-
-class MolecularAnd(object):
-    def __init__(self, *criteria):
-        self.criteria = criteria
-
-    def init_graph(self, graph):
-        for c in self.criteria:
-            c.init_graph(graph)
-
-    def __call__(self, id):
-        for c in self.criteria:
-            if not c(id):
-                return False
-        return True
-
-
-class HasAtomNumber(MolecularCriterion):
+class HasAtomNumber(object):
     def __init__(self, number):
         self.number = number
 
-    def __call__(self, atom):
-        return self.graph.numbers[self.graph.index[atom]] == self.number
+    def __call__(self, atom, graph):
+        return graph.numbers[atom] == self.number
 
 
-class HasNumNeighbors(MolecularCriterion):
-    def __init__(self, number):
-        self.number = number
+class HasNumNeighbors(object):
+    def __init__(self, count):
+        self.count = count
 
-    def init_graph(self, graph):
-        graph.init_neighbors()
-        MolecularCriterion.init_graph(self, graph)
-
-    def __call__(self, atom):
-        return len(self.graph.neighbors[self.graph.index[atom]]) == self.number
+    def __call__(self, atom, graph):
+        return len(graph.neighbors[atom]) == self.count
 
 
-class HasNeighborNumbers(MolecularCriterion):
+class HasNeighborNumbers(object):
     def __init__(self, numbers):
         self.numbers = list(numbers)
         self.numbers.sort()
 
-    def init_graph(self, graph):
-        graph.init_neighbors()
-        MolecularCriterion.init_graph(self, graph)
-
-    def __call__(self, atom):
-        neighbors = self.graph.neighbors[atom]
+    def __call__(self, atom, graph):
+        neighbors = graph.neighbors[atom]
         if not len(neighbors) == len(self.numbers):
             return
-        neighbors = [self.graph.numbers[self.graph.index[neighbor]] for neighbor in neighbors]
-        neighbors.sort()
-        return neighbors == self.numbers
+        neighbor_numbers = [graph.numbers[neighbor] for neighbor in neighbors]
+        neighbor_numbers.sort()
+        return neighbor_numbers == self.numbers
 
 
-class BondLongerThan(MolecularCriterion):
+class BondLongerThan(object):
     def __init__(self, length):
         self.length = length
 
-    def __call__(self, pair):
-        return self.graph.bond_lengths[pair] > self.length
+    def __call__(self, pair_index, graph):
+        return graph.bond_lengths[pair_index] > self.length
 
 
 def atom_criteria(*params):
+    """An auxiliary function to construct a dictionary of Criteria geared
+    towards molecular patterns."""
     result = {}
     for index, param in enumerate(params):
         if param is None:
@@ -528,129 +325,104 @@ def atom_criteria(*params):
     return result
 
 
-# match definitions
+# common patterns for molecular structures
 
 
-class MolecularMixinMatchDefinition(object):
-    def init_graph(self, graph):
-        assert isinstance(graph, MolecularGraph)
-        if self.criteria_sets is None:
-            return
-        for criteria_set in self.criteria_sets:
-            for c in criteria_set.thing_criteria.itervalues():
-                c.init_graph(graph)
-            for c in criteria_set.relation_criteria.itervalues():
-                c.init_graph(graph)
-            for c in criteria_set.global_criteria:
-                c.init_graph(graph)
-
-
-class MolecularSubgraphMatchDefinition(SubgraphMatchDefinition, MolecularMixinMatchDefinition):
-    def init_graph(self, graph, one_match):
-        MolecularMixinMatchDefinition.init_graph(self, graph)
-        SubgraphMatchDefinition.init_graph(self, graph, one_match)
-
-
-class MolecularExactMatchDefinition(ExactMatchDefinition, MolecularMixinMatchDefinition):
-    def init_graph(self, graph, one_match):
-        MolecularMixinMatchDefinition.init_graph(self, graph)
-        ExactMatchDefinition.init_graph(self, graph, one_match)
-
-
-class BondMatchDefinition(MolecularSubgraphMatchDefinition):
+class BondPattern(SubgraphPattern):
     def __init__(self, criteria_sets=None, node_tags={}):
-        subgraph = Graph([frozenset([0, 1])], [0, 1])
-        MolecularSubgraphMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+        subgraph = Graph([(0, 1)])
+        SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
 
 
-class BendingAngleMatchDefinition(MolecularSubgraphMatchDefinition):
+class BendingAnglePattern(SubgraphPattern):
     def __init__(self, criteria_sets=None, node_tags={}):
-        subgraph = Graph([
-            frozenset([0, 1]),
-            frozenset([1, 2]),
-        ], [0, 1, 2])
-        MolecularSubgraphMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+        subgraph = Graph([(0, 1), (1, 2)])
+        SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
 
 
-class DihedralAngleMatchDefinition(MolecularSubgraphMatchDefinition):
+class DihedralAnglePattern(SubgraphPattern):
     def __init__(self, criteria_sets=None, node_tags={}):
-        subgraph = Graph([
-            frozenset([0, 1]),
-            frozenset([1, 2]),
-            frozenset([2, 3]),
-        ], [0, 1, 2, 3])
-        MolecularSubgraphMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+        subgraph = Graph([(0, 1), (1, 2), (2, 3)])
+        SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
 
 
-class OutOfPlaneMatchDefinition(MolecularSubgraphMatchDefinition):
+class OutOfPlanePattern(SubgraphPattern):
     def __init__(self, criteria_sets=None, node_tags={}):
-        subgraph = Graph([
-            frozenset([0, 1]),
-            frozenset([0, 2]),
-            frozenset([0, 3]),
-        ], [0, 1, 2, 3])
-        MolecularSubgraphMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+        subgraph = Graph([(0, 1), (0, 2), (0, 3)])
+        SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
 
 
-class TetraMatchDefinition(MolecularSubgraphMatchDefinition):
+class TetraPattern(SubgraphPattern):
     def __init__(self, criteria_sets=None, node_tags={}):
-        subgraph = Graph([
-            frozenset([0, 1]),
-            frozenset([0, 2]),
-            frozenset([0, 3]),
-            frozenset([0, 4]),
-        ], [0, 1, 2, 3, 4])
-        MolecularSubgraphMatchDefinition.__init__(self, subgraph, criteria_sets, node_tags)
+        subgraph = Graph([(0, 1), (0, 2), (0, 3), (0, 4)])
+        SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
 
 
-class FullMatchError(Exception):
-    pass
+class NRingPattern(SubgraphPattern):
+    def __init__(self, size, criteria_sets=None, node_tags={}, strong=False):
+        self.size = size
+        self.strong = strong
+        subgraph = Graph([(i,(i+1)%size) for i in xrange(size)])
+        SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
 
+    def check_next_match(self, match, new_relations):
+        if not SubgraphPattern.check_next_match(self, match, new_relations):
+            return False
+        if self.strong:
+            # can this ever become a strong ring?
+            node1_start = match.forward[self.subgraph.central_node]
+            for node1 in new_relations.itervalues():
+                paths = list(self.graph.iter_shortest_paths(node1, node1_start))
+                if self.size % 2 == 0 and len(match) == self.size:
+                    if len(paths) != 2:
+                        #print "NRingPattern.check_next_match: not strong a.1"
+                        return False
+                    for path in paths:
+                        if len(path) != len(match)/2+1:
+                            #print "NRingPattern.check_next_match: not strong a.2"
+                            return False
+                else:
+                    if len(paths) != 1:
+                        #print "NRingPattern.check_next_match: not strong b.1"
+                        return False
+                    if len(paths[0]) != (len(match)+1)/2:
+                        #print "NRingPattern.check_next_match: not strong b.2"
+                        return False
+            #print "RingPattern.check_next_match: no remarks"
+        return True
 
-def full_match(graph1, graph2):
-    # given the graphs of two geometries of the same set of molecules, return
-    # the global match between the two numberings
-    mgs1 = [graph1.subgraph(group) for group in graph1.get_indexes_per_independent_graph()]
-    mgs2 = [graph2.subgraph(group) for group in graph2.get_indexes_per_independent_graph()]
-
-    if len(mgs1) != len(mgs2):
-        #print "not same number of molecules"
-        return
-
-    matches = []
-
-    while len(mgs1) > 0:
-        subgraph1 = mgs1.pop()
-        atom_criteria = dict((index, HasAtomNumber(number)) for index, number in zip(subgraph1.nodes, subgraph1.numbers))
-        md = MolecularExactMatchDefinition(subgraph1, [CriteriaSet(atom_criteria)])
-        matched = False
-        for subgraph2 in mgs2:
-            if len(subgraph1.nodes) != len(subgraph2.nodes):
-                #print "size differ", len(subgraph1.nodes), len(subgraph2.nodes)
-                continue
-            if len(subgraph1.pairs) != len(subgraph2.pairs):
-                #print "bonds differ", len(subgraph1.pairs), len(subgraph2.pairs)
-                continue
-            try:
-                match = MatchGenerator(md,debug=False)(subgraph2,one_match=True).next()
-                matches.append(match)
-                mgs2.remove(subgraph2)
-                matched = True
-                #print "match"
-                break
-            except StopIteration:
-                pass
-            #print "not match"
-        if not matched:
-            return
-
-
-    result = OneToOne()
-    for match in matches:
-        result.add_relations(match.forward.items())
-    return result
-
-
-
-
-
+    def complete(self, match):
+        if not SubgraphPattern.complete(self, match):
+            return False
+        if self.strong:
+            # If the ring is not strong, return False
+            if self.size%2 == 0:
+                # even ring
+                for i in xrange(self.size/2):
+                    node1_start = match.forward[i]
+                    node1_stop = match.forward[i+self.size/2]
+                    paths = list(self.graph.iter_shortest_paths(node1_start, node1_stop))
+                    if len(paths) != 2:
+                        #print "Even ring must have two paths between opposite nodes"
+                        return False
+                    for path in paths:
+                        if len(path) != self.size/2+1:
+                            #print "Paths between opposite nodes must half the size of the ring+1"
+                            return False
+            else:
+                # odd ring
+                for i in xrange(self.size/2+1):
+                    node1_start = match.forward[i]
+                    node1_stop = match.forward[i+self.size/2]
+                    paths = list(self.graph.iter_shortest_paths(node1_start, node1_stop))
+                    if len(paths) > 1:
+                        return False
+                    if len(paths[0]) != self.size/2+1:
+                        return False
+                    node1_stop = match.forward[i+self.size/2+1]
+                    paths = list(self.graph.iter_shortest_paths(node1_start, node1_stop))
+                    if len(paths) > 1:
+                        return False
+                    if len(paths[0]) != self.size/2+1:
+                        return False
+        return True
