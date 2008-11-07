@@ -294,10 +294,10 @@ class PSFFile(object):
             self.dihedrals[-len(tmp):] += offset
 
     def get_graph(self):
-        return Graph(pairs=set(frozenset(bond) for bond in self.bonds))
+        return Graph(self.bonds)
 
     def get_molecular_graph(self, labels=None):
-        return MolecularGraph(set(frozenset(bond) for bond in self.bonds), self.numbers, labels)
+        return MolecularGraph(self.bonds, self.numbers)
 
     def get_groups(self):
         groups = []

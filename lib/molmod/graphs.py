@@ -213,8 +213,6 @@ class Graph(object):
         converted.
 
         """
-        if len(pairs) == 0:
-            raise GraphError("At least one pair must be given.")
         self._pairs = []
         for pair in pairs:
             if len(pair) != 2:
@@ -231,7 +229,10 @@ class Graph(object):
             self._pairs.append(frozenset([i,j]))
         self._pairs = tuple(self._pairs)
 
-        self._num_nodes = max(max(a,b) for a,b in self._pairs)+1
+        if len(self._pairs) == 0:
+            self._num_nodes = 0
+        else:
+            self._num_nodes = max(max(a,b) for a,b in self._pairs)+1
         if num_nodes is not None:
             if not isinstance(num_nodes, int):
                 raise TypeError("The optional argument num_nodes must be an integer when given.")
@@ -322,7 +323,10 @@ class Graph(object):
     @cached
     def max_distance(self):
         """The maximum value in the distances matrix."""
-        return self.distances.max()
+        if self.distances.shape[0] == 0:
+            return 0
+        else:
+            return self.distances.max()
 
     @cached
     def central_nodes(self):
@@ -365,7 +369,10 @@ class Graph(object):
     def fingerprint(self):
         """A total graph fingerprint that is invariant under permutation if the
         node indexes."""
-        return sum(self.node_fingerprints)
+        if self.num_nodes == 0:
+            return numpy.zeros(20, numpy.ubyte)
+        else:
+            return sum(self.node_fingerprints)
 
     @cached
     def node_fingerprints(self):

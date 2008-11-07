@@ -102,7 +102,7 @@ class MolecularGraph(Graph):
         is -1.
         """
         if orders is None:
-            orders = numpy.zeros(len(numbers), dtype=int)
+            orders = numpy.zeros(len(pairs), dtype=int)
         elif len(orders) != len(pairs):
             raise ValueError("The number of (bond) orders must be equal to the number of pairs")
         Graph.__init__(self, pairs, len(numbers))
