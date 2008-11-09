@@ -469,3 +469,28 @@ class MolecularGraphTestCase(unittest.TestCase):
                 self.assert_(len(half1) > 1)
                 self.assert_(len(half2) > 1)
 
+    def test_add_hydrogens(self):
+        cases = [(
+            MolecularGraph([], numpy.array([6]), numpy.array([])),
+            None,
+            MolecularGraph([(0,1),(0,2),(0,3),(0,4)], numpy.array([6,1,1,1,1]), numpy.array([1,1,1,1])),
+        ),(
+            MolecularGraph([], numpy.array([6]), numpy.array([])),
+            numpy.array([-1], int),
+            MolecularGraph([(0,1),(0,2),(0,3)], numpy.array([6,1,1,1]), numpy.array([1,1,1])),
+        ),(
+            MolecularGraph([(0,1),(1,2),(2,3),(3,4),(4,5),(5,0)], numpy.array([6,6,6,6,6,6]), numpy.array([1,2,1,2,1,2])),
+            None,
+            MolecularGraph([(0,1),(1,2),(2,3),(3,4),(4,5),(5,0),(0,6),(1,7),(2,8),(3,9),(4,10),(5,11)], numpy.array([6,6,6,6,6,6,1,1,1,1,1,1]), numpy.array([1,2,1,2,1,2,1,1,1,1,1,1])),
+        ),(
+            MolecularGraph([(0,1),(1,2),(2,3),(3,4),(4,0)], numpy.array([8,6,6,6,6]), numpy.array([1,1,1,1,1])),
+            None,
+            MolecularGraph([(0,1),(1,2),(2,3),(3,4),(4,0),(1,5),(1,6),(2,7),(2,8),(3,9),(3,10),(4,11),(4,12)], numpy.array([8,6,6,6,6,1,1,1,1,1,1,1,1]), numpy.array([1,1,1,1,1,1,1,1,1,1,1,1,1])),
+        )]
+
+        for before, formal_charges, after in cases:
+            after_check = before.add_hydrogens(formal_charges)
+            self.assertEqual(after.pairs, after_check.pairs)
+            self.assert_((after.numbers==after_check.numbers).all())
+            self.assert_((after.orders==after_check.orders).all())
+

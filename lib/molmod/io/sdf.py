@@ -122,7 +122,7 @@ class SDFReader(object):
 
             molecule = Molecule(numbers, coordinates, title)
             molecule.formal_charges = formal_charges
-            molecule.charge = formal_charges.sum()
+            molecule.formal_charges.setflags(write=False)
             molecule.graph = MolecularGraph(pairs, numbers, orders)
             return molecule
 
