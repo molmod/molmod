@@ -20,7 +20,7 @@
 
 
 from molmod.molecules import Molecule
-from molmod.graphs import Graph, SubgraphPattern, EqualPattern, Match, OneToOne, GraphSearch, CriteriaSet
+from molmod.graphs import cached, Graph, SubgraphPattern, EqualPattern, Match, OneToOne, GraphSearch, CriteriaSet
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
 from molmod.units import angstrom
 
@@ -38,6 +38,14 @@ __all__ = [
 
 
 class MolecularGraph(Graph):
+    """Describes a molecular graph: connectivity, atom numbers and bond orders.
+
+    This class inherits all features from the Graph class and adds methods and
+    attributes that are specific from molecular graphs. Instances are immutable,
+    so if you want to modify a molecular graph, just instantiate a new object
+    with modified connectivity, numbers and orders. The advantage is that
+    various graph analysis and properties can be cached.
+    """
     @classmethod
     def from_geometry(cls, molecule, unit_cell=None):
         from molmod.data.bonds import bonds
@@ -106,21 +114,37 @@ class MolecularGraph(Graph):
         elif len(orders) != len(pairs):
             raise ValueError("The number of (bond) orders must be equal to the number of pairs")
         Graph.__init__(self, pairs, len(numbers))
-        self.numbers = numbers
-        self.orders = orders
+        self._numbers = numbers
+        self._numbers.setflags(write=False)
+        self._orders = orders
+        self._orders.setflags(write=False)
+
+    numbers = property(lambda self: self._numbers)
+    orders = property(lambda self: self._orders)
 
     def __mul__(self, repeat):
         result = Graph.__mul__(self, repeat)
         result.__class__ = MolecularGraph
+        # copy numbers
         numbers = numpy.zeros((repeat, len(self.numbers)), int)
         numbers[:] = self.numbers
-        result.numbers = numbers.ravel()
+        result._numbers = numbers.ravel()
+        result._numbers.setflags(write=False)
+        # copy orders
         orders = numpy.zeros((repeat, len(self.orders)), int)
         orders[:] = self.orders
-        result.orders = orders.ravel()
+        result._orders = orders.ravel()
+        result._orders.setflags(write=False)
         return result
 
     __rmul__ = __mul__
+
+    @cached
+    def blob(self):
+        """Create a compact text representation of the graph."""
+        atom_str = ",".join(str(number) for number in self.numbers)
+        pair_str = ",".join("%i_%i_%i" % (i,j,o) for (i,j),o in zip(self.pairs,self.orders))
+        return "%s %s" % (atom_str, pair_str)
 
     def get_node_string(self, i):
         number = self.numbers[i]
@@ -146,17 +170,13 @@ class MolecularGraph(Graph):
         result = Graph.get_subgraph(self, subnodes, normalize)
         result.__class__ = MolecularGraph
         if normalize:
-            result.numbers = self.numbers[result.old_node_indexes] # nodes do change
+            result._numbers = self.numbers[result.old_node_indexes] # nodes do change
+            result._numbers.setflags(write=False)
         else:
-            result.numbers = self.numbers # nodes don't change!
-        result.orders = self.orders[result.old_pair_indexes]
+            result._numbers = self.numbers # nodes don't change!
+        result._orders = self.orders[result.old_pair_indexes]
+        result._orders.setflags(write=False)
         return result
-
-    def get_blob(self):
-        """Create a compact text representation of the graph."""
-        atom_str = ",".join(str(number) for number in self.numbers)
-        pair_str = ",".join("%i_%i_%i" % (i,j,o) for (i,j),o in zip(self.pairs,self.orders))
-        return "%s %s" % (atom_str, pair_str)
 
     def guess_geometry(self):
         N = len(self.numbers)
