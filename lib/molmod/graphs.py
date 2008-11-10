@@ -368,7 +368,8 @@ class Graph(object):
     @cached
     def fingerprint(self):
         """A total graph fingerprint that is invariant under permutation if the
-        node indexes."""
+        node indexes. The chance that two different (molecular) graphs yield
+        the same fingerprint is small but not zero. (See unit tests.)"""
         if self.num_nodes == 0:
             return numpy.zeros(20, numpy.ubyte)
         else:
@@ -675,19 +676,22 @@ class Graph(object):
             result[i] = hashrow(node_strings[i])
         for i in xrange(self.num_pairs):
             a,b = self.pairs[i]
-            result[a] += hashrow(pair_strings[i])
-            result[b] += hashrow(pair_strings[i])
-        work = numpy.zeros(result.shape, numpy.ubyte)
+            tmp = hashrow(pair_strings[i])
+            result[a] += tmp
+            result[b] += tmp
+        work = result.copy()
         # iterations
         if num_iter is None:
             num_iter = self.max_distance
         for i in xrange(num_iter):
-            work[:] = 0
-            for center, neighbors in self.neighbors.iteritems():
-                for neighbor in neighbors:
-                    work[center] += result[neighbor]
-            for i in xrange(self.num_nodes):
-                result[i] = hashrow(work[i])
+            for a,b in self.pairs:
+                work[a] += result[b]
+                work[b] += result[a]
+            #for a in xrange(self.num_nodes):
+            #    for b in xrange(self.num_nodes):
+            #        work[a] += hashrow(result[b]*self.distances[a,b])
+            for a in xrange(self.num_nodes):
+                result[a] = hashrow(work[a])
         return result
 
     def get_halfs(self, node1, node2):

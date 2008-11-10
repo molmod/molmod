@@ -48,7 +48,13 @@ class MolecularGraphTestCase(unittest.TestCase):
             if allow_multi or len(molecule.graph.independent_nodes) == 1:
                 molecule.title = xyz_fn[:-4]
                 yield molecule
-        for sdf_fn in "example.sdf", "CID_22898828.sdf":
+        sdf_fns = [
+            "example.sdf", "CID_22898828.sdf", "SID_55127927.sdf",
+            "SID_56274343.sdf", "SID_40363570.sdf", "SID_40363571.sdf",
+            "SID_31646548.sdf", "SID_31646545.sdf", "SID_41893278.sdf",
+            "SID_41893280.sdf", "SID_54258192.sdf", "SID_55488598.sdf",
+        ]
+        for sdf_fn in sdf_fns:
             for i, molecule in enumerate(SDFReader(os.path.join("input", sdf_fn))):
                 if allow_multi or len(molecule.graph.independent_nodes) == 1:
                     molecule.title = "%s_%i" % (sdf_fn[:-4], i)
@@ -363,6 +369,21 @@ class MolecularGraphTestCase(unittest.TestCase):
             for i in xrange(g0.num_nodes):
                 self.assert_((g0.node_fingerprints[permutation[i]]==g1.node_fingerprints[i]).all())
             self.assert_((g0.fingerprint==g1.fingerprint).all())
+
+    def test_fingerprint_collisions(self):
+        # These are collisions with older versions, found by scanning the
+        # pubchem database.
+        cases = [
+            ('SID_55127927.sdf', 'SID_56274343.sdf'),
+            ('SID_55488598.sdf', 'SID_54258192.sdf'),
+            ('SID_41893280.sdf', 'SID_41893278.sdf'),
+            ('SID_40363570.sdf', 'SID_40363571.sdf'),
+            ('SID_31646548.sdf', 'SID_31646545.sdf')
+        ]
+        for fn0, fn1 in cases:
+            g0 = SDFReader(os.path.join("input", fn0)).next().graph
+            g1 = SDFReader(os.path.join("input", fn1)).next().graph
+            self.assertNotEqual(str(g0.fingerprint.data), str(g1.fingerprint.data))
 
     def test_subgraph(self):
         for mol in self.iter_molecules():

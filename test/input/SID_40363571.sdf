@@ -1,0 +1,177 @@
+551302
+  -OEChem-11100806012D
+
+ 24 25  0     1  0  0  0  0  0999 V2000
+    2.8090   -0.4333    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0
+    4.8781   -1.1056    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0
+    3.6180    0.1545    0.0000 C   0  0  3  0  0  0  0  0  0  0  0  0
+    4.5691   -0.1545    0.0000 C   0  0  3  0  0  0  0  0  0  0  0  0
+    3.3090    1.1056    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    5.3781    0.4333    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    2.3090    1.1056    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    6.1871   -0.1545    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    2.0000    0.1545    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    5.8781   -1.1056    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    3.7510   -0.6850    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+    3.9681   -0.7555    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+    3.9155    1.2345    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+    3.2442    1.7222    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+    5.7930    0.8940    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+    4.9633    0.8940    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+    2.3738    1.7222    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+    1.7026    1.2345    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+    6.7535   -0.4067    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+    6.4971    0.3824    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+    1.4336    0.4067    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+    1.6900   -0.3824    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+    5.8133   -1.7222    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+    6.4846   -1.2345    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+  1  3  1  0  0  0  0
+  1  9  1  0  0  0  0
+  2  4  1  0  0  0  0
+  2 10  1  0  0  0  0
+  3  4  1  0  0  0  0
+  3  5  1  0  0  0  0
+  3 11  1  0  0  0  0
+  4  6  1  0  0  0  0
+  4 12  1  0  0  0  0
+  5  7  1  0  0  0  0
+  5 13  1  0  0  0  0
+  5 14  1  0  0  0  0
+  6  8  1  0  0  0  0
+  6 15  1  0  0  0  0
+  6 16  1  0  0  0  0
+  7  9  1  0  0  0  0
+  7 17  1  0  0  0  0
+  7 18  1  0  0  0  0
+  8 10  1  0  0  0  0
+  8 19  1  0  0  0  0
+  8 20  1  0  0  0  0
+  9 21  1  0  0  0  0
+  9 22  1  0  0  0  0
+ 10 23  1  0  0  0  0
+ 10 24  1  0  0  0  0
+M  END
+> <PUBCHEM_COMPOUND_ID_TYPE>
+1
+
+> <PUBCHEM_COMPOUND_CID>
+551302
+
+> <PUBCHEM_COMPOUND_CANONICALIZED>
+1
+
+> <PUBCHEM_CACTVS_COMPLEXITY>
+99.8
+
+> <PUBCHEM_CACTVS_HBOND_ACCEPTOR>
+2
+
+> <PUBCHEM_CACTVS_HBOND_DONOR>
+0
+
+> <PUBCHEM_CACTVS_ROTATABLE_BOND>
+1
+
+> <PUBCHEM_CACTVS_SUBSKEYS>
+AAADccBwMAAAAAAAAAAAAAAAAAAAASJAAAAAAAAAAAAAAAAAAAAAGgAAAAAACBSggAIAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAABAAIAAAACAAAEAAACAAGA4KwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+
+> <PUBCHEM_IUPAC_OPENEYE_NAME>
+2-tetrahydrofuran-2-yltetrahydrofuran
+
+> <PUBCHEM_IUPAC_CAS_NAME>
+2-(2-tetrahydrofuranyl)tetrahydrofuran
+
+> <PUBCHEM_IUPAC_NAME>
+2-(oxolan-2-yl)oxolane
+
+> <PUBCHEM_IUPAC_SYSTEMATIC_NAME>
+2-(oxolan-2-yl)oxolane
+
+> <PUBCHEM_IUPAC_TRADITIONAL_NAME>
+2-(tetrahydrofuryl)tetrahydrofuran
+
+> <PUBCHEM_NIST_INCHI>
+InChI=1/C8H14O2/c1-3-7(9-5-1)8-4-2-6-10-8/h7-8H,1-6H2
+
+> <PUBCHEM_CACTVS_XLOGP>
+0.9
+
+> <PUBCHEM_EXACT_MASS>
+142.09938
+
+> <PUBCHEM_MOLECULAR_FORMULA>
+C8H14O2
+
+> <PUBCHEM_MOLECULAR_WEIGHT>
+142.19556
+
+> <PUBCHEM_OPENEYE_CAN_SMILES>
+C1CC(OC1)C2CCCO2
+
+> <PUBCHEM_OPENEYE_ISO_SMILES>
+C1CC(OC1)C2CCCO2
+
+> <PUBCHEM_CACTVS_TPSA>
+18.5
+
+> <PUBCHEM_MONOISOTOPIC_WEIGHT>
+142.09938
+
+> <PUBCHEM_TOTAL_CHARGE>
+0
+
+> <PUBCHEM_HEAVY_ATOM_COUNT>
+10
+
+> <PUBCHEM_ATOM_DEF_STEREO_COUNT>
+0
+
+> <PUBCHEM_ATOM_UDEF_STEREO_COUNT>
+2
+
+> <PUBCHEM_BOND_DEF_STEREO_COUNT>
+0
+
+> <PUBCHEM_BOND_UDEF_STEREO_COUNT>
+0
+
+> <PUBCHEM_ISOTOPIC_ATOM_COUNT>
+0
+
+> <PUBCHEM_COMPONENT_COUNT>
+1
+
+> <PUBCHEM_CACTVS_TAUTO_COUNT>
+1
+
+> <PUBCHEM_SUBSTANCE_ID>
+40363571
+
+> <PUBCHEM_SUBSTANCE_VERSION>
+1
+
+> <PUBCHEM_EXT_DATASOURCE_NAME>
+ChemSpider
+
+> <PUBCHEM_EXT_DATASOURCE_REGID>
+479590
+
+> <PUBCHEM_XREF_EXT_ID>
+479590
+
+> <PUBCHEM_EXT_DATASOURCE_URL>
+http://www.chemspider.com
+
+> <PUBCHEM_EXT_SUBSTANCE_URL>
+http://www.chemspider.com/Chemical-Structure.479590.html
+
+> <PUBCHEM_CID_ASSOCIATIONS>
+551302  1
+
+> <PUBCHEM_BONDANNOTATIONS>
+3  11  3
+4  12  3
+
+$$$$
+
