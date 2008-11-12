@@ -32,11 +32,11 @@ class Error(Exception):
 class Context(object):
     def __init__(self):
         share_dirs = set([
-            "%s/share/molmod/" % sys.prefix,
-            "%s/local/share/molmod/" % sys.prefix,
-            "%s/share/molmod/" % os.getenv("HOME"),
-            "/usr/share/molmod/",
-            "/usr/local/share/molmod/",
+            os.path.join(sys.prefix, "share/molmod"),
+            os.path.join(sys.prefix, "local/share/molmod"),
+            os.path.join(str(os.getenv("HOME")), "local/share/molmod"),
+            "/usr/share/molmod",
+            "/usr/local/share/molmod",
         ])
         self._share_dirs = []
         for share_dir in share_dirs:
