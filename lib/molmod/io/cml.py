@@ -52,11 +52,13 @@ class CMLMoleculeLoader(ContentHandler):
         #print "START", name, attrs
         # If it's not a comic element, ignore it
         if name == 'molecule':
-            self.curmol = Molecule([], [], attrs.get('id', 'No Title'))
-            self.curmol.atom_names = []
-            self.curmol.bonds = []
-            self.curmol.extra = self.get_extra(attrs, self.molecule_exclude)
-            self.curmol.atoms_extra = {}
+            self.current_title = attrs.get('id', 'No Title')
+            self.current_numbers = []
+            self.current_coordinates = []
+            self.current_atom_names = []
+            self.current_bonds = []
+            self.current_extra = self.get_extra(attrs, self.molecule_exclude)
+            self.current_atoms_extra = {}
         elif self.curmol is not None:
             if name == 'atom':
                 atom_name = attrs.get('id', None)
@@ -71,50 +73,49 @@ class CMLMoleculeLoader(ContentHandler):
                     return
                 atom_record = periodic[symbol]
                 if atom_record is None: return
-                self.curmol.atom_names.append(atom_name)
-                self.curmol.numbers.append(atom_record.number)
-                self.curmol.coordinates.append([x,y,z])
+                self.current_atom_names.append(atom_name)
+                self.current_numbers.append(atom_record.number)
+                self.current_coordinates.append([x,y,z])
                 # find potential extra attributes
                 extra = self.get_extra(attrs, self.atom_exclude)
                 if len(extra) > 0:
-                    self.curmol.atoms_extra[len(self.curmol.numbers)-1] = extra
+                    self.current_atoms_extra[len(self.current_numbers)-1] = extra
             elif name == 'bond':
                 refs = attrs.get('atomRefs2', None)
                 if not isinstance(refs, basestring): return
                 if refs.count(" ") != 1: return
                 name1, name2 = refs.split(" ")
                 extra = self.get_extra(attrs, self.bond_exclude)
-                self.curmol.bonds.append((name1,name2,extra))
+                self.current_bonds.append((name1,name2,extra))
 
     def endElement(self, name):
         #print "END", name
         if name == 'molecule':
-            if len(self.curmol.numbers) > 0:
-                self.curmol.numbers = numpy.array(self.curmol.numbers)
-                self.curmol.coordinates = numpy.array(self.curmol.coordinates)*angstrom
+            if len(self.current_numbers) > 0:
+                molecule = Molecule(self.current_title, self.current_numbers, self.current_coordinates)
 
                 name_to_index = {}
-                for counter, name in enumerate(self.curmol.atom_names):
+                for counter, name in enumerate(self.current_atom_names):
                     name_to_index[name] = counter
 
                 pairs = set()
-                self.curmol.bonds_extra = {}
-                for name1, name2, extra in self.curmol.bonds:
+                self.current_bonds_extra = {}
+                for name1, name2, extra in self.current_bonds:
                     i1 = name_to_index.get(name1)
                     i2 = name_to_index.get(name2)
                     if i1 is not None and i2 is not None:
                         pair = frozenset([i1,i2])
                         if len(extra) > 0:
-                            self.curmol.bonds_extra[pair] = extra
+                            self.current_bonds_extra[pair] = extra
                         pairs.add(pair)
                 if len(pairs) == 0:
-                    self.curmol.graph = None
+                    self.current_graph = None
                 else:
-                    self.curmol.graph = MolecularGraph(pairs, self.curmol.numbers)
-                del self.curmol.atom_names
-                del self.curmol.bonds
+                    molecule.graph = MolecularGraph(pairs, self.current_numbers)
+                del self.current_atom_names
+                del self.current_bonds
 
-                self.molecules.append(self.curmol)
+                self.molecules.append(molecule)
             self.curmol = None
 
 
@@ -127,7 +128,7 @@ def load_cml(f):
     return dh.molecules
 
 
-def dump_cml_molecule(f, molecule):
+def _dump_cml_molecule(f, molecule):
     extra = getattr(molecule, "extra", {})
     attr_str = " ".join("%s='%s'" % (key,value) for key,value in extra.iteritems())
     f.write(" <molecule id='%s' %s>\n" % (molecule.title, attr_str))
@@ -162,7 +163,7 @@ def dump_cml(f, molecules):
     f.write("<?xml version='1.0'?>\n")
     f.write("<list xmlns='http://www.xml-cml.org/schema'>\n")
     for molecule in molecules:
-        dump_cml_molecule(f, molecule)
+        _dump_cml_molecule(f, molecule)
     f.write("</list>\n")
     if close:
         f.close()
