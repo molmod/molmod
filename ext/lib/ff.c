@@ -32,7 +32,7 @@ inline void add_grad(int i, int j, double s, double *cor, double *gradient) {
 
 }
 
-double ff_dm_quad(int n, int *numbers, double *cor, int *dm0, double R0, double amp, double *gradient) {
+double ff_dm_quad(int n, double *radii, double *cor, int *dm0, double amp, double *gradient) {
   int i,j,d0;
   double d, tmp, result;
 
@@ -52,10 +52,10 @@ double ff_dm_quad(int n, int *numbers, double *cor, int *dm0, double R0, double 
         d = sqrt(d);
 
         //printf("d=%f    d0=%i\n", d, d0);
-        tmp = (d-d0*R0)/d0;
-        result += amp*tmp*tmp*numbers[i]*numbers[j];
+        tmp = (d-d0*(radii[i]+radii[j]));
+        result += amp*tmp*tmp*radii[i]*radii[j]/d0;
         if (gradient!=NULL) {
-          tmp = 2*amp*tmp/d0*numbers[i]*numbers[j]/d;
+          tmp = 2*amp*tmp/d0*radii[i]*radii[j]/d;
           add_grad(i, j, tmp, cor, gradient);
         }
         //result += tmp*tmp;
@@ -67,8 +67,8 @@ double ff_dm_quad(int n, int *numbers, double *cor, int *dm0, double R0, double 
 }
 
 
-double ff_dm_reci(int n, int *numbers, double *cor, int *dm0, double amp, double *gradient) {
-  int i,j,d0;
+double ff_dm_reci(int n, double *radii, double *cor, int *dm0, double amp, double *gradient) {
+  int i,j,d0,r0;
   double d, tmp, result;
 
   result = 0.0;
@@ -83,11 +83,14 @@ double ff_dm_reci(int n, int *numbers, double *cor, int *dm0, double amp, double
         tmp = cor[i*3+2]-cor[j*3+2];
         d += tmp*tmp;
         d = sqrt(d);
-
-        result += amp*numbers[i]*numbers[j]/d/d0;
-        if (gradient!=NULL) {
-          tmp = -amp*numbers[i]*numbers[j]/d/d/d/d0;
-          add_grad(i, j, tmp, cor, gradient);
+        r0 = radii[i]+radii[j];
+        if (d < r0) {
+            d /= r0;
+            result += amp*(d-1)*(d-1)/d/d0;
+            if (gradient!=NULL) {
+              tmp = amp*(1-1/d/d)/r0/d/d0;
+              add_grad(i, j, tmp, cor, gradient);
+            }
         }
       }
     }

@@ -22,6 +22,7 @@
 from molmod.molecules import Molecule
 from molmod.graphs import cached, Graph, SubgraphPattern, EqualPattern, Match, OneToOne, GraphSearch, CriteriaSet
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
+from molmod.data.periodic import periodic
 from molmod.units import angstrom
 
 from molmod.ext import ff_dm_quad, ff_dm_reci, ff_bond_quad, ff_bond_hyper
@@ -114,9 +115,9 @@ class MolecularGraph(Graph):
         elif len(orders) != len(pairs):
             raise ValueError("The number of (bond) orders must be equal to the number of pairs")
         Graph.__init__(self, pairs, len(numbers))
-        self._numbers = numbers
+        self._numbers = numpy.array(numbers)
         self._numbers.setflags(write=False)
-        self._orders = orders
+        self._orders = numpy.array(orders)
         self._orders.setflags(write=False)
 
     numbers = property(lambda self: self._numbers)
@@ -262,7 +263,8 @@ class ToyFF(object):
         from molmod.data.bonds import bonds
 
         self.dm0 = graph.distances.astype(numpy.int32)
-        self.numbers = graph.numbers.astype(numpy.int32)
+        self.vdw_radii = numpy.array([periodic[number].vdw_radius for number in graph.numbers], dtype=float)
+        self.covalent_radii = numpy.array([periodic[number].covalent_radius for number in graph.numbers], dtype=float)
 
         num_bonds = len(graph.pairs)
         bond_pairs = []
@@ -320,9 +322,9 @@ class ToyFF(object):
 
         gradient = numpy.zeros(x.shape, float)
         if self.dm_quad > 0.0:
-            result += ff_dm_quad(self.numbers, x, self.dm0, 1.5*angstrom, self.dm_quad, gradient)
+            result += ff_dm_quad(self.covalent_radii, x, self.dm0, self.dm_quad, gradient)
         if self.dm_reci:
-            result += ff_dm_reci(self.numbers, x, self.dm0, self.dm_reci, gradient)
+            result += ff_dm_reci(self.vdw_radii, x, self.dm0, self.dm_reci, gradient)
         if self.bond_quad:
             result += ff_bond_quad(x, self.bond_pairs, self.bond_lengths, self.bond_quad, gradient)
         if self.span_quad:

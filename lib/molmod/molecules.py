@@ -32,11 +32,15 @@ __all__ = ["Molecule"]
 
 class Molecule(object):
     def __init__(self, numbers=None, coordinates=None, title=None):
-        self.numbers = numbers
-        self.coordinates = coordinates
+        self._numbers = numpy.array(numbers, int)
+        self._numbers.setflags(write=False)
+        self._coordinates = numpy.array(coordinates, float)
+        self._coordinates.setflags(write=False)
         self.title = title
 
-    size = property(lambda self: self.numbers.shape[0])
+    size = property(lambda self: self._numbers.shape[0])
+    numbers = property(lambda self: self._numbers)
+    coordinates = property(lambda self: self._coordinates)
 
     def dump_atoms(self, stream):
         for number, coordinate in zip(self.numbers, self.coordinates/angstrom):

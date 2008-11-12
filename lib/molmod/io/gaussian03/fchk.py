@@ -113,10 +113,11 @@ class FCHKFile(object):
         f.close()
 
     def _analyze(self):
-        self.molecule = Molecule()
-        self.molecule.title = self.title
-        self.molecule.numbers = self.fields["Atomic numbers"]
-        self.molecule.coordinates = numpy.reshape(self.fields["Current cartesian coordinates"], (-1,3))
+        self.molecule = Molecule(
+            self.fields["Atomic numbers"],
+            numpy.reshape(self.fields["Current cartesian coordinates"], (-1,3)),
+            self.title,
+        )
 
     def get_optimization_energies(self):
         return self.fields.get("Opt point       1 Results for each geome")[::2]

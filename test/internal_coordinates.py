@@ -21,13 +21,14 @@
 
 from molmod.internal_coordinates import InternalCoordinatesCache, Select, Delta, Dot, Mul, Sub, Distance, DistanceSqr, Sqrt, Div, Sqr, Scale
 from molmod.molecular_graphs import MolecularGraph, atom_criteria
+from molmod.molecules import Molecule
 from molmod.graphs import CriteriaSet
 from molmod.data.bonds import BOND_SINGLE
 from molmod.units import angstrom
 
 from molmod.io.xyz import XYZFile
 
-import unittest, math, copy, numpy, sys
+import unittest, math, numpy, sys
 
 
 __all__ = ["InternalCoordinatesTestCase", "ChainruleTestCase"]
@@ -182,12 +183,12 @@ class ChainruleTestCase(unittest.TestCase):
         self.errors = []
 
         def mutate_ethene(angle):
-            result = copy.deepcopy(self.ethene)
-            result.coordinates[1,1] = self.ethene.coordinates[1,1]*math.cos(angle)
-            result.coordinates[1,2] = self.ethene.coordinates[1,1]*math.sin(angle)
-            result.coordinates[2,1] = self.ethene.coordinates[2,1]*math.cos(angle)
-            result.coordinates[2,2] = self.ethene.coordinates[2,1]*math.sin(angle)
-            return result
+            coordinates = self.ethene.coordinates.copy()
+            coordinates[1,1] = self.ethene.coordinates[1,1]*math.cos(angle)
+            coordinates[1,2] = self.ethene.coordinates[1,1]*math.sin(angle)
+            coordinates[2,1] = self.ethene.coordinates[2,1]*math.cos(angle)
+            coordinates[2,2] = self.ethene.coordinates[2,1]*math.sin(angle)
+            return Molecule(self.ethene.numbers, coordinates)
 
 
         number = 100
@@ -207,12 +208,12 @@ class ChainruleTestCase(unittest.TestCase):
         self.errors = []
 
         def mutate_ethene(angle):
-            result = copy.deepcopy(self.ethene)
-            result.coordinates[1,0] = self.ethene.coordinates[1,0]*math.cos(angle)
-            result.coordinates[1,2] = self.ethene.coordinates[1,0]*math.sin(angle)
-            result.coordinates[2,0] = self.ethene.coordinates[2,0]*math.cos(angle)
-            result.coordinates[2,2] = self.ethene.coordinates[2,0]*math.sin(angle)
-            return result
+            coordinates = self.ethene.coordinates.copy()
+            coordinates[1,0] = self.ethene.coordinates[1,0]*math.cos(angle)
+            coordinates[1,2] = self.ethene.coordinates[1,0]*math.sin(angle)
+            coordinates[2,0] = self.ethene.coordinates[2,0]*math.cos(angle)
+            coordinates[2,2] = self.ethene.coordinates[2,0]*math.sin(angle)
+            return Molecule(self.ethene.numbers, coordinates)
 
         number = 50
         for index in xrange(number):
@@ -231,9 +232,9 @@ class ChainruleTestCase(unittest.TestCase):
         self.errors = []
 
         def mutate_ethene(distance):
-            result = copy.deepcopy(self.ethene)
-            result.coordinates[0,2] = distance
-            return result
+            coordinates = self.ethene.coordinates.copy()
+            coordinates[0,2] = distance
+            return Molecule(self.ethene.numbers, coordinates)
 
         number = 50
         for index in xrange(number):
@@ -310,9 +311,11 @@ class ChainruleTestCase(unittest.TestCase):
         internal_coordinates = self.load_internal_coordinates()
 
         def mutate_ethene():
-            result = copy.deepcopy(self.ethene)
-            result.coordinates += numpy.random.uniform(-3, 3, result.coordinates.shape)
-            return result
+            return Molecule(
+                self.ethene.numbers,
+                self.ethene.coordinates+
+                numpy.random.uniform(-3, 3, self.ethene.coordinates.shape)
+            )
 
         for internal_coordinate in internal_coordinates:
             for index in xrange(100):
@@ -412,9 +415,11 @@ class ChainruleTestCase(unittest.TestCase):
         internal_coordinates = self.load_internal_coordinates()
 
         def mutate_ethene(strength, ethene):
-            result = copy.deepcopy(ethene)
-            result.coordinates += numpy.random.uniform(-strength, strength, result.coordinates.shape)
-            return result
+            return Molecule(
+                ethene.numbers,
+                ethene.coordinates +
+                numpy.random.uniform(-strength, strength, ethene.coordinates.shape)
+            )
 
         self.errors = []
 

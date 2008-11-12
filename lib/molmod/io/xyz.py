@@ -119,9 +119,8 @@ class XYZReader(object):
         if self._first is None:
             raise Error("get_first_molecule must be called before the first iteration.")
         else:
-            molecule = Molecule()
-            molecule.numbers = self.numbers.copy()
-            molecule.title, molecule.coordinates = self._first
+            title, coordinates = self._first
+            molecule = Molecule(self.numbers, coordinates, title)
             return molecule
 
 
@@ -175,11 +174,7 @@ class XYZFile(object):
             self.geometries = numpy.array(geometries, float)
 
     def get_molecule(self, index=0):
-        result = Molecule()
-        result.numbers = self.numbers
-        result.coordinates = self.geometries[index]
-        result.title = self.titles[index]
-        return result
+        return Molecule(self.numbers, self.geometries[index], self.titles[index])
 
     def write_to_file(self, f, file_unit=angstrom):
         symbols = []

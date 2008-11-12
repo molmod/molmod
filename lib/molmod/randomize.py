@@ -365,19 +365,19 @@ def random_dimer(molecule0, molecule1, thresholds, shoot_max, max_tries=1000):
     angle = numpy.random.uniform(0, 2*numpy.pi)
     axis = random_unit(3)
     rotation = rotation_around_center(center, angle, axis)
-    molecule1.coordinates = numpy.dot(molecule1.coordinates, rotation.r)
+    cor1 = numpy.dot(molecule1.coordinates, rotation.r)
 
     # select a random atom in each molecule
     atom0 = numpy.random.randint(len(molecule0.numbers))
     atom1 = numpy.random.randint(len(molecule1.numbers))
 
     # define a translation of molecule1 that brings both atoms in overlap
-    delta = molecule0.coordinates[atom0] - molecule1.coordinates[atom1]
-    molecule1.coordinates += delta
+    delta = molecule0.coordinates[atom0] - cor1[atom1]
+    cor1 += delta
 
     # define a random direction
     direction = random_unit(3)
-    molecule1.coordinates += 1*direction
+    cor1 += 1*direction
 
     # move molecule1 along this direction until all intermolecular atomic
     # distances are above the threshold values
@@ -388,27 +388,28 @@ def random_dimer(molecule0, molecule1, thresholds, shoot_max, max_tries=1000):
             threshold = thresholds.get(frozenset([n1,n2]))
             threshold_mat[i1,i2] = threshold**2
     while True:
-        molecule1.coordinates += 0.1*direction
+        cor1 += 0.1*direction
         distance_mat[:] = 0
         for i in 0,1,2:
-            distance_mat += numpy.subtract.outer(molecule0.coordinates[:,i], molecule1.coordinates[:,i])**2
+            distance_mat += numpy.subtract.outer(molecule0.coordinates[:,i], cor1[:,i])**2
         if (distance_mat > threshold_mat).all():
             break
 
     # translate over a random distance [0,shoot] along the same direction
     # (if necessary repeat until no overlap is found)
     while True:
-        molecule1.coordinates += direction*numpy.random.uniform(0,shoot_max)
+        cor1 += direction*numpy.random.uniform(0,shoot_max)
         distance_mat[:] = 0
         for i in 0,1,2:
-            distance_mat += numpy.subtract.outer(molecule0.coordinates[:,i], molecule1.coordinates[:,i])**2
+            distance_mat += numpy.subtract.outer(molecule0.coordinates[:,i], cor1[:,i])**2
         if (distance_mat > threshold_mat).all():
             break
 
     # done
-    dimer = Molecule()
-    dimer.coordinates = numpy.concatenate([molecule0.coordinates, molecule1.coordinates])
-    dimer.numbers = numpy.concatenate([molecule0.numbers, molecule1.numbers])
+    dimer = Molecule(
+        numpy.concatenate([molecule0.numbers, molecule1.numbers]),
+        numpy.concatenate([molecule0.coordinates, cor1])
+    )
     dimer.direction = direction
     dimer.atom0 = atom0
     dimer.atom1 = atom1
