@@ -95,6 +95,7 @@ class MolecularGraphTestCase(unittest.TestCase):
             CriteriaSet(atom_criteria(6, HasNumNeighbors(4)), tag="C-sp3"),
             CriteriaSet(atom_criteria(6, CritOr(HasAtomNumber(6), HasAtomNumber(7))), tag="C-[CN]"),
             CriteriaSet(relation_criteria={0: BondLongerThan(1.3*angstrom)}, tag="long"),
+            CriteriaSet(atom_criteria(6, HasNeighbors(atom_criteria(1,1,6,7).values())), tag="C-C(-NHH)"),
         ])
         expected_results = {
             "HC": set([
@@ -117,6 +118,9 @@ class MolecularGraphTestCase(unittest.TestCase):
                 (10, 0), (1, 0), (4, 0), (7, 0), (2, 1), (3, 2), (5, 4), (6, 5),
                 (8, 7), (9, 8), (11, 10), (12, 11)
             ]),
+            "C-C(-NHH)": set([
+                (5, 4), (7, 8), (1, 2), (10, 11)
+            ])
         }
         test_results = dict((key, []) for key in expected_results)
         match_generator = GraphSearch(pattern, debug=False)

@@ -32,7 +32,7 @@ import numpy, copy
 
 __all__ = [
     "MolecularGraph", "ToyFF",
-    "HasAtomNumber", "HasNumNeighbors", "HasNeighborNumbers", "BondLongerThan",
+    "HasAtomNumber", "HasNumNeighbors", "HasNeighborNumbers", "HasNeighbors", "BondLongerThan",
     "atom_criteria", "BondPattern", "BendingAnglePattern", "DihedralAnglePattern",
     "OutOfPlanePattern", "TetraPattern", "NRingPattern",
 ]
@@ -48,7 +48,7 @@ class MolecularGraph(Graph):
     various graph analysis and properties can be cached.
     """
     @classmethod
-    def from_geometry(cls, molecule, unit_cell=None):
+    def from_geometry(cls, molecule, unit_cell=None, do_orders=False):
         from molmod.data.bonds import bonds
 
         def yield_positioned_atoms():
@@ -76,7 +76,10 @@ class MolecularGraph(Graph):
         orders = numpy.array([data[0] for pair, data in bond_data], dtype=int)
         lengths = numpy.array([data[1] for pair, data in bond_data], dtype=float)
 
-        result = cls(pairs, molecule.numbers, orders)
+        if do_orders:
+            result = cls(pairs, molecule.numbers, orders)
+        else:
+            result = cls(pairs, molecule.numbers)
         result.bond_lengths = lengths
         return result
 
@@ -367,6 +370,34 @@ class HasNeighborNumbers(object):
         neighbor_numbers = [graph.numbers[neighbor] for neighbor in neighbors]
         neighbor_numbers.sort()
         return neighbor_numbers == self.numbers
+
+
+class HasNeighbors(object):
+    def __init__(self, neighbor_criteria):
+        self.neighbor_criteria = list(neighbor_criteria)
+
+    def __call__(self, atom, graph):
+        def all_permutations(l):
+            if len(l) == 1:
+                yield l
+                return
+            for i in xrange(len(l)):
+                for sub in all_permutations(l[:i]+l[i+1:]):
+                    yield [l[i]] + sub
+
+        neighbors = graph.neighbors[atom]
+        if not len(neighbors) == len(self.neighbor_criteria):
+            return
+        # consider all permutations. If one matches, return True
+        for perm_neighbors in all_permutations(list(neighbors)):
+            ok = True
+            for neighbor, crit in zip(perm_neighbors, self.neighbor_criteria):
+                if not crit(neighbor, graph):
+                    ok = False
+                    break
+            if ok:
+                return True
+        return False
 
 
 class BondLongerThan(object):
