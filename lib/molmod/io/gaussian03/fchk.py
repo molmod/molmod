@@ -140,9 +140,10 @@ class FCHKFile(object):
         if len(opt_coor) == 0:
             return None
         else:
-            tmp = copy.deepcopy(self.molecule)
-            tmp.coordinates = opt_coor[-1]
-            return tmp
+            return Molecule(
+                self.molecule.numbers,
+                opt_coor[-1],
+            )
 
     def get_optimization_gradients(self):
         grad_array = self.fields.get("Opt point       1 Gradient at each geome")
