@@ -22,7 +22,7 @@
 from molmod.data.periodic import periodic
 from molmod.units import A
 
-import os
+import os, numpy
 
 
 __all__ = ["mkinput", "mkinput_multiopt"]
@@ -59,9 +59,10 @@ def mkinput(
         if molecule is None:
             atom_lines = "${atom_lines}"
         else:
+            coordinates = numpy.array(molecule.coordinates)
             if center:
                 # move the coordinates to the origin
-                molecule.coordinates -= molecule.coordinates.mean(0)
+                coordinates -= molecule.coordinates.mean(0)
             symbols = [periodic[number].symbol for number in molecule.numbers]
             # Optionally set ghost atoms:
             if ghost_mask is not None:
@@ -70,7 +71,7 @@ def mkinput(
                         symbols[i] = "%s-Bq" % symbols[i]
             atom_lines = "\n".join("% 5s % 12.7f % 12.7f % 12.7f" % (
                 symbol, cor[0], cor[1], cor[2]
-            ) for symbol, cor in zip(symbols, molecule.coordinates/A))
+            ) for symbol, cor in zip(symbols, coordinates/A))
             # Write an xyz file
             molecule.write_to_file(os.path.join(destdir, "geom.xyz"))
         f = file(com_filename, "w")
