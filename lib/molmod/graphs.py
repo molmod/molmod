@@ -668,15 +668,16 @@ class Graph(object):
         return result
 
     def get_node_fingerprints(self, node_strings, pair_strings, num_iter=None):
-        from hashlib import sha1
-        hashrow = lambda x: numpy.frombuffer(sha1(str(buffer(x))).digest(), numpy.ubyte)
+        import sha
+        str2array = lambda x: numpy.frombuffer(x, numpy.ubyte)
+        hashrow = lambda x: str2array(sha.new(x.data).digest())
         # initialization
         result = numpy.zeros((self.num_nodes, 20), numpy.ubyte)
         for i in xrange(self.num_nodes):
-            result[i] = hashrow(node_strings[i])
+            result[i] = hashrow(str2array(node_strings[i]))
         for i in xrange(self.num_pairs):
             a,b = self.pairs[i]
-            tmp = hashrow(pair_strings[i])
+            tmp = hashrow(str2array(pair_strings[i]))
             result[a] += tmp
             result[b] += tmp
         work = result.copy()
