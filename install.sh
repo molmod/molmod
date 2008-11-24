@@ -4,4 +4,4 @@
 ./uninstall.sh
 (cd ext; python setup.py install)
 python setup.py install
-./clean.sh
+./cleanfiles.sh

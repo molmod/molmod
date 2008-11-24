@@ -32,6 +32,7 @@ __all__ = ["Molecule"]
 
 class Molecule(object):
     def __init__(self, numbers=None, coordinates=None, title=None):
+        # a lot of fuzz to make the molecule a read only object.
         self._numbers = numpy.array(numbers, int)
         self._numbers.setflags(write=False)
         self._coordinates = numpy.array(coordinates, float)
