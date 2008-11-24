@@ -669,8 +669,12 @@ class Graph(object):
 
     def get_node_fingerprints(self, node_strings, pair_strings, num_iter=None):
         import sha
-        str2array = lambda x: numpy.frombuffer(x, numpy.ubyte)
-        hashrow = lambda x: str2array(sha.new(x.data).digest())
+        def str2array(x):
+            if len(x) == 0:
+                return numpy.zeros(0, numpy.ubyte)
+            else:
+                return numpy.frombuffer(x, numpy.ubyte)
+        hashrow = lambda x: numpy.frombuffer(sha.new(x.data).digest(), numpy.ubyte)
         # initialization
         result = numpy.zeros((self.num_nodes, 20), numpy.ubyte)
         for i in xrange(self.num_nodes):
