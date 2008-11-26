@@ -5,3 +5,4 @@
 (cd ext; python setup.py install)
 python setup.py install
 ./cleanfiles.sh
+(cd ext; ./cleanfiles.sh)
