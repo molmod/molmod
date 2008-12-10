@@ -44,7 +44,11 @@ class CMLTestCase(unittest.TestCase):
             self.assert_((m1.numbers==m2.numbers).all())
             self.assert_((m1.coordinates==m2.coordinates).all())
             self.assertEqual(m1.graph.num_nodes, m2.graph.num_nodes)
-            self.assertEqual(m1.graph.pairs, m2.graph.pairs)
+            self.assertEqual(set(m1.graph.pairs), set(m2.graph.pairs))
 
-
+    def test_load(self):
+        l = load_cml("input/1LJL_Cys10.cml")
+        self.assertEqual(l[0].title, "Kalium [+]")
+        self.assertEqual(l[2].title, "Acetic acid [-]")
+        self.assert_((l[2].numbers==numpy.array([6,6,8,8,1,1,1])).all())
 

@@ -35,7 +35,7 @@ __all__ = ["load_cml", "dump_cml"]
 class CMLMoleculeLoader(ContentHandler):
     def __init__(self):
         self.molecules = []
-        self.curmol = None # current molecule
+        self.current_title = None # current molecule
 
     atom_exclude = frozenset(['id', 'elementType', 'x3', 'y3', 'z3', 'x2', 'y2'])
     bond_exclude = frozenset(['id', 'atomRefs2', 'order'])
@@ -49,7 +49,7 @@ class CMLMoleculeLoader(ContentHandler):
         return result
 
     def startElement(self, name, attrs):
-        #print "START", name, attrs
+        #print "START", name
         # If it's not a comic element, ignore it
         if name == 'molecule':
             self.current_title = attrs.get('id', 'No Title')
@@ -59,7 +59,7 @@ class CMLMoleculeLoader(ContentHandler):
             self.current_bonds = []
             self.current_extra = self.get_extra(attrs, self.molecule_exclude)
             self.current_atoms_extra = {}
-        elif self.curmol is not None:
+        elif self.current_title is not None:
             if name == 'atom':
                 atom_name = attrs.get('id', None)
                 if atom_name is None: return
@@ -92,7 +92,8 @@ class CMLMoleculeLoader(ContentHandler):
         #print "END", name
         if name == 'molecule':
             if len(self.current_numbers) > 0:
-                molecule = Molecule(self.current_title, self.current_numbers, self.current_coordinates)
+                self.current_coordinates = numpy.array(self.current_coordinates)*angstrom
+                molecule = Molecule(self.current_numbers, self.current_coordinates, self.current_title)
 
                 name_to_index = {}
                 for counter, name in enumerate(self.current_atom_names):
@@ -116,7 +117,7 @@ class CMLMoleculeLoader(ContentHandler):
                 del self.current_bonds
 
                 self.molecules.append(molecule)
-            self.curmol = None
+            self.current_title = None
 
 
 def load_cml(f):
