@@ -94,21 +94,25 @@ class CMLMoleculeLoader(ContentHandler):
             if len(self.current_numbers) > 0:
                 self.current_coordinates = numpy.array(self.current_coordinates)*angstrom
                 molecule = Molecule(self.current_numbers, self.current_coordinates, self.current_title)
+                molecule.extra = self.current_extra
+                molecule.atoms_extra = self.current_extra
 
                 name_to_index = {}
                 for counter, name in enumerate(self.current_atom_names):
                     name_to_index[name] = counter
 
                 pairs = set()
-                self.current_bonds_extra = {}
+                current_bonds_extra = {}
                 for name1, name2, extra in self.current_bonds:
                     i1 = name_to_index.get(name1)
                     i2 = name_to_index.get(name2)
                     if i1 is not None and i2 is not None:
                         pair = frozenset([i1,i2])
                         if len(extra) > 0:
-                            self.current_bonds_extra[pair] = extra
+                            current_bonds_extra[pair] = extra
                         pairs.add(pair)
+
+                molecule.bonds_extra = current_bonds_extra
                 if len(pairs) == 0:
                     self.current_graph = None
                 else:
