@@ -56,7 +56,8 @@ import copy, numpy
 __all__ = [
     "OneToOneError", "OneToOne", "GraphError", "cached", "Graph",
     "Match", "PatternError", "Pattern",
-    "CriteriaSet", "Anything", "CritOr", "CritAnd", "CritNodeString", "CritPairString",
+    "CriteriaSet", "Anything", "CritOr", "CritAnd", "CritXor", "CritNoT",
+    "CritNodeString", "CritPairString",
     "SubgraphPatternError", "SubgraphPattern", "EqualPattern", "EgoMatch",
     "EgoPattern", "RingPattern", "GraphSearch",
 ]
@@ -999,6 +1000,26 @@ class CritAnd(object):
             if not c(index, graph):
                 return False
         return True
+
+
+class CritXor(object):
+    def __init__(self, *criteria):
+        self.criteria = criteria
+
+    def __call__(self, index, graph):
+        count = 0
+        for c in self.criteria:
+            if c(index, graph):
+                count += 1
+        return (count % 2) == 1
+
+
+class CritNot(object):
+    def __init__(self, criterion):
+        self.criterion = criterion
+
+    def __call__(self, index, graph):
+        return not self.criterion(index, graph)
 
 
 class CritNodeString(object):
