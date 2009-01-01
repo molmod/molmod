@@ -452,8 +452,8 @@ class InternalCoordinatesCache(object):
         Arguments
         criteria_sets -- see molmod.molecular_graphs
         """
-        match_generator = GraphSearch(BondPattern(criteria_sets))
-        for match in match_generator(self.molecular_graph):
+        graph_search = GraphSearch(BondPattern(criteria_sets))
+        for match in graph_search(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1]])
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
@@ -472,8 +472,8 @@ class InternalCoordinatesCache(object):
         Adds the cosines of the bending angles described in criteria_sets to the
         collection.
         """
-        match_generator = GraphSearch(BendingAnglePattern(criteria_sets))
-        for match in match_generator(self.molecular_graph):
+        graph_search = GraphSearch(BendingAnglePattern(criteria_sets))
+        for match in graph_search(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2]])
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
@@ -499,8 +499,8 @@ class InternalCoordinatesCache(object):
         Adds the distances that span the bend angles described in criteria_sets
         to the collection.
         """
-        match_generator = GraphSearch(BendingAnglePattern(criteria_sets))
-        for match in match_generator(self.molecular_graph):
+        graph_search = GraphSearch(BendingAnglePattern(criteria_sets))
+        for match in graph_search(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2]])
             s0 = self.add(Select, id[0])
             s2 = self.add(Select, id[2])
@@ -518,8 +518,8 @@ class InternalCoordinatesCache(object):
         """
         Adds the dihedral angles described in criteria_sets to the collection.
         """
-        match_generator = GraphSearch(DihedralAnglePattern(criteria_sets))
-        for match in match_generator(self.molecular_graph):
+        graph_search = GraphSearch(DihedralAnglePattern(criteria_sets))
+        for match in graph_search(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
@@ -561,7 +561,7 @@ class InternalCoordinatesCache(object):
         Adds the distances that span the dihedral angles described in
         criteria_sets to the collection.
         """
-        match_generator = GraphSearch(DihedralAnglePattern(criteria_sets))
+        graph_search = GraphSearch(DihedralAnglePattern(criteria_sets))
         for tag, match in self.molecular_graph.yield_subgraphs(criteria_sets):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
@@ -581,8 +581,8 @@ class InternalCoordinatesCache(object):
         Adds the out of plane cosines described in criteria_sets to the
         collection.
         """
-        match_generator = GraphSearch(OutOfPlanePattern(criteria_sets, node_tags={1: 1}))
-        for match in match_generator(self.molecular_graph):
+        graph_search = GraphSearch(OutOfPlanePattern(criteria_sets, node_tags={1: 1}))
+        for match in graph_search(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
@@ -622,8 +622,8 @@ class InternalCoordinatesCache(object):
         Adds the out of plane cosines described in criteria_sets to the
         collection.
         """
-        match_generator = GraphSearch(OutOfPlanePattern(criteria_sets))
-        for match in match_generator(self.molecular_graph):
+        graph_search = GraphSearch(OutOfPlanePattern(criteria_sets))
+        for match in graph_search(self.molecular_graph):
             id = tuple([match.get_destination(source) for source in [0, 1, 2, 3]])
             s0 = self.add(Select, id[0])
             s1 = self.add(Select, id[1])
