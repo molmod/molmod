@@ -31,9 +31,10 @@ phi = 0.5*(1+numpy.sqrt(5))
 
 
 class LineSearch(object):
-    def __init__(self, qtol, max_step):
+    def __init__(self, qtol, max_step, max_iter):
         self.qtol = qtol
         self.max_step = max_step
+        self.max_iter = max_iter
 
     def limit_step(self, step):
         if step > self.max_step: return self.max_step
@@ -49,8 +50,8 @@ class LineSearch(object):
 
 
 class GoldenLineSearch(LineSearch):
-    def __init__(self, qtol, max_step):
-        LineSearch.__init__(self, qtol, max_step)
+    def __init__(self, qtol, max_step, max_iter):
+        LineSearch.__init__(self, qtol, max_step, max_iter)
         self.num_bracket = 0
         self.num_golden = 0
 
@@ -78,6 +79,7 @@ class GoldenLineSearch(LineSearch):
         self.num_bracket = 0
         qa = qinit
         fa = fun(qa)
+        counter = 0
         if fa >= f0:
             while True:
                 self.num_bracket += 1
@@ -89,6 +91,9 @@ class GoldenLineSearch(LineSearch):
                     return
                 if fa < f0:
                     return (0, f0), (qa, fa), (qb, fb)
+                counter += 1
+                if counter > self.max_iter:
+                    raise Exception("Line search did not converge.")
         else:
             self.num_bracket += 1
             #print "    bracket grow1"
@@ -106,6 +111,9 @@ class GoldenLineSearch(LineSearch):
                 fa = fun(qa)
                 if fa >= fb:
                     return (qc, fc), (qb, fb), (qa, fa)
+                counter += 1
+                if counter > self.max_iter:
+                    raise Exception("Line search did not converge.")
 
     def golden(self, triplet, fun):
         self.num_golden = 0
@@ -125,8 +133,8 @@ class GoldenLineSearch(LineSearch):
 
 
 class NewtonLineSearch(LineSearch):
-    def __init__(self, qtol, max_step):
-        LineSearch.__init__(self, qtol, max_step)
+    def __init__(self, qtol, max_step, max_iter):
+        LineSearch.__init__(self, qtol, max_step, max_iter)
         self.num_reduce = 0
 
     def get_extra_log_dtypes(self):
@@ -158,12 +166,14 @@ class NewtonLineSearch(LineSearch):
                 break
             qopt *= 0.5
             self.num_reduce += 1
+            if self.num_reduce > self.max_iter:
+                raise Exception("Line search did not converge.")
         return True, qopt, fopt
 
 
 class NewtonGLineSearch(LineSearch):
-    def __init__(self, qtol, max_step):
-        LineSearch.__init__(self, qtol, max_step)
+    def __init__(self, qtol, max_step, max_iter):
+        LineSearch.__init__(self, qtol, max_step, max_iter)
         self.num_reduce = 0
 
     def get_extra_log_dtypes(self):
@@ -195,20 +205,20 @@ class NewtonGLineSearch(LineSearch):
                 break
             qopt *= 0.5
             self.num_reduce += 1
+            if self.num_reduce > self.max_iter:
+                raise Exception("Line search did not converge.")
         return True, qopt, fopt
-
-
 
 
 class Minimizer(object):
     def __init__(
-        self, x_init, fun, LineSearchCls, ftol, xtol, max_step, max_iter,
-        do_gradient=False, epsilon_init=1e-6, verbose=True, callback=None,
+        self, x_init, fun, LineSearchCls, ftol, xtol, max_step, max_iter, max_line_iter,
+        do_gradient=False, epsilon_init=1e-6, absftol=False, verbose=True, callback=None,
         min_iter=0, extra_log_dtypes=None
     ):
         self.x = x_init.copy()
         self.fun = fun
-        self.line_search = LineSearchCls(xtol, max_step)
+        self.line_search = LineSearchCls(xtol, max_step, max_line_iter)
         self.ftol = ftol
         self.xtol = xtol
         self.max_step = max_step
@@ -216,6 +226,7 @@ class Minimizer(object):
         self.callback = callback
         self.epsilon = epsilon_init
         self.epsilon_max = epsilon_init
+        self.absftol = absftol
         self.verbose = verbose
         self.min_iter = min_iter
 
@@ -333,15 +344,19 @@ class Minimizer(object):
 
     def handle_new_solution(self, xnew, fnew):
         self.step_size = numpy.linalg.norm(self.x - xnew)
-        self.relative_decrease = (self.f - fnew)/self.f
-        self.screen("step=% 9.7e   reldecr=% 9.7e   fnew=% 9.7e" % (self.step_size, self.relative_decrease, fnew))
+        if self.absftol:
+            self.decrease = self.f - fnew
+            self.screen("step=% 9.7e   absdecr=% 9.7e   fnew=% 9.7e" % (self.step_size, self.decrease, fnew))
+        else:
+            self.decrease = (self.f - fnew)/self.f
+            self.screen("step=% 9.7e   reldecr=% 9.7e   fnew=% 9.7e" % (self.step_size, self.decrease, fnew))
         if self.step_size < self.xtol:
             result = False
-        if self.relative_decrease < self.ftol:
+        if self.decrease < self.ftol:
             result = False
         else:
             result = True
-        if self.relative_decrease > 0:
+        if self.decrease > 0:
             self.x = xnew
             self.f = fnew
         else:
@@ -375,7 +390,7 @@ class Minimizer(object):
             else:
                 lower = self.step_cg("CG")
             self.append_log()
-            lower = lower or (counter < self.min_iter and self.relative_decrease > 0)
+            lower = lower or (counter < self.min_iter and self.decrease > 0)
             if lower:
                 self.update_cg()
                 last_reset = False
