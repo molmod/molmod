@@ -45,7 +45,7 @@ class CMLMoleculeLoader(ContentHandler):
         result = {}
         for key in attrs.getNames():
             if key not in exclude:
-                result[key] = str(attrs[key])
+                result[str(key)] = str(attrs[key])
         return result
 
     def startElement(self, name, attrs):
@@ -95,7 +95,7 @@ class CMLMoleculeLoader(ContentHandler):
                 self.current_coordinates = numpy.array(self.current_coordinates)*angstrom
                 molecule = Molecule(self.current_numbers, self.current_coordinates, self.current_title)
                 molecule.extra = self.current_extra
-                molecule.atoms_extra = self.current_extra
+                molecule.atoms_extra = self.current_atoms_extra
 
                 name_to_index = {}
                 for counter, name in enumerate(self.current_atom_names):
