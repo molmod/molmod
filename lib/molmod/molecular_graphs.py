@@ -359,7 +359,7 @@ class HasNumNeighbors(object):
 
 
 class HasNeighborNumbers(object):
-    def __init__(self, numbers):
+    def __init__(self, *numbers):
         self.numbers = list(numbers)
         self.numbers.sort()
 
@@ -373,7 +373,7 @@ class HasNeighborNumbers(object):
 
 
 class HasNeighbors(object):
-    def __init__(self, neighbor_criteria):
+    def __init__(self, *neighbor_criteria):
         self.neighbor_criteria = list(neighbor_criteria)
 
     def __call__(self, atom, graph):
