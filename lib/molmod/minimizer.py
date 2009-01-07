@@ -212,10 +212,13 @@ class NewtonGLineSearch(LineSearch):
 
 class Minimizer(object):
     def __init__(
-        self, x_init, fun, LineSearchCls, ftol, xtol, max_step, max_iter, max_line_iter,
+        self, x_init, fun, LineSearchCls, ftol, xtol, max_step_rms, max_iter, max_line_iter,
         do_gradient=False, epsilon_init=1e-6, absftol=False, verbose=True, callback=None,
         min_iter=0, extra_log_dtypes=None
     ):
+        if len(x_init.shape)!=1:
+            raise ValueError("The unknowns must be stored in a plain row vector.")
+        max_step = max_step_rms*numpy.sqrt(len(x_init))
         self.x = x_init.copy()
         self.fun = fun
         self.line_search = LineSearchCls(xtol, max_step, max_line_iter)
@@ -235,7 +238,8 @@ class Minimizer(object):
             self.extra_log_dtypes.extend(extra_log_dtypes)
 
         self.log = []
-        self.step_size = 1
+        self.step_size = 1.0
+        self.step_rms = 1.0/numpy.sqrt(len(x_init))
         self.direction_cg = numpy.zeros(self.x.shape, float)
         self.direction_sd = numpy.zeros(self.x.shape, float)
         self.direction_sd_old = numpy.zeros(self.x.shape, float)
@@ -344,13 +348,14 @@ class Minimizer(object):
 
     def handle_new_solution(self, xnew, fnew):
         self.step_size = numpy.linalg.norm(self.x - xnew)
+        self.step_rms = self.step_size/numpy.sqrt(len(self.x))
         if self.absftol:
             self.decrease = self.f - fnew
-            self.screen("step=% 9.7e   absdecr=% 9.7e   fnew=% 9.7e" % (self.step_size, self.decrease, fnew))
+            self.screen("step_rms=% 9.7e   absdecr=% 9.7e   fnew=% 9.7e" % (self.step_rms, self.decrease, fnew))
         else:
             self.decrease = (self.f - fnew)/self.f
-            self.screen("step=% 9.7e   reldecr=% 9.7e   fnew=% 9.7e" % (self.step_size, self.decrease, fnew))
-        if self.step_size < self.xtol:
+            self.screen("step_rms=% 9.7e   reldecr=% 9.7e   fnew=% 9.7e" % (self.step_rms, self.decrease, fnew))
+        if self.step_rms < self.xtol:
             result = False
         if self.decrease < self.ftol:
             result = False
@@ -368,7 +373,7 @@ class Minimizer(object):
         if self.callback is not None:
             extra_fields = extra_fields + tuple(self.callback(self.x))
         self.log.append((
-            self.f, self.step_size, self.beta,
+            self.f, self.step_rms, self.beta,
             numpy.linalg.norm(self.direction_sd),
             numpy.linalg.norm(self.direction_cg),
             self.x.copy(),
@@ -399,8 +404,8 @@ class Minimizer(object):
                     break
                 self.update_sd()
                 last_reset = True
-            if self.step_size > 0:
-                self.epsilon = min(self.step_size*1e-2, self.epsilon_max)
+            if self.step_rms > 0:
+                self.epsilon = min(self.step_rms*1e-2, self.epsilon_max)
 
             #if self.do_scan:
             #    # the parameter scan loop
@@ -425,7 +430,7 @@ class Minimizer(object):
 
     def get_log(self):
         return numpy.array(self.log, [
-            ("f", float), ("step_size", float), ("beta", float),
+            ("f", float), ("step_rms", float), ("beta", float),
             ("norm_sd", float), ("norm_cg", float), ("x", float, self.x.shape),
         ] + self.extra_log_dtypes)
 
