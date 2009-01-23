@@ -25,7 +25,7 @@ import numpy, math
 
 __all__ = [
     "Base", "Translation", "Rotation", "Complete", "rotation_around_center",
-    "CoincideError", "coincide",
+    "coincide",
 ]
 
 
@@ -392,160 +392,38 @@ def random_rotation():
     return result
 
 
-class CoincideError(Exception):
-    pass
-
 def coincide(ras, rbs, maxiter=100):
     """Compute the transformation that minimizes the RMSD between the points ras and rbs
 
     Both ras and rbs are Nx3 numpy arrays. Each row corresponds to a 3D
-    coordinate and corresponding rows contain the points that are brought
-    into overlap.
+    coordinate. Corresponding rows contain the points that are brought
+    into overlap. The implementation is based on the Kabsch Algorithm:
+
+    http://dx.doi.org/10.1107%2FS0567739476001873
+
+    The returnd transformation projects B onto A.
     """
-    # This is a constrained least squares problem. The constraints are non-
-    # linear, while the overlap equations are linear. The rbs are the atom
-    # coordinates to be transformed, while the ras remain fixed in space.
-    dm = [] # design_matrix
-    ev = [] # expected_values
-    # parameters are ordered as follows: R11, R12, R13, R21, R22, R23, R31, R32, R33, T1, T2, T3
-    for ra, rb in zip(ras, rbs):
-        # per atom pair, there are three equations, equaling x, y and z.
-        dm.append(numpy.array([rb[0], rb[1], rb[2], 0, 0, 0, 0, 0, 0, 1, 0, 0]))
-        dm.append(numpy.array([0, 0, 0, rb[0], rb[1], rb[2], 0, 0, 0, 0, 1, 0]))
-        dm.append(numpy.array([0, 0, 0, 0, 0, 0, rb[0], rb[1], rb[2], 0, 0, 1]))
-        ev.extend(ra)
-    dm = numpy.array(dm)
-    ev = numpy.array(ev)
-    # We take the (ugly) approach with the normal equations to simplify the
-    # treatment of the lagrange multipliers. An SVD based approach should
-    # also be possible, but is definitely more complicated and total
-    # overkill for the purpose of this function.
-    Ap = numpy.dot(dm.transpose(), dm)
-    Bp = numpy.dot(dm.transpose(), ev)
-    Cp = numpy.dot(ev, ev)
-    # contruct the terms for the lagrange multipliers
-    # The matrices M and constants m are constructed in such a way that the
-    # constraints reduce to the following simple form:
-    # 0.5 x^T M x - m = 0
-    # where x containts the first nign elements of the parameter vector
-    # above. The derivative of this constraint is trivial.
-    Ms = []
-    ms = []
-    for i1 in xrange(3):
-        for i2 in xrange(i1,3):
-            M = numpy.zeros((9,9), float)
-            Ms.append(M)
-            for k1 in xrange(3):
-                M[k1*3+i1,k1*3+i2] += 1
-                M[k1*3+i2,k1*3+i1] += 1
-            ms.append(int(i1==i2))
-    Ms = numpy.array(Ms)
-    ms = numpy.array(ms)
-    # Find the lagrange multiplieres (lambdas), starting from zero with the
-    # Newton-Raphson scheme.
-    from molmod.linalg import safe_solve, extended_solve
-    #safe_solve = numpy.linalg.solve
-    lambdas = numpy.zeros(6, float) # lagrange multipliers
-    g = numpy.zeros(6, float) # constraint functions
-    G = numpy.zeros((6,6), float) # derivatives of constraint functions
-    # towards lagrange multipliers. Each row corresponds to one constraint
-    # function while each column corresponds to a lagrange multiplier.
-    K = numpy.zeros((9,6), float) # derivatives of the first nign elements
-    # of the solution towards the lambdas. The rows correspond to components
-    # of the solution, while the columns correspond to the lagrange
-    # multipliers.
-    tmp = numpy.zeros(12, float)
-    A = numpy.zeros(Ap.shape, float)
-    done = False
+    from molmod.linalg import safe_inv
 
-    for counter in xrange(maxiter):
-        # Make a linear approximation of the lambdas that solve the constraints.
-        # (this is the Newton-Raphson algo)
-        A[:] = Ap
-        for i in xrange(6):
-            # loop over the lagrange multipliers
-            A[:9,:9] += lambdas[i]*Ms[i]
-        # solve locally with SVD, in case someone is aligning two linear
-        # molecules.
-        x, null_space = extended_solve(A, Bp, 1e-10)
-        if len(null_space) > 0:
-            # this is a nasty situation. we must use the vectors from the null
-            # space to satisfy the constraints as good as possible
-            alpha = opt_constraints(Ms, ms, x[:9].copy(), null_space[:9])
-            x += numpy.dot(null_space, alpha)
-        #x += numpy.dot(null_space, numpy.random.normal(0, 1, null_space.shape[1]))
-        # xp is a shortcut
-        xp = x[:9]
-        # compute the derivative of x towards the lambdas
-        for i in xrange(6):
-            # loop over the lagrange multipliers
-            tmp[:9] = numpy.dot(Ms[i], xp)
-            tmp[9:] = 0
-            tmp[:] = -safe_solve(A, tmp, 1e-10)
-            K[:,i] = tmp[:9]
-        # compute constraint functions and compute the derivative of these
-        # constraint functions with respect to the lambdas
-        for i in xrange(6):
-            # loop over constraint functions
-            Mxp = numpy.dot(Ms[i], xp)
-            g[i] = 0.5*numpy.dot(xp, Mxp) - ms[i]
-            G[i] = numpy.dot(Mxp, K)
+    t = ras.mean(axis=0) - rbs.mean(axis=0)
+    rbs = rbs + t
 
-        #print "norm(g)", numpy.linalg.norm(g)
-        if numpy.linalg.norm(g) < 1e-9:
-            #ssd = numpy.dot(x, numpy.dot(Ap, x) -2*Bp) + Cp
-            #print "ssd", ssd
-            done = True
-            break
+    # Kabsch
+    A = numpy.dot(rbs.transpose(), ras)
+    B = numpy.dot(A.transpose(), A)
+    evals, evecs = numpy.linalg.eigh(B)
+    Bhalf = numpy.dot(evecs*numpy.sqrt(evals), evecs.transpose())
+    #Ainv = safe_inv(A)
+    Ainv = numpy.linalg.inv(A)
+    r = numpy.dot(Bhalf, Ainv)
 
-        step = -safe_solve(G, g, 1e-10)
-        lambdas += step
-        #low = 0.1
-        #lambdas[lambdas < low] = low
+    # fix degeneracies
+    #U, W, Vt = numpy.linalg.svd(r)
+    #r = numpy.dot(U, Vt)
 
-    if not done:
-        raise CoincideError("The constrained optimization could not be solved!")
-    # wrap the solution in a fancy data structure
-    trans = Complete()
-    trans.r[:] = x[:9].reshape((3,3))
-    trans.t[:] = x[9:]
-    return trans
+    complete = Complete()
+    complete.r = r
+    complete.t = numpy.dot(r, t)
+    return complete
 
-
-def opt_constraints(Ms, ms, x0, N):
-    gradient_x = numpy.zeros(9, float)
-    hessian_x = numpy.zeros((9, 9), float)
-    for i in xrange(10):
-        # Try a few initial guesses until an orthogonal system is found.
-        alpha = numpy.random.normal(0, 1, N.shape[1])
-        while True:
-            x = x0 + numpy.dot(N, alpha)
-            error = 0
-            gradient_x[:] = 0
-            hessian_x[:] = 0
-            #print x
-            for i in xrange(6):
-                Mx = numpy.dot(Ms[i], x)
-                xMxm = 0.5*numpy.dot(x, Mx) - ms[i]
-                #print "xMxm", xMxm
-                error += xMxm**2
-                gradient_x[:] += 2*xMxm*Mx
-                hessian_x[:] += 2*(numpy.outer(Mx, Mx) + xMxm*Ms[i])
-            #print "error", error
-            gradient_alpha = numpy.dot(gradient_x, N)
-            hessian_alpha = numpy.dot(numpy.dot(N.transpose(), hessian_x), N)
-            #print numpy.linalg.norm(gradient_alpha)
-            if numpy.linalg.norm(gradient_alpha) < 1e-10:
-                break
-            #print "evals", numpy.linalg.eigvals(hessian_alpha)
-            step = -0.5*numpy.linalg.solve(hessian_alpha, gradient_alpha)
-            if numpy.dot(step, gradient_alpha) > 0:
-                #print "SD"
-                step = -0.1*gradient_alpha/numpy.linalg.norm(gradient_alpha)
-            #print "step", step
-            alpha += step
-        #print "error", error
-        if abs(error) < 1e-10:
-            break
-    return alpha
 

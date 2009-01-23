@@ -22,10 +22,15 @@
 import numpy
 
 
-__all__ = ["safe_solve", "extended_solve"]
+__all__ = ["safe_solve", "extended_solve", "safe_inv"]
 
 
-def safe_solve(A, b, cutoff=0.0):
+def safe_solve(A, b, cutoff=1e-15):
+    """Solve the systems using the SVD algorithm. Returns x from Ax=b
+
+    The cutoff parameter is used to determine the null space of the matrix A.
+    If a null space is present, the least norm solution is computed.
+    """
     U, W, Vt = numpy.linalg.svd(A, full_matrices=False)
     rank = sum(abs(W)>(max(abs(W))*cutoff))
     W = W[:rank]
@@ -34,7 +39,12 @@ def safe_solve(A, b, cutoff=0.0):
     return numpy.dot(V, (numpy.dot(Ut, b)/W))
 
 
-def extended_solve(A, b, cutoff=0.0):
+def extended_solve(A, b, cutoff=1e-15):
+    """Solve the systems using the SVD algorithm. Returns x and the nullspace of A from Ax=b
+
+    The cutoff parameter is used to determine the null space of the matrix A.
+    If a null space is present, the least norm solution is computed.
+    """
     U, W, Vt = numpy.linalg.svd(A, full_matrices=True)
     rank = sum(abs(W)>(max(abs(W))*cutoff))
     W = W[:rank]
@@ -43,6 +53,14 @@ def extended_solve(A, b, cutoff=0.0):
     V = Vt[:rank].transpose()
     solution = numpy.dot(V, (numpy.dot(Ut, b)/W))
     return solution, nullspace
+
+
+def safe_inv(A, cutoff=1e-15):
+    """Return the inverse of A + cutoff*I"""
+    U, W, Vt = numpy.linalg.svd(A, full_matrices=False)
+    Ut = U.transpose()
+    V = Vt.transpose()
+    return numpy.dot(V*W/(W**2+cutoff**2), Ut)
 
 
 
