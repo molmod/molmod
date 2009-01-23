@@ -405,11 +405,11 @@ def coincide(ras, rbs, maxiter=100):
     """
     from molmod.linalg import safe_inv
 
-    t = ras.mean(axis=0) - rbs.mean(axis=0)
-    rbs = rbs + t
+    ma = ras.mean(axis=0)
+    mb = rbs.mean(axis=0)
 
     # Kabsch
-    A = numpy.dot(rbs.transpose(), ras)
+    A = numpy.dot((rbs-mb).transpose(), ras-ma)
     B = numpy.dot(A.transpose(), A)
     evals, evecs = numpy.linalg.eigh(B)
     Bhalf = numpy.dot(evecs*numpy.sqrt(evals), evecs.transpose())
@@ -423,7 +423,7 @@ def coincide(ras, rbs, maxiter=100):
 
     complete = Complete()
     complete.r = r
-    complete.t = numpy.dot(r, t)
+    complete.t = numpy.dot(r, -mb) + ma
     return complete
 
 

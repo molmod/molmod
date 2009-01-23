@@ -104,12 +104,12 @@ class TransformationsTestCase(BaseTestCase):
         # Do a random transformation on the points
         randomized = []
         for points, degenerate in references:
-            points[:] -= points.mean(axis=0)
+            #points[:] -= points.mean(axis=0)
             axis = random_unit(3)
             angle = numpy.random.uniform(0, numpy.pi*2)
             transformation = Complete()
             transformation.set_rotation_properties(angle, axis, False)
-            transformation.t[:] = 0#numpy.random.normal(0, 5, 3)
+            transformation.t[:] = numpy.random.normal(0, 5, 3)
             randomized.append((
                 numpy.array([transformation.vector_apply(p) for p in points]),
                 transformation
