@@ -44,7 +44,7 @@ class FCHKFile(object):
             self._read(filename, field_labels)
         except ReadError:
             if ignore_errors:
-                return
+                pass
             else:
                 raise
         self._analyze()
@@ -113,11 +113,12 @@ class FCHKFile(object):
         f.close()
 
     def _analyze(self):
-        self.molecule = Molecule(
-            self.fields["Atomic numbers"],
-            numpy.reshape(self.fields["Current cartesian coordinates"], (-1,3)),
-            self.title,
-        )
+        if ("Atomic numbers" in self.fields) and ("Current cartesian coordinates" in self.fields):
+            self.molecule = Molecule(
+                self.fields["Atomic numbers"],
+                numpy.reshape(self.fields["Current cartesian coordinates"], (-1,3)),
+                self.title,
+            )
 
     def get_optimization_energies(self):
         return self.fields.get("Opt point       1 Results for each geome")[::2]
