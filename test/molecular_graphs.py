@@ -95,7 +95,7 @@ class MolecularGraphTestCase(unittest.TestCase):
             CriteriaSet(atom_criteria(6, HasNumNeighbors(4)), tag="C-sp3"),
             CriteriaSet(atom_criteria(6, CritOr(HasAtomNumber(6), HasAtomNumber(7))), tag="C-[CN]"),
             CriteriaSet(relation_criteria={0: BondLongerThan(1.3*angstrom)}, tag="long"),
-            CriteriaSet(atom_criteria(6, HasNeighbors(atom_criteria(1,1,6,7).values())), tag="C-C(-NHH)"),
+            CriteriaSet(atom_criteria(6, HasNeighbors(*atom_criteria(1,1,6,7).values())), tag="C-C(-NHH)"),
         ])
         expected_results = {
             "HC": set([

@@ -191,14 +191,14 @@ class MolecularGraph(Graph):
 
         #  level 1 geometry optimization
         ff.dm_quad = 1.0
-        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-6, 1e-10, 2*N, 500, do_gradient=True, verbose=False)
+        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-6, 1e-10, 2*N, 500, 50, do_gradient=True, verbose=False)
         x_init = minimizer.x
 
         #  level 2 geometry optimization
         ff.dm_quad = 0.0
         ff.dm_reci = 0.1
         ff.bond_quad = 1.0
-        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-4, 1e-10, 2*N, 500, do_gradient=True, verbose=False)
+        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-4, 1e-10, 2*N, 500, 50, do_gradient=True, verbose=False)
         x_init = minimizer.x
 
         #  level 3 geometry optimization
@@ -206,7 +206,7 @@ class MolecularGraph(Graph):
         ff.bond_hyper = 1.0
         ff.span_quad = 10.0
         ff.dm_reci = 0.5
-        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-5, 1e-10, 2*N, 500, do_gradient=True, verbose=False)
+        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-5, 1e-10, 2*N, 500, 50, do_gradient=True, verbose=False)
         x_init = minimizer.x
 
         x_opt = x_init
