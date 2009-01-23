@@ -56,7 +56,7 @@ import copy, numpy
 __all__ = [
     "OneToOneError", "OneToOne", "GraphError", "cached", "Graph",
     "Match", "PatternError", "Pattern",
-    "CriteriaSet", "Anything", "CritOr", "CritAnd", "CritXor", "CritNoT",
+    "CriteriaSet", "Anything", "CritOr", "CritAnd", "CritXor", "CritNot",
     "CritNodeString", "CritPairString",
     "SubgraphPatternError", "SubgraphPattern", "EqualPattern", "EgoMatch",
     "EgoPattern", "RingPattern", "GraphSearch",
