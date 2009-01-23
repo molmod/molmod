@@ -114,7 +114,7 @@ class CMLMoleculeLoader(ContentHandler):
 
                 molecule.bonds_extra = current_bonds_extra
                 if len(pairs) == 0:
-                    self.current_graph = None
+                    molecule.graph = None
                 else:
                     molecule.graph = MolecularGraph(pairs, self.current_numbers)
                 del self.current_atom_names
