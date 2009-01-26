@@ -326,8 +326,8 @@ class Minimizer(object):
         else:
             # returning the old x and f, means that the optimization failed
             self.screen("  'Opt% 3s'              Line search failed" % label)
-            self.fun(self.x) # reset the internal state of the function
-            return False
+            self.reset_state()
+            return None
 
 
     def update_direction_sd(self):
@@ -342,7 +342,7 @@ class Minimizer(object):
                 tmp[j] += self.epsilon
                 self.direction_sd[j] = -(self.fun(tmp) - self.f)/self.epsilon
                 tmp[j] = self.x[j]
-            self.fun(self.x) # reset the internal state of the function
+            self.reset_state()
             #print self.direction_sd
         #sys.exit()
 
@@ -365,8 +365,12 @@ class Minimizer(object):
             self.x = xnew
             self.f = fnew
         else:
-            self.fun(self.x) # reset the internal state of the function
+            self.reset_state()
         return result
+
+    def reset_state(self):
+        self.fun(self.x) # reset the internal state of the function
+        self.decrease = -1.0
 
     def append_log(self):
         extra_fields = self.line_search.get_extra_log()
@@ -386,7 +390,7 @@ class Minimizer(object):
         self.update_direction_sd()
         self.direction_cg[:] = self.direction_sd
         last_reset = True
-        cg_lower = False
+        self.lower = False # do have one iteration were the function lowered?
         # the cg loop
         for counter in xrange(max_iter):
             self.screen("Iter % 5i of % 5i" % (counter, max_iter), False)
@@ -395,12 +399,12 @@ class Minimizer(object):
             else:
                 lower = self.step_cg("CG")
             self.append_log()
-            lower = lower or (counter < self.min_iter and self.decrease > 0)
-            if lower:
+            if lower is True:
                 self.update_cg()
                 last_reset = False
+                self.lower = True
             else:
-                if last_reset:
+                if last_reset and (counter > self.min_iter or lower is None):
                     break
                 self.update_sd()
                 last_reset = True
@@ -426,7 +430,6 @@ class Minimizer(object):
             #        self.set_coarse(False)
 
         self.screen("Done")
-        return self.x
 
     def get_log(self):
         return numpy.array(self.log, [
