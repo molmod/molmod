@@ -62,6 +62,7 @@ from tunneling import *
 from quaternions import *
 from io import *
 from randomize import *
+from patches import *
 
 unittest.main()
 
