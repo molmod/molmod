@@ -63,6 +63,7 @@ from quaternions import *
 from io import *
 from randomize import *
 from patches import *
+from zmatrix import *
 
 unittest.main()
 
