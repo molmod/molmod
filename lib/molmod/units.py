@@ -140,7 +140,9 @@ atm = 1.01325*bar
 K = 1.0
 kelvin = K
 
+# *** Dipole ***
 
+debye = 0.39343031369146675 # = 1e-21*coulomb*meter**2/second/lightspeed
 
 
 
