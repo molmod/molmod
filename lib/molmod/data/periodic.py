@@ -25,7 +25,7 @@ from molmod import context
 import numpy, copy
 
 
-__all__ = ["PeriodicData"]
+__all__ = ["PeriodicData", "periodic"]
 
 
 class AtomInfo(object):
