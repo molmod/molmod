@@ -728,6 +728,24 @@ class Graph(object):
 
         return node1_part, node2_part
 
+    def get_part(self, node_in, nodes_border):
+        """List all nodes that are connected to node_in, but are not included in
+        or 'behind' nodes_border.
+        """
+        nodes_new = set(self.neighbors[node_in])
+        nodes_part = set([node_in])
+
+        while len(nodes_new) > 0:
+            pivot = nodes_new.pop()
+            if pivot in nodes_border:
+                continue
+            nodes_part.add(pivot)
+            pivot_neighbors = set(self.neighbors[pivot])
+            pivot_neighbors -= nodes_part
+            nodes_new |= pivot_neighbors
+
+        return nodes_part
+
     def get_halfs_double(self, node_a1, node_b1, node_a2, node_b2):
         """Compute the two parts separated by (node_a1, node_b1) and (node_a2, node_b2)
 
