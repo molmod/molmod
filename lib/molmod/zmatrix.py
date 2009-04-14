@@ -20,6 +20,7 @@
 
 
 import molmod.ic as ic
+from molmod.vectors import random_orthonormal
 
 import numpy
 
@@ -92,8 +93,8 @@ class ZMatrixGenerator(object):
                 return result
         raise ZMatrixException("Could not find new reference.")
 
-    def cart_to_zmat(self, numbers, coordinates):
-        N = len(numbers)
+    def cart_to_zmat(self, coordinates):
+        N = len(self.graph.numbers)
         result = numpy.zeros(N, dtype=self.dtype)
         for i in xrange(N):
             ref0 = self.old_index[i]
@@ -115,7 +116,7 @@ class ZMatrixGenerator(object):
                 ref3 = self.get_new_ref([ref0, ref1, ref2])
                 dihed, = ic.dihed_angle(coordinates[ref0], coordinates[ref1], coordinates[ref2], coordinates[ref3])
                 rel3 = i - self.new_index[ref3]
-            result[i] = (numbers[i], distance, rel1, angle, rel2, dihed, rel3)
+            result[i] = (self.graph.numbers[i], distance, rel1, angle, rel2, dihed, rel3)
         return result
 
 
@@ -141,13 +142,24 @@ def zmat_to_cart(zmat):
         ref1 = ref0 - rel1
         ref2 = ref0 - rel2
         ref3 = ref0 - rel3
+        if ref1 < 0: ref1 = 0
+        if ref2 < 0: ref2 = 0
+        if ref3 < 0: ref3 = 0
         # define frame axes
         origin = coordinates[ref1]
         new_z = coordinates[ref2] - origin
-        new_z /= numpy.linalg.norm(new_z)
+        norm_z = numpy.linalg.norm(new_z)
+        if norm_z < 1e-15:
+            new_z = numpy.array([0,0,1], float)
+        else:
+            new_z /= numpy.linalg.norm(new_z)
         new_x = coordinates[ref3] - origin
         new_x -= numpy.dot(new_x, new_z)*new_z
-        new_x /= numpy.linalg.norm(new_x)
+        norm_x = numpy.linalg.norm(new_x)
+        if norm_x < 1e-15:
+            new_x = random_orthonormal(new_z)
+        else:
+            new_x /= numpy.linalg.norm(new_x)
         new_y = numpy.cross(new_z, new_x)
 
         # coordinates of new atom:
@@ -159,5 +171,7 @@ def zmat_to_cart(zmat):
         ref0 += 1
 
     return numbers, coordinates
+
+
 
 
