@@ -43,7 +43,7 @@ class ZMatrixTestCase(BaseTestCase):
                 self.assertArraysEqual(zmat_gen.new_index, numpy.arange(mol.size))
                 self.assertArraysEqual(zmat_gen.old_index, numpy.arange(mol.size))
 
-            zmat0 = zmat_gen.cart_to_zmat(mol.numbers, mol.coordinates)
+            zmat0 = zmat_gen.cart_to_zmat(mol.coordinates)
             for field, index, value in checks:
                 self.assertAlmostEqual(zmat0[field][index], value, 2, "%s:%i %f!=%f" % (field,index,zmat0[field][index],value))
 
@@ -55,7 +55,7 @@ class ZMatrixTestCase(BaseTestCase):
             self.assertArraysEqual(zmat_gen0.new_index, numpy.arange(mol.size))
             self.assertArraysEqual(zmat_gen0.old_index, numpy.arange(mol.size))
 
-            zmat1 = zmat_gen0.cart_to_zmat(mol0.numbers, mol0.coordinates)
+            zmat1 = zmat_gen0.cart_to_zmat(mol0.coordinates)
             for field, index, value in checks:
                 self.assertAlmostEqual(zmat1[field][index], value, 2, "%s:%i %f!=%f" % (field,index,zmat1[field][index],value))
 

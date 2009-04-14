@@ -42,7 +42,7 @@ class DataTestCase(unittest.TestCase):
         self.assertAlmostEqual(periodic[1].mass, 1.00794*unified, 3)
         self.assertAlmostEqual(periodic[1].density, 0.12411, 3)
         self.assertAlmostEqual(periodic[1].covalent_radius/angstrom, 0.31, 3)
-        self.assertAlmostEqual(periodic[1].vdw_radius/angstrom, 1.2, 3)
+        self.assertAlmostEqual(periodic[1].vdw_radius/angstrom, 1.09, 3)
         self.assertEqual(periodic[1].artificial, False)
         self.assertAlmostEqual(periodic[1].red, 1.0, 3)
         self.assertAlmostEqual(periodic[1].green, 1.0, 3)
