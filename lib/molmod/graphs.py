@@ -165,6 +165,8 @@ class cached(object):
             #print "COMPUTING %s" % self.attribute_name
             value = self.fn(instance)
             setattr(instance, self.attribute_name, value)
+            if isinstance(value, numpy.ndarray):
+                value.setflags(write=False)
         return value
 
 
@@ -282,10 +284,6 @@ class Graph(object):
         return ""
 
     # cached attributes:
-
-    @cached
-    def _work_nodes(self):  # for internal usage only
-        return numpy.zeros(self._num_nodes, int)
 
     @cached
     def pair_index(self):
@@ -530,7 +528,7 @@ class Graph(object):
             if start < 0 or start >= self.num_nodes:
                 raise ValueError("start must be in the range [0,%i[" % self.num_nodes)
         from collections import deque
-        work = self._work_nodes
+        work = numpy.zeros(self.num_nodes, int)
         work[:] = -1
         work[start] = 0
         if do_paths:
@@ -593,7 +591,7 @@ class Graph(object):
             if start < 0 or start >= self.num_nodes:
                 raise ValueError("start must be in the range [0,%i[" % self.num_nodes)
         from collections import deque
-        work = self._work_nodes
+        work = numpy.zeros(self.num_nodes, int)
         work[:] = -1
         work[start] = 0
         todo = deque([start])
