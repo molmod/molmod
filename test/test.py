@@ -40,7 +40,6 @@ if not os.path.exists("output"):
     os.mkdir("output")
 
 from molmod import context
-context._share_dirs = ["../share/"]
 
 import unittest
 
