@@ -58,12 +58,12 @@ from transformations import *
 from environments import *
 from descriptors import *
 from similarity import *
-from tunneling import *
 from quaternions import *
 from io import *
 from randomize import *
 from patches import *
 from zmatrix import *
+from ic import *
 
 unittest.main()
 
