@@ -392,8 +392,8 @@ class Minimizer(object):
         last_reset = True
         self.lower = False # do have one iteration were the function lowered?
         # the cg loop
-        for counter in xrange(max_iter):
-            self.screen("Iter % 5i of % 5i" % (counter, max_iter), False)
+        for self.counter in xrange(max_iter):
+            self.screen("Iter % 5i of % 5i" % (self.counter, max_iter), False)
             if last_reset:
                 lower = self.step_cg("SD")
             else:
@@ -404,7 +404,7 @@ class Minimizer(object):
                 last_reset = False
                 self.lower = True
             else:
-                if last_reset and (counter > self.min_iter or lower is None):
+                if last_reset and (self.counter > self.min_iter or lower is None):
                     break
                 self.update_sd()
                 last_reset = True
@@ -416,15 +416,15 @@ class Minimizer(object):
             #    self.num_bracket = 0
             #    self.num_golden = 0
             #    scan_lower = False
-            #    print "Iter % 5i of % 5i" % (counter, max_iter),
+            #    print "Iter % 5i of % 5i" % (self.counter, max_iter),
             #    scan_lower |= self.line_scan_global()
             #    self.append_log(False)
-            #    counter += 1
+            #    self.counter += 1
             #    for parameter_index in xrange(len(self.x)):
-            #        print "Iter % 5i of % 5i" % (counter, max_iter),
+            #        print "Iter % 5i of % 5i" % (self.counter, max_iter),
             #        scan_lower |= self.line_scan_parameter(parameter_index)
             #        self.append_log(False)
-            #        counter += 1
+            #        self.counter += 1
 
             #    if not scan_lower:
             #        self.set_coarse(False)
