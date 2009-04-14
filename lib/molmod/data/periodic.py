@@ -108,6 +108,9 @@ class PeriodicData(object):
         self.atoms_by_number[atom_info.number] = atom_info
         self.atoms_by_symbol[atom_info.symbol.lower()] = atom_info
 
+    def __len__(self):
+        return len(self.atoms_by_symbol)
+
     def __getitem__(self, index):
         result = self.atoms_by_number.get(index)
         if (result is None) and isinstance(index, basestring):
