@@ -48,7 +48,6 @@ from binning import *
 from graphs import *
 from molecules import *
 from molecular_graphs import *
-from internal_coordinates import *
 from pairff import *
 from flexff import *
 from data import *
