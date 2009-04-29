@@ -1,7 +1,7 @@
 #! /bin/bash
 # This is a very simplistic install scipt. Use with care!
 
-if [ -z $1 ] && [ "$1" = "--system" ]; then
+if [ -n $1 ] && [ "$1" = "--system" ]; then
   ./uninstall.sh --system
   (cd ext; python setup.py install)
   python setup.py install
@@ -13,6 +13,6 @@ else
   python setup.py install --home=$HOME
   ./cleanfiles.sh
   (cd ext; ./cleanfiles.sh)
-  echo "Don't forget to add 'export PYTHONPATH=$HOME' to your .bashrc file."
+  echo "Don't forget to add 'export PYTHONPATH=\$HOME/lib/python' to your .bashrc file."
 fi
 
