@@ -1,5 +1,5 @@
 #!/bin/bash
-for i in $(find * | egrep "\.pyc$|\.py~$|\.pyc~$|\.bak$|\.so$") ; do rm -v ${i}; done
+for i in $(find lib test ext | egrep "\.pyc$|\.py~$|\.pyc~$|\.bak$|\.so$") ; do rm -v ${i}; done
 
 rm -vr test/output
 rm -v test/molmod
