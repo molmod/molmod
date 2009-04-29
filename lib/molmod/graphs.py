@@ -653,7 +653,7 @@ class Graph(object):
             new_pairs = [new_pairs[i] for i in order]
             old_pair_indexes = [old_pair_indexes[i] for i in order]
 
-            result = Graph(new_pairs)
+            result = Graph(new_pairs, num_nodes=len(subnodes))
             result.old_node_indexes = numpy.array(subnodes, dtype=int)
             #result.new_node_indexes = revorder
             result.old_pair_indexes = numpy.array(old_pair_indexes, dtype=int)
