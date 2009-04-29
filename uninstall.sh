@@ -2,8 +2,8 @@
 # This is a very simplistic uninstall scipt. Use with care!
 
 if [ -n $1 ] && [ "$1" = "--system" ]; then
-  rm -vr /usr/share/molmod
-  rm -vr /usr/lib/python*/site-packages/molmod
+  rm -vr /usr/local/share/molmod
+  rm -vr /usr/local/lib/python*/site-packages/molmod
 else
   if [ -z $PYTHONPATH ]; then
     echo 'WARNING: $PYTHONPATH is not defined, defaulting to \$HOME/lib/python'
