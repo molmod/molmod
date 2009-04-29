@@ -39,7 +39,6 @@ else:
 if not os.path.exists("output"):
     os.mkdir("output")
 
-from molmod import context
 
 import unittest
 
