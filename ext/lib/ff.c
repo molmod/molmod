@@ -32,7 +32,7 @@ inline void add_grad(int i, int j, double s, double *cor, double *gradient) {
 
 }
 
-double ff_dm_quad(int n, double *radii, double *cor, int *dm0, double amp, double *gradient) {
+double ff_dm_quad(int n, double *cor, int *dm0, double amp, double *gradient) {
   int i,j,d0;
   double d, tmp, result;
 
@@ -52,10 +52,13 @@ double ff_dm_quad(int n, double *radii, double *cor, int *dm0, double amp, doubl
         d = sqrt(d);
 
         //printf("d=%f    d0=%i\n", d, d0);
-        tmp = (d-d0*(radii[i]+radii[j]));
-        result += amp*tmp*tmp*radii[i]*radii[j]/d0;
+        //tmp = (d-d0*(radii[i]+radii[j]));
+        //result += amp*tmp*tmp*radii[i]*radii[j]/d0;
+        tmp = (d-d0*d0);
+        result += amp/d0/d0/d0*tmp*tmp;
         if (gradient!=NULL) {
-          tmp = 2*amp*tmp/d0*radii[i]*radii[j]/d;
+          //tmp = 2*amp*tmp/d0*radii[i]*radii[j]/d;
+          tmp = 2*amp/d0/d0/d0*tmp/d;
           add_grad(i, j, tmp, cor, gradient);
         }
         //result += tmp*tmp;

@@ -42,6 +42,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         xyz_fns = [
           "water.xyz", "cyclopentane.xyz", "ethene.xyz", "funny.xyz",
           "tea.xyz", "tpa.xyz", "thf_single.xyz", "precursor.xyz",
+          "butane.xyz", "octane.xyz",
         ]
         for xyz_fn in xyz_fns:
             molecule = self.load_molecule(xyz_fn)

@@ -26,11 +26,10 @@ interface
 !!  ff.c
 !!
 
-  double precision function ff_dm_quad(n,radii,cor,dm0,amp,gradient)
+  double precision function ff_dm_quad(n,cor,dm0,amp,gradient)
     intent(c) ff_dm_quad
     intent(c)
     integer intent(hide), depend(cor) :: n=len(cor)
-    double precision intent(in) :: radii(n)
     double precision intent(in) :: cor(n,3)
     integer intent(in) :: dm0(n,n)
     double precision intent(in) :: amp

@@ -189,24 +189,32 @@ class MolecularGraph(Graph):
         ff = ToyFF(self)
         x_init = numpy.random.normal(0,1,N*3)
 
-        #  level 1 geometry optimization
+        #  level 1 geometry optimization: graph based
         ff.dm_quad = 1.0
-        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-6, 1e-10, 2*N, 500, 50, do_gradient=True, verbose=False)
+        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-10, 1e-8, 2*N, 500, 50, do_gradient=True, verbose=False)
         x_init = minimizer.x
 
-        #  level 2 geometry optimization
+        #  level 2 geometry optimization: graph based + pauli repulsion
+        ff.dm_quad = 1.0
+        ff.dm_reci = 1.0
+        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-10, 1e-8, 2*N, 500, 50, do_gradient=True, verbose=False)
+        x_init = minimizer.x
+
+        # Add a little noise to avoid saddle points
+        x_init += numpy.random.uniform(-0.01, 0.01, len(x_init))
+
+        #  level 3 geometry optimization: bond lengths + pauli
         ff.dm_quad = 0.0
-        ff.dm_reci = 0.1
+        ff.dm_reci = 0.2
         ff.bond_quad = 1.0
-        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-4, 1e-10, 2*N, 500, 50, do_gradient=True, verbose=False)
+        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-3, 1e-3, 2*N, 500, 50, do_gradient=True, verbose=False)
         x_init = minimizer.x
 
-        #  level 3 geometry optimization
+        #  level 4 geometry optimization: bond lengths + bending angles + pauli
         ff.bond_quad = 0.0
         ff.bond_hyper = 1.0
-        ff.span_quad = 10.0
-        ff.dm_reci = 0.5
-        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-5, 1e-10, 2*N, 500, 50, do_gradient=True, verbose=False)
+        ff.span_quad = 1.0
+        minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-6, 1e-6, 2*N, 500, 50, do_gradient=True, verbose=False)
         x_init = minimizer.x
 
         x_opt = x_init
@@ -258,6 +266,7 @@ class MolecularGraph(Graph):
         new_orders[self.num_pairs:] = 1
         result = MolecularGraph(new_pairs, new_numbers, new_orders)
         return result
+
 
 # initial geometry based on graph
 
@@ -319,21 +328,23 @@ class ToyFF(object):
         self.span_quad = 0.0
         self.bond_hyper = 0.0
 
+
     def __call__(self, x, do_gradient=False):
         x = x.reshape((-1,3))
         result = 0.0
 
         gradient = numpy.zeros(x.shape, float)
         if self.dm_quad > 0.0:
-            result += ff_dm_quad(self.covalent_radii, x, self.dm0, self.dm_quad, gradient)
+            result += ff_dm_quad(x, self.dm0, self.dm_quad, gradient)
         if self.dm_reci:
-            result += ff_dm_reci(self.vdw_radii, x, self.dm0, self.dm_reci, gradient)
+            result += ff_dm_reci(1.0*self.vdw_radii, x, self.dm0, self.dm_reci, gradient)
         if self.bond_quad:
             result += ff_bond_quad(x, self.bond_pairs, self.bond_lengths, self.bond_quad, gradient)
         if self.span_quad:
             result += ff_bond_quad(x, self.span_pairs, self.span_lengths, self.span_quad, gradient)
         if self.bond_hyper:
-            result += ff_bond_hyper(x, self.bond_pairs, self.bond_lengths, 10.0, self.bond_hyper, gradient)
+            result += ff_bond_hyper(x, self.bond_pairs, self.bond_lengths, 5.0, self.bond_hyper, gradient)
+
         if do_gradient:
             return result, gradient.ravel()
         else:
