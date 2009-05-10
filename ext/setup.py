@@ -33,6 +33,7 @@ setup(
     ext_modules=[
         Extension("molmod.ext", ["lib/interface.pyf",
             "lib/ff.c", "lib/graphs.c", "lib/similarity.c", "lib/molecules.c",
+            "lib/volume.c",
         ]),
     ],
     packages=['molmod'],
