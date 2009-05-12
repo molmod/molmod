@@ -61,6 +61,7 @@ from randomize import *
 from patches import *
 from zmatrix import *
 from ic import *
+from volume import *
 
 unittest.main()
 
