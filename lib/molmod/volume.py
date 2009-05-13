@@ -69,13 +69,27 @@ def estimate_volumes(molecule, probe_radius=2.65, max_error=6.0, bigbox=True):
     return vdw_volume, sas_volume, ses_volume, error
 
 
-def estimate_radius(mol, max_error=0.2):
+def estimate_radius(mol, max_error=0.02):
+    """Estimates the effective radius of a solvent molecule.
+
+       Arguments:
+         mol  --  The solvent molecule object
+         max_error  --  A convergence threshold for the self-consistent estimate
+                        of the radius
+
+       This function estimates the effective solvent radius in a self-consistent
+       way. The initial guess for the radius is 1.0*angstrom. Based on this
+       radius, the solvent excluded volume is computed. Then a new radius is
+       computed as the radius of a sphere with a volume equal to the solvent
+       excluded volume. This is repeated until the change in radii between two
+       iterations and the sampling error is smaller than the given threshold.
+    """
     radius = 1.0*angstrom
     while True:
         max_vol_error = min(4*numpy.pi*radius*radius*max_error, 2.65)
         vdw_volume, sas_volume, ses_volume, vol_error = estimate_volumes(mol, radius, max_vol_error, False)
         new_radius = (3*ses_volume/4/numpy.pi)**(1.0/3)
-        error = max(vol_error/(4*numpy.pi*new_radius*new_radius), 10*abs(new_radius-radius))
+        error = max(vol_error/(4*numpy.pi*new_radius*new_radius), abs(new_radius-radius))
         radius = new_radius
         #print radius/angstrom, error/angstrom
         if error < max_error:
