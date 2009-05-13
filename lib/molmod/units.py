@@ -69,6 +69,8 @@ u = 1e-3*kg/mol
 # for compatibility with previous verions
 unified = u
 amu = u
+gram = g
+kilogram = kg
 
 # *** Length ***
 
