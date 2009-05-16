@@ -31,7 +31,7 @@ interface
     intent(c)
     integer intent(hide), depend(cor) :: n=len(cor)
     double precision intent(in) :: cor(n,3)
-    integer intent(in) :: dm0(n,n)
+    double precision intent(in) :: dm0(n,n)
     double precision intent(in) :: amp
     double precision intent(inout) :: gradient(n,3)
   end function ff_dm_quad
