@@ -243,7 +243,7 @@ fail:
 }
 
 
-double monte_carlo_volumes(int n, double probe_radius, double *spheres, double *sphere_radii, int num_iter, int bigbox, int ses_iter, long int *counts) {
+double monte_carlo_volumes(int n, double probe_radius, double *spheres, double *sphere_radii, int num_iter, int bigbox, int ses_iter, long long *counts) {
   /* use monte carlo sampling the integrate the van der waals volume, the
      volume enclosed by the accessible surface and the solvent excluded surface.
      */
