@@ -274,7 +274,9 @@ class ToyFF(object):
     def __init__(self, graph):
         from molmod.data.bonds import bonds
 
-        self.dm0 = graph.distances.astype(numpy.int32)
+        dm = graph.distances.astype(float)
+        self.dm0 = dm**2
+        self.dmk = dm**(-3)
         self.vdw_radii = numpy.array([periodic[number].vdw_radius for number in graph.numbers], dtype=float)
         self.covalent_radii = numpy.array([periodic[number].covalent_radius for number in graph.numbers], dtype=float)
 
@@ -335,7 +337,7 @@ class ToyFF(object):
 
         gradient = numpy.zeros(x.shape, float)
         if self.dm_quad > 0.0:
-            result += ff_dm_quad(x, self.dm0, self.dm_quad, gradient)
+            result += ff_dm_quad(x, self.dm0, self.dmk, self.dm_quad, gradient)
         if self.dm_reci:
             result += ff_dm_reci(1.0*self.vdw_radii, x, self.dm0, self.dm_reci, gradient)
         if self.bond_quad:
