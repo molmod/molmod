@@ -401,7 +401,7 @@ def coincide(ras, rbs, maxiter=100):
 
     http://dx.doi.org/10.1107%2FS0567739476001873
 
-    The returnd transformation projects B onto A.
+    The returned transformation projects B onto A.
     """
     from molmod.linalg import safe_inv
 
