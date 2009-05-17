@@ -412,6 +412,7 @@ def coincide(ras, rbs, maxiter=100):
     A = numpy.dot((rbs-mb).transpose(), ras-ma)
     B = numpy.dot(A.transpose(), A)
     evals, evecs = numpy.linalg.eigh(B)
+    evals = numpy.clip(evals, 0, evals.max())
     Bhalf = numpy.dot(evecs*numpy.sqrt(evals), evecs.transpose())
     #Ainv = safe_inv(A)
     Ainv = numpy.linalg.inv(A)
