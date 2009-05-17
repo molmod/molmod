@@ -32,7 +32,7 @@ else:
         os.system("cd ../; rm -rf build; cd ext; rm -rf build")
     retcode = os.system("(cd ..; python setup.py build)")
     if retcode != 0: sys.exit(retcode)
-    retcode = os.system("(cd ../ext; python setup.py build; cp -avr build/lib*/* ../build/lib/)")
+    retcode = os.system("(cd ../ext; python setup.py build; cp -avr build/lib*/* ../build/lib*/)")
     if retcode != 0: sys.exit(retcode)
     sys.path.insert(0, glob.glob("../build/lib*")[0])
 
