@@ -67,11 +67,11 @@ class MolecularGraph(Graph):
                 if bond_order != None:
                     return bond_order, distance
 
-        bond_data = list(
+        bond_data = list(dict(
             (frozenset([positioned.id for positioned in key]), data)
             for key, data
             in IntraAnalyseNeighboringObjects(binned_atoms, compare_function)(unit_cell)
-        )
+        ).iteritems())
         pairs = tuple(pair for pair, data in bond_data)
         orders = numpy.array([data[0] for pair, data in bond_data], dtype=int)
         lengths = numpy.array([data[1] for pair, data in bond_data], dtype=float)
