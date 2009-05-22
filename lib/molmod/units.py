@@ -40,7 +40,7 @@ from constants import avogadro, lightspeed
 def parse_unit(expression):
     try:
         g = globals()
-        return float(eval(expression, g))
+        return float(eval(str(expression), g))
     except:
         raise ValueError("Could not interpret '%s' as a unit or a measure." % expression)
 
