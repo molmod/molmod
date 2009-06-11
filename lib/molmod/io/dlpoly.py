@@ -25,7 +25,7 @@ from molmod.io.common import slice_match
 import numpy
 
 
-__all__ = ["Error", "HistoryReader"]
+__all__ = ["Error", "HistoryReader", "OutputReader"]
 
 
 class Error(Exception):
