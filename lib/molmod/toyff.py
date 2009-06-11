@@ -19,6 +19,7 @@
 # --
 
 
+from molmod import context
 from molmod.molecules import Molecule
 from molmod.data.periodic import periodic
 
@@ -144,33 +145,47 @@ class ToyFF(object):
         self.bond_pairs = numpy.array(bond_pairs, numpy.int32)
         self.bond_lengths = numpy.array(bond_lengths, float)
 
+        special_angles = SpecialAngles()
+
         span_pairs = []
         span_lengths = []
         for i, neighbors in graph.neighbors.iteritems():
             number_i = graph.numbers[i]
             if (number_i >= 5 and number_i <=8):
-                order = len(neighbors) + abs(number_i-6)
+                valence = len(neighbors) + abs(number_i-6)
             elif number_i >= 13 and number_i <= 16:
-                order = len(neighbors) + abs(number_i-14)
+                valence = len(neighbors) + abs(number_i-14)
             else:
-                order = -1
-            if order < 2 or order > 6:
-                angle = numpy.pi/180.0*115.0
-            elif order == 2:
-                angle = numpy.pi
-            elif order == 3:
-                angle = numpy.pi/180.0*125.0
-            elif order == 4:
-                angle = numpy.pi/180.0*109.0
-            elif order == 5:
-                angle = numpy.pi/180.0*100.0
-            elif order == 6:
-                angle = numpy.pi/180.0*90.0
+                valence = -1
+            if valence < 2 or valence > 6:
+                default_angle = numpy.pi/180.0*115.0
+            elif valence == 2:
+                default_angle = numpy.pi
+            elif valence == 3:
+                default_angle = numpy.pi/180.0*125.0
+            elif valence == 4:
+                default_angle = numpy.pi/180.0*109.0
+            elif valence == 5:
+                default_angle = numpy.pi/180.0*100.0
+            elif valence == 6:
+                default_angle = numpy.pi/180.0*90.0
             for j in neighbors:
                 number_j = graph.numbers[j]
                 for k in neighbors:
                     if j<k and not frozenset([j,k]) in graph.pairs:
                         number_k = graph.numbers[k]
+
+                        triplet = (
+                            number_j, len(graph.neighbors[j]),
+                            number_i, len(graph.neighbors[i]),
+                            number_k, len(graph.neighbors[k]),
+                        )
+
+                        angle = special_angles.get_angle(triplet)
+                        print triplet, angle
+                        if angle is None:
+                            angle = default_angle
+
                         dj = bonds.get_length(number_i,number_j)
                         dk = bonds.get_length(number_i,number_k)
                         d = numpy.sqrt(dj**2+dk**2-2*dj*dk*numpy.cos(angle))
@@ -205,4 +220,20 @@ class ToyFF(object):
             return result, gradient.ravel()
         else:
             return result
+
+
+class SpecialAngles(object):
+    def __init__(self):
+        self.angle_dict = {}
+        f = open(context.get_share_filename('toyff_angles.txt'))
+        for line in f:
+            if line[0] != '#':
+                key = tuple(int(word) for word in line[0:line.index(':')].split(","))
+                value = numpy.pi/180.0*float(line[line.index(':')+1:-1])
+                self.angle_dict[key] = value
+
+    def get_angle(self,triplet):
+        return self.angle_dict.get(triplet)
+
+
 

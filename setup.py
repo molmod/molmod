@@ -64,8 +64,10 @@ setup(
         'molmod.io.mpqc',
     ],
     data_files=[
-        ('share/molmod', glob.glob('share/*.csv') + [
+        ('share/molmod', [
+            "share/periodic.csv", "share/bonds.csv",
             "share/mass.mas03", "share/nubtab03.asc",
+            "share/toyff_angles.txt"
         ]),
     ],
     classifiers=[
