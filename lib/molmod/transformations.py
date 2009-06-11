@@ -414,13 +414,13 @@ def coincide(ras, rbs, maxiter=100):
     evals, evecs = numpy.linalg.eigh(B)
     evals = numpy.clip(evals, 0, evals.max())
     Bhalf = numpy.dot(evecs*numpy.sqrt(evals), evecs.transpose())
-    #Ainv = safe_inv(A)
-    Ainv = numpy.linalg.inv(A)
+    Ainv = safe_inv(A)
+    #Ainv = numpy.linalg.inv(A)
     r = numpy.dot(Bhalf, Ainv)
 
     # fix degeneracies
-    #U, W, Vt = numpy.linalg.svd(r)
-    #r = numpy.dot(U, Vt)
+    U, W, Vt = numpy.linalg.svd(r)
+    r = numpy.dot(U, Vt)
 
     complete = Complete()
     complete.r = r
