@@ -327,3 +327,4 @@ class CellReader(object):
         ])*angstrom
         return int(words[0]), float(words[1]), cell, float(words[11])
 
+
