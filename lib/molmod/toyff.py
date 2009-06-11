@@ -182,7 +182,6 @@ class ToyFF(object):
                         )
 
                         angle = special_angles.get_angle(triplet)
-                        print triplet, angle
                         if angle is None:
                             angle = default_angle
 
