@@ -25,7 +25,7 @@ import numpy, math
 
 __all__ = [
     "Base", "Translation", "Rotation", "Complete", "rotation_around_center",
-    "coincide",
+    "superpose",
 ]
 
 
@@ -392,7 +392,7 @@ def random_rotation():
     return result
 
 
-def coincide(ras, rbs, maxiter=100):
+def superpose(ras, rbs, weights=None):
     """Compute the transformation that minimizes the RMSD between the points ras and rbs
 
     Both ras and rbs are Nx3 numpy arrays. Each row corresponds to a 3D
@@ -405,11 +405,21 @@ def coincide(ras, rbs, maxiter=100):
     """
     from molmod.linalg import safe_inv
 
-    ma = ras.mean(axis=0)
-    mb = rbs.mean(axis=0)
+    if weights is None:
+        ma = ras.mean(axis=0)
+        mb = rbs.mean(axis=0)
+    else:
+        total_weight = weights.sum()
+        ma = numpy.dot(weights, ras)/total_weight
+        mb = numpy.dot(weights, rbs)/total_weight
+
 
     # Kabsch
-    A = numpy.dot((rbs-mb).transpose(), ras-ma)
+    if weights is None:
+        A = numpy.dot((rbs-mb).transpose(), ras-ma)
+    else:
+        weights = weights.reshape((-1,1))
+        A = numpy.dot(((rbs-mb)*weights).transpose(), (ras-ma)*weights)
     B = numpy.dot(A.transpose(), A)
     evals, evecs = numpy.linalg.eigh(B)
     evals = numpy.clip(evals, 0, evals.max())

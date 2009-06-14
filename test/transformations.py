@@ -21,7 +21,7 @@
 
 from common import BaseTestCase
 
-from molmod.transformations import Complete, coincide
+from molmod.transformations import Complete, superpose
 from molmod.vectors import random_unit
 
 import numpy, copy, random, math
@@ -88,7 +88,7 @@ class TransformationsTestCase(BaseTestCase):
                 translation_error = numpy.sum((t - temp.t)**2)/3.0
                 self.assertAlmostEqual(translation_error, 0)
 
-    def test_coincide(self):
+    def test_superpose(self):
         # create a few test sets with random data points, including degenerate
         # situations. (e.g. one point, two points, linear points)
         references = [ # a list of 2-tuples: (points, degenerate)
@@ -116,7 +116,7 @@ class TransformationsTestCase(BaseTestCase):
             ))
 
         for (ref_points, degenerate), (tr_points, transf) in zip(references, randomized):
-            check_transf = coincide(ref_points, tr_points)
+            check_transf = superpose(ref_points, tr_points)
             # check whether the rotation matrix is orthogonal
             self.assertArraysAlmostEqual(numpy.dot(check_transf.r, check_transf.r.transpose()), numpy.identity(3, float), 1e-5)
             # first check whether check_transf brings the tr_points back to the ref_points
@@ -139,7 +139,7 @@ class TransformationsTestCase(BaseTestCase):
 
         # Do a blind test
         for (ref_points, degenerate), (tr_points, transf) in zip(references, randomized):
-            coincide(ref_points, tr_points)
+            superpose(ref_points, tr_points)
 
 
 
