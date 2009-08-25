@@ -422,7 +422,7 @@ def dihed_angle(r0, r1, r2, r3, deriv=0):
     a = r0 - r1
     b = r2 - r1
     c = r3 - r2
-    sign = (numpy.linalg.det([a,b,c]) > 0)*2 - 1
+    sign = 1-(numpy.linalg.det([a,b,c]) > 0)*2
     return _cos_to_angle(result, deriv, sign)
 
 

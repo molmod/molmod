@@ -230,7 +230,7 @@ class ICTestCase(BaseTestCase):
             c[5] = [
                 offset,
                 -radius*numpy.cos(angle),
-                radius*numpy.sin(angle),
+                -radius*numpy.sin(angle),
             ]
             self.assertAlmostEqual(ic.dihed_cos(c[2], c[0], c[3], c[5])[0], numpy.cos(angle))
             self.assertAlmostEqual(ic.dihed_angle(c[2], c[0], c[3], c[5])[0], angle)
