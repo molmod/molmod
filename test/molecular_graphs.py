@@ -125,8 +125,8 @@ class MolecularGraphTestCase(unittest.TestCase):
             ])
         }
         test_results = dict((key, []) for key in expected_results)
-        match_generator = GraphSearch(pattern, debug=False)
-        for match in match_generator(molecule.graph):
+        graph_search = GraphSearch(pattern, debug=False)
+        for match in graph_search(molecule.graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
         def iter_alternatives(test_item, key):
@@ -178,8 +178,8 @@ class MolecularGraphTestCase(unittest.TestCase):
             'CCC': set([(3, 2, 1), (4, 5, 6), (7, 8, 9), (10, 11, 12)])
         }
         test_results = dict((key, []) for key in expected_results)
-        match_generator = GraphSearch(pattern, debug=False)
-        for match in match_generator(molecule.graph):
+        graph_search = GraphSearch(pattern, debug=False)
+        for match in graph_search(molecule.graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
         def iter_alternatives(test_item, key):
@@ -224,8 +224,8 @@ class MolecularGraphTestCase(unittest.TestCase):
             ])
         }
         test_results = dict((key, []) for key in expected_results)
-        match_generator = GraphSearch(pattern, debug=False)
-        for match in match_generator(molecule.graph):
+        graph_search = GraphSearch(pattern, debug=False)
+        for match in graph_search(molecule.graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
         def iter_alternatives(test_item, key):
@@ -248,8 +248,8 @@ class MolecularGraphTestCase(unittest.TestCase):
             ]),
         }
         test_results = dict((key, []) for key in expected_results)
-        match_generator = GraphSearch(pattern, debug=False)
-        for match in match_generator(molecule.graph):
+        graph_search = GraphSearch(pattern, debug=False)
+        for match in graph_search(molecule.graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
 
@@ -284,8 +284,8 @@ class MolecularGraphTestCase(unittest.TestCase):
             'all': all_dihedrals,
         }
         test_results = dict((key, []) for key in expected_results)
-        match_generator = GraphSearch(pattern, debug=False)
-        for match in match_generator(molecule.graph):
+        graph_search = GraphSearch(pattern, debug=False)
+        for match in graph_search(molecule.graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
         def iter_alternatives(test_item, key):
@@ -303,8 +303,8 @@ class MolecularGraphTestCase(unittest.TestCase):
         }
 
         test_results = dict((key, []) for key in expected_results)
-        match_generator = GraphSearch(pattern, debug=False)
-        for match in match_generator(molecule.graph):
+        graph_search = GraphSearch(pattern, debug=False)
+        for match in graph_search(molecule.graph):
             test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
         def iter_alternatives(test_item, key):
@@ -319,8 +319,8 @@ class MolecularGraphTestCase(unittest.TestCase):
         molecule = self.load_molecule("precursor.xyz")
         pattern = RingPattern(21)
         all_rings = {}
-        match_generator = GraphSearch(pattern, debug=False)
-        for match in match_generator(molecule.graph):
+        graph_search = GraphSearch(pattern, debug=False)
+        for match in graph_search(molecule.graph):
             l = all_rings.setdefault(len(match.ring_nodes), set([]))
             l.add(match.ring_nodes)
 
@@ -330,8 +330,8 @@ class MolecularGraphTestCase(unittest.TestCase):
             expected_results = {tag: solutions}
 
             test_results = {tag: []}
-            match_generator = GraphSearch(pattern, debug=False)
-            for match in match_generator(molecule.graph):
+            graph_search = GraphSearch(pattern, debug=False)
+            for match in graph_search(molecule.graph):
                 test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
 
             def iter_alternatives(test_item, key):
