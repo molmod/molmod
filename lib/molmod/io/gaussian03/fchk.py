@@ -102,13 +102,13 @@ class FCHKFile(object):
             self.fields[label] = value
             return True
 
+        self.fields = {}
         f = file(filename, 'r')
         self.title = f.readline()[:-1]
         words = f.readline().split()
         if len(words) != 3:
             raise ReadError("Second line of FCHKFile is incorrect. Expecting three words.")
         self.command, self.lot, self.basis = words
-        self.fields = {}
 
         while read_field(f):
             pass
