@@ -52,9 +52,11 @@ object.
 
 import copy, numpy
 
+from molmod.utils import cached
+
 
 __all__ = [
-    "OneToOneError", "OneToOne", "GraphError", "cached", "Graph",
+    "OneToOneError", "OneToOne", "GraphError", "Graph",
     "Match", "PatternError", "Pattern",
     "CriteriaSet", "Anything", "CritOr", "CritAnd", "CritXor", "CritNot",
     "CritNodeString", "CritPairString",
@@ -145,30 +147,6 @@ class OneToOne(object):
 
 class GraphError(Exception):
     pass
-
-
-class cached(object):
-    """A decorator that will turn a method into a caching descriptor.
-
-    When attribute is requested for the firs time, the original method will
-    be called and its return value is cached. Subsequent access to the attribute
-    will just return the cached value.
-    """
-    def __init__(self, fn):
-        self.fn = fn
-        self.attribute_name = "_cache_%s" % fn.__name__
-        self.__doc__ = fn.__doc__
-
-    def __get__(self, instance, owner):
-        value = getattr(instance, self.attribute_name, self)
-        if value is self:
-            #print "COMPUTING %s" % self.attribute_name
-            value = self.fn(instance)
-            setattr(instance, self.attribute_name, value)
-            if isinstance(value, numpy.ndarray):
-                value.setflags(write=False)
-        return value
-
 
 
 class Graph(object):
