@@ -479,16 +479,16 @@ class GraphTestCase(unittest.TestCase):
             for i,j in subgraph.pairs:
                 self.assert_(i in subnodes)
                 self.assert_(j in subnodes)
-            for i_new, i_old in enumerate(subgraph.old_pair_indexes):
+            for i_new, i_old in enumerate(subgraph._old_pair_indexes):
                 self.assertEqual(subgraph.pairs[i_new], graph.pairs[i_old])
 
             # normalized case
             subgraph = graph.get_subgraph(subnodes, normalize=True)
             self.assert_(subgraph.num_nodes <= len(subnodes))
-            for p0,p1 in enumerate(subgraph.old_pair_indexes):
+            for p0,p1 in enumerate(subgraph._old_pair_indexes):
                 i0,j0 = subgraph.pairs[p0]
                 #i1,j1 = subgraph.pairs[p1]
-                pair_old = frozenset([subgraph.old_node_indexes[i0],subgraph.old_node_indexes[j0]])
+                pair_old = frozenset([subgraph._old_node_indexes[i0],subgraph._old_node_indexes[j0]])
                 self.assertEqual(pair_old, graph.pairs[p1])
 
     def test_halfs(self):

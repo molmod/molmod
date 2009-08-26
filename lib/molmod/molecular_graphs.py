@@ -112,32 +112,34 @@ class MolecularGraph(Graph):
         is -1.
         """
         if orders is None:
-            orders = numpy.zeros(len(pairs), dtype=int)
+            orders = numpy.ones(len(pairs), int)
         elif len(orders) != len(pairs):
             raise ValueError("The number of (bond) orders must be equal to the number of pairs")
         Graph.__init__(self, pairs, len(numbers))
-        self._numbers = numpy.array(numbers)
-        self._numbers.setflags(write=False)
-        self._orders = numpy.array(orders)
-        self._orders.setflags(write=False)
-
-    numbers = property(lambda self: self._numbers)
-    orders = property(lambda self: self._orders)
+        self._init_attributes({"numbers": numbers, "orders": orders}, {})
 
     def __mul__(self, repeat):
-        result = Graph.__mul__(self, repeat)
-        result.__class__ = MolecularGraph
+        """Construct a graph that repeats this graph a number of times.
+
+        Arguments:
+          repeat -- The number of repetitions.
+        """
+        if not isinstance(repeat, int):
+            raise TypeError("Can only multiply a graph with an integer")
+        # copy pairs
+        new_pairs = []
+        for i in xrange(repeat):
+            for node1, node2 in self.pairs:
+                new_pairs.append(frozenset([node1+i*self.num_nodes,node2+i*self.num_nodes]))
         # copy numbers
-        numbers = numpy.zeros((repeat, len(self.numbers)), int)
-        numbers[:] = self.numbers
-        result._numbers = numbers.ravel()
-        result._numbers.setflags(write=False)
+        new_numbers = numpy.zeros((repeat, len(self.numbers)), int)
+        new_numbers[:] = self.numbers
+        new_numbers = new_numbers.ravel()
         # copy orders
-        orders = numpy.zeros((repeat, len(self.orders)), int)
-        orders[:] = self.orders
-        result._orders = orders.ravel()
-        result._orders.setflags(write=False)
-        return result
+        new_orders = numpy.zeros((repeat, len(self.orders)), int)
+        new_orders[:] = self.orders
+        new_orders = new_orders.ravel()
+        return MolecularGraph(new_pairs, new_numbers, new_orders)
 
     __rmul__ = __mul__
 
@@ -169,15 +171,16 @@ class MolecularGraph(Graph):
 
         See help(Graph.get_subgraph) for more information.
         """
-        result = Graph.get_subgraph(self, subnodes, normalize)
-        result.__class__ = MolecularGraph
+        graph = Graph.get_subgraph(self, subnodes, normalize)
         if normalize:
-            result._numbers = self.numbers[result.old_node_indexes] # nodes do change
-            result._numbers.setflags(write=False)
+            new_numbers = self.numbers[graph._old_node_indexes] # nodes do change
         else:
-            result._numbers = self.numbers # nodes don't change!
-        result._orders = self.orders[result.old_pair_indexes]
-        result._orders.setflags(write=False)
+            new_numbers = self.numbers # nodes don't change!
+        new_orders = self.orders[graph._old_pair_indexes]
+        result = MolecularGraph(graph.pairs, new_numbers, new_orders)
+        if normalize:
+            result._old_node_indexes = graph._old_node_indexes
+        result._old_pair_indexes = graph._old_pair_indexes
         return result
 
     def add_hydrogens(self, formal_charges=None):

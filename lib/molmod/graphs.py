@@ -52,7 +52,7 @@ object.
 
 import copy, numpy
 
-from molmod.utils import cached
+from molmod.utils import cached, ReadOnly
 
 
 __all__ = [
@@ -149,7 +149,7 @@ class GraphError(Exception):
     pass
 
 
-class Graph(object):
+class Graph(ReadOnly):
     """The Graph class implements an undirected graph. All pairs have equal weight.
 
     The pairs attribute is the most elementary and is always available. All
@@ -194,7 +194,8 @@ class Graph(object):
         converted.
 
         """
-        self._pairs = []
+        ReadOnly.__init__(self)
+        tmp = []
         for pair in pairs:
             if len(pair) != 2:
                 raise TypeError("The pairs must be a iterable with 2 elements")
@@ -207,23 +208,23 @@ class Graph(object):
                 raise TypeError("The pairs must contain integers.")
             if i < 0 or j < 0:
                 raise TypeError("The pairs must contain positive integers.")
-            self._pairs.append(frozenset([i,j]))
-        self._pairs = tuple(self._pairs)
+            tmp.append(frozenset([i,j]))
+        pairs = tuple(tmp)
 
-        if len(self._pairs) == 0:
-            self._num_nodes = 0
+        if len(pairs) == 0:
+            real_num_nodes = 0
         else:
-            self._num_nodes = max(max(a,b) for a,b in self._pairs)+1
+            real_num_nodes = max(max(a,b) for a,b in pairs)+1
         if num_nodes is not None:
             if not isinstance(num_nodes, int):
                 raise TypeError("The optional argument num_nodes must be an integer when given.")
-            if num_nodes < self._num_nodes:
+            if num_nodes < real_num_nodes:
                 raise ValueError("num_nodes must be equal or larger to the number of nodes deduced from the pair list.")
-            self._num_nodes = num_nodes
+            real_num_nodes = num_nodes
 
-    pairs = property(lambda self: self._pairs)
-    num_nodes = property(lambda self: self._num_nodes)
-    num_pairs = property(lambda self: len(self._pairs))
+        self._init_attributes({"pairs": pairs, "num_nodes": real_num_nodes}, {})
+
+    num_pairs = property(lambda self: len(self.pairs))
 
     def __mul__(self, repeat):
         """Construct a graph that repeats this graph a number of times.
@@ -237,8 +238,7 @@ class Graph(object):
         for i in xrange(repeat):
             for node1, node2 in self.pairs:
                 new_pairs.append(frozenset([node1+i*self.num_nodes,node2+i*self.num_nodes]))
-        result = Graph(new_pairs, self.num_nodes*repeat)
-        return result
+        return Graph(new_pairs, self.num_nodes*repeat)
 
     __rmul__ = __mul__
 
@@ -603,13 +603,13 @@ class Graph(object):
 
         The returned graph will have an attribute old_pair_indexes that relates
         the positions of the new and the old pairs as follows:
-          self.pairs[result.old_pair_indexes[i]] = result.pairs[i]
+          self.pairs[result._old_pair_indexes[i]] = result.pairs[i]
         In derived classes, the following should be supported:
-          self.pair_property[result.old_pair_indexes[i]] = result.pair_property[i]
+          self.pair_property[result._old_pair_indexes[i]] = result.pair_property[i]
 
         When normalize==True, also the nodes are affected and the derived classes
         should make sure that the following works:
-          self.node_property[result.old_node_indexes[i]] = result.node_property[i]
+          self.node_property[result._old_node_indexes[i]] = result.node_property[i]
         The attribute old_node_indexes is only constructed when normalize==True.
         """
         if normalize:
@@ -632,15 +632,15 @@ class Graph(object):
             old_pair_indexes = [old_pair_indexes[i] for i in order]
 
             result = Graph(new_pairs, num_nodes=len(subnodes))
-            result.old_node_indexes = numpy.array(subnodes, dtype=int)
+            result._old_node_indexes = numpy.array(subnodes, dtype=int)
             #result.new_node_indexes = revorder
-            result.old_pair_indexes = numpy.array(old_pair_indexes, dtype=int)
+            result._old_pair_indexes = numpy.array(old_pair_indexes, dtype=int)
         else:
             subnodes = set(subnodes)
             old_pair_indexes = numpy.array([i for i, pair in enumerate(self.pairs) if pair.issubset(subnodes)], dtype=int)
             new_pairs = tuple(self.pairs[i] for i in old_pair_indexes)
             result = Graph(new_pairs, self.num_nodes)
-            result.old_pair_indexes = old_pair_indexes
+            result._old_pair_indexes = old_pair_indexes
             # no need for old and new node_indexes because they remain the same.
         return result
 
@@ -831,7 +831,7 @@ class Graph(object):
                     match = local_matches[0]
                     # we need to restore the relation between the normalize graph0
                     # and its original indexes
-                    old_to_new = OneToOne(((j,i) for i,j in enumerate(graph0.old_node_indexes)))
+                    old_to_new = OneToOne(((j,i) for i,j in enumerate(graph0._old_node_indexes)))
                     matches.append(match * old_to_new)
                     del graphs1[i]
                     found_match = True
