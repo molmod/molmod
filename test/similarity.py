@@ -34,13 +34,9 @@ __all__ = ["SimilarityTestCase"]
 class SimilarityTestCase(unittest.TestCase):
     def get_molecules(self):
         tpa = XYZFile("input/tpa.xyz").get_molecule()
-        tpa.title = "tpa"
         tea = XYZFile("input/tea.xyz").get_molecule()
-        tea.title = "tea"
         water = XYZFile("input/water.xyz").get_molecule()
-        water.title = "water"
         cyclopentane = XYZFile("input/cyclopentane.xyz").get_molecule()
-        cyclopentane.title = "cyclopentane"
 
         return [tpa, tea, water, cyclopentane]
         #return [water, cyclopentane]
