@@ -48,7 +48,6 @@ class MolecularGraphTestCase(unittest.TestCase):
         for xyz_fn in xyz_fns:
             molecule = self.load_molecule(xyz_fn)
             if allow_multi or len(molecule.graph.independent_nodes) == 1:
-                molecule.title = xyz_fn[:-4]
                 yield molecule
         sdf_fns = [
             "example.sdf", "CID_22898828.sdf", "SID_55127927.sdf",
@@ -59,7 +58,6 @@ class MolecularGraphTestCase(unittest.TestCase):
         for sdf_fn in sdf_fns:
             for i, molecule in enumerate(SDFReader(os.path.join("input", sdf_fn))):
                 if allow_multi or len(molecule.graph.independent_nodes) == 1:
-                    molecule.title = "%s_%i" % (sdf_fn[:-4], i)
                     yield molecule
 
     # graph search tests
