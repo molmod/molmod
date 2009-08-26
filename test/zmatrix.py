@@ -76,14 +76,14 @@ class ZMatrixTestCase(BaseTestCase):
             ("number",   3, 6),
             ("distance", 3, 1.450*angstrom),
             ("angle",    3, 109.471*deg),
-            ("dihed",    3, -180*deg),
+            ("dihed",    3, 180*deg),
 
             ("number",   4, 6),
             ("distance", 4, 1.440*angstrom),
             ("rel1",     4, 4),
             ("angle",    4, 109.471*deg),
             ("rel2",     4, 3),
-            ("dihed",    4, -180*deg),
+            ("dihed",    4, 180*deg),
             ("rel3",     4, 2),
 
             ("number",   7, 6),
@@ -91,7 +91,7 @@ class ZMatrixTestCase(BaseTestCase):
             ("rel1",     7, 7),
             ("angle",    7, 109.471*deg),
             ("rel2",     7, 3),
-            ("dihed",    7, 120*deg),
+            ("dihed",    7, -120*deg),
             ("rel3",     7, 6),
 
             ("number",   19, 1),
@@ -99,7 +99,7 @@ class ZMatrixTestCase(BaseTestCase):
             ("rel1",     19, 16),
             ("angle",    19, 109.471*deg),
             ("rel2",     19, 1),
-            ("dihed",    19, -120*deg),
+            ("dihed",    19, 120*deg),
             ("rel3",     19, 2),
         ]
         test_one("input/tpa.xyz", checks)

@@ -160,7 +160,9 @@ def zmat_to_cart(zmat):
             new_x = random_orthonormal(new_z)
         else:
             new_x /= numpy.linalg.norm(new_x)
-        new_y = numpy.cross(new_z, new_x)
+        # we must make our axes frame left handed due to the poor IUPAC
+        # definition of the sign of a dihedral angle.
+        new_y = -numpy.cross(new_z, new_x)
 
         # coordinates of new atom:
         x = distance*numpy.cos(dihed)*numpy.sin(angle)
