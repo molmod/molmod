@@ -24,7 +24,7 @@ from common import BaseTestCase
 from molmod.transformations import Complete, superpose
 from molmod.vectors import random_unit
 
-import numpy, copy, random, math
+import numpy, copy
 import unittest
 
 
@@ -36,7 +36,11 @@ class TransformationsTestCase(BaseTestCase):
         self.test_transformations = []
         for i in xrange(20):
             test_transformation = Complete()
-            test_transformation.set_rotation_properties(random.random()*math.pi*2, numpy.random.uniform(-3, 3, 3), random.sample([True, False], 1)[0])
+            test_transformation.set_rotation_properties(
+                numpy.random.uniform(0,numpy.pi*2),
+                numpy.random.uniform(-3, 3, 3),
+                numpy.random.randint(0,1)
+            )
             test_transformation.t = numpy.random.uniform(-3, 3, 3)
             self.test_transformations.append(test_transformation)
 

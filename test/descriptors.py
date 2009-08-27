@@ -25,9 +25,7 @@ from molmod.transformations import Complete
 
 from molmod.io.xyz import XYZFile
 
-import numpy
-
-import unittest, math, random
+import numpy, unittest
 
 
 __all__ = ["DescriptorTestCase"]
@@ -48,7 +46,7 @@ class DescriptorTestCase(unittest.TestCase):
         for counter in xrange(3):
             transformation = Complete()
             transformation.set_rotation_properties(
-                random.uniform(0, 2*math.pi),
+                numpy.random.uniform(0, 2*numpy.pi),
                 numpy.random.uniform(-1, 1, (3,)),
                 False,
             )
@@ -81,33 +79,33 @@ class DescriptorTestCase(unittest.TestCase):
 
     def test_sph_harmonics(self):
         def Yl0m00(phi, theta):
-            return 0.5*math.sqrt(1/math.pi)
+            return 0.5*numpy.sqrt(1/numpy.pi)
 
 
         def Yl1m1n(phi, theta):
-            return 0.5*math.sqrt(1.5/math.pi)*numpy.exp(-1j*phi)*math.sin(theta)
+            return 0.5*numpy.sqrt(1.5/numpy.pi)*numpy.exp(-1j*phi)*numpy.sin(theta)
 
         def Yl1m00(phi, theta):
-            return 0.5*math.sqrt(3.0/math.pi)*math.cos(theta)
+            return 0.5*numpy.sqrt(3.0/numpy.pi)*numpy.cos(theta)
 
         def Yl1m1p(phi, theta):
-            return -0.5*math.sqrt(1.5/math.pi)*numpy.exp(+1j*phi)*math.sin(theta)
+            return -0.5*numpy.sqrt(1.5/numpy.pi)*numpy.exp(+1j*phi)*numpy.sin(theta)
 
 
         def Yl2m2n(phi, theta):
-            return 0.25*math.sqrt(7.5/math.pi)*numpy.exp(-2j*phi)*math.sin(theta)**2
+            return 0.25*numpy.sqrt(7.5/numpy.pi)*numpy.exp(-2j*phi)*numpy.sin(theta)**2
 
         def Yl2m1n(phi, theta):
-            return 0.5*math.sqrt(7.5/math.pi)*numpy.exp(-1j*phi)*math.sin(theta)*math.cos(theta)
+            return 0.5*numpy.sqrt(7.5/numpy.pi)*numpy.exp(-1j*phi)*numpy.sin(theta)*numpy.cos(theta)
 
         def Yl2m00(phi, theta):
-            return 0.25*math.sqrt(5.0/math.pi)*(3*math.cos(theta)**2-1)
+            return 0.25*numpy.sqrt(5.0/numpy.pi)*(3*numpy.cos(theta)**2-1)
 
         def Yl2m1p(phi, theta):
-            return -0.5*math.sqrt(7.5/math.pi)*numpy.exp(+1j*phi)*math.sin(theta)*math.cos(theta)
+            return -0.5*numpy.sqrt(7.5/numpy.pi)*numpy.exp(+1j*phi)*numpy.sin(theta)*numpy.cos(theta)
 
         def Yl2m2p(phi, theta):
-            return 0.25*math.sqrt(7.5/math.pi)*numpy.exp(+2j*phi)*math.sin(theta)**2
+            return 0.25*numpy.sqrt(7.5/numpy.pi)*numpy.exp(+2j*phi)*numpy.sin(theta)**2
 
         phi = 0.1
         theta = 0.4

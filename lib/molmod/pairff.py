@@ -19,7 +19,7 @@
 # --
 
 
-import math, numpy
+import numpy
 
 
 __all__ = [
@@ -60,7 +60,7 @@ class PairFF(object):
             for index2, coordinate2 in enumerate(self.coordinates):
                 delta = coordinate1 - coordinate2
                 self.deltas[index1,index2] = delta
-                distance = math.sqrt(numpy.dot(delta, delta))
+                distance = numpy.linalg.norm(delta)
                 self.distances[index1, index2] = distance
                 if index1 != index2:
                     tmp = delta/distance

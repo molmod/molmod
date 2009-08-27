@@ -21,9 +21,7 @@
 
 from molmod.clusters import Cluster, ClusterFactory
 
-import numpy
-
-import unittest, random
+import numpy, unittest
 
 
 __all__ = ["ClusterTestCase"]
@@ -33,8 +31,8 @@ class ClusterTestCase(unittest.TestCase):
     def test_blind(self):
         cf = ClusterFactory()
         for counter in xrange(1000):
-            a = random.randint(0, 100)
-            b = random.randint(0, 100)
+            a = numpy.random.randint(0, 100)
+            b = numpy.random.randint(0, 100)
             if (a+b)%2 == 0:
                 cf.add_members([a, b])
 

@@ -20,7 +20,7 @@
 
 
 
-import numpy, math
+import numpy
 
 
 __all__ = [
@@ -247,28 +247,28 @@ class Rotation(Base):
         # the antisymmetric part of the non-diagonal vector tell us something
         # about sin(angle) and n.
         axis = 0.5*factor*numpy.array([-self.r[1, 2] + self.r[2, 1], self.r[0, 2] - self.r[2, 0], -self.r[0, 1] + self.r[1, 0]])
-        sin_angle = math.sqrt(numpy.dot(axis, axis))
+        sin_angle = numpy.linalg.norm(axis)
         # look for the best way to normalize the
         if (sin_angle == 0.0) and (cos_angle > 0):
             axis[2] = 1.0
         elif abs(sin_angle) < (1-cos_angle):
             for index in range(3):
-                axis[index] = {True: -1, False: 1}[axis[index] < 0] * math.sqrt(abs((factor*self.r[index, index] - cos_angle) / (1 - cos_angle)))
+                axis[index] = {True: -1, False: 1}[axis[index] < 0] * numpy.sqrt(abs((factor*self.r[index, index] - cos_angle) / (1 - cos_angle)))
         else:
             axis = axis / sin_angle
 
         # Finally calculate the angle:
-        angle = math.atan2(sin_angle, cos_angle)
+        angle = numpy.arctan2(sin_angle, cos_angle)
         return angle, axis, invert
 
     def set_rotation_properties(self, angle, axis, invert):
-        norm = math.sqrt(numpy.dot(axis, axis))
+        norm = numpy.linalg.norm(axis)
         if norm > 0:
             x = axis[0] / norm
             y = axis[1] / norm
             z = axis[2] / norm
-            c = math.cos(angle)
-            s = math.sin(angle)
+            c = numpy.cos(angle)
+            s = numpy.sin(angle)
             self.r = (1-2*invert) * numpy.array([
                 [x*x*(1-c)+c  , x*y*(1-c)-z*s, x*z*(1-c)+y*s],
                 [x*y*(1-c)+z*s, y*y*(1-c)+c  , y*z*(1-c)-x*s],

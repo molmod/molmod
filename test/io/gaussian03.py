@@ -24,7 +24,7 @@ from molmod.io.output_parsers import OutputParser
 
 import numpy
 
-import math, unittest
+import unittest
 
 
 __all__ = ["Gaussian03"]

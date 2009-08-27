@@ -20,7 +20,7 @@
 
 import molmod.pairff
 
-import unittest, numpy, math
+import unittest, numpy
 
 __all__ = ["PairFFTestCase", "CoulombFFTestCase"]
 
@@ -397,7 +397,7 @@ class CoulombFFTestCase(unittest.TestCase):
         ], float)
         charges = numpy.array([1, -1, 1], float)
         ff = molmod.pairff.CoulombFF(coordinates, charges)
-        self.assertAlmostEqual(ff.energy(), -2.0 + 1/math.sqrt(2), 5, "Incorrect energy.")
+        self.assertAlmostEqual(ff.energy(), -2.0 + 1/numpy.sqrt(2), 5, "Incorrect energy.")
 
     def test_cd1(self):
         coordinates = numpy.array([

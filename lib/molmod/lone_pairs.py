@@ -19,7 +19,7 @@
 # --
 
 
-import math, numpy
+import numpy, numpy
 
 from molmod.molecular_graphs import MolecularGraph
 
@@ -41,18 +41,18 @@ def lone_pair_2(bond1, bond2, angle):
     lone2 -- ...
     """
 
-    in_plane = bond1/math.sqrt(numpy.dot(bond1, bond1)) + bond2/math.sqrt(numpy.dot(bond2, bond2))
-    length = math.sqrt(numpy.dot(in_plane, in_plane))
+    in_plane = bond1/numpy.linalg.norm(bond1) + bond2/numpy.linalg.norm(bond2)
+    length = numpy.linalg.norm(in_plane)
     assert length > 0, "The two bonds opposite."
     in_plane /= -length
 
     ortho = numpy.cross(bond1, bond2)
-    length = math.sqrt(numpy.dot(ortho, ortho))
+    length = numpy.linalg.norm(ortho)
     assert length > 0, "The two bonds are parallel."
     ortho /= length
 
-    c = math.cos(0.5*angle)
-    s = math.sin(0.5*angle)
+    c = numpy.cos(0.5*angle)
+    s = numpy.sin(0.5*angle)
     lone1 = c*in_plane + s*ortho
     lone2 = c*in_plane - s*ortho
 
@@ -76,11 +76,11 @@ def lone_pair_1(bond1, bond2, bond3):
     """
 
     lone = -(
-        bond1/math.sqrt(numpy.dot(bond1, bond1)) +
-        bond2/math.sqrt(numpy.dot(bond2, bond2)) +
-        bond3/math.sqrt(numpy.dot(bond3, bond3))
+        bond1/numpy.linalg.norm(bond1) +
+        bond2/numpy.linalg.norm(bond2) +
+        bond3/numpy.linalg.norm(bond3)
     )
-    length = math.sqrt(numpy.dot(lone, lone))
+    length = numpy.linalg.norm(lone)
     assert length > 0, "The three bonds sum to zero."
     lone /= length
     return lone

@@ -27,7 +27,7 @@ cutoff. The algorithm consists of two major steps:
 """
 
 
-import math, numpy, copy
+import numpy, copy
 
 __all__ = ["PositionedObject", "SparseBinnedObjects",
            "AnalyseNeighboringObjects", "IntraAnalyseNeighboringObjects",

@@ -27,7 +27,7 @@ from molmod.molecules import Molecule
 from molmod.unit_cell import UnitCell
 from molmod.units import angstrom
 
-import unittest, numpy, math
+import unittest, numpy
 
 
 __all__ = ["FlexFFTestCase"]

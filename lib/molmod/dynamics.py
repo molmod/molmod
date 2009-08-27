@@ -176,7 +176,7 @@ class ConjugateGradientOptimizer(TrajectoryMaker):
         TrajectoryMaker.run(self)
         gradient = self.calculate_gradient(self.current_state)
         direction = -gradient.copy()
-        gradient_norm = numpy.sqrt(numpy.dot(gradient, gradient))
+        gradient_norm = numpy.linalg.norm(gradient)
         try:
             for step in xrange(steps):
                 state_delta = self.current_state + self.epsilon*direction/gradient_norm
@@ -189,7 +189,7 @@ class ConjugateGradientOptimizer(TrajectoryMaker):
                     step_size = gradient_norm**2/second_order_deriv_in_direction
                     self.current_state[:] += step_size*direction/gradient_norm
                     new_gradient = self.calculate_gradient(self.current_state)
-                    new_gradient_norm = numpy.sqrt(numpy.dot(new_gradient, new_gradient))
+                    new_gradient_norm = numpy.linalg.norm(new_gradient)
                     #beta = (new_gradient_norm*new_gradient_norm)/(gradient_norm*gradient_norm)
                     beta = numpy.dot(new_gradient - gradient, new_gradient)/(gradient_norm*gradient_norm)
                     direction *= beta
@@ -201,7 +201,7 @@ class ConjugateGradientOptimizer(TrajectoryMaker):
                     self.last_method = "SD"
                     self.current_state[:] += self.ofm*direction/gradient_norm
                     gradient = self.calculate_gradient(self.current_state)
-                    gradient_norm = numpy.sqrt(numpy.dot(gradient, gradient))
+                    gradient_norm = numpy.linalg.norm(gradient)
                 self.gradient_norms.append(gradient_norm)
                 self.potential_energies.append(self.calculate_energy(self.current_state))
                 self.gradients.append(gradient)

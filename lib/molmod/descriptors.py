@@ -23,8 +23,6 @@ from scipy.special import lpmn as lpml, gammaln
 
 import numpy
 
-import math
-
 
 __all__ = ["MolecularDescriptorTV1"]
 
@@ -38,13 +36,13 @@ def sph_harmonics(L, phi, theta):
             numpy.array([y^(-N)_N, ..., y^N_N])
        ].
     """
-    z = math.cos(theta)
+    z = numpy.cos(theta)
     val, foo = lpml(L,L,z)
     val = val.astype(complex)
     for l in xrange(0, L+1):
-        val[:,l] *= math.sqrt((2*l+1)/4.0/math.pi)
+        val[:,l] *= numpy.sqrt((2*l+1)/4.0/numpy.pi)
         for m in xrange(0, l+1):
-            val[m,l] *= math.exp(0.5*(gammaln(l-m+1)-gammaln(l+m+1)))
+            val[m,l] *= numpy.exp(0.5*(gammaln(l-m+1)-gammaln(l+m+1)))
             val[m,l] *= numpy.exp(1j*m*phi)
     result = []
     for l in xrange(0, L+1):
@@ -58,7 +56,7 @@ def sph_harmonics(L, phi, theta):
 
 class FaseModulator(object):
     def __init__(self, order):
-        self.factor = 0.5*math.pi*order
+        self.factor = 0.5*numpy.pi*order
         self.scale = 1/self.factor
 
     def __call__(self, x):
@@ -110,12 +108,12 @@ def rms_radius(values):
     values["_distances"] = distances
     epsilon = values["_distance_epsilon"]
     directions = numpy.array([
-        delta/(distance + math.exp(-distance/epsilon))
+        delta/(distance + numpy.exp(-distance/epsilon))
         for delta, distance
         in zip(values["_deltas"], distances)
     ], float)
     values["_directions"] = directions
-    result = math.sqrt(sum(distances**2*values["_masses"])/values["tm"])
+    result = numpy.sqrt(sum(distances**2*values["_masses"])/values["tm"])
     values["_reduced_distances"] = distances/result
     return result
 rms_radius.label = "rmsr"
@@ -127,8 +125,8 @@ rms_radius.tolerance = 0.1
 def spherical_harmonics_descriptor_internal(values):
     angles = numpy.array([
         [
-            math.atan2(direction[1], direction[0]), # phi
-            math.acos(direction[2]), # theta
+            numpy.arctan2(direction[1], direction[0]), # phi
+            numpy.arccos(direction[2]), # theta
         ] for direction
         in values["_directions"]
     ])

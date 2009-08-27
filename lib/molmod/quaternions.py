@@ -21,8 +21,6 @@
 
 import numpy
 
-import math
-
 
 __all__ = [
   "quaternion_product", "conjugate", "conjugated", "quaternion_rotation",
@@ -74,7 +72,7 @@ def quaternion_from_rotation_matrix(rotation_matrix, do_invert=False):
     if c2 < 0:
         #print c2
         c2 = 0.0
-    c = math.sqrt(c2)
+    c = numpy.sqrt(c2)
     r2 = 0.5*(1 + factor*numpy.diagonal(rotation_matrix)) - c2
     #print "check", r2.sum()+c2
     r = numpy.zeros(3, float)

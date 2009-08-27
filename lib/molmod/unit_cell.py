@@ -115,7 +115,7 @@ class UnitCell(ReadOnly):
         if len(active) == 0:
             return -1
         elif len(active) == 1:
-            return numpy.sqrt(numpy.dot(self.matrix[:,active[0]], self.matrix[:,active[0]]))
+            return numpy.linalg.norm(self.matrix[:,active[0]])
         elif len(active) == 2:
             return numpy.linalg.norm(numpy.cross(self.matrix[:,active[0]], self.matrix[:,active[1]]))
         elif len(active) == 3:
@@ -180,11 +180,11 @@ class UnitCell(ReadOnly):
               c with c_z positive
         """
         new_x = self.matrix[:,0].copy()
-        new_x /= numpy.sqrt(numpy.dot(new_x, new_x))
+        new_x /= numpy.linalg.norm(new_x)
         new_z = numpy.cross(new_x, self.matrix[:,1])
-        new_z /= numpy.sqrt(numpy.dot(new_z, new_z))
+        new_z /= numpy.linalg.norm(new_z)
         new_y = numpy.cross(new_z, new_x)
-        new_y /= numpy.sqrt(numpy.dot(new_y, new_y))
+        new_y /= numpy.linalg.norm(new_y)
         return numpy.array([new_x, new_y, new_z])
 
     @cached

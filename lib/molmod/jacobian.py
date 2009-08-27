@@ -20,7 +20,9 @@
 
 # Tools related to solving the jacobian system
 
-import numpy, numpy.linalg, math
+
+import numpy
+
 
 def jacobian_analysis(configuration, internal_coordinates):
     configuration.internal_coordinates = internal_coordinates

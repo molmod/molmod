@@ -23,9 +23,7 @@ from molmod.unit_cell import UnitCell
 from molmod.vectors import random_normal
 from molmod.units import deg
 
-import numpy
-
-import unittest, math
+import numpy, unittest
 
 
 __all__ = ["UnitCellTestCase"]
@@ -44,7 +42,7 @@ class UnitCellTestCase(unittest.TestCase):
     def test_parameters(self):
         for counter in xrange(100):
             in_lengths = numpy.random.uniform(0.5, 1, (3,))
-            in_angles = numpy.random.uniform(0.3, math.pi/2, (3,))
+            in_angles = numpy.random.uniform(0.3, numpy.pi/2, (3,))
             try:
                 uc = UnitCell.from_parameters3(in_lengths, in_angles)
             except ValueError, e:

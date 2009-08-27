@@ -24,7 +24,7 @@ from molmod.environments import calculate_environments
 
 from molmod.io.xyz import XYZFile
 
-import unittest, random
+import unittest
 
 
 __all__ = ["EnvironmentTestCase"]

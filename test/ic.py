@@ -28,7 +28,7 @@ from molmod.graphs import CriteriaSet
 from molmod.units import angstrom, deg
 from molmod.io.xyz import XYZFile
 
-import unittest, math, numpy, sys
+import unittest, numpy, sys
 
 
 __all__ = ["ICTestCase"]
