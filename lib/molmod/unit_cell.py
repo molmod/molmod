@@ -21,384 +21,250 @@
 
 from molmod.units import angstrom
 from molmod.vectors import random_orthonormal
+from molmod.utils import cached, ReadOnly
 
-import numpy
-
-import math, copy
-
-
-__all__ = ["check_cell", "UnitCell"]
+import numpy, copy
 
 
-def check_cell(cell, norm_threshold=1e-6, volume_threshold=1e-6):
-    cell = cell.copy()
-    for col, name in enumerate(["A", "B", "C"]):
-        norm = numpy.linalg.norm(cell[:,col])
-        if norm < norm_threshold:
-            raise ValueError("The length of ridge %s is (nearly) zero." % name)
-        cell[:,col] /= norm
-    if abs(numpy.linalg.det(cell)) < volume_threshold:
-        raise ValueError("The ridges of the unit cell are (nearly) linearly dependent vectors.")
+__all__ = ["UnitCell"]
 
 
-class UnitCell(object):
-    def __init__(self, cell=None, cell_active=None):
-        if cell is None:
-            self.cell = numpy.array([
+class UnitCell(ReadOnly):
+    """Extensible representation of a unit cell.
+
+       Most attributes of the UnitCell object are treated as constants. If you
+       want to modify the unit cell, just create a modified UnitCell
+       object. This facilitates the caching of derived quantities such as the
+       distance matrices, while it imposes a cleaner coding style without
+       a signifacant computational overhead.
+    """
+    eps = 1e-6 # small positive number, below this value is approximately zero
+
+    def __init__(self, matrix=None, active=None):
+        if matrix is None:
+            matrix = numpy.array([
                 [10.0,  0.0,  0.0],
                 [ 0.0, 10.0,  0.0],
                 [ 0.0,  0.0, 10.0]]
             )*angstrom
-        else:
-            self.cell = cell
+        if active is None:
+            active = numpy.array([True, True, True])
+        ReadOnly.__init__(self)
+        self._init_attributes({"matrix": matrix, "active": active}, {})
+        # sanity checks for the unit cell
+        for col, name in enumerate(["a", "b", "c"]):
+            if self.active[col]:
+                norm = numpy.linalg.norm(matrix[:,col])
+                if norm < self.eps:
+                    raise ValueError("The length of ridge %s is (nearly) zero." % name)
+        if abs(self.generalized_volume) < self.eps:
+            raise ValueError("The ridges of the unit cell are (nearly) linearly dependent vectors.")
 
-        if cell_active is None:
-            self.cell_active = numpy.array([False, False, False])
-        else:
-            self.cell_active = cell_active
-        self.update_reciproke()
+    def __div__(self, i):
+        if not isinstance(i, int) or i <= 0:
+            raise ValueError("Can only divide a unit cell by a strictly positive integer.")
+        return UnitCell(self.matrix/i, self.active)
 
-    def set_cell(self, cell, norm_threshold=1e-6, volume_threshold=1e-6):
-        check_cell(cell)
-        self.cell = cell
-        self.update_reciproke()
+    @classmethod
+    def from_parameters3(cls, lengths, angles):
+        """Construct a 3D unit cell with the given parameters
 
-    def set_cell_active(self, cell_active):
-        self.cell_active = cell_active
-        self.update_reciproke()
+           The a vector is always parallel with the x-axis and they point in the
+           same direction. The b vector is always in the xy plane and points
+           towards the positive y-direction. The c vector points towards the
+           positive z-direction.
+        """
+        for length in lengths:
+            if length <= 0:
+                raise ValueError("The length parameters must be strictly positive.")
+        for angle in angles:
+            if angle <= 0 or angle >= numpy.pi:
+                raise ValueError("The angle parameters must lie in the range ]0 deg, 180 deg[.")
+        del length
+        del angle
 
-    def get_active_inactive(self):
+        matrix = numpy.zeros((3,3), float)
+
+        # first cell vector
+        matrix[0,0] = lengths[0]
+
+        # second cell vector
+        matrix[0,1] = numpy.cos(angles[2])*lengths[1]
+        matrix[1,1] = numpy.sin(angles[2])*lengths[1]
+
+        # Finding the third cell vector is slightly more difficult. :-)
+        # It works like this:
+        # The dot products of a with c, b with c and c with c are known. the
+        # vector a has only an x component, b has no z component. This results
+        # in the following equations:
+        u_a = lengths[0]*lengths[2]*numpy.cos(angles[1])
+        u_b = lengths[1]*lengths[2]*numpy.cos(angles[0])
+        matrix[0,2] = u_a/matrix[0,0]
+        matrix[1,2] = (u_b - matrix[0,1]*matrix[0,2])/matrix[1,1]
+        u_c = lengths[2]**2 - matrix[0,2]**2 - matrix[1,2]**2
+        if u_c < 0:
+            raise ValueError("The given cell parameters do not correspond to a unit cell.")
+        matrix[2,2] = numpy.sqrt(u_c)
+
+        active = numpy.ones(3, bool)
+        return cls(matrix, active)
+
+    @cached
+    def generalized_volume(self):
+        active, inactive = self.active_inactive
+        if len(active) == 0:
+            return -1
+        elif len(active) == 1:
+            return numpy.sqrt(numpy.dot(self.matrix[:,active[0]], self.matrix[:,active[0]]))
+        elif len(active) == 2:
+            return numpy.linalg.norm(numpy.cross(self.matrix[:,active[0]], self.matrix[:,active[1]]))
+        elif len(active) == 3:
+            return abs(numpy.linalg.det(self.matrix))
+
+    @cached
+    def active_inactive(self):
+        """The indexes of the active and the inactive cell vectors"""
         active_indices = []
         inactive_indices = []
-        for index, active in enumerate(self.cell_active):
+        for index, active in enumerate(self.active):
             if active:
                 active_indices.append(index)
             else:
                 inactive_indices.append(index)
         return active_indices, inactive_indices
 
-    def update_reciproke(self, auto_threshold=1e-6):
-        active, inactive = self.get_active_inactive()
+    @cached
+    def reciprocal(self):
+        """The reciprocal of the unit cell
+
+           In case of a three-dimensional periodic system, this is trivially the
+           transpose of the inverse of the cell matrix. This means that each
+           column of the matrix corresponds to a reciprocal cell vector. In case
+           of lower-dimensional periodicity, the inactive columns are zero.
+        """
+        active, inactive = self.active_inactive
         if len(active) == 0:
-            self.cell_reciproke = numpy.zeros((3, 3), float)
-            return
+            return numpy.zeros((3, 3), float)
         elif len(active) == 1:
-            temp = copy.deepcopy(self.cell)
-            if sum(temp[:,inactive[0]]**2) < auto_threshold:
+            temp = self.matrix.copy()
+            if numpy.linalg.norm(temp[:,inactive[0]]) < self.eps:
                 temp[:, inactive[0]] = random_orthonormal(temp[:, active[0]])
-            if sum(temp[:,inactive[1]]**2) < auto_threshold:
+            if numpy.linalg.norm(temp[:,inactive[1]]) < self.eps:
                 temp[:, inactive[1]] = numpy.cross(temp[:, inactive[0]], temp[:, active[0]])
         elif len(active) == 2:
-            temp = copy.deepcopy(self.cell)
-            if sum(temp[:,inactive[0]]**2) < auto_threshold:
+            temp = self.matrix.copy()
+            if numpy.linalg.norm(temp[:,inactive[0]]) < self.eps:
                 temp[:, inactive[0]] = numpy.cross(temp[:, active[0]], temp[:, active[1]])
         elif len(active) == 3:
-            temp = self.cell
-        self.cell_reciproke = numpy.transpose(self.cell_active*numpy.transpose(numpy.linalg.inv(temp)))
+            temp = self.matrix
+        return self.active*numpy.transpose(numpy.linalg.inv(temp))
 
-    def to_fractional(self, coordinate):
-        return numpy.dot(self.cell_reciproke, coordinate)
-
-    def to_index(self, coordinate):
-        return numpy.floor(self.to_fractional(coordinate)).astype(int)
-
-    def to_cartesian(self, fractional):
-        return numpy.dot(self.cell, fractional)
-
-    def move_to_cell(self, delta, index):
-        return delta + numpy.dot(self.cell, index)
-
-    def shortest_vector(self, delta):
-        return self.move_to_cell(delta, -self.to_fractional(delta).round().astype(int))
-
-    def add_cell_vector(self, vector, norm_threshold=1e-6, volume_threshold=1e-6):
-        active, inactive = self.get_active_inactive()
-        if len(active) == 3:
-            raise ValueError("The unit cell already has three axes.")
-        norm_vector = numpy.linalg.norm(vector)
-        if norm_vector < norm_threshold:
-            raise ValueError("The norm of the proposed vector must be significantly larger than zero.")
-        if len(active) == 0:
-            # Add the vector
-            self.cell[:,0] = vector
-            self.cell_active[0] = True
-            # Make sure that the unused vectors are not linearly dependent
-            direction = vector/norm_vector
-            self.cell[:,1] = random_orthonormal(direction)
-            self.cell[:,2] = numpy.cross(self.cell[:,0], self.cell[:,1])
-            # update
-            self.update_reciproke()
-            return
-        a = self.cell[:,active[0]]
-        norm_a = numpy.linalg.norm(a)
-        if len(active) == 1:
-            if 1 - abs(numpy.dot(a, vector) / (norm_vector * norm_a)) < volume_threshold:
-                raise ValueError("Can not add the vector since it is colinear with the existing unit cell axis.")
-            else:
-                # Add the vector
-                self.cell[:,inactive[0]] = vector
-                self.cell_active[inactive[0]] = True
-                # Make sure that the unused vector is not linearly dependent
-                self.cell[:,2] = numpy.cross(self.cell[:,0], self.cell[:,1])
-                # update
-                self.update_reciproke()
-                return
-        b = self.cell[:,active[1]]
-        norm_b = numpy.linalg.norm(b)
-        if len(active) == 2:
-            backup = self.cell[:,inactive[0]].copy()
-            self.cell[:,inactive[0]] = vector
-            if abs(numpy.linalg.det(self.cell) / (norm_vector * norm_a * norm_b)) < volume_threshold:
-                self.cell[:,inactive[0]] = backup
-                raise ValueError("Can not add the vector since it is linearly dependent on the existing unit cell axes.")
-            else:
-                self.cell_active[inactive[0]] = True
-                self.update_reciproke()
-                return True
-
-    def get_parameters(self):
-        length_a = numpy.linalg.norm(self.cell[:,0])
-        length_b = numpy.linalg.norm(self.cell[:,1])
-        length_c = numpy.linalg.norm(self.cell[:,2])
-        alpha = math.acos(numpy.dot(self.cell[:,1], self.cell[:,2]) / (length_b * length_c))
-        beta = math.acos(numpy.dot(self.cell[:,2], self.cell[:,0]) / (length_c * length_a))
-        gamma = math.acos(numpy.dot(self.cell[:,0], self.cell[:,1]) / (length_a * length_b))
+    @cached
+    def parameters(self):
+        """The cell parameters (lengths and angles)"""
+        length_a = numpy.linalg.norm(self.matrix[:,0])
+        length_b = numpy.linalg.norm(self.matrix[:,1])
+        length_c = numpy.linalg.norm(self.matrix[:,2])
+        alpha = numpy.arccos(numpy.dot(self.matrix[:,1], self.matrix[:,2]) / (length_b * length_c))
+        beta = numpy.arccos(numpy.dot(self.matrix[:,2], self.matrix[:,0]) / (length_c * length_a))
+        gamma = numpy.arccos(numpy.dot(self.matrix[:,0], self.matrix[:,1]) / (length_a * length_b))
         return (numpy.array([length_a, length_b, length_c], float), numpy.array([alpha, beta, gamma], float))
 
-    def set_parameters(self, lengths, angles, volume_threshold=1e-6):
-        for length in lengths:
-            if length <= 0:
-                raise ValueError("The length parameters must be strictly positive.")
-        for angle in angles:
-            if angle <= 0 or angle >= math.pi:
-                raise ValueError("The angle parameters must lie in the range ]0 deg, 180 deg[.")
-        del length
-        del angle
+    @cached
+    def alignment(self):
+        """Computes the rotation matrix that aligns the unit cell with the
+           Cartesian axes.
 
-        new_cell = self.cell.copy()
-
-        # use the same direction for the old first axis
-        a_normal = new_cell[:,0] / numpy.linalg.norm(new_cell[:,0])
-        new_cell[:,0] = a_normal * lengths[0]
-        #print " (((c_normal))) "
-        #print c_normal
-
-        # the second cell vector lies in the half plane defined by the (old)
-        # first and old second axis
-        b_ortho = new_cell[:,1] - a_normal*numpy.dot(a_normal, new_cell[:,1])
-        b_orthonormal = b_ortho / numpy.linalg.norm(b_ortho)
-        new_cell[:,1] = (a_normal * math.cos(angles[2]) + b_orthonormal * math.sin(angles[2])) * lengths[1]
-        #print " (((b_orthonormal))) "
-        #print b_orthonormal
-
-        # Finding the third cell vector is slightly more difficult. :-)
-        # It works like this: The third cell vector lies at the intersection
-        # of three spheres:
-        #    - one in the origin, with radius length[0]
-        #    - one centered at new_cell[:,1], with radius rb
-        #    - one centered at new_cell[:,2], with radius rc
-        # where rb = the length of the third side of a triangle defined by
-        #    - one side has length[1]
-        #    - the other side has length[0]
-        #    - the angle between both sides is angles[2]
-        # and where rc = the length of the third side of a triangle defined by
-        #    - one side has length[2]
-        #    - the other side has length[0]
-        #    - the angle between both sides is angles[1]
-
-        # finding the intersection of three spheres is solved in two steps.
-        # First one determines the line that goes through the two solutions,
-        # assuming that the two solutions exist. Secondly the intersection(s) of
-        # the line with one of the sphers is/are calculated.
-
-        # Only if two solutions can be found, the resulting cell is physical. If
-        # not, a ValueError is raised.
-        # Of the two solutions, the one is selected that preserves the handed-
-        # ness of the old cell.
-
-        # A) define the sphere centers
-        centers = numpy.array([
-            [0.0, 0.0, 0.0],
-            new_cell[:,1],
-            new_cell[:,0],
-        ], float)
-        #print " *** CENTERS *** "
-        #print centers
-
-        # B) define the sphere radii, using the cosine rule
-        radii = numpy.array([
-            lengths[2],
-            math.sqrt(lengths[1]**2 + lengths[2]**2 - 2*math.cos(angles[0])*lengths[1]*lengths[2]),
-            math.sqrt(lengths[0]**2 + lengths[2]**2 - 2*math.cos(angles[1])*lengths[0]*lengths[2]),
-        ], float)
-
-        #print " *** RADII *** "
-        #print radii
-
-        # C) Obtain the line that goes through the two solutions, by
-        # constructing an under defined linear system. The particular solution
-        # (a point on the line) and the vector from the null space
-        # (the direction of the line) are obtained with singular value
-        # decomposition.
-
-        # - construct the linear system
-        tmp = numpy.array([
-            (2 * centers[index]).tolist() + [numpy.dot(centers[index], centers[index]) - radii[index]**2]
-            for index in xrange(3)
-        ], float)
-        #print " --- tmp --- "
-        #print tmp
-        tmp = numpy.array([
-            tmp[0] - tmp[1],
-            tmp[0] - tmp[2]
-        ], float)
-        A = tmp[:,:3]
-        b = tmp[:,3]
-        #print " --- A --- "
-        #print A
-        #print " --- b --- "
-        #print b
-
-        # - perform singular value decomposition
-        V, S, Wt = numpy.linalg.svd(A, True)
-        #print " --- V --- "
-        #print V
-        #print " --- S --- "
-        #print S
-        #print " --- Wt --- "
-        #print Wt
-        if S.min() < volume_threshold:
-            raise ValueError("The given cell parameters result in a singular unit cell. (SVD)")
-
-        # - calculate the particular solution, p
-        W = Wt.transpose()
-        p = numpy.dot(W[:,:2], (numpy.dot(b, V).transpose()/S).transpose())
-        #print " ~~~ p ~~~ "
-        #print p
-        #print "ZERO", numpy.dot(A, p) - b
-
-        # - the nullspace
-        n = W[:,2]
-        #print " ~~~ n ~~~ "
-        #print n
-        #print "ZERO", numpy.dot(A, n)
-
-        # D) solve the second order equation in the parameter t from the
-        # line equation: r = p + n*t
-
-        # - calculate the coefficients
-        c2 = numpy.dot(n, n)
-        c1 = 2 * numpy.dot(n, p - centers[0])
-        c0 = numpy.dot(p - centers[0], p - centers[0]) - radii[0]**2
-
-        # - solve the second order equation
-        d = c1*2 - 4*c0*c2
-        #print "d", d
-        if d < 0:
-            raise ValueError("The given cell parameters do not correspond to a unit cell. (d is negative)")
-        elif abs(d) < volume_threshold:
-            raise ValueError("The given cell parameters lead to a singular unit cell. (d is too small)")
-        t1 = 0.5*(-c1 + math.sqrt(d))/c2
-        t2 = 0.5*(-c1 - math.sqrt(d))/c2
-
-        # assume that t1 gives the right handedness
-        new_cell[:,2] = p + t1*n
-        #for index in xrange(3):
-        #    #print "ZERO", numpy.dot(new_cell[:,2] - centers[index], new_cell[:,2] - centers[index]) - radii[index]**2
-        if numpy.linalg.det(new_cell) * numpy.linalg.det(self.cell) < 0:
-            # this preserves the handedness of the original cell.
-            new_cell[:,2] = p + t2*n
-            #for index in xrange(3):
-            #    #print "ZERO", numpy.dot(new_cell[:,2] - centers[index], new_cell[:,2] - centers[index]) - radii[index]**2
-            check = numpy.linalg.det(new_cell) * numpy.linalg.det(self.cell)
-            assert check > 0, "HELP. THIS SHOULD NOT HAPPEN. check = %s" % check
-
-        self.set_cell(new_cell)
-
-    def calc_align_rotation_matrix(self):
-        #   - a parallel x
-        #   - b in xy-plane with b_y positive
-        #   - c with c_z positive
-        new_x = self.cell[:,0].copy()
-        new_x /= math.sqrt(numpy.dot(new_x, new_x))
-        new_z = numpy.cross(new_x, self.cell[:,1])
-        new_z /= math.sqrt(numpy.dot(new_z, new_z))
+              a parallel x
+              b in xy-plane with b_y positive
+              c with c_z positive
+        """
+        new_x = self.matrix[:,0].copy()
+        new_x /= numpy.sqrt(numpy.dot(new_x, new_x))
+        new_z = numpy.cross(new_x, self.matrix[:,1])
+        new_z /= numpy.sqrt(numpy.dot(new_z, new_z))
         new_y = numpy.cross(new_z, new_x)
-        new_y /= math.sqrt(numpy.dot(new_y, new_y))
+        new_y /= numpy.sqrt(numpy.dot(new_y, new_y))
         return numpy.array([new_x, new_y, new_z])
 
-    def generalized_volume(self):
-        active, inactive = self.get_active_inactive()
-        if len(active) == 0:
-            return -1
-        elif len(active) == 1:
-            return math.sqrt(numpy.dot(self.cell[:,active[0]], self.cell[:,active[0]]))
-        elif len(active) == 2:
-            return abs(numpy.dot(self.cell[:,active[0]], self.cell[:,active[1]]))
-        elif len(active) == 3:
-            return abs(numpy.linalg.det(self.cell))
+    @cached
+    def spacings(self):
+        """Computes the distances between neighboring crystal planes"""
+        return (self.reciprocal**2).sum(axis=0)**(-0.5)
+
+    def to_fractional(self, cartesian):
+        """Convert Cartesian to fractional coordinates
+
+           Argument:
+             cartesian  --  Can be a numpy array with shape (3,) or with shape
+                            (N,3).
+
+           The return value has the same shape as the argument. This function is
+           the inverse of to_cartesian.
+        """
+        return numpy.dot(cartesian, self.reciprocal)
+
+    def to_cartesian(self, fractional):
+        """Converts fractional to Cartesian coordinates
+
+           Argument:
+             fractional  --  Can be a numpy array with shape (3,) or with shape
+                             (N,3).
+
+           The return value has the same shape as the argument. This function is
+           the inverse of to_fractional.
+        """
+        return numpy.dot(fractional, self.matrix.transpose())
+
+    def shortest_vector(self, delta):
+        """Compute the shortest vector between two points under periodic
+           boundary conditions.
+
+           Argument:
+             delta  --  the relative vector between two points
+           Returns:
+             The shortest relative vector in this unit cell.
+        """
+        fractional = self.to_fractional(delta)
+        fractional -= fractional.round()
+        return self.to_cartesian(fractional)
+
+    def add_cell_vector(self, vector):
+        """Returns a new unit cell with an additional cell vector"""
+        act = self.active_inactive[0]
+        if len(act) == 3:
+            raise ValueError("The unit cell already has three active cell vectors.")
+        matrix = numpy.zeros((3,3), float)
+        active = numpy.zeros(3, bool)
+        if len(act) == 0:
+            # Add the new vector
+            matrix[:,0] = vector
+            active[0] = True
+            return UnitCell(matrix, active)
+
+        a = self.matrix[:,act[0]]
+        norm_a = numpy.linalg.norm(a)
+        matrix[:,0] = a
+        active[0] = True
+        if len(act) == 1:
+            # Add the new vector
+            matrix[:,1] = vector
+            active[1] = True
+            return UnitCell(matrix, active)
+
+        b = self.matrix[:,act[1]]
+        norm_b = numpy.linalg.norm(b)
+        matrix[:,1] = b
+        active[1] = True
+        if len(act) == 2:
+            # Add the new vector
+            matrix[:,2] = vector
+            active[2] = True
+            return UnitCell(matrix, active)
 
     def get_radius_ranges(self, radius):
         """Return the ranges of indexes of the periodic cell images that overlap
         with a sphere with the given radius and its center in the origin.
         """
-        G = numpy.dot(self.cell.transpose(), self.cell)
-        return numpy.ceil(radius/numpy.sqrt(numpy.diag(G))).astype(int)
-
-    def get_radius_indexes(self, radius):
-        """Return the indexes of the periodic images that overlap with a sphere
-        with the given radius and its center in the origin."""
-        im, jm, km = self.get_radius_ranges(radius)
-        result = []
-        for i in xrange(-im, im+1):
-            if i > 0: ip = i-0.5
-            elif i < 0: ip = i+0.5
-            else: ip = 0
-            for j in xrange(-jm, jm+1):
-                if j > 0: jp = j-0.5
-                elif j < 0: jp = j+0.5
-                else: jp = 0
-                for k in xrange(-km, km+1):
-                    if k > 0: kp = k-0.5
-                    elif k < 0: kp = k+0.5
-                    else: kp = 0
-                    # compute the position of the closest 'corner' of the
-                    # periodic image of the cell parallelepiped. In case *p is
-                    # zero, r0 is the center between two/four/eight corners.
-                    r0 = numpy.dot(self.cell, [ip,jp,kp])
-                    non_zero = (ip != 0) + (jp != 0) + (kp != 0)
-                    if non_zero==3 and numpy.linalg.norm(r0) < radius:
-                        # The closest point is always a corner of a periodic
-                        # image of the cell parallelepiped
-                        result.append([i,j,k])
-                    elif non_zero==2:
-                        # The closest point lies on a line
-                        if ip==0:
-                            delta = self.cell[:,0]
-                        elif jp==0:
-                            delta = self.cell[:,1]
-                        elif kp==0:
-                            delta = self.cell[:,2]
-                        if (r0**2).sum() - numpy.dot(r0,delta)**2/(delta**2).sum() < radius**2:
-                            result.append([i,j,k])
-                    elif non_zero==1:
-                        # The closest point lies on a plane
-                        if ip!=0:
-                            deltas = self.cell[:,[1,2]]
-                        elif jp!=0:
-                            deltas = self.cell[:,[2,0]]
-                        elif kp!=0:
-                            deltas = self.cell[:,[0,1]]
-                        A = numpy.dot(deltas.transpose(), deltas)
-                        B = numpy.dot(deltas.transpose(), r0)
-                        r0 = r0 - numpy.dot(deltas, numpy.linalg.solve(A,B))
-                        if numpy.linalg.norm(r0) < radius:
-                            result.append([i,j,k])
-                    elif non_zero==0:
-                        # The closest point is the origin
-                        result.append([0,0,0])
-
-        return numpy.array(result, int)
-
-
+        return numpy.ceil(radius/self.spacings).astype(int)
 

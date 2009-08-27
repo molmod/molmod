@@ -22,13 +22,12 @@
 from molmod.binning import InterAnalyseNeighboringObjects, \
     IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
 from molmod.unit_cell import UnitCell
-from molmod.units import angstrom, degree
+from molmod.units import angstrom, deg
 from molmod.data.periodic import periodic
 
 from molmod.io.xyz import XYZFile
 
-import math, numpy
-import unittest
+import numpy, unittest
 
 
 __all__ = ["BinningTestCase"]
@@ -49,12 +48,14 @@ class BinningTestCase(unittest.TestCase):
     def verify(self, yield_pairs, distances, unit_cell=None):
         missing_pairs = []
         wrong_distances = []
+        total = 0
         for (id1, coord1), (id2, coord2) in yield_pairs():
             delta = coord2 - coord1
             if unit_cell is not None:
                 delta = unit_cell.shortest_vector(delta)
-            distance = math.sqrt(numpy.dot(delta, delta))
+            distance = numpy.linalg.norm(delta)
             if distance < self.gridsize:
+                total += 1
                 identifier = frozenset([id1, id2])
                 fast_distance = distances.get(identifier)
                 if fast_distance == None:
@@ -66,14 +67,15 @@ class BinningTestCase(unittest.TestCase):
 
         message  = "-"*50+"\n"
         message += "MISSING PAIRS: %i\n" % len(missing_pairs)
-        for missing_pair in missing_pairs:
-            message += "%10s %10s: \t % 10.7f\n" % missing_pair
+        #for missing_pair in missing_pairs:
+        #    message += "%10s %10s: \t % 10.7f\n" % missing_pair
         message += "WRONG DISTANCES: %i\n" % len(wrong_distances)
-        for wrong_distance in wrong_distances:
-            message += "%10s %10s: \t % 10.7f != % 10.7f\n" % wrong_distance
+        #for wrong_distance in wrong_distances:
+        #    message += "%10s %10s: \t % 10.7f != % 10.7f\n" % wrong_distance
         message += "DUPLICATE PAIRS: %i\n" % len(distances)
-        for identifier, fast_distance in distances.iteritems():
-            message += "%10s %10s: \t % 10.7f\n" % (tuple(identifier) + (fast_distance,))
+        #for identifier, fast_distance in distances.iteritems():
+        #    message += "%10s %10s: \t % 10.7f\n" % (tuple(identifier) + (fast_distance,))
+        message += "TOTAL PAIRS: %i\n" % total
         message += "-"*50+"\n"
 
         self.assertEqual(len(missing_pairs), 0, message)
@@ -95,13 +97,12 @@ class BinningTestCase(unittest.TestCase):
         self.verify(yield_atom_pairs, distances, unit_cell)
 
     def compare_function(self, positioned1, positioned2):
-        delta = positioned2.coordinate - positioned1.coordinate
-        distance = math.sqrt(numpy.dot(delta, delta))
+        distance = numpy.linalg.norm(positioned2.coordinate - positioned1.coordinate)
         if distance < self.gridsize:
             return distance
 
     def test_distances_intra(self):
-        molecule, binned_atoms = self.load_binned_atoms("precursor.xyz")
+        molecule, binned_atoms = self.load_binned_atoms("lau.xyz")
 
         distances = dict(
             (frozenset([positioned1.id, positioned2.id]), result)
@@ -112,10 +113,9 @@ class BinningTestCase(unittest.TestCase):
 
     def test_distances_intra_periodic(self):
         molecule, binned_atoms = self.load_binned_atoms("lau.xyz")
-        unit_cell = UnitCell()
-        unit_cell.set_parameters(
+        unit_cell = UnitCell.from_parameters3(
             numpy.array([14.59, 12.88, 7.61])*angstrom,
-            numpy.array([ 90.0, 111.0, 90.0])*degree,
+            numpy.array([ 90.0, 111.0, 90.0])*deg,
         )
 
         distances = dict(
@@ -126,8 +126,8 @@ class BinningTestCase(unittest.TestCase):
         self.verify_intra(molecule, distances, unit_cell)
 
     def test_distances_inter(self):
-        molecule1, binned_atoms1 = self.load_binned_atoms("precursor.xyz")
-        molecule2, binned_atoms2 = self.load_binned_atoms("precursor.xyz")
+        molecule1, binned_atoms1 = self.load_binned_atoms("lau.xyz")
+        molecule2, binned_atoms2 = self.load_binned_atoms("lau.xyz")
 
         distances = dict(
             (frozenset([positioned1.id, positioned2.id]), result)
@@ -139,10 +139,9 @@ class BinningTestCase(unittest.TestCase):
     def test_distances_inter_periodic(self):
         molecule1, binned_atoms1 = self.load_binned_atoms("lau.xyz")
         molecule2, binned_atoms2 = self.load_binned_atoms("lau.xyz")
-        unit_cell = UnitCell()
-        unit_cell.set_parameters(
+        unit_cell = UnitCell.from_parameters3(
             numpy.array([14.59, 12.88, 7.61])*angstrom,
-            numpy.array([ 90.0, 111.0, 90.0])*degree,
+            numpy.array([ 90.0, 111.0, 90.0])*deg,
         )
 
         distances = dict(

@@ -126,11 +126,11 @@ class AnalyseNeighboringObjects(object):
             for result in self.call_delta(numpy.zeros(3, float)):
                 yield result
         else:
-            active_a, active_b, active_c = unit_cell.cell_active.astype(int)
+            active_a, active_b, active_c = unit_cell.active.astype(int)
             for index_a in xrange(-active_a, active_a+1):
                 for index_b in xrange(-active_b, active_b+1):
                     for index_c in xrange(-active_c, active_c+1):
-                        delta = numpy.dot(unit_cell.cell, numpy.array([index_a, index_b, index_c]))
+                        delta = unit_cell.to_cartesian(numpy.array([index_a, index_b, index_c]))
                         for result in self.call_delta(delta):
                             yield result
 
@@ -166,7 +166,7 @@ class IntraAnalyseNeighboringObjects(AnalyseNeighboringObjects):
         self.binned_objects2 = binned_objects
 
     def allow(self, bin1, bin2, positioned1, positioned2):
-        return not (bin1 == bin2 and positioned1 >= positioned2)
+        return not (bin1 == bin2 and id(positioned1) >= id(positioned2))
 
 
 class InterAnalyseNeighboringObjects(AnalyseNeighboringObjects):

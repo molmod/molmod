@@ -251,8 +251,8 @@ class NonbondTerm(EnergyTerm):
             found_new = False
             for indices in yield_shell(p):
                 #print "indices", indices
-                corners_center = numpy.dot(0.5*signs, unit_cell.cell.transpose())
-                corners_other = numpy.dot(0.5*signs + indices, unit_cell.cell.transpose())
+                corners_center = numpy.dot(0.5*signs, unit_cell.matrix.transpose())
+                corners_other = numpy.dot(0.5*signs + indices, unit_cell.matrix.transpose())
                 for corner_center, corner_other in pair(corners_center, corners_other):
                     distance = numpy.linalg.norm(corner_other - corner_center)
                     if distance < self.cutoff:
@@ -264,15 +264,14 @@ class NonbondTerm(EnergyTerm):
 
     def __call__(self, coordinates, gradient_sum, unit_cell):
         energy_sum = 0.0
-        energy_cutoff, foo = self.calculate_eg(self.cutoff)
-        del foo
-        if not unit_cell.cell_active.all():
+        energy_cutoff = self.calculate_eg(self.cutoff)[0]
+        if not unit_cell.active.all():
             raise NotImplementedError("Only 3D periodic cells are supported.")
         neighbor_cells = self._get_neighbor_cells(unit_cell)
         #print neighbor_cells
         for atom0, atom1 in self.indices:
             for neighbor_cell in neighbor_cells:
-                delta = coordinates[atom0] - coordinates[atom1] + numpy.dot(unit_cell.cell, neighbor_cell)
+                delta = coordinates[atom0] - coordinates[atom1] + numpy.dot(unit_cell.matrix, neighbor_cell)
                 distance = numpy.linalg.norm(delta)
                 #print distance, self.cutoff
                 if distance < self.cutoff:
