@@ -22,13 +22,13 @@
 import numpy
 
 
-__all__ = ["cached"]
+__all__ = ["cached", "cached_writable", "ReadOnly", "rmsd"]
 
 
 class cached(object):
-    """A decorator that will turn a method into a caching descriptor.
+    """A decorator that will turn a method into a caching descriptor
 
-    When attribute is requested for the firs time, the original method will
+    When an attribute is requested for the first time, the original method will
     be called and its return value is cached. Subsequent access to the attribute
     will just return the cached value.
     """
@@ -46,6 +46,21 @@ class cached(object):
             if isinstance(value, numpy.ndarray):
                 value.setflags(write=False)
         return value
+
+
+class cached_writable(cached):
+    """The writable variant of the normal caching descriptor
+
+       This can be useful when constructing an object of which some results
+       are at available without further computation. See transformations.py for
+       an example.
+    """
+    def __set__(self, instance, value):
+        value = getattr(instance, self.attribute_name, self)
+        if value is not self:
+            raise AttributeError("Value is already set.")
+        else:
+            setattr(instance, self.attribute_name, value)
 
 
 class ReadOnly(object):
@@ -114,4 +129,8 @@ class ReadOnly(object):
                 raise AttributeError("Attribute '%s' is read-only.")
         else:
             object.__setattr__(self, name, value)
+
+
+def rmsd(a,b):
+    return numpy.sqrt(((a-b)**2).mean())
 

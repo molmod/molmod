@@ -17,225 +17,189 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Data structures to handle 3D rotations and translations
 
+In addition to Translation, Rotation and Complete classes, two utility
+functions are provided: rotation_around_center and superpose. The latter is an
+implementation of the Kabsch algorithm.
+"""
 
-
+from utils import cached, cached_writable, ReadOnly, rmsd
 import numpy
 
 
 __all__ = [
-    "Base", "Translation", "Rotation", "Complete", "rotation_around_center",
-    "superpose",
+    "Translation", "Rotation", "Complete", "rotation_about_axis", "superpose",
 ]
 
 
-class Base(object):
-    def clear(self):
-        raise NotImplementedError
+eps = 1.0e-6
 
-    def from_matrix(self, matrix):
-        raise NotImplementedError
-
-    def get_matrix(self):
-        raise NotImplementedError
-
-    def get_inverse_matrix(self):
-        raise NotImplementedError
-
-    def invert(self):
-        raise NotImplementedError
-
-    def vector_apply(self, v):
-        raise NotImplementedError
-
-    def vector_apply_inverse(self, v):
-        raise NotImplementedError
-
-    def vector_apply_translation(self, v):
-        raise NotImplementedError
-
-    def matrix_apply_before(self, m):
-        raise NotImplementedError
-
-    def matrix_apply_inverse_before(self, m):
-        raise NotImplementedError
-
-    def matrix_apply_after(self, m):
-        raise NotImplementedError
-
-    def matrix_apply_inverse_after(self, m):
-        raise NotImplementedError
-
-    def apply_after(self, parent): # self -> parent AFTER self
-        raise NotImplementedError
-
-    def apply_inverse_after(self, parent): # self -> !parent AFTER self
-        raise NotImplementedError
-
-    def apply_before(self, child): # self -> self AFTER child
-        raise NotImplementedError
-
-    def apply_inverse_before(self, child): # self -> self AFTER !child
-        raise NotImplementedError
-
-    def compare(self, other, translation_threshold=1e-3, rotation_threshold=1e-3):
-        raise NotImplementedError
-
-    def assign_shallow(self, other):
-        raise NotImplementedError
+def check_matrix(m):
+    """Check the sanity of the given 4x4 transformation matrix"""
+    if m.shape != (4,4):
+        raise ValueError("The argument must be a 4x4 array.")
+    z = m[3, 0:3]
+    if max(abs(m[3, 0:3])) > eps:
+        raise ValueError("The given matrix does not have correct translational part")
+    if abs(m[3,3] - 1.0) > eps:
+        raise ValueError("The lower right element of the given matrix must be 1.0.")
 
 
-class Translation(Base):
-    def __init__(self):
-        self.t = numpy.zeros(3, float)
-
-    def __str__(self):
-        result = "TRANSLATION\n"
-        for i in range(3):
-            result += "% 10.7f\n" % self.t[i]
-        return result[:-1]
-
-    def clear(self):
-        self.t[:] = 0
-
-    def from_matrix(self, m):
-        # check wether the t part is ok
-        z = m[3, 0:3]
-        numpy.power(z,2,z)
-        assert max(z) < 1.0e-6, "The given matrix doesn't have correct translational part"
-        assert m[3,3] == 1.0, "The lower right element of the given matrix must be 1.0."
-        # get the translational part
-        self.t = m[0:3, 3]
-
-    def get_matrix(self):
-        temp = numpy.identity(4, float)
-        temp[0:3, 3] = self.t
-        return temp
-
-    def get_inverse_matrix(self):
-        temp = numpy.identity(4, float)
-        temp[0:3, 3] = -self.t
-        return temp
-
-    def invert(self):
-        self.t *= -1
-
-    def vector_apply(self, v):
-        return v + self.t
-
-    def vector_apply_inverse(self, v):
-        return v - self.t
-
-    def vector_apply_translation(self, v):
-        return v + self.t
-
-    def matrix_apply_before(self, m):
-        return m
-
-    def matrix_apply_inverse_before(self, m):
-        return m
-
-    def matrix_apply_after(self, m):
-        return m
-
-    def matrix_apply_inverse_after(self, m):
-        return m
-
-    def apply_after(self, parent): # self -> parent AFTER self
-        self.t = parent.vector_apply(self.t)
-
-    def apply_inverse_after(self, parent): # self -> !parent AFTER self
-        self.t = parent.vector_apply_inverse(self.t)
-
-    def apply_before(self, child): # self -> self AFTER child
-        self.t = self.vector_apply(child.vector_apply(numpy.zeros(3, float)))
-
-    def apply_inverse_before(self, child): # self -> self AFTER !child
-        self.t = self.vector_apply(child.vector_apply_inverse(numpy.zeros(3, float)))
-
-    def compare(self, other, translation_threshold=1e-3):
-        return sum((self.t - other.t)**2) < translation_threshold
-
-    def assign_shallow(self, other):
-        if isinstance(other, Translation):
-            self.t = other.t
+def check_translation_vector(t):
+    """Check the sanity of a translation vector"""
+    if t.shape != (3,):
+        raise ValueError("The translation vector must contain three elements.")
 
 
-class Rotation(Base):
-    def __init__(self):
-        self.r = numpy.identity(3, float)
+def check_rotation_matrix(r):
+    """Check the sanity of a rotation matrix"""
+    if r.shape != (3,3):
+        raise ValueError("The rotation matrix must be a 3 by 3 array.")
+    if abs(numpy.dot(r[:,0], r[:,0]) - 1) > eps or \
+        abs(numpy.dot(r[:,0], r[:,0]) - 1) > eps or \
+        abs(numpy.dot(r[:,0], r[:,0]) - 1) > eps or \
+        numpy.dot(r[:,0], r[:,1]) > eps or \
+        numpy.dot(r[:,1], r[:,2]) > eps or \
+        numpy.dot(r[:,2], r[:,0]) > eps:
+        raise ValueError("The rotation matrix is significantly non-orthonormal.")
 
-    def __str__(self):
-        result = "ROTATION\n"
-        for i in range(3):
-            result += "[ % 10.7f \t % 10.7f \t % 10.7f ]\n" % tuple(self.r[i])
-        result += "det: %3.2f" % numpy.linalg.det(self.r)
+
+class Translation(ReadOnly):
+    """Represents a translation in 3D
+
+       The attribute t contains the actual translation vector, which is a numpy
+       array with three elements.
+    """
+    def __init__(self, t):
+        """Initialize a translation object
+
+           The first argument must be a list-like object with three numbers.
+        """
+        ReadOnly.__init__(self)
+        self._init_attributes({"t": numpy.array(t, float)}, {})
+        check_translation_vector(self.t)
+
+    @classmethod
+    def from_matrix(cls, m):
+        """Initialize a translation from a 4x4 matrix"""
+        check_matrix(m)
+        return cls(m[0:3, 3])
+
+    @classmethod
+    def identity(cls):
+        return cls(numpy.zeros(3,float))
+
+    @cached
+    def matrix(self):
+        """The 4x4 matrix representation of this translation"""
+        result = numpy.identity(4, float)
+        result[0:3, 3] = self.t
         return result
 
-    def clear(self):
-        self.r[:] = 0
-        self.r.ravel()[::4] = 1
+    @cached_writable
+    def inv(self):
+        """The inverse translation"""
+        result = Translation(-self.t)
+        result.inv = self
+        return result
 
-    def from_matrix(self, m):
-        self.r = m[0:3, 0:3]
+    def apply_to(self, x):
+        """Apply this translation to the given object
 
-    def get_matrix(self):
-        temp = numpy.identity(4, float)
-        temp[0:3, 0:3] = self.r
-        return temp
+           The argument can be several sorts of objects:
+             * numpy array with shape (3,)
+             * numpy array with shape (N,3)
+             * Translation
+             * Rotation
+             * Complete
 
-    def get_inverse_matrix(self):
-        temp = numpy.identity(4, float)
-        temp[0:3, 0:3] = self.r.transpose()
-        return temp
+           In case of arrays, the 3D vectors are translated. In case of trans-
+           formations, a transformation is returned that consists of this
+           translation applied AFTER the given translation.
 
-    def invert(self):
-        self.r = self.r.transpose()
+           This method is equivalent to self*x.
+        """
+        if isinstance(x, numpy.ndarray) and (x.shape == (3,) or (len(x.shape) == 2 and x.shape[1] == 3)):
+            return x + self.t
+        elif isinstance(x, Complete):
+            return Complete(x.r, x.t + self.t)
+        elif isinstance(x, Translation):
+            return Translation(x.t + self.t)
+        elif isinstance(x, Rotation):
+            return Complete(x.r, self.t)
+        else:
+            raise ValueError("Can not apply this translation to %s" % x)
 
-    def inversion_rotation(self):
-        self.r *= -1
+    __mul__ = apply_to
 
-    def vector_apply(self, v):
-        return numpy.dot(self.r, v)
+    def compare(self, other, t_threshold=1e-3):
+        """Compare two translations
 
-    def vector_apply_inverse(self, v):
-        return numpy.dot(self.r.transpose(), v)
+           The RMSD of the translation vectors is computed. The return value
+           is True when the RMSD is below the threshold, i.e. when the two
+           translations are almost identical.
+        """
+        return rmsd(self.t, other.t) < t_threshold
 
-    def vector_apply_translation(self, v):
-        return v
 
-    def matrix_apply_before(self, m):
-        return numpy.dot(self.r, m)
+class Rotation(ReadOnly):
+    """Represents a rotation in 3D about the origin
 
-    def matrix_apply_inverse_before(self, m):
-        return numpy.dot(self.r.transpose(), m)
+       The attribute r contains the actual rotation matrix, which is a numpy
+       array with shape (3,3).
+    """
 
-    def matrix_apply_after(self, m):
-        return numpy.dot(m, self.r)
+    def __init__(self, r):
+        """Initialize a rotation object.
 
-    def matrix_apply_inverse_after(self, m):
-        return numpy.dot(m, self.r.transpose())
+           The first argument must be a 3 by 3 array-like object.
+        """
+        ReadOnly.__init__(self)
+        self._init_attributes({"r": numpy.array(r, float)}, {})
+        check_rotation_matrix(self.r)
 
-    def apply_after(self, parent): # self -> parent AFTER self
-        self.r = parent.matrix_apply_before(self.r)
+    @classmethod
+    def from_matrix(cls, m):
+        """Initialize a rotation from a 4x4 matrix"""
+        check_matrix(m)
+        return cls(m[0:3, 0:3])
 
-    def apply_inverse_after(self, parent): # self -> !parent AFTER self
-        self.r = parent.matrix_apply_inverse_before(self.r)
+    @classmethod
+    def identity(cls):
+        return cls(numpy.identity(3,float))
 
-    def apply_before(self, child): # self -> self AFTER child
-        self.r = child.matrix_apply_after(self.r)
+    @classmethod
+    def from_properties(cls, angle, axis, invert):
+        """Initialize a rotation based on the properties"""
+        norm = numpy.linalg.norm(axis)
+        if norm > 0:
+            x = axis[0] / norm
+            y = axis[1] / norm
+            z = axis[2] / norm
+            c = numpy.cos(angle)
+            s = numpy.sin(angle)
+            r = (1-2*invert) * numpy.array([
+                [x*x*(1-c)+c  , x*y*(1-c)-z*s, x*z*(1-c)+y*s],
+                [x*y*(1-c)+z*s, y*y*(1-c)+c  , y*z*(1-c)-x*s],
+                [x*z*(1-c)-y*s, y*z*(1-c)+x*s, z*z*(1-c)+c  ]
+            ])
+        else:
+            r = numpy.identity(3) * (1-2*invert)
+        return cls(r)
 
-    def apply_inverse_before(self, child): # self -> self AFTER !child
-        self.r = child.matrix_apply_inverse_after(self.r)
+    @classmethod
+    def cast(cls, c):
+        if isinstance(c, Complete):
+            return c
+        elif isinstance(c, Translation):
+            return Complete(numpy.identity(3, float), c.t)
+        elif isinstance(c, Rotation):
+            return Complete(c.r, numpy.zeros(3, float))
 
-    def compare(self, other, rotation_threshold=1e-3):
-        return sum((self.r - other.r).ravel()**2) < rotation_threshold
-
-    def assign_shallow(self, other):
-        if isinstance(other, Rotation):
-            self.r = other.r
-
-    def get_rotation_properties(self):
+    @cached
+    def properties(self):
+        """Rotation properties: angle, axis, invert"""
         # determine wether an inversion rotation has been applied
         invert = (numpy.linalg.det(self.r) < 0)
         factor = {True: -1, False: 1}[invert]
@@ -261,135 +225,163 @@ class Rotation(Base):
         angle = numpy.arctan2(sin_angle, cos_angle)
         return angle, axis, invert
 
-    def set_rotation_properties(self, angle, axis, invert):
-        norm = numpy.linalg.norm(axis)
-        if norm > 0:
-            x = axis[0] / norm
-            y = axis[1] / norm
-            z = axis[2] / norm
-            c = numpy.cos(angle)
-            s = numpy.sin(angle)
-            self.r = (1-2*invert) * numpy.array([
-                [x*x*(1-c)+c  , x*y*(1-c)-z*s, x*z*(1-c)+y*s],
-                [x*y*(1-c)+z*s, y*y*(1-c)+c  , y*z*(1-c)-x*s],
-                [x*z*(1-c)-y*s, y*z*(1-c)+x*s, z*z*(1-c)+c  ]
-            ])
+    @cached
+    def matrix(self):
+        """The 4x4 matrix representation of this rotation"""
+        result = numpy.identity(4, float)
+        result[0:3, 0:3] = self.r
+        return result
+
+    @cached_writable
+    def inv(self):
+        """The inverse rotation"""
+        result = Rotation(self.r.transpose())
+        result.inv = self
+        return result
+
+    def apply_to(self, x):
+        """Apply this rotation to the given object
+
+           The argument can be several sorts of objects:
+             * numpy array with shape (3,)
+             * numpy array with shape (N,3)
+             * Translation
+             * Rotation
+             * Complete
+
+           In case of arrays, the 3D vectors are rotated. In case of trans-
+           formations, a transformation is returned that consists of this
+           rotation applied AFTER the given translation.
+
+           This method is equivalent to self*x.
+        """
+        if isinstance(x, numpy.ndarray) and (x.shape == (3,) or (len(x.shape) == 2 and x.shape[1] == 3)):
+            return numpy.dot(x, self.r.transpose())
+        elif isinstance(x, Complete):
+            return Complete(numpy.dot(self.r, x.r), numpy.dot(self.r, x.t))
+        elif isinstance(x, Translation):
+            return Complete(self.r, numpy.dot(self.r, x.t))
+        elif isinstance(x, Rotation):
+            return Rotation(numpy.dot(self.r, x.r))
         else:
-            self.r = numpy.identity(3) * (1-2*invert)
+            raise ValueError("Can not apply this rotation to %s" % x)
+
+    __mul__ = apply_to
+
+    def compare(self, other, r_threshold=1e-3):
+        """Compare two rotations
+
+           The RMSD of the rotation matrices is computed. The return value
+           is True when the RMSD is below the threshold, i.e. when the two
+           rotations are almost identical.
+        """
+        return rmsd(self.r, other.r) < r_threshold
 
 
 class Complete(Translation, Rotation):
-    def __init__(self):
-        self.t = numpy.zeros(3, float)
-        self.r = numpy.identity(3, float)
+    def __init__(self, r, t):
+        """Initialize a complete transformation object, i.e. rotation & translation
 
-    def __str__(self):
-        result = "COMPLETE\n"
-        for i in range(3):
-            result += "[ % 10.7f \t % 10.7f \t % 10.7f ] \t % 10.7f \n" % (tuple(self.r[i]) + (self.t[i],))
-        result += "det: %3.2f" % numpy.linalg.det(self.r)
+           The first argument must be a 3 by 3 orthonormal array-like object.
+           The second argument must be a list-like object with three numbers.
+
+           Internally the translation part is always applied after the rotation
+           part.
+        """
+        ReadOnly.__init__(self)
+        self._init_attributes({"r": numpy.array(r, float), "t": numpy.array(t, float)}, {})
+        check_translation_vector(self.t)
+        check_rotation_matrix(self.r)
+
+    @classmethod
+    def from_matrix(cls, m):
+        """Initialize a complete transformation from a 4x4 matrix"""
+        check_matrix(m)
+        return cls(m[0:3, 0:3], m[0:3, 3])
+
+    @classmethod
+    def identity(cls):
+        return cls(numpy.identity(3,float), numpy.zeros(3, float))
+
+    @classmethod
+    def from_properties(cls, angle, axis, invert, translation):
+        """Initialize a transformation based on the properties"""
+        rot = Rotation.from_properties(angle, axis, invert)
+        return Complete(rot.r, translation)
+
+    @cached
+    def matrix(self):
+        """The 4x4 matrix representation of this transformation"""
+        result = numpy.identity(4, float)
+        result[0:3, 3] = self.t
+        result[0:3, 0:3] = self.r
         return result
 
-    def clear(self):
-        Translation.clear(self)
-        Rotation.clear(self)
+    @cached
+    def properties(self):
+        """Transformation properties: angle, axis, invert, translation"""
+        rot = Rotation(self.r)
+        angle, axis, invert = rot.properties
+        return angle, axis, invert, self.t
 
-    def from_matrix(self, m):
-        Rotation.from_matrix(self, m)
-        Translation.from_matrix(self, m)
+    @cached_writable
+    def inv(self):
+        """The inverse transformation"""
+        result = Complete(self.r.transpose(), numpy.dot(self.r.transpose(), -self.t))
+        result.inv = self
+        return result
 
-    def get_matrix(self):
-        temp = Translation.get_matrix(self)
-        temp[0:3, 0:3] = self.r
-        return temp
+    def apply_to(self, x):
+        """Apply this transformation to the given object
 
-    def get_inverse_matrix(self):
-        invtrans = numpy.dot(-self.t, self.r)
-        temp = Rotation.get_inverse_matrix(self)
-        temp[0:3, 3] = invtrans
-        return temp
+           The argument can be several sorts of objects:
+             * numpy array with shape (3,)
+             * numpy array with shape (N,3)
+             * Translation
+             * Rotation
+             * Complete
 
-    def invert(self):
-        self.r = self.r.transpose()
-        self.t = numpy.dot(self.r, -self.t)
+           In case of arrays, the 3D vectors are transformed. In case of trans-
+           formations, a transformation is returned that consists of this
+           transformation applied AFTER the given translation.
 
-    def vector_apply(self, v):
-        return numpy.dot(self.r, v) + self.t
+           This method is equivalent to self*x.
+        """
+        if isinstance(x, numpy.ndarray) and (x.shape == (3,) or (len(x.shape) == 2 and x.shape[1] == 3)):
+            return numpy.dot(x, self.r.transpose()) + self.t
+        elif isinstance(x, Complete):
+            return Complete(numpy.dot(self.r, x.r), numpy.dot(self.r, x.t) + self.t)
+        elif isinstance(x, Translation):
+            return Complete(self.r, numpy.dot(self.r, x.t) + self.t)
+        elif isinstance(x, Rotation):
+            return Complete(numpy.dot(self.r, x.r), self.t)
+        else:
+            raise ValueError("Can not apply this rotation to %s" % x)
 
-    def vector_apply_inverse(self, v):
-        return numpy.dot(self.r.transpose(), v - self.t)
+    __mul__ = apply_to
 
-    def vector_apply_translation(self, v):
-        return v + self.t
+    def compare(self, other, t_threshold=1e-3, r_threshold=1e-3):
+        """Compare two transformations
 
-    def matrix_apply_before(self, m):
-        return numpy.dot(self.r, m)
-
-    def matrix_apply_inverse_before(self, m):
-        return numpy.dot(self.r.transpose(), m)
-
-    def matrix_apply_after(self, m):
-        return numpy.dot(m, self.r)
-
-    def matrix_apply_inverse_after(self, m):
-        return numpy.dot(m, self.r.transpose())
-
-    def apply_after(self, parent): # self -> parent AFTER self
-        Translation.apply_after(self, parent)
-        Rotation.apply_after(self, parent)
-
-    def apply_inverse_after(self, parent): # self -> !parent AFTER self
-        Translation.apply_inverse_after(self, parent)
-        Rotation.apply_inverse_after(self, parent)
-
-    def apply_before(self, child): # self -> self AFTER child
-        Translation.apply_before(self, child)
-        Rotation.apply_before(self, child)
-
-    def apply_inverse_before(self, child): # self -> self AFTER !child
-        Translation.apply_inverse_before(self, child)
-        Rotation.apply_inverse_before(self, child)
-
-    def compare(self, other, translation_threshold=1e-3, rotation_threshold=1e-3):
-        return (
-            sum((self.t - other.t)**2) < translation_threshold and
-            sum((self.r - other.r).ravel()**2) < rotation_threshold
-        )
-
-    def assign_shallow(self, other):
-        Translation.assign_shallow(self, other)
-        Rotation.assign_shallow(self, other)
+           The RMSD values of the rotation matrices and the translation vectors
+           are computed. The return value is True when the RMSD values are below
+           the thresholds, i.e. when the two transformations are almost
+           identical.
+        """
+        return rmsd(self.t, other.t) < t_threshold and rmsd(self.r, other.r) < r_threshold
 
 
-def rotation_around_center(center, angle, axis, invert=False):
-    result = Complete()
-    result.t = -center
+def rotation_about_axis(center, angle, axis, invert=False):
+    """Compute the transformation object that represents a rotation about an axis
 
-    rotation = Rotation()
-    rotation.set_rotation_properties(angle, axis, invert)
-    result.apply_after(rotation)
-
-    translation = Translation()
-    translation.t = center
-    result.apply_after(translation)
-
-    return result
-
-
-def random_rotation():
-    from molmod.vectors import random_unit, trivial_orthonormal
-    result = Rotation()
-    # first generate a random unit vector, the new x-axis
-    result.r[:,0] = random_unit(3)
-    x = result.r[:,0]
-    # generate a not so random y-axis and z-axis
-    y = trivial_orthonormal(x)
-    z = numpy.cross(x, y)
-    # rotate y,z with about the x-axis by a random angle
-    angle = numpy.random.uniform(0, 2*numpy.pi)
-    result.r[:,1] = numpy.cos(angle)*y - numpy.sin(angle)*z
-    result.r[:,2] = numpy.sin(angle)*y + numpy.cos(angle)*z
-    return result
+       Arguments:
+         center  --  Point on the axis
+         angle  --  Rotation angle
+         axis  --  Rotation axis
+         invert  --  When True, an inversion rotation is constructed
+                     [default=False]
+    """
+    return Translation(center)*Rotation.from_properties(angle, axis, invert)*Translation(-center)
 
 
 def superpose(ras, rbs, weights=None):
@@ -424,17 +416,17 @@ def superpose(ras, rbs, weights=None):
     evals, evecs = numpy.linalg.eigh(B)
     evals = numpy.clip(evals, 0, evals.max())
     Bhalf = numpy.dot(evecs*numpy.sqrt(evals), evecs.transpose())
-    Ainv = safe_inv(A)
-    #Ainv = numpy.linalg.inv(A)
+    # safe inverse of A
+    U, W, Vt = numpy.linalg.svd(A)
+    Winv = 1/W
+    Winv[abs(W)<1e-10] = 0
+    Ainv = numpy.dot(Vt.transpose()*Winv, U.transpose())
     r = numpy.dot(Bhalf, Ainv)
 
     # fix degeneracies
     U, W, Vt = numpy.linalg.svd(r)
     r = numpy.dot(U, Vt)
 
-    complete = Complete()
-    complete.r = r
-    complete.t = numpy.dot(r, -mb) + ma
-    return complete
+    return Complete(r, numpy.dot(r, -mb) + ma)
 
 

@@ -44,18 +44,13 @@ class DescriptorTestCase(unittest.TestCase):
         self.assert_(reference.inversion_symmetric == expected_is)
 
         for counter in xrange(3):
-            transformation = Complete()
-            transformation.set_rotation_properties(
+            transformation = Complete.from_properties(
                 numpy.random.uniform(0, 2*numpy.pi),
                 numpy.random.uniform(-1, 1, (3,)),
                 False,
+                numpy.random.uniform(-5, 5, (3,)),
             )
-            transformation.t = numpy.random.uniform(-5, 5, (3,))
-            new_coordinates = numpy.array([
-                transformation.vector_apply(coordinate)
-                for coordinate
-                in coordinates
-            ], float)
+            new_coordinates = transformation*coordinates
             new_descriptor = MolecularDescriptorTV1(new_coordinates, masses)
             self.assert_(reference.compare_structure(new_descriptor))
             self.assert_(not reference.compare_global_rotation(new_descriptor))

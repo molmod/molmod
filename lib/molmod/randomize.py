@@ -25,7 +25,7 @@ from molmod.molecules import Molecule
 from molmod.graphs import GraphError
 from molmod.data.bonds import bonds
 from molmod.data.periodic import periodic
-from molmod.transformations import rotation_around_center, Translation, Rotation, Complete
+from molmod.transformations import rotation_about_axis, Translation, Rotation, Complete
 from molmod.vectors import random_orthonormal, random_unit
 
 import numpy, copy
@@ -54,23 +54,16 @@ class MolecularTransformation(object):
             values = list(float(word) for word in line.split())
             r.append(values[:3])
             t.append(values[3])
-        transformation = Complete()
-        transformation.r[:] = r
-        transformation.t[:] = t
+        transformation = Complete(r, t)
         affected_atoms = set(int(word) for word in lines[3].split())
         return cls(affected_atoms, transformation)
 
     def __init__(self, affected_atoms, transformation, molecule=None):
         self.affected_atoms = affected_atoms
-        self.transformation = Complete()
-        if isinstance(transformation, Rotation):
-            self.transformation.r[:] = transformation.r
-        if isinstance(transformation, Translation):
-            self.transformation.t[:] = transformation.t
-
+        self.transformation = Complete.cast(transformation)
         if molecule is not None:
             for i in affected_atoms:
-                molecule.coordinates[i] = transformation.vector_apply(molecule.coordinates[i])
+                molecule.coordinates[i] = transformation*molecule.coordinates[i]
 
     def write_to_file(self, filename):
         r = self.transformation.r
@@ -118,8 +111,7 @@ class RandomStretch(RandomManipulation):
         direction = molecule.coordinates[atom1] - molecule.coordinates[atom2]
         direction /= numpy.linalg.norm(direction)
         direction *= numpy.random.uniform(-self.max_amplitude, self.max_amplitude)
-        result = Translation()
-        result.t[:] = direction
+        result = Translation(direction)
         return result
 
 
@@ -132,7 +124,7 @@ class RandomTorsion(RandomManipulation):
         axis = molecule.coordinates[atom1] - molecule.coordinates[atom2]
         axis /= numpy.linalg.norm(axis)
         angle = numpy.random.uniform(-self.max_amplitude, self.max_amplitude)
-        return rotation_around_center(center, angle, axis)
+        return rotation_about_axis(center, angle, axis)
 
 
 class RandomBend(RandomManipulation):
@@ -151,7 +143,7 @@ class RandomBend(RandomManipulation):
         else:
             axis /= numpy.linalg.norm(axis)
         angle = numpy.random.uniform(-self.max_amplitude, self.max_amplitude)
-        return rotation_around_center(center, angle, axis)
+        return rotation_about_axis(center, angle, axis)
 
 
 class RandomDoubleStretch(RandomManipulation):
@@ -165,8 +157,7 @@ class RandomDoubleStretch(RandomManipulation):
         b /= numpy.linalg.norm(b)
         direction = 0.5*(a+b)
         direction *= numpy.random.uniform(-self.max_amplitude, self.max_amplitude)
-        result = Translation()
-        result.t[:] = direction
+        result = Translation(direction)
         return result
 
 
@@ -364,7 +355,7 @@ def random_dimer(molecule0, molecule1, thresholds, shoot_max, max_tries=1000):
     center = numpy.zeros(3, float)
     angle = numpy.random.uniform(0, 2*numpy.pi)
     axis = random_unit(3)
-    rotation = rotation_around_center(center, angle, axis)
+    rotation = rotation_about_axis(center, angle, axis)
     cor1 = numpy.dot(molecule1.coordinates, rotation.r)
 
     # select a random atom in each molecule

@@ -22,7 +22,7 @@
 from molmod.volume import *
 from molmod.units import angstrom
 from molmod.io.xyz import XYZFile
-from molmod.transformations import rotation_around_center
+from molmod.transformations import rotation_about_axis
 from molmod.data.periodic import periodic
 
 
@@ -131,8 +131,8 @@ class VolumeTestCase(unittest.TestCase):
                 ])
                 self.assertAlmostEqual(numpy.linalg.det(mat), 0)
                 # define a rotation of 180 degrees about the close1-close2 axis
-                rotation = rotation_around_center(close1, numpy.pi, close2-close1)
-                new_center = rotation.vector_apply(center)
+                rotation = rotation_about_axis(close1, numpy.pi, close2-close1)
+                new_center = rotation*center
                 # test if the rotated center also satisfies the distances and the coplanarity
                 self.assertAlmostEqual(numpy.linalg.norm(new_center-close1), close1_radius)
                 self.assertAlmostEqual(numpy.linalg.norm(new_center-close2), close2_radius)
