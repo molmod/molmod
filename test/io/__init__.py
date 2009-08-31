@@ -24,7 +24,6 @@ from cp2k import *
 from cube import *
 from dlpoly import *
 from fchk import *
-from gdma import *
 from number_state import *
 from psf import *
 from sdf import *
