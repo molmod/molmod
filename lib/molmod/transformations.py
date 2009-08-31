@@ -25,6 +25,8 @@ implementation of the Kabsch algorithm.
 """
 
 from utils import cached, cached_writable, ReadOnly, rmsd
+from molmod.unit_cell import UnitCell
+
 import numpy
 
 
@@ -113,10 +115,12 @@ class Translation(ReadOnly):
              * Translation
              * Rotation
              * Complete
+             * UnitCell
 
            In case of arrays, the 3D vectors are translated. In case of trans-
-           formations, a transformation is returned that consists of this
-           translation applied AFTER the given translation.
+           formations, a new transformation is returned that consists of this
+           translation applied AFTER the given translation. In case of a unit
+           cell, the original object is returned.
 
            This method is equivalent to self*x.
         """
@@ -128,6 +132,8 @@ class Translation(ReadOnly):
             return Translation(x.t + self.t)
         elif isinstance(x, Rotation):
             return Complete(x.r, self.t)
+        elif isinstance(x, UnitCell):
+            return x
         else:
             raise ValueError("Can not apply this translation to %s" % x)
 
@@ -251,7 +257,8 @@ class Rotation(ReadOnly):
 
            In case of arrays, the 3D vectors are rotated. In case of trans-
            formations, a transformation is returned that consists of this
-           rotation applied AFTER the given translation.
+           rotation applied AFTER the given translation. In case of a unit cell,
+           a unit cell with rotated cell vectors is returned.
 
            This method is equivalent to self*x.
         """
@@ -263,6 +270,8 @@ class Rotation(ReadOnly):
             return Complete(self.r, numpy.dot(self.r, x.t))
         elif isinstance(x, Rotation):
             return Rotation(numpy.dot(self.r, x.r))
+        elif isinstance(x, UnitCell):
+            return UnitCell(numpy.dot(self.r, x.matrix), x.active)
         else:
             raise ValueError("Can not apply this rotation to %s" % x)
 
@@ -343,7 +352,9 @@ class Complete(Translation, Rotation):
 
            In case of arrays, the 3D vectors are transformed. In case of trans-
            formations, a transformation is returned that consists of this
-           transformation applied AFTER the given translation.
+           transformation applied AFTER the given translation. In case of a unit
+           cell, a unit cell with rotated cell vectors is returned. (The
+           translational part does not affect the unit cell.)
 
            This method is equivalent to self*x.
         """
@@ -355,6 +366,8 @@ class Complete(Translation, Rotation):
             return Complete(self.r, numpy.dot(self.r, x.t) + self.t)
         elif isinstance(x, Rotation):
             return Complete(numpy.dot(self.r, x.r), self.t)
+        elif isinstance(x, UnitCell):
+            return UnitCell(numpy.dot(self.r, x.matrix), x.active)
         else:
             raise ValueError("Can not apply this rotation to %s" % x)
 

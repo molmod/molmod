@@ -18,6 +18,7 @@
 #
 # --
 
+from common import BaseTestCase
 
 from molmod.unit_cell import UnitCell
 from molmod.vectors import random_normal
@@ -29,7 +30,7 @@ import numpy, unittest
 __all__ = ["UnitCellTestCase"]
 
 
-class UnitCellTestCase(unittest.TestCase):
+class UnitCellTestCase(BaseTestCase):
     def get_random_uc(self, r=3, full=True):
         if full:
             return UnitCell(numpy.random.uniform(-r, r, (3, 3)))
@@ -48,8 +49,8 @@ class UnitCellTestCase(unittest.TestCase):
             except ValueError, e:
                 continue
             out_lengths, out_angles = uc.parameters
-            self.assertAlmostEqual(sum((in_lengths - out_lengths)**2), 0.0, 5, "Lengths mismatch.")
-            self.assertAlmostEqual(sum((in_angles - out_angles)**2), 0.0, 5, "Angles mismatch: %s and %s" % (in_angles, out_angles))
+            self.assertArraysAlmostEqual(in_lengths, out_lengths)
+            self.assertArraysAlmostEqual(in_angles, out_angles)
 
     def test_reciprocal(self):
         for counter in xrange(100):
@@ -70,18 +71,14 @@ class UnitCellTestCase(unittest.TestCase):
             fractional = numpy.random.uniform(-0.5, 0.5, 3)
             cartesian = fractional[0]*uc.matrix[:,0] + fractional[1]*uc.matrix[:,1] + fractional[2]*uc.matrix[:,2]
             fractional_bis = uc.to_fractional(cartesian)
-            self.assertAlmostEqual(fractional[0], fractional_bis[0])
-            self.assertAlmostEqual(fractional[1], fractional_bis[1])
-            self.assertAlmostEqual(fractional[2], fractional_bis[2])
+            self.assertArraysAlmostEqual(fractional, fractional_bis)
         for i in xrange(100):
             uc = self.get_random_uc()
             cartesian = numpy.random.uniform(-3, 3, (10,3))
             fractional = uc.to_fractional(cartesian)
             for i in xrange(10):
                 fractional_bis = uc.to_fractional(cartesian[i])
-                self.assertAlmostEqual(fractional[i,0], fractional_bis[0])
-                self.assertAlmostEqual(fractional[i,1], fractional_bis[1])
-                self.assertAlmostEqual(fractional[i,2], fractional_bis[2])
+                self.assertArraysAlmostEqual(fractional[i], fractional_bis)
 
     def test_to_cartesian(self):
         for i in xrange(100):
@@ -89,18 +86,14 @@ class UnitCellTestCase(unittest.TestCase):
             cartesian = numpy.random.uniform(-3, 3, 3)
             fractional = cartesian[0]*uc.reciprocal[0] + cartesian[1]*uc.reciprocal[1] + cartesian[2]*uc.reciprocal[2]
             cartesian_bis = uc.to_cartesian(fractional)
-            self.assertAlmostEqual(cartesian[0], cartesian_bis[0])
-            self.assertAlmostEqual(cartesian[1], cartesian_bis[1])
-            self.assertAlmostEqual(cartesian[2], cartesian_bis[2])
+            self.assertArraysAlmostEqual(cartesian, cartesian_bis)
         for i in xrange(100):
             uc = self.get_random_uc()
             fractional = numpy.random.uniform(-0.5, 0.5, (10,3))
             cartesian = uc.to_cartesian(fractional)
             for i in xrange(10):
                 cartesian_bis = uc.to_cartesian(fractional[i])
-                self.assertAlmostEqual(cartesian[i,0], cartesian_bis[0])
-                self.assertAlmostEqual(cartesian[i,1], cartesian_bis[1])
-                self.assertAlmostEqual(cartesian[i,2], cartesian_bis[2])
+                self.assertArraysAlmostEqual(cartesian[i], cartesian_bis)
 
     def test_consistency(self):
         for i in xrange(100):
@@ -108,18 +101,13 @@ class UnitCellTestCase(unittest.TestCase):
             cartesian = numpy.random.uniform(-3, 3, 3)
             fractional = uc.to_fractional(cartesian)
             cartesian_bis = uc.to_cartesian(fractional)
-            self.assertAlmostEqual(cartesian[0], cartesian_bis[0])
-            self.assertAlmostEqual(cartesian[1], cartesian_bis[1])
-            self.assertAlmostEqual(cartesian[2], cartesian_bis[2])
+            self.assertArraysAlmostEqual(cartesian, cartesian_bis)
         for i in xrange(100):
             uc = self.get_random_uc()
             fractional = numpy.random.uniform(-0.5, 0.5, (10,3))
             cartesian = uc.to_cartesian(fractional)
             fractional_bis = uc.to_fractional(cartesian)
-            for i in xrange(10):
-                self.assertAlmostEqual(fractional[i,0], fractional_bis[i,0])
-                self.assertAlmostEqual(fractional[i,1], fractional_bis[i,1])
-                self.assertAlmostEqual(fractional[i,2], fractional_bis[i,2])
+            self.assertArraysAlmostEqual(fractional, fractional_bis)
 
     def test_add_periodicities(self):
         for counter in xrange(100):
@@ -131,14 +119,11 @@ class UnitCellTestCase(unittest.TestCase):
     def test_shortest_vector(self):
         # simple case
         uc = UnitCell(numpy.identity(3,float)*3)
-        self.assertAlmostEqual(uc.spacings[0], 3.0)
-        self.assertAlmostEqual(uc.spacings[1], 3.0)
-        self.assertAlmostEqual(uc.spacings[2], 3.0)
-        self.assert_(abs(uc.shortest_vector([3, 0, 1]) - numpy.array([0, 0, 1])).max() < 1e-10)
-        self.assert_(abs(uc.shortest_vector([-3, 0, 1]) - numpy.array([0, 0, 1])).max() < 1e-10)
-        self.assert_(abs(uc.shortest_vector([-2, 0, 1]) - numpy.array([1, 0, 1])).max() < 1e-10)
-        self.assert_(abs(uc.shortest_vector([-1.6, 1, 1]) - numpy.array([1.4, 1, 1])).max() < 1e-10)
-        self.assert_(abs(uc.shortest_vector([-1.4, 1, 1]) - numpy.array([-1.4, 1, 1])).max() < 1e-10)
+        self.assertArraysAlmostEqual(uc.shortest_vector([3, 0, 1]), numpy.array([0, 0, 1]))
+        self.assertArraysAlmostEqual(uc.shortest_vector([-3, 0, 1]), numpy.array([0, 0, 1]))
+        self.assertArraysAlmostEqual(uc.shortest_vector([-2, 0, 1]), numpy.array([1, 0, 1]))
+        self.assertArraysAlmostEqual(uc.shortest_vector([-1.6, 1, 1]), numpy.array([1.4, 1, 1]))
+        self.assertArraysAlmostEqual(uc.shortest_vector([-1.4, 1, 1]), numpy.array([-1.4, 1, 1]))
         # random tests
         for uc_counter in xrange(10):
             uc = UnitCell(numpy.random.uniform(-1, 1, (3, 3)))
@@ -147,22 +132,16 @@ class UnitCellTestCase(unittest.TestCase):
                 r1 = uc.shortest_vector(r0)
                 self.assert_(numpy.linalg.norm(r0) >= numpy.linalg.norm(r1))
                 index = uc.to_fractional(r0-r1)
-                self.assertAlmostEqual(index[0], round(index[0]))
-                self.assertAlmostEqual(index[1], round(index[1]))
-                self.assertAlmostEqual(index[2], round(index[2]))
+                self.assertArraysAlmostEqual(index, numpy.round(index))
             r0 = numpy.random.normal(0, 10, (10,3))
             r1 = uc.shortest_vector(r0)
             for i in xrange(10):
                 r1_row_bis = uc.shortest_vector(r0[i])
-                self.assertAlmostEqual(r1_row_bis[0], r1[i,0])
-                self.assertAlmostEqual(r1_row_bis[1], r1[i,1])
-                self.assertAlmostEqual(r1_row_bis[2], r1[i,2])
+                self.assertArraysAlmostEqual(r1_row_bis, r1[i])
 
     def test_spacings(self):
         uc = UnitCell(numpy.identity(3,float)*3)
-        self.assertAlmostEqual(uc.spacings[0], 3.0)
-        self.assertAlmostEqual(uc.spacings[1], 3.0)
-        self.assertAlmostEqual(uc.spacings[2], 3.0)
+        self.assertArraysAlmostEqual(uc.spacings, numpy.ones(3, float)*3.0)
         for i in xrange(100):
             uc = self.get_random_uc()
             a = uc.matrix[:,0]
@@ -190,8 +169,8 @@ class UnitCellTestCase(unittest.TestCase):
         for i in xrange(20):
             uc0 = self.get_random_uc(full=False)
             uc1 = uc0/4
-            self.assert_(abs(uc0.matrix/4 - uc1.matrix).max() < 1e-10)
-            self.assert_((uc0.active == uc1.active).all())
+            self.assertArraysAlmostEqual(uc0.matrix/4, uc1.matrix)
+            self.assertArraysEqual(uc0.active, uc1.active)
 
     def test_generalized_volume(self):
         matrix = numpy.array([[10,0,0],[0,10,0],[0,0,10]], float)
@@ -200,18 +179,36 @@ class UnitCellTestCase(unittest.TestCase):
         self.assertEqual(UnitCell(matrix, numpy.array([True,True,False])).generalized_volume, 100)
         self.assertEqual(UnitCell(matrix, numpy.array([True,True,True])).generalized_volume, 1000)
 
-    def test_alignment(self):
+    def test_alignment_a(self):
         matrix = numpy.array([[10,10,0],[-10,10,0],[0,0,10]], float)
         uc = UnitCell(matrix)
-        r = uc.alignment
+        r = uc.alignment_a
         sh = numpy.sqrt(0.5)
-        self.assertAlmostEqual(r[0,0], sh)
-        self.assertAlmostEqual(r[0,1], -sh)
-        self.assertAlmostEqual(r[1,0], sh)
-        self.assertAlmostEqual(r[1,1], sh)
-        self.assertAlmostEqual(r[2,0], 0)
-        self.assertAlmostEqual(r[2,1], 0)
-        self.assertAlmostEqual(r[0,2], 0)
-        self.assertAlmostEqual(r[1,2], 0)
-        self.assertAlmostEqual(r[2,2], 1)
+        expected_r = numpy.array([
+            [sh, -sh, 0],
+            [sh, sh, 0],
+            [0, 0, 1],
+        ], float)
+        self.assertArraysAlmostEqual(r.r, expected_r)
+        uc = r*uc
+        expected_matrix = numpy.array([
+            [10/sh, 0, 0],
+            [0, 10/sh, 0],
+            [0, 0, 10],
+        ])
+        self.assertArraysAlmostEqual(uc.matrix, expected_matrix)
+
+    def test_alignment_c(self):
+        matrix = numpy.array([[10,0,0],[0,10,-10],[0,10,10]], float)
+        uc = UnitCell(matrix)
+        r = uc.alignment_c
+        uc = r*uc
+        sh = numpy.sqrt(0.5)
+        expected_matrix = numpy.array([
+            [10, 0, 0],
+            [0, 10/sh, 0],
+            [0, 0, 10/sh],
+        ])
+        self.assertArraysAlmostEqual(uc.matrix, expected_matrix)
+
 

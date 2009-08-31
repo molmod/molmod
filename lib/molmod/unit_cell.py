@@ -171,21 +171,40 @@ class UnitCell(ReadOnly):
         return (numpy.array([length_a, length_b, length_c], float), numpy.array([alpha, beta, gamma], float))
 
     @cached
-    def alignment(self):
+    def alignment_a(self):
         """Computes the rotation matrix that aligns the unit cell with the
-           Cartesian axes.
+           Cartesian axes, starting with cell vector a
 
-              a parallel x
+              a parallel to x
               b in xy-plane with b_y positive
               c with c_z positive
         """
+        from molmod.transformations import Rotation
         new_x = self.matrix[:,0].copy()
         new_x /= numpy.linalg.norm(new_x)
         new_z = numpy.cross(new_x, self.matrix[:,1])
         new_z /= numpy.linalg.norm(new_z)
         new_y = numpy.cross(new_z, new_x)
         new_y /= numpy.linalg.norm(new_y)
-        return numpy.array([new_x, new_y, new_z])
+        return Rotation(numpy.array([new_x, new_y, new_z]))
+
+    @cached
+    def alignment_c(self):
+        """Computes the rotation matrix that aligns the unit cell with the
+           Cartesian axes, starting with cell vector c
+
+              c parallel to z
+              b in zy-plane with b_y positive
+              a with a_x positive
+        """
+        from molmod.transformations import Rotation
+        new_z = self.matrix[:,2].copy()
+        new_z /= numpy.linalg.norm(new_z)
+        new_x = numpy.cross(self.matrix[:,1], new_z)
+        new_x /= numpy.linalg.norm(new_x)
+        new_y = numpy.cross(new_z, new_x)
+        new_y /= numpy.linalg.norm(new_y)
+        return Rotation(numpy.array([new_x, new_y, new_z]))
 
     @cached
     def spacings(self):
