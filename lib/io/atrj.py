@@ -17,7 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-
+"""Reader for ATRJ files, i.e. Cerius2 Trajectory files."""
 
 
 import numpy
@@ -30,6 +30,10 @@ __all__ = ["ATRJReader", "ATRJFrame"]
 
 
 class SectionFile(object):
+    """A component for the ATRJReader that reads files divide into sections
+
+       This is an internal class and should not be used directly.
+    """
     def __init__(self, filename):
         self.filename = filename
         self._f = file(filename, 'r')
@@ -63,11 +67,31 @@ class SectionFile(object):
 
 
 class ATRJFrame(object):
+    """A single time frame from an ATRJ file"""
     pass
 
 
 class ATRJReader(object):
+    """A Reader class for the ATRJ trajectory file format
+
+       Once initialized, this object behaves like an iterator that runs over
+       the individual time frames. Example usage:
+
+       >>> foo = ATRJReader("somefile.atrj")
+       >>> print foo.num_atoms
+       >>> for frame in foo:
+       ...    print frame.time
+    """
     def __init__(self, filename, sub=slice(None)):
+        """Create and ATRJReader
+
+           Arguments:
+             filename  --  the filename of the ATRJ file
+             sub  --  an optional slice object to select a subset of time frames
+
+           The number of atoms is read immediately and is available as
+           self.num_atoms.
+        """
         self.filename = filename
         self._sub = sub
         self._counter = 0
@@ -81,6 +105,7 @@ class ATRJReader(object):
         return self
 
     def next(self):
+        """Read the next frame"""
         while True:
             # skip to the next frame
             self._secfile.get_next("Frame Number")
@@ -106,3 +131,4 @@ class ATRJReader(object):
                 return frame
             else:
                 self._counter += 1
+
