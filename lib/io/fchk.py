@@ -20,21 +20,33 @@
 
 
 from molmod.molecules import Molecule
+from molmod.io.common import FileFormatError
 
-import numpy
-
-import copy
-
-
-__all__ = ["ReadError", "FCHKFile"]
+import numpy, copy
 
 
-class ReadError(Exception):
-    pass
+__all__ = ["FCHKFile"]
 
 
 class FCHKFile(object):
+    """Reader for Formatted checkpoint files
+
+       After initialization, the data from the file is available in the fields
+       dictionary. Also the following attributes are read from the file: title,
+       command, lot (level of theory) and basis.
+    """
+
     def __init__(self, filename, ignore_errors=False, field_labels=None):
+        """Initialize an FCHKFile object
+
+           Arguments:
+             filename  --  The formatted checkpoint file
+             ignore_errors  --  Try to read incorrectly formatted files without
+                                raising exceptions
+             field_labels  --  When given, only these fields are read from the
+                               formatted checkpoint file. (This can save a lot
+                               of time.)
+        """
         self.filename = filename
         try:
             if field_labels is not None:
@@ -42,7 +54,7 @@ class FCHKFile(object):
                 field_labels.add("Atomic numbers")
                 field_labels.add("Current cartesian coordinates")
             self._read(filename, field_labels)
-        except ReadError:
+        except FileFormatError:
             if ignore_errors:
                 pass
             else:
@@ -82,7 +94,7 @@ class FCHKFile(object):
                     return True
             elif len(words) == 3:
                 if words[1] != "N=":
-                    raise ReadError("Unexpected line in formatted checkpoint file %s\n%s" % (filename, line[:-1]))
+                    raise FileFormatError("Unexpected line in formatted checkpoint file %s\n%s" % (filename, line[:-1]))
                 length = int(words[2])
                 value = numpy.zeros(length, datatype)
                 counter = 0
@@ -90,24 +102,24 @@ class FCHKFile(object):
                     while counter < length:
                         line = f.readline()
                         if line == "":
-                            raise ReadError("Unexpected end of formatted checkpoint file %s" % filename)
+                            raise FileFormatError("Unexpected end of formatted checkpoint file %s" % filename)
                         for word in line.split():
                             value[counter] = datatype(word)
                             counter += 1
                 except ValueError:
                     return True
             else:
-                raise ReadError("Unexpected line in formatted checkpoint file %s\n%s" % (filename, line[:-1]))
+                raise FileFormatError("Unexpected line in formatted checkpoint file %s\n%s" % (filename, line[:-1]))
 
             self.fields[label] = value
             return True
 
         self.fields = {}
         f = file(filename, 'r')
-        self.title = f.readline()[:-1]
+        self.title = f.readline()[:-1].strip()
         words = f.readline().split()
         if len(words) != 3:
-            raise ReadError("Second line of FCHKFile is incorrect. Expecting three words.")
+            raise FileFormatError("Second line of FCHKFile is incorrect. Expecting three words.")
         self.command, self.lot, self.basis = words
 
         while read_field(f):
@@ -124,15 +136,19 @@ class FCHKFile(object):
             )
 
     def get_optimization_energies(self):
+        """Return an array with the energy at each point in the optimization"""
         return self.fields.get("Opt point       1 Results for each geome")[::2]
 
-    def get_optimized_enery(self):
+    def get_optimized_energy(self):
+        """Get the final energy after optimization"""
         return self.get_optimization_energies()[-1]
 
     def get_optimization_lowest_index(self):
+        """Return the index of the lowest energy during the optimization process"""
         return self.get_optimization_energies().argmin()
 
     def get_optimization_coordinates(self):
+        """Return the coordinates of the geometries at each point in the optimization"""
         coor_array = self.fields.get("Opt point       1 Geometries")
         if coor_array is None:
             return []
@@ -140,6 +156,7 @@ class FCHKFile(object):
             return numpy.reshape(coor_array, (-1, len(self.molecule.numbers), 3))
 
     def get_optimized_molecule(self):
+        """Return a molecule object of the optimal geometry"""
         opt_coor = self.get_optimization_coordinates()
         if len(opt_coor) == 0:
             return None
@@ -150,6 +167,7 @@ class FCHKFile(object):
             )
 
     def get_optimization_gradients(self):
+        """Return the energy gradients of all geometries during an optimization"""
         grad_array = self.fields.get("Opt point       1 Gradient at each geome")
         if grad_array is None:
             return []
@@ -157,29 +175,15 @@ class FCHKFile(object):
             return numpy.reshape(grad_array, (-1, len(self.molecule.numbers), 3))
 
     def get_optimized_gradient(self):
+        """Return the energy gradient of the optimized geometry"""
         opt_grad = self.get_optimization_gradients()
         if len(opt_grad) == 0:
             return None
         else:
             return opt_grad[-1]
 
-    def get_esp_charges(self):
-        return self.fields.get("ESP Charges")
-
-    def get_npa_charges(self):
-        return self.fields.get("NPA Charges")
-
-    def get_mulliken_charges(self):
-        return self.fields.get("Mulliken Charges")
-
-    def get_gradient(self):
-        tmp = self.fields.get("Cartesian Gradient")
-        if tmp is None:
-            return None
-        else:
-            return numpy.reshape(tmp, self.molecule.coordinates.shape)
-
     def get_hessian(self):
+        """Return the hessian"""
         N = len(self.molecule.numbers)
         result = numpy.zeros((3*N,3*N), float)
         counter = 0
@@ -189,10 +193,4 @@ class FCHKFile(object):
             result[:row+1,row] = force_const[counter:counter+row+1]
             counter += row + 1
         return result
-
-
-
-
-
-
 
