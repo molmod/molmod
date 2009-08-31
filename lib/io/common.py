@@ -19,7 +19,7 @@
 # --
 
 
-__all__ = ["slice_match"]
+__all__ = ["slice_match", "FileFormatError"]
 
 
 def slice_match(sub, counter):
@@ -45,4 +45,10 @@ def slice_match(sub, counter):
             if (counter - sub.start) % sub.step != 0:
                 return False
     return True
+
+
+class FileFormatError(Exception):
+    """Is raised when unexpected data is encountered while reading a file."""
+    pass
+
 
