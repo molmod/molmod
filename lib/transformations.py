@@ -408,8 +408,6 @@ def superpose(ras, rbs, weights=None):
 
     The returned transformation projects B onto A.
     """
-    from molmod.linalg import safe_inv
-
     if weights is None:
         ma = ras.mean(axis=0)
         mb = rbs.mean(axis=0)
