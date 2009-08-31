@@ -55,7 +55,7 @@ setup(
     author_email='Toon.Verstraelen@UGent.be',
     url='http://molmod.ugent.be/code/',
     cmdclass={'install_data': MyInstallData},
-    package_dir = {'molmod': 'lib/molmod'},
+    package_dir = {'molmod': 'lib'},
     packages=[
         'molmod',
         'molmod.data',
