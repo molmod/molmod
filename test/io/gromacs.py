@@ -18,12 +18,26 @@
 #
 # --
 
-from atrj import *
-from cml import *
-from common import *
-from cp2k import *
-from cube import *
-from dlpoly import *
-from fchk import *
-from gromacs import *
+
+from common import BaseTestCase
+
+from molmod.io.gromacs import *
+from molmod.units import *
+
+import numpy
+
+
+__all__ = ["GromacsTestCase"]
+
+
+class GromacsTestCase(BaseTestCase):
+    def test_reader(self):
+        gr = GroReader("input/water2.gro")
+        gr.next() # skip one
+        for time, pos, vel, cell in gr:
+            self.assertAlmostEqual(time/picosecond, 1.0)
+            self.assertAlmostEqual(pos[0,1]/nanometer, 1.624,6)
+            self.assertAlmostEqual(vel[3,2]/nanometer*picosecond, -0.1734)
+            self.assertAlmostEqual(cell[0,0]/nanometer, 1.82060)
+            break
 

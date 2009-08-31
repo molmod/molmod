@@ -19,7 +19,7 @@
 # --
 
 
-from molmod.units import ps, nm
+from molmod.units import picosecond, nanometer
 from molmod.io.common import slice_match
 
 import numpy
@@ -33,51 +33,66 @@ class Error(Exception):
 
 
 class GroReader(object):
+    """A reader from .gro trajectory files from gromacs
+
+       Use this reader as an iterator:
+       >>> gr = GroReader("somefile.gro")
+       >>> for time, pos, vel, cell in gr:
+       ...     print pos
+    """
     def __init__(self, filename, sub=slice(None)):
+        """Initialize a GroReader
+
+           Arguments:
+             filename  --  The filename of the gro trajectory file
+             sub  --  a slice object to indicate the frames to be read/skipped.
+        """
         self._f = file(filename)
         self._sub = sub
         self.num_atoms = None
-        (time, pos, vel, cell) = self.read_frame()
+        (time, pos, vel, cell) = self._read_frame()
         self.num_atoms = len(pos)
         self._counter = 0
         self._f.seek(0)
 
-    def get_line(self):
+    def _get_line(self):
+        """Get a line or raise StopIteration"""
         line = self._f.readline()
         if len(line) == 0:
             raise StopIteration
         return line
 
-    def read_frame(self):
+    def _read_frame(self):
+        """Read one frame"""
         # Read the first line, ignore the title and try to get the time. The
         # time field is optional.
-        line = self.get_line()
+        line = self._get_line()
         pos = line.rfind("t=")
         if pos >= 0:
-            time = float(line[pos+2:])*ps
+            time = float(line[pos+2:])*picosecond
         else:
             time = 0.0
         # Read the second line, the number of atoms must match with the first
         # frame.
-        num_atoms = int(self.get_line())
+        num_atoms = int(self._get_line())
         if self.num_atoms is not None and self.num_atoms != num_atoms:
             raise ValueError("The number of atoms must be the same over the entire file.")
         # Read the atom lines
         pos = numpy.zeros((num_atoms,3),numpy.float32)
         vel = numpy.zeros((num_atoms,3),numpy.float32)
         for i in xrange(num_atoms):
-            words = self.get_line()[22:].split()
+            words = self._get_line()[22:].split()
             pos[i,0] = float(words[0])
             pos[i,1] = float(words[1])
             pos[i,2] = float(words[2])
             vel[i,0] = float(words[3])
             vel[i,1] = float(words[4])
             vel[i,2] = float(words[5])
-        pos *= nm
-        vel *= nm/ps
+        pos *= nanometer
+        vel *= nanometer/picosecond
         # Read the cell line
         cell = numpy.zeros((3,3), numpy.float32)
-        words = self.get_line().split()
+        words = self._get_line().split()
         if len(words) >= 3:
             cell[0,0] = float(words[0])
             cell[1,1] = float(words[1])
@@ -89,16 +104,17 @@ class GroReader(object):
             cell[2,1] = float(words[6])
             cell[0,2] = float(words[7])
             cell[1,2] = float(words[8])
-        cell *= nm
+        cell *= nanometer
         return time, pos, vel, cell
 
-    def skip_frame(self):
-        line = self.get_line()
-        num_atoms = int(self.get_line())
+    def _skip_frame(self):
+        """Skip one frame"""
+        line = self._get_line()
+        num_atoms = int(self._get_line())
         if self.num_atoms is not None and self.num_atoms != num_atoms:
             raise ValueError("The number of atoms must be the same over the entire file.")
         for i in xrange(num_atoms+1):
-            self.get_line()
+            self._get_line()
 
     def __del__(self):
         self._f.close()
@@ -107,13 +123,15 @@ class GroReader(object):
         return self
 
     def next(self):
+        """Get the next frame from the file, taking into account the slice
+
+           This method is part of the iterator protocol.
+        """
         # skip frames as requested
         while not slice_match(self._sub, self._counter):
             self._counter += 1
-            self.skip_frame()
+            self._skip_frame()
 
         self._counter += 1
-        return self.read_frame()
-
-
+        return self._read_frame()
 
