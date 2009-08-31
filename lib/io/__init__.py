@@ -23,4 +23,5 @@ from cml import *
 from common import *
 from cp2k import *
 from cube import *
+from dlpoly import *
 
