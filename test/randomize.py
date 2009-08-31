@@ -10,7 +10,7 @@
 #
 # MolMod is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR angstrom PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -22,7 +22,7 @@ from common import BaseTestCase
 
 from molmod.randomize import *
 from molmod.molecular_graphs import MolecularGraph
-from molmod.units import A
+from molmod.units import angstrom
 from molmod.transformations import Translation, Rotation
 
 from molmod.io.xyz import XYZFile
@@ -34,16 +34,16 @@ __all__ = ["RandomizeTestCase"]
 # These threshold values are not good for serious applications!!!
 # Just for testing the code, they are OK.
 nonbond_thresholds = {
-    frozenset([1,1]): 0.9*A,
-    frozenset([1,6]): 1.4*A,
-    frozenset([1,7]): 1.4*A,
-    frozenset([1,8]): 1.4*A,
-    frozenset([6,6]): 2.2*A,
-    frozenset([6,7]): 2.2*A,
-    frozenset([6,8]): 2.2*A,
-    frozenset([7,7]): 2.2*A,
-    frozenset([7,8]): 2.2*A,
-    frozenset([8,8]): 2.2*A,
+    frozenset([1,1]): 0.9*angstrom,
+    frozenset([1,6]): 1.4*angstrom,
+    frozenset([1,7]): 1.4*angstrom,
+    frozenset([1,8]): 1.4*angstrom,
+    frozenset([6,6]): 2.2*angstrom,
+    frozenset([6,7]): 2.2*angstrom,
+    frozenset([6,8]): 2.2*angstrom,
+    frozenset([7,7]): 2.2*angstrom,
+    frozenset([7,8]): 2.2*angstrom,
+    frozenset([8,8]): 2.2*angstrom,
 }
 
 
@@ -74,7 +74,7 @@ class RandomizeTestCase(BaseTestCase):
     def test_random_dimer(self):
         for molecule1, graph1 in self.yield_test_molecules():
             for molecule2, graph2 in self.yield_test_molecules():
-                dimer = random_dimer(molecule1, molecule2, nonbond_thresholds, 0.5*A)
+                dimer = random_dimer(molecule1, molecule2, nonbond_thresholds, 0.5*angstrom)
                 self.assertEqual(dimer.coordinates.shape, (molecule1.coordinates.shape[0] + molecule2.coordinates.shape[0], 3))
                 self.assertEqual(dimer.numbers.shape, (molecule1.numbers.shape[0] + molecule2.numbers.shape[0],))
                 dimer.write_to_file(os.path.join("output", "%s_%s" % (molecule1.filename, molecule2.filename)))

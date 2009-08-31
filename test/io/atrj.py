@@ -21,7 +21,7 @@
 from common import BaseTestCase
 
 from molmod.io.atrj import ATRJReader
-from molmod.units import ps, kcalmol, angstrom
+from molmod.units import picosecond, kcalmol, angstrom
 
 import numpy, unittest
 
@@ -37,9 +37,9 @@ class ATRJTestCase(BaseTestCase):
         frames = list(atrj_reader)
         self.assertEqual(len(frames), 3)
         # check time
-        self.assertAlmostEqual(frames[0].time/ps, 1.0)
-        self.assertAlmostEqual(frames[1].time/ps, 2.0)
-        self.assertAlmostEqual(frames[2].time/ps, 3.0)
+        self.assertAlmostEqual(frames[0].time/picosecond, 1.0)
+        self.assertAlmostEqual(frames[1].time/picosecond, 2.0)
+        self.assertAlmostEqual(frames[2].time/picosecond, 3.0)
         # check step
         self.assertAlmostEqual(frames[0].step, 1000)
         self.assertAlmostEqual(frames[1].step, 2000)
@@ -59,5 +59,5 @@ class ATRJTestCase(BaseTestCase):
         frames = list(atrj_reader)
         self.assertEqual(len(frames), 2)
         # check time
-        self.assertAlmostEqual(frames[0].time/ps, 1.0)
-        self.assertAlmostEqual(frames[1].time/ps, 3.0)
+        self.assertAlmostEqual(frames[0].time/picosecond, 1.0)
+        self.assertAlmostEqual(frames[1].time/picosecond, 3.0)

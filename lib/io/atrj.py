@@ -22,7 +22,7 @@
 
 import numpy
 
-from molmod.units import ps, angstrom, kcalmol
+from molmod.units import picosecond, angstrom, kcalmol
 from molmod.io.common import slice_match
 
 
@@ -90,7 +90,7 @@ class ATRJReader(object):
                 # Read the time and energy
                 energy_lines = self._secfile.get_next("Time/Energy")
                 energy_words = energy_lines[0].split()
-                frame.time = float(energy_words[0])*ps
+                frame.time = float(energy_words[0])*picosecond
                 frame.step = int(energy_words[1])
                 frame.total_energy = float(energy_words[2])*kcalmol
                 # Read the coordinates

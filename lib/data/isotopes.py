@@ -20,7 +20,7 @@
 
 
 from molmod import context
-from molmod.units import u
+from molmod.units import amu
 
 import os
 
@@ -54,7 +54,7 @@ class Ame2003(object):
         for line in f:
             N = int(line[ 5:10])
             Z = int(line[10:15])
-            mass = float(line[96:114].replace(" ", "").replace("#", ""))*1e-6*u
+            mass = float(line[96:114].replace(" ", "").replace("#", ""))*1e-6*amu
             add_mass(N, Z, mass)
 
         f.close()

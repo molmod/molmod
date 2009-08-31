@@ -56,10 +56,10 @@ class PeriodicData(object):
 
         from_unit = {
             "u": (lambda s: float(s)*units.unified),
-            "g/cm**3": (lambda s: float(s)*(1e-3*units.g)/(units.cm**3)),
+            "g/cm**3": (lambda s: float(s)*(1e-3*units.gram)/(units.centimeter**3)),
             "a.u.": (lambda s: float(s)),
             "A": (lambda s: float(s)*units.angstrom),
-            "pm": (lambda s: float(s)*units.pm),
+            "pm": (lambda s: float(s)*units.picometer),
         }
 
 

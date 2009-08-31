@@ -46,14 +46,12 @@ def parse_unit(expression):
 
 
 # *** Generic ***
-au = 1
+au = 1.0
 
 
 # *** Charge ***
 
-C = 1/1.602176462e-19
-# for compatibility with previous verions
-coulomb = C
+coulomb = 1.0/1.602176462e-19
 
 # Mol
 
@@ -61,86 +59,65 @@ mol = avogadro
 
 # *** Mass ***
 
-kg = 1/9.10938188e-31
+kilogram = 1.0/9.10938188e-31
 
-g = 1e-3*kg
-mg = 1e-3*g
-u = 1e-3*kg/mol
-# for compatibility with previous verions
-unified = u
-amu = u
-gram = g
-kilogram = kg
+gram = 1.0e-3*kilogram
+miligram = 1.0e-6*kilogram
+unified = 1.0e-3*kilogram/mol
+amu = unified
 
 # *** Length ***
 
-m = 1/0.5291772083e-10
+meter = 1.0/0.5291772083e-10
 
-dm = 1e-1*m
-cm = 1e-2*m
-mm = 1e-3*m
-um = 1e-6*m
-nm = 1e-9*m
-A = 1e-10*m
-pm = 1e-12*m
-# for compatibility with previous verions
-meter = m
-angstrom = A
-nanometer = nm
+decimeter = 1.0e-1*meter
+centimeter = 1.0e-2*meter
+milimeter = 1.0e-3*meter
+micrometer = 1.0e-6*meter
+nanometer = 1.0e-9*meter
+angstrom = 1.0e-10*meter
+picometer = 1.0e-12*meter
 
 # *** Volume ***
 
-l = dm**3
-liter = l
+liter = decimeter**3
 
 # *** Energy ***
 
-J = 1/4.35974381e-18
+joule = 1/4.35974381e-18
 
-cal = 4.184*J
-kJmol = 1e3*J/mol
-kcalmol = 1e3*cal/mol
-eV = (1.0/C)*J
-# for compatibility with previous verions
-kjmol = kJmol
-joule = J
-calorie = cal
-ev = eV
+calorie = 4.184*joule
+kjmol = 1.0e3*joule/mol
+kcalmol = 1.0e3*calorie/mol
+electronvolt = (1.0/coulomb)*joule
 
 # *** Force ***
 
-N = J/m
-newton = N
+newton = joule/meter
 
 # *** Angles ***
 
-degree = 0.017453292519943295
-deg = degree
-rad = 1
+deg = 0.017453292519943295
+rad = 1.0
 
 # *** Time ***
 
-s = 1/2.418884326500e-17
+second = 1/2.418884326500e-17
 
-ns = 1e-9*s
-fs = 1e-15*s
-ps = 1e-12*s
-# for compatibility with previous verions
-second = s
-nanosecond = ns
-picosecond = ps
-femtosecond = fs
+nanosecond = 1e-9*second
+femtosecond = 1e-15*second
+picosecond = 1e-12*second
+
 
 # *** Pressure ***
 
-pascal = N/m**2
+pascal = newton/meter**2
 bar = 100000*pascal
 atm = 1.01325*bar
 
 # *** Temperature ***
 
-K = 1.0
-kelvin = K
+kelvin = 1.0
 
 # *** Dipole ***
 

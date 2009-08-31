@@ -81,7 +81,7 @@ class BondData(object):
         def read_units(unit_names):
             tmp = {
                 "A": units.angstrom,
-                "pm": units.pm,
+                "pm": units.picometer,
                 "nm": units.nanometer,
             }
             return [tmp[unit_name] for unit_name in unit_names]
