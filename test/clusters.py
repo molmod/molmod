@@ -19,7 +19,7 @@
 # --
 
 
-from molmod.clusters import Cluster, ClusterFactory
+from molmod.clusters import ClusterFactory
 
 import numpy, unittest
 
@@ -28,19 +28,23 @@ __all__ = ["ClusterTestCase"]
 
 
 class ClusterTestCase(unittest.TestCase):
-    def test_blind(self):
+    def test_even_odd(self):
         cf = ClusterFactory()
-        for counter in xrange(1000):
-            a = numpy.random.randint(0, 100)
-            b = numpy.random.randint(0, 100)
+        for counter in xrange(10000):
+            a = numpy.random.randint(0, 200)
+            b = numpy.random.randint(0, 200)
             if (a+b)%2 == 0:
-                cf.add_members([a, b])
+                cf.add_related(a, b)
 
-        for cluster in cf.get_clusters():
-            #print cluster.members
-            tmp = numpy.array(cluster.members) % 2
-            #print tmp
+        counter = 0
+        clusters = cf.get_clusters()
+        complete = set([])
+        for cluster in clusters:
+            tmp = numpy.array(cluster) % 2
             self.assert_((tmp == 0).all() or (tmp == 1).all())
+            counter += len(cluster)
+            complete |= set(cluster)
+        self.assertEqual(counter, len(complete))
 
 
 

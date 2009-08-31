@@ -17,90 +17,69 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Basic cluster analysis tool
 
+Given a mixed set of related and unrelated data pionts, it is often interesting
+to extract clusters of related items. The basic workflow is as follows:
 
-__all__ = ["Cluster", "ClusterFactoryError", "ClusterFactory"]
+cf = ClusterFactory()
 
+some loop:
+    cf.add_related(some, related, items)
 
-class Cluster(object):
-    def __init__(self, members=None):
-        if members is None:
-            self.members = []
-        else:
-            self.members = members
+for cluster in cf.iter_clusters():
+    print cluster
+"""
 
-    def clear(self):
-        self.members = []
-
-    def add_member(self, member):
-        self.members.append(member)
-
-    def add_cluster(self, cluster):
-        self.members.extend(cluster.members)
-        cluster.clear()
-
-
-class ClusterFactoryError(Exception):
-    pass
+__all__ = ["ClusterFactory"]
 
 
 class ClusterFactory(object):
-    def __init__(self, ClusterClass=Cluster):
-        self.clusters = {}
-        self.ClusterClass = ClusterClass
+    def __init__(self):
+        """Initialize a ClusterFactory"""
+        # mapping: item -> cluster. Each cluster is a tuple of related items.
+        self.lookup = {}
 
-    def add_cluster(self, master):
-        slaves = set([]) # set of clusters that is going to be merged in the master
-        new = [] # members that are not yet in other clusters
-        for member in master.members:
-            cluster = self.clusters.get(member)
+    def add_related(self, *group):
+        """Add related items
+
+           When two groups of related items share one or more common members,
+           they will be merged into one cluster.
+        """
+        master = None # this will become the common cluster of all related group
+        slaves = set([]) # set of clusters that are going to be merged in the master
+        solitaire = set([]) # set of new items that are not yet part of a cluster
+        for new in group:
+            cluster = self.lookup.get(new)
             if cluster is None:
-                #print "solitaire", member
-                new.append(member)
-            else:
-                #print "in slave", member
-                slaves.add(cluster)
-            #else:
-            #    #print "in master", member
-
-        for slave in slaves:
-            for member in slave.members:
-                self.clusters[member] = master
-            master.add_cluster(slave)
-        for member in new:
-            self.clusters[member] = master
-
-    def add_members(self, members):
-        master = None # this will become the common cluster of all related members
-        slaves = set([]) # set of clusters that is going to be merged in the master
-        solitaire = [] # members that are not yet part of a cluster
-        for member in members:
-            cluster = self.clusters.get(member)
-            if cluster is None:
-                #print "solitaire", member
-                solitaire.append(member)
+                #print "solitaire", new
+                solitaire.add(new)
             elif master is None:
-                #print "starting master", member
+                #print "starting master", new
                 master = cluster
             elif master != cluster:
-                #print "in slave", member
+                #print "in slave", new
                 slaves.add(cluster)
             #else:
-                #print "in master", member
+                ##nothing to do
+                #print "new in master", new
 
         if master is None:
-            master = self.ClusterClass()
+            master = []
         else:
-            for slave in slaves:
-                for member in slave.members:
-                    self.clusters[member] = master
-                master.add_cluster(slave)
-        for member in solitaire:
-            self.clusters[member] = master
-            master.add_member(member)
+            master = list(master)
+
+        for slave in slaves:
+            master.extend(slave)
+        master.extend(solitaire)
+        master = tuple(master)
+
+        for item in master:
+            self.lookup[item] = master
 
     def get_clusters(self):
-        return set(cluster for cluster in self.clusters.itervalues())
+        """Returns a set with the clusters"""
+        return set(self.lookup.itervalues())
 
 
 

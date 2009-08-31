@@ -53,6 +53,7 @@ class Context(object):
 context = Context()
 
 
+from clusters import *
 from graphs import *
 from molecules import *
 from molecular_graphs import *
