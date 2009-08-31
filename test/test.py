@@ -49,7 +49,7 @@ from molecular_graphs import *
 from pairff import *
 from flexff import *
 from data import *
-from unit_cell import *
+from unit_cells import *
 from clusters import *
 from transformations import *
 from environments import *

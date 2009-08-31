@@ -20,7 +20,7 @@
 
 from common import BaseTestCase
 
-from molmod.unit_cell import UnitCell
+from molmod.unit_cells import UnitCell
 from molmod.vectors import random_normal
 from molmod.units import deg
 

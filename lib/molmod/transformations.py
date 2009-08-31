@@ -25,7 +25,7 @@ implementation of the Kabsch algorithm.
 """
 
 from utils import cached, cached_writable, ReadOnly, rmsd
-from molmod.unit_cell import UnitCell
+from molmod.unit_cells import UnitCell
 
 import numpy
 

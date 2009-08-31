@@ -24,7 +24,7 @@ from molmod.io.xyz import XYZFile
 from molmod.graphs import CritAnd
 from molmod.molecular_graphs import MolecularGraph, HasAtomNumber, HasNeighborNumbers
 from molmod.molecules import Molecule
-from molmod.unit_cell import UnitCell
+from molmod.unit_cells import UnitCell
 from molmod.units import angstrom
 
 import unittest, numpy
