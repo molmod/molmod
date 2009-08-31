@@ -19,38 +19,49 @@
 # --
 
 
-import copy, numpy
+from molmod.io.common import FileFormatError
+
+import numpy
 
 
-__all__ = [
-    "FileError", "StateAttr", "ImmutableAttr", "ArrayAttr", "NumberState"
-]
-
-
-class FileError(Exception):
-    pass
+__all__ = ["NumberState"]
 
 
 class StateAttr(object):
-    def get(self, copy=False):
-        raise NotImplementedError
+    """Base class for NumberState attributes"""
 
-    def get_kind(self, value):
-        raise NotImplementedError
-
-    def set(self, value):
-        raise NotImplementedError
-
-
-class ImmutableAttr(StateAttr):
     def __init__(self, owner, name):
+        """Initialize a StateAttr object
+
+           Arguments:
+             owner  --  the instance to read the attribute from
+             name  --  the name of the attribute
+        """
         self.owner = owner
         self.name = name
 
     def get(self, copy=False):
+        """Return the value of the attribute"""
+        raise NotImplementedError
+
+    def get_kind(self, value):
+        """Return the kind (type) of the attribute"""
+        raise NotImplementedError
+
+    def set(self, value):
+        """Set the value of the attribute"""
+        raise NotImplementedError
+
+
+class ScalarAttr(StateAttr):
+    """A scalar attribute for NumberState objects"""
+
+    def get(self, copy=False):
+        """Return the value of the attribute"""
         return getattr(self.owner, self.name)
 
     def get_kind(self, value):
+        """Return the kind (type) of the attribute"""
         if isinstance(value, float):
             return 'f'
         elif isinstance(value, int) or isinstance(value, long):
@@ -59,9 +70,11 @@ class ImmutableAttr(StateAttr):
             raise ValueError("Only integer or floating point values can be stored.")
 
     def set(self, value):
+        """Set the value of the attribute"""
         setattr(self.owner, self.name, value)
 
     def dump(self, f, name):
+        """Write the attribute to a file-like object"""
         # print the header line
         value = self.get()
         kind = self.get_kind(value)
@@ -69,33 +82,48 @@ class ImmutableAttr(StateAttr):
 
 
 class ArrayAttr(StateAttr):
-    def __init__(self, array):
-        self.array = array
+    """An array attribute for the NumberState object"""
+    def __init__(self, owner, name):
+        """Initialize a ArrayAttr object
+
+           Arguments:
+             owner  --  the instance to read the attribute from
+             name  --  the name of the attribute
+        """
+        StateAttr.__init__(self, owner, name)
+        array = self.get()
         if array.dtype.fields is not None:
             raise ValueError("Record arrays are not supported yet.")
 
     def get(self, copy=False):
+        """Return the value of the attribute"""
+        array = getattr(self.owner, self.name)
         if copy:
-            return self.array.copy()
+            return array.copy()
         else:
-            return self.array
+            return array
 
     def get_kind(self, value):
+        """Return the kind (type) of the attribute"""
         return value.dtype.kind
 
     def set(self, value):
-        self.array[:] = value
+        """Set the value of the attribute"""
+        array = self.get()
+        array[:] = value
 
     def dump(self, f, name):
+        """Write the attribute to a file-like object"""
+        array = self.get()
         # print the header line
         print >> f, "% 40s  kind=%s  shape=%s" % (
             name,
-            self.array.dtype.kind,
-            ("%s" % (self.array.shape,)).replace(" ", ""),
+            array.dtype.kind,
+            ("%s" % (array.shape,)).replace(" ", ""),
         )
         # print the numbers
         counter = 0
-        for value in self.array.flat:
+        for value in array.flat:
             counter += 1
             print >> f, "% 20s" % value,
             if counter % 4 == 0:
@@ -104,38 +132,97 @@ class ArrayAttr(StateAttr):
             print >> f
 
     def load(self, f, skip):
+        """Load the array data from a file-like object"""
+        array = self.get()
         counter = 0
-        counter_limit = self.array.size
-        convert = self.array.dtype.type
+        counter_limit = array.size
+        convert = array.dtype.type
         while counter < counter_limit:
             line = f.readline()
             words = line.split()
             for word in words:
                 if counter >= counter_limit:
-                    raise FileError("Wrong array data: too many values.")
+                    raise FileFormatError("Wrong array data: too many values.")
                 if not skip:
-                    self.array.flat[counter] = convert(word)
+                    array.flat[counter] = convert(word)
                 counter += 1
 
 
 class NumberState(object):
-    def __init__(self):
-        self._fields = {}
+    """Component class for data structures with human-readable persistence.
 
-    def set_field(self, name, attr):
-        if not isinstance(attr, StateAttr):
+       The format used to save and load the object is similar to a formatted
+       checkpoint file from the Gaussian package. Some additional info is
+       stored such as the shape of an array and the exact data type of the
+       array elements.
+
+       The attributes that contain data to be read from or to be written to
+       files are set up in the constructor of the owner class. This is a
+       typical simple example:
+
+       class Foo(object):
+           def __init__(self, a, b):
+               self.a = a
+               self.b = b
+               self.state = NumberState(self, ["a", "b"])
+
+       In this example a is an array and b is a single scalar. One can now
+       read/write these attributes to a file as follows:
+
+       foo = Foo(a,b)
+       foo.state.dump("somefile.txt")
+       foo.state.load("somefile.txt")
+    """
+    def __init__(self, owner, names):
+        """Initialize a NumberState object
+
+           Argument:
+             owner  --  the object whose attributes are dumped and loaded
+             names  --  a list of attribute names to dump and load
+        """
+        self._owner = owner
+        self._fields = {}
+        for name in names:
+            value = getattr(owner, name)
+            if isinstance(value, numpy.ndarray):
+                self._register(name, ArrayAttr)
+            elif isinstance(value, int) or isinstance(value, float):
+                self._register(name, ScalarAttr)
+
+    def _register(self, name, AttrCls):
+        """Register a new attribute to take care of with dump and load
+
+           Arguments:
+             name  --  the name to be used in the dump file
+             attr  --  an attr object describing the attribute
+        """
+        if not issubclass(AttrCls, StateAttr):
             raise TypeError("The second argument must a StateAttr instance.")
         if len(name) > 40:
             raise ValueError("Name can count at most 40 characters.")
-        self._fields[name] = attr
+        self._fields[name] = AttrCls(self._owner, name)
 
     def get(self, subset=None):
+        """Return a dictionary object with the registered fields and their values
+
+           Argument:
+             subset  --  a list of names to restrict the number of fields in
+                         the result
+        """
         if subset is None:
             return dict((name, attr.get(copy=True)) for name, attr in self._fields.iteritems())
         else:
             return dict((name, attr.get(copy=True)) for name, attr in self._fields.iteritems() if name in subset)
 
     def set(self, new_fields, subset=None):
+        """Assign the registered fields based on a dictionary
+
+           Arguments:
+             new_fields  --  the dictionary with the data to be assigned to the
+                             attributes
+             subset  --  a list of names to restrict the fields that are
+                         effectively overwritten
+        """
         for name in new_fields:
             if name not in self._fields and (subset is None or name in subset):
                 raise ValueError("new_fields contains an unknown field '%s'." % name)
@@ -153,12 +240,24 @@ class NumberState(object):
                 attr.set(new_fields[name])
 
     def dump(self, filename):
+        """Dump the registered fields to a file
+
+           Argument:
+             filename  --  the file to write to
+        """
         f = file(filename, "w")
         for name in sorted(self._fields):
             self._fields[name].dump(f, name)
         f.close()
 
     def load(self, filename, subset=None):
+        """Load data into the registered fields
+
+           Arguments:
+             filename  --  the filename to read from
+             subset  --  a list of field names that are read from the file. If
+                         not given, all data is read from the file.
+        """
         f = file(filename, "r")
         name = None
         num_names = 0
@@ -174,45 +273,43 @@ class NumberState(object):
             name = words[0]
             attr = self._fields.get(name)
             if attr is None:
-                raise FileError("Wrong header: unknown field %s" % name)
+                raise FileFormatError("Wrong header: unknown field %s" % name)
 
             if not words[1].startswith("kind="):
-                raise FileError("Malformatted array header line. (kind)")
+                raise FileFormatError("Malformatted array header line. (kind)")
             kind = words[1][5:]
             if kind != attr.get_kind(attr.get()):
-                raise FileError("Wrong header: kind of field %s does not match. Got %s, expected %s" % (name, kind, array.dtype.kind))
+                raise FileFormatError("Wrong header: kind of field %s does not match. Got %s, expected %s" % (name, kind, array.dtype.kind))
 
             skip = ((subset is not None) and (name not in subset))
 
             if (words[2].startswith("shape=(") and words[2].endswith(")")):
                 if not isinstance(attr, ArrayAttr):
-                    raise FileError("field '%s' is not an array." % name)
+                    raise FileFormatError("field '%s' is not an array." % name)
                 shape = words[2][7:-1]
                 if shape[-1]==',':
                     shape = shape[:-1]
                 try:
                     shape = tuple(int(word) for word in shape.split(","))
                 except ValueError:
-                    raise FileError("Malformatted array header. (shape)")
+                    raise FileFormatError("Malformatted array header. (shape)")
                 if shape != attr.get().shape:
-                    raise FileError("Wrong header: shape of field %s does not match. Got %s, expected %s" % (name, shape, array.shape))
+                    raise FileFormatError("Wrong header: shape of field %s does not match. Got %s, expected %s" % (name, shape, array.shape))
                 attr.load(f, skip)
             elif words[2].startswith("value="):
-                if not isinstance(attr, ImmutableAttr):
-                    raise FileError("field '%s' is not a single value." % name)
+                if not isinstance(attr, ScalarAttr):
+                    raise FileFormatError("field '%s' is not a single value." % name)
                 if not skip:
                     if kind == 'i':
                         attr.set(int(words[2][6:]))
                     else:
                         attr.set(float(words[2][6:]))
             else:
-                raise FileError("Malformatted array header line. (shape/value)")
+                raise FileFormatError("Malformatted array header line. (shape/value)")
 
             num_names += 1
 
         if num_names != len(self._fields) and subset is None:
-            raise FileError("Some fields are missing in the file.")
+            raise FileFormatError("Some fields are missing in the file.")
         f.close()
-
-
 

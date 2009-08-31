@@ -35,11 +35,7 @@ class TestObject(object):
         self.b = numpy.random.randint(0, 40, (4, 7, 9))
         self.c = numpy.random.normal(0, 2)
         self.d = numpy.random.randint(0, 10)
-        self.state = NumberState()
-        self.state.set_field("a", ArrayAttr(self.a))
-        self.state.set_field("b", ArrayAttr(self.b))
-        self.state.set_field("c", ImmutableAttr(self, "c"))
-        self.state.set_field("d", ImmutableAttr(self, "d"))
+        self.state = NumberState(self, ["a", "b", "c", "d"])
 
 
 class NumberStateTestCase(BaseTestCase):
