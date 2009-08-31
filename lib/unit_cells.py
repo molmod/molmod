@@ -23,7 +23,7 @@ from molmod.units import angstrom
 from molmod.vectors import random_orthonormal
 from molmod.utils import cached, ReadOnly
 
-import numpy, copy
+import numpy
 
 
 __all__ = ["UnitCell"]
@@ -111,7 +111,7 @@ class UnitCell(ReadOnly):
 
     @cached
     def generalized_volume(self):
-        active, inactive = self.active_inactive
+        active = self.active_inactive[0]
         if len(active) == 0:
             return -1
         elif len(active) == 1:
@@ -262,7 +262,6 @@ class UnitCell(ReadOnly):
             return UnitCell(matrix, active)
 
         a = self.matrix[:,act[0]]
-        norm_a = numpy.linalg.norm(a)
         matrix[:,0] = a
         active[0] = True
         if len(act) == 1:
@@ -272,7 +271,6 @@ class UnitCell(ReadOnly):
             return UnitCell(matrix, active)
 
         b = self.matrix[:,act[1]]
-        norm_b = numpy.linalg.norm(b)
         matrix[:,1] = b
         active[1] = True
         if len(act) == 2:
