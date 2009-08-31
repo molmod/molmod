@@ -19,6 +19,8 @@
 # --
 
 
+from molmod.units import angstrom
+
 import numpy
 
 
@@ -26,18 +28,35 @@ __all__ = ["CubeReader"]
 
 
 class CubeReader(object):
+    """Iterator that reads cube files. See the cubegen manual for more
+       information about cube files:
+       http://www.gaussian.com/g_tech/g_ur/u_cubegen.htm
+
+       Use this object as an iterator:
+
+       >>> cr = CubeReader("test.cube")
+       >>> print cr.numbers
+       >>> for vector, value in cr:
+       ...     print vector, value
+    """
     def __init__(self, filename):
+        """Initialize a CubeReader object
+
+           Argument:
+             filename  --  the filename with the formatted cube data
+        """
         self.f = file(filename)
         # skip the first two lines
         self.f.readline()
         self.f.readline()
 
         def read_header_line(line):
-          words = line.split()
-          return (
-              int(words[0]),
-              numpy.array([float(words[1]), float(words[2]), float(words[3])], float)
-          )
+            words = line.split()
+            return (
+                int(words[0]),
+                numpy.array([float(words[1]), float(words[2]), float(words[3])], float)
+                # all coordinates in a cube file are in atomic units
+            )
 
         # number of atoms and origin of the grid
         self.num_atoms, self.origin = read_header_line(self.f.readline())
@@ -47,11 +66,12 @@ class CubeReader(object):
         self.num_c, self.vector_c = read_header_line(self.f.readline())
 
         def read_header_line(line):
-          words = line.split()
-          return (
-              int(words[0]),
-              numpy.array([float(words[2]), float(words[3]), float(words[4])], float)
-          )
+            words = line.split()
+            return (
+                int(words[0]),
+                numpy.array([float(words[2]), float(words[3]), float(words[4])], float)
+                # all coordinates in a cube file are in atomic units
+            )
 
         self.numbers = numpy.zeros(self.num_atoms, int)
         self.coordinates = numpy.zeros((self.num_atoms, 3), float)
@@ -70,6 +90,10 @@ class CubeReader(object):
         return self
 
     def next(self):
+        """Read the next datapoint from the cube file
+
+           This method is part of the iterator protocol.
+        """
         if len(self.values) == 0:
             line = self.f.readline()
             if len(line) == 0:
@@ -86,6 +110,6 @@ class CubeReader(object):
                 self.counter_a += 1
                 if self.counter_a >= self.num_a:
                     raise StopIteration
-        return value, vector
+        return vector, value
 
 

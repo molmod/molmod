@@ -19,6 +19,7 @@
 # --
 
 from cp2k import *
+from cube import *
 from fchk import *
 from gdma import *
 from psf import *

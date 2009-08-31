@@ -22,4 +22,5 @@ from atrj import *
 from cml import *
 from common import *
 from cp2k import *
+from cube import *
 
