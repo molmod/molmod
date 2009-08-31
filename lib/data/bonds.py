@@ -27,15 +27,9 @@ import numpy, os
 
 
 __all__ = [
-    "BondData", "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "BOND_HYBRID",
-    "BOND_HYDROGEN", "bond_types"
+    "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "BOND_HYBRID",
+    "BOND_HYDROGEN", "bond_types", "BondData", "bonds"
 ]
-
-
-class BondType(object):
-    def __init__(self, num, special):
-        self.num = num
-        self.special = special
 
 
 BOND_SINGLE = 1
@@ -50,14 +44,20 @@ bond_types = [
 
 
 class BondData(object):
-    """
-    This object loads information about average bond lengths from a csv file
-    when it is initialized. Missing data points in the csv file are estimated
-    by adding Van der Waals radii of the two atoms of the given bond.
+    """Database with bond lengths
+
+       This object loads information about average bond lengths from a csv file
+       when it is initialized. Missing data points in the csv file are estimated
+       by adding Van der Waals radii of the two atoms of the given bond.
     """
     bond_tolerance = 1.2
 
     def __init__(self, filename, periodic_data):
+        """Initialize a BondData object
+
+           This object is created when importing this module. There is no need
+           to do it a second time externally.
+        """
         self.lengths = dict([bond_type, {}] for bond_type in bond_types)
         self.periodic_data = periodic_data
         self._load_bond_data(filename)
@@ -70,12 +70,12 @@ class BondData(object):
         )
 
     def _load_bond_data(self, filename):
-        """Load the bond data from the given file.
+        """Load the bond data from the given file
 
-        It's assumed that the uncommented lines in the data file have the
-        following format:
-        symbol1 symbol2 number1 number2 bond_length_single_a bond_length_double_a bond_length_triple_a bond_length_single_b bond_length_double_b bond_length_triple_b ..."
-        where a, b, ... stand for different sources.
+           It's assumed that the uncommented lines in the data file have the
+           following format:
+           symbol1 symbol2 number1 number2 bond_length_single_a bond_length_double_a bond_length_triple_a bond_length_single_b bond_length_double_b bond_length_triple_b ..."
+           where a, b, ... stand for different sources.
         """
 
         def read_units(unit_names):
@@ -110,8 +110,8 @@ class BondData(object):
     def _approximate_unkown_bond_lengths(self):
         """Completes the bond length database with approximations based on VDW radii"""
         dataset = self.lengths[BOND_SINGLE]
-        for n1 in self.periodic_data.yield_numbers():
-            for n2 in self.periodic_data.yield_numbers():
+        for n1 in self.periodic_data.iter_numbers():
+            for n2 in self.periodic_data.iter_numbers():
                 if n1 <= n2:
                     pair = frozenset([n1, n2])
                     atom1 = self.periodic_data[n1]
@@ -122,14 +122,13 @@ class BondData(object):
                     #print "%3i  %3i  %s %30s %30s" % (n1, n2, dataset.get(pair), atom1, atom2)
 
     def bonded(self, n1, n2, distance):
-        """
-        Return the estimated bond type.
+        """Return the estimated bond type
 
-        This method checks wether for the given pair of atom numbers, the
-        given distance corresponds to a certain bond_length. The best
-        matching bond type will be returned. If the distance is a factor
-        self.bond_tolerance larger than a tabulated distance, the algorithm
-        will not relate them.
+           This method checks wether for the given pair of atom numbers, the
+           given distance corresponds to a certain bond_length. The best
+           matching bond type will be returned. If the distance is a factor
+           self.bond_tolerance larger than a tabulated distance, the algorithm
+           will not relate them.
         """
         if distance > self.max_length * self.bond_tolerance:
             return None
@@ -152,11 +151,10 @@ class BondData(object):
         return result
 
     def get_length(self, n1, n2, bond_type=BOND_SINGLE):
-        """
-        Return the length of a bond between n1 and n2 of type bond_type.
+        """Return the length of a bond between n1 and n2 of type bond_type
 
-        This is a safe method for querying a bond_length. If no answer can be
-        found, this get_length returns None.
+           This is a safe method for querying a bond_length. If no answer can be
+           found, this get_length returns None.
         """
         dataset = self.lengths.get(bond_type)
         if dataset == None:
@@ -165,7 +163,4 @@ class BondData(object):
 
 
 bonds = BondData(context.get_share_filename("bonds.csv"), periodic)
-
-
-
 

@@ -25,26 +25,27 @@ from molmod import context
 import numpy, copy
 
 
-__all__ = ["PeriodicData", "periodic"]
+__all__ = ["AtomInfo", "PeriodicData", "periodic"]
 
 
 class AtomInfo(object):
-    def __init__(self):
-        self.radius = None
-
-    def add_attribute(self, name, value):
-        if name.endswith("radius") and self.radius is None:
-            self.radius = value
-        self.__dict__[name] = value
+    """Data structure for info about an atom"""
+    pass
 
 
 class PeriodicData(object):
-    """
-    Objects of the PeriodicData class centralize information about the
-    periodic system. The data is loaded during initialization.
+    """The entire periodic system
+
+       Objects of the PeriodicData class centralize information about the
+       periodic system. The data is loaded during initialization.
     """
 
     def __init__(self, filename):
+        """Initlialize a periodic system structure
+
+           This object is created when importing this module. There is no need
+           to do it a second time externally.
+        """
         # Initialize empty lists
         self.atoms_by_number = {}
         self.atoms_by_symbol = {}
@@ -95,16 +96,17 @@ class PeriodicData(object):
                     atom_info = AtomInfo()
                     for name, convertor, word in zip(names, convertors, words):
                         if word == "NA":
-                            atom_info.add_attribute(name, None)
+                            setattr(atom_info, name, None)
                         else:
-                            atom_info.add_attribute(name, convertor(word))
-                    self.add_atom_info(atom_info)
-                    if self.max_radius < atom_info.radius:
-                        self.max_radius = atom_info.radius
+                            value = convertor(word)
+                            setattr(atom_info, name, value)
+                            if name.endswith("radius") and self.max_radius < value:
+                                self.max_radius = value
+                    self._add_atom_info(atom_info)
                 lines_read += 1
         f.close()
 
-    def add_atom_info(self, atom_info):
+    def _add_atom_info(self, atom_info):
         self.atoms_by_number[atom_info.number] = atom_info
         self.atoms_by_symbol[atom_info.symbol.lower()] = atom_info
 
@@ -118,8 +120,9 @@ class PeriodicData(object):
         else:
             return result
 
-    def yield_numbers(self):
-        for number in self.atoms_by_number:
+    def iter_numbers(self):
+        """Iterate over all atom numbers in the periodic system"""
+        for number in sorted(self.atoms_by_number):
             yield number
 
 

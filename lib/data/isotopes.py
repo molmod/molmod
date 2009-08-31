@@ -31,14 +31,14 @@ __all__ = ["ame2003", "nubtab03"]
 class Ame2003(object):
     """An interface to a subset of the data from Ame2003.
 
-    If you use this interface, also refer to:
+       If you use this interface, also refer to:
 
-    The AME2003 atomic mass evaluation (I). Evaluation of input data, adjustment
-    procedures. A.H. Wapstra, G. Audi, and C. Thibault. Nuclear Physics A729,
-    129 (2003).
+       The AME2003 atomic mass evaluation (I). Evaluation of input data, adjustment
+       procedures. A.H. Wapstra, G. Audi, and C. Thibault. Nuclear Physics A729,
+       129 (2003).
 
-    The AME2003 atomic mass evaluation (II). Tables, graphs, and references. G.
-    Audi, A.H. Wapstra, and C. Thibault. Nuclear Physics A729, 337 (2003).
+       The AME2003 atomic mass evaluation (II). Tables, graphs, and references. G.
+       Audi, A.H. Wapstra, and C. Thibault. Nuclear Physics A729, 337 (2003).
     """
     def __init__(self, filename):
         self.masses = {}
@@ -66,10 +66,10 @@ ame2003 = Ame2003(context.get_share_filename("mass.mas03"))
 class NubTab03(object):
     """An interface to a subset of the data that from NubTab03.
 
-    If you use this interface, also refer to:
+       If you use this interface, also refer to:
 
-    The NUBASE evaluation of nuclear and decay properties. G. Audi, O. Bersillon,
-    J. Blachot and A.H. Wapstra, Nuclear Physics A729, 3-128 (2003)
+       The NUBASE evaluation of nuclear and decay properties. G. Audi, O. Bersillon,
+       J. Blachot and A.H. Wapstra, Nuclear Physics A729, 3-128 (2003)
     """
 
     def __init__(self, filename):
@@ -93,8 +93,5 @@ class NubTab03(object):
 
 
 nubtab03 = NubTab03(context.get_share_filename("nubtab03.asc"))
-
-
-
 
 
