@@ -17,7 +17,19 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Evaluation of internal coordinates with first and second order derivatives
 
+This implementation is pure python and sacrifices computational efficiency on
+the altar of programming flexibility. It is really easy to implement new types
+of internal coordinates since one only has to enter the formula that evaluates
+the internal coordinate. First and second order derivatives towards Cartesian
+coordinates require only a minimum of extra work.
+
+Two auxiliary classes Scalar and Vector3 support most of the mathematical
+operations required to compute the internal coordinates. Additionally they also
+know the chain rule for each operation and can therefore evaluate the
+derivatives simultaneously.
+"""
 
 import numpy
 
@@ -29,15 +41,26 @@ __all__ = [
     "dihed_cos", "dihed_angle",
 ]
 
+
 class Scalar(object):
+    """A scalar object with optional first and second order derivates
+
+       Each input value to which the derivative is computed has its own index.
+       The numerical value of the derivatives are stored in arrays self.d and
+       self.dd. The value of the scalar itself if self.v
+    """
+
     def __init__(self, size, deriv=0, value=0, index=None):
         """Initialize a scalar internal coordinate.
 
-        size -- the number of inputs on which this ic depends. e.g. a distance
-                depends on 6 cartesian coordinates.
-        deriv -- consider up to deriv order derivatives.
-        value -- the initial value
-        index -- if self is one of the inputs, this is its index
+           Arguments:
+             size -- The number of inputs on which this ic depends. e.g. a distance
+                     depends on 6 Cartesian coordinates.
+             deriv -- Consider up to deriv order derivatives. (max=2)
+             value -- The initial value.
+             index -- If this scalar is one of the input variables, this is its index.
+
+           The scalar object supports several in place modifications.
         """
         self.deriv = deriv
         self.size = size
@@ -52,6 +75,7 @@ class Scalar(object):
             raise ValueError("This implementation (only) supports up to second order derivatives.")
 
     def copy(self):
+        """Return a deep copy"""
         result = Scalar(self.size, self.deriv)
         result.v = self.v
         if self.deriv > 0: result.d[:] = self.d[:]
@@ -59,6 +83,7 @@ class Scalar(object):
         return result
 
     def results(self):
+        """Return the value and optionally derivative and second order derivative"""
         if self.deriv == 0:
             return self.v,
         if self.deriv == 1:
@@ -135,7 +160,22 @@ class Scalar(object):
 
 
 class Vector3(object):
+    """A Three dimensional vector with optional first and second order derivatives.
+
+       This object is nothing more than a tier for three Scalar objects.
+    """
+
     def __init__(self, size, deriv=0, values=(0,0,0), indexes=(None,None,None)):
+        """Initialize a Vector3 object
+
+           Arguments:
+             size -- The number of inputs on which this ic depends. e.g. a distance
+                     depends on 6 Cartesian coordinates.
+             deriv -- Consider up to deriv order derivatives. (max=2)
+             values -- The initial values.
+             indexes -- If this vector is one of the input variables, these are
+                        the indexes of the components.
+        """
         self.deriv = deriv
         self.size = size
         self.x = Scalar(size, deriv, values[0], indexes[0])
@@ -143,6 +183,7 @@ class Vector3(object):
         self.z = Scalar(size, deriv, values[2], indexes[2])
 
     def copy(self):
+        """Return a deep copy"""
         result = Vector3(self.size, self.deriv)
         result.x.v = self.x.v
         result.y.v = self.y.v
@@ -182,6 +223,7 @@ class Vector3(object):
         return self
 
     def norm(self):
+        """Return a Scalar object with the norm of this vector"""
         result = Scalar(self.size, self.deriv)
         result.v = numpy.sqrt(self.x.v**2 + self.y.v**2 + self.z.v**2)
         if self.deriv > 0:
@@ -207,6 +249,7 @@ class Vector3(object):
         return result
 
     #def norm2(self):
+    #    """Return a Scalar object with the square of the norm of this vector"""
     #    result = Scalar(self.size, self.deriv)
     #    result.v = self.x.v**2 + self.y.v**2 + self.z.v**2
     #    if self.deriv > 0:
@@ -232,6 +275,7 @@ class Vector3(object):
 
 
 def dot(r1, r2):
+    """Compute the dot product between two Vector3 Objects (Returns a Scalar)"""
     if r1.size != r2.size:
         raise ValueError("Both arguments must have the same input size.")
     if r1.deriv != r2.deriv:
@@ -262,6 +306,13 @@ def dot(r1, r2):
 
 
 def bond_length(r0, r1, deriv=0):
+    """Compute the distance between the two points r0 and r1
+
+       Arguments:
+         r0  --  a numpy array with three elements
+         r1  --  a numpy array with three elements
+         derive=0  --  the derivatives to be computed (0, 1 or 2)
+    """
     r = r0 - r1
     result = _bond_length_low(r, deriv)
     v = result[0]
@@ -290,6 +341,14 @@ def _bond_length_low(r, deriv):
 
 
 def bend_cos(r0, r1, r2, deriv=0):
+    """Compute the cosine of the angle between the vectors r0-r1 and r2-r1
+
+       Arguments:
+         r0  --  a numpy array with three elements
+         r1  --  a numpy array with three elements
+         r2  --  a numpy array with three elements
+         derive=0  --  the derivatives to be computed (0, 1 or 2)
+    """
     a = r0 - r1
     b = r2 - r1
     result = _bend_cos_low(a, b, deriv)
@@ -349,11 +408,28 @@ def _cos_to_angle(result, deriv, sign=1):
     raise ValueError("deriv must be 0, 1 or 2.")
 
 def bend_angle(r0, r1, r2, deriv=0):
+    """Compute the angle between the vectors r0-r1 and r2-r1
+
+       Arguments:
+         r0  --  a numpy array with three elements
+         r1  --  a numpy array with three elements
+         r2  --  a numpy array with three elements
+         derive=0  --  the derivatives to be computed (0, 1 or 2)
+    """
     result = bend_cos(r0, r1, r2, deriv)
     return _cos_to_angle(result, deriv)
 
 
 def dihed_cos(r0, r1, r2, r3, deriv=0):
+    """Compute the cosine of the angle between the planes r0,r1,r2 and r1,r2,r3
+
+       Arguments:
+         r0  --  a numpy array with three elements
+         r1  --  a numpy array with three elements
+         r2  --  a numpy array with three elements
+         r3  --  a numpy array with three elements
+         derive=0  --  the derivatives to be computed (0, 1 or 2)
+    """
     a = r0 - r1
     b = r2 - r1
     c = r3 - r2
@@ -418,6 +494,18 @@ def _dihed_cos_low(a, b, c, deriv):
     return dot(a,c).results()
 
 def dihed_angle(r0, r1, r2, r3, deriv=0):
+    """Compute the angle between the planes r0,r1,r2 and r1,r2,r3
+
+       The sign convention corresponds to the IUPAC definition of the torsion
+       angle: http://dx.doi.org/10.1351/goldbook.T06406
+
+       Arguments:
+         r0  --  a numpy array with three elements
+         r1  --  a numpy array with three elements
+         r2  --  a numpy array with three elements
+         r3  --  a numpy array with three elements
+         derive=0  --  the derivatives to be computed (0, 1 or 2)
+    """
     result = dihed_cos(r0, r1, r2, r3, deriv)
     a = r0 - r1
     b = r2 - r1
