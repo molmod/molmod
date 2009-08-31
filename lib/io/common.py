@@ -25,7 +25,12 @@ __all__ = ["slice_match"]
 def slice_match(sub, counter):
     """Efficiently test if counter is in xrange(*sub)
 
-    The function raises a StopIteration if counter is beyond sub.stop.
+       Arguments:
+         sub  --  a slice object
+         counter  -- an integer
+
+       The function returns True if the counter is in
+       xrange(sub.start, sub.stop, sub.step).
     """
 
     if sub.start is not None and counter < sub.start:
@@ -40,3 +45,4 @@ def slice_match(sub, counter):
             if (counter - sub.start) % sub.step != 0:
                 return False
     return True
+
