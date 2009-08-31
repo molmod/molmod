@@ -38,7 +38,7 @@ big = 5
 small = 1
 eps = 1e-5
 
-def yield_bonds():
+def iter_bonds():
     counter = 0
     while counter < num:
         p1 = numpy.random.normal(0,big,3)
@@ -48,7 +48,7 @@ def yield_bonds():
         yield p1, p2
         counter += 1
 
-def yield_bends():
+def iter_bends():
     counter = 0
     while counter < num:
         p1 = numpy.random.normal(0,big,3)
@@ -63,7 +63,7 @@ def yield_bends():
         yield p1, p2, p3
         counter += 1
 
-def yield_diheds():
+def iter_diheds():
     counter = 0
     while counter < num:
         p1 = numpy.random.normal(0,big,3)
@@ -85,7 +85,7 @@ def yield_diheds():
 
 class ICTestCase(BaseTestCase):
     def test_diff_bond(self):
-        for a1, a2 in yield_bonds():
+        for a1, a2 in iter_bonds():
             d = numpy.random.normal(0,eps,6) # random displacements
             b1 = a1+d[:3] # displaced
             b2 = a2+d[3:] # displaced
@@ -107,7 +107,7 @@ class ICTestCase(BaseTestCase):
             x = ic.Vector3(6,deriv,x,(0,1,2))
             y = ic.Vector3(6,deriv,y,(3,4,5))
             return ic.dot(x,y).results()
-        for a1, a2 in yield_bonds():
+        for a1, a2 in iter_bonds():
             d = numpy.random.normal(0,eps,6) # random displacements
             b1 = a1+d[:3] # displaced
             b2 = a2+d[3:] # displaced
@@ -151,7 +151,7 @@ class ICTestCase(BaseTestCase):
             self.assert_(error*1e5 < oom)
 
     def test_diff_bend(self):
-        for a1, a2, a3 in yield_bends():
+        for a1, a2, a3 in iter_bends():
             d = numpy.random.normal(0,eps,9)
             b1 = a1+d[:3]
             b2 = a2+d[3:6]
@@ -197,7 +197,7 @@ class ICTestCase(BaseTestCase):
             self.assert_(error*1e5 < oom)
 
     def test_diff_dihed(self):
-        for r1, r2, r3, r4 in yield_diheds():
+        for r1, r2, r3, r4 in iter_diheds():
             d = numpy.random.normal(0,eps,12)
             s1 = r1+d[:3]
             s2 = r2+d[3:6]

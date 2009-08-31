@@ -49,11 +49,11 @@ class MolecularGraph(Graph):
     def from_geometry(cls, molecule, unit_cell=None, do_orders=False):
         from molmod.data.bonds import bonds
 
-        def yield_positioned_atoms():
+        def iter_positioned_atoms():
             for index in xrange(molecule.size):
                 yield PositionedObject(index, molecule.coordinates[index])
 
-        binned_atoms = SparseBinnedObjects(yield_positioned_atoms(), bonds.max_length*bonds.bond_tolerance)
+        binned_atoms = SparseBinnedObjects(iter_positioned_atoms(), bonds.max_length*bonds.bond_tolerance)
 
         def compare_function(positioned1, positioned2):
             delta = positioned2.coordinate - positioned1.coordinate

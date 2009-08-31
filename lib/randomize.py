@@ -34,7 +34,7 @@ import numpy, copy
 __all__ = [
     "MolecularTransformation",
     "RandomManipulation", "RandomStretch", "RandomTorsion", "RandomBend", "RandomDoubleStretch",
-    "yield_halfs_bond", "yield_halfs_bend", "yield_halfs_double",
+    "iter_halfs_bond", "iter_halfs_bend", "iter_halfs_double",
     "generate_manipulations", "check_nonbond",
     "randomize_molecule", "randomize_molecule_low",
     "single_random_manipulation", "single_random_manipulation_low",
@@ -161,7 +161,7 @@ class RandomDoubleStretch(RandomManipulation):
         return result
 
 
-def yield_halfs_bond(graph):
+def iter_halfs_bond(graph):
     for atom1, atom2 in graph.pairs:
         try:
             affected_atoms1, affected_atoms2 = graph.get_halfs(atom1, atom2)
@@ -170,7 +170,7 @@ def yield_halfs_bond(graph):
             pass
 
 
-def yield_halfs_bend(graph):
+def iter_halfs_bend(graph):
     for atom2 in xrange(graph.num_nodes):
         neighbors = list(graph.neighbors[atom2])
         for index1, atom1 in enumerate(neighbors):
@@ -190,7 +190,7 @@ def yield_halfs_bend(graph):
                     pass
 
 
-def yield_halfs_double(graph):
+def iter_halfs_double(graph):
     pairs = graph.pairs
     for index1, (atom_a1, atom_b1) in enumerate(pairs):
         for atom_a2, atom_b2 in pairs[:index1]:
@@ -215,7 +215,7 @@ def generate_manipulations(
     results = []
     # A) all manipulations that require one bond that cuts the molecule in half
     if do_stretch or do_torsion:
-        for affected_atoms1, affected_atoms2, hinge_atoms in yield_halfs_bond(graph):
+        for affected_atoms1, affected_atoms2, hinge_atoms in iter_halfs_bond(graph):
             if do_stretch:
                 length = numpy.linalg.norm(
                     molecule.coordinates[hinge_atoms[0]] -
@@ -231,13 +231,13 @@ def generate_manipulations(
     # B) all manipulations that require a bending angle that cuts the molecule
     #    in two parts
     if do_bend:
-        for affected_atoms, hinge_atoms in yield_halfs_bend(graph):
+        for affected_atoms, hinge_atoms in iter_halfs_bend(graph):
             results.append(RandomBend(
                 affected_atoms, bending_amplitude, hinge_atoms
             ))
     # C) all manipulations that require two bonds that separate two halfs
     if do_double_stretch or do_double_bend:
-        for affected_atoms1, affected_atoms2, hinge_atoms in yield_halfs_double(graph):
+        for affected_atoms1, affected_atoms2, hinge_atoms in iter_halfs_double(graph):
             if do_double_stretch:
                 length1 = numpy.linalg.norm(
                     molecule.coordinates[hinge_atoms[0]] -

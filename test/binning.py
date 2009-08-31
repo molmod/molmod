@@ -39,17 +39,17 @@ class BinningTestCase(unittest.TestCase):
     def load_binned_atoms(self, filename):
         m = XYZFile("input/"+filename).get_molecule()
 
-        def yield_positioned_atoms():
+        def iter_positioned_atoms():
             for index in xrange(len(m.numbers)):
                 yield PositionedObject((m, index), m.coordinates[index])
 
-        return m, SparseBinnedObjects(yield_positioned_atoms(), self.gridsize)
+        return m, SparseBinnedObjects(iter_positioned_atoms(), self.gridsize)
 
-    def verify(self, yield_pairs, distances, unit_cell=None):
+    def verify(self, iter_pairs, distances, unit_cell=None):
         missing_pairs = []
         wrong_distances = []
         total = 0
-        for (id1, coord1), (id2, coord2) in yield_pairs():
+        for (id1, coord1), (id2, coord2) in iter_pairs():
             delta = coord2 - coord1
             if unit_cell is not None:
                 delta = unit_cell.shortest_vector(delta)
@@ -83,18 +83,18 @@ class BinningTestCase(unittest.TestCase):
         self.assertEqual(len(distances), 0, message)
 
     def verify_intra(self, molecule, distances, unit_cell=None):
-        def yield_atom_pairs():
+        def iter_atom_pairs():
             for index1, coord1 in enumerate(molecule.coordinates):
                 for index2, coord2 in enumerate(molecule.coordinates[:index1]):
                     yield ((molecule, index1), coord1), ((molecule, index2), coord2)
-        self.verify(yield_atom_pairs, distances, unit_cell)
+        self.verify(iter_atom_pairs, distances, unit_cell)
 
     def verify_inter(self, molecule1, molecule2, distances, unit_cell=None):
-        def yield_atom_pairs():
+        def iter_atom_pairs():
             for index1, coord1 in enumerate(molecule1.coordinates):
                 for index2, coord2 in enumerate(molecule2.coordinates):
                     yield ((molecule1, index1), coord1), ((molecule2, index2), coord2)
-        self.verify(yield_atom_pairs, distances, unit_cell)
+        self.verify(iter_atom_pairs, distances, unit_cell)
 
     def compare_function(self, positioned1, positioned2):
         distance = numpy.linalg.norm(positioned2.coordinate - positioned1.coordinate)

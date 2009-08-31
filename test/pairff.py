@@ -26,46 +26,46 @@ __all__ = ["PairFFTestCase", "CoulombFFTestCase"]
 
 
 class Debug1FF(molmod.pairff.PairFF):
-    def yield_pair_energies(self, index1, index2):
+    def iter_pair_energies(self, index1, index2):
         yield self.distances[index1,index2]**2, 1
 
-    def yield_pair_gradients(self, index1, index2):
+    def iter_pair_gradients(self, index1, index2):
         yield 2*self.distances[index1,index2], numpy.zeros(3)
 
-    def yield_pair_hessians(self, index1, index2):
+    def iter_pair_hessians(self, index1, index2):
         yield 2, numpy.zeros((3,3))
 
 
 class Debug2FF(molmod.pairff.PairFF):
-    def yield_pair_energies(self, index1, index2):
+    def iter_pair_energies(self, index1, index2):
         yield 1, sum((self.coordinates[index1] - self.coordinates[index2])**2)
 
-    def yield_pair_gradients(self, index1, index2):
+    def iter_pair_gradients(self, index1, index2):
         yield 0, 2*(self.coordinates[index1] - self.coordinates[index2])
 
-    def yield_pair_hessians(self, index1, index2):
+    def iter_pair_hessians(self, index1, index2):
         yield 0, 2*numpy.identity(3, float)
 
 
 class Debug3FF(molmod.pairff.PairFF):
-    def yield_pair_energies(self, index1, index2):
+    def iter_pair_energies(self, index1, index2):
         yield self.distances[index1,index2]**3, sum((self.coordinates[index1] - self.coordinates[index2])**2)
 
-    def yield_pair_gradients(self, index1, index2):
+    def iter_pair_gradients(self, index1, index2):
         yield 3*self.distances[index1,index2]**2, 2*(self.coordinates[index1] - self.coordinates[index2])
 
-    def yield_pair_hessians(self, index1, index2):
+    def iter_pair_hessians(self, index1, index2):
         yield 6*self.distances[index1,index2], 2*numpy.identity(3, float)
 
 
 class Debug4FF(molmod.pairff.PairFF):
-    def yield_pair_energies(self, index1, index2):
+    def iter_pair_energies(self, index1, index2):
         yield self.distances[index1,index2]**2, (self.coordinates[index1] - self.coordinates[index2])[0]**2
 
-    def yield_pair_gradients(self, index1, index2):
+    def iter_pair_gradients(self, index1, index2):
         yield 2*self.distances[index1,index2], 2*(self.coordinates[index1] - self.coordinates[index2])*numpy.array([1, 0, 0])
 
-    def yield_pair_hessians(self, index1, index2):
+    def iter_pair_hessians(self, index1, index2):
         yield 2, numpy.array([[2, 0, 0], [0, 0, 0], [0, 0, 0]], float)
 
 
@@ -239,7 +239,7 @@ class PairFFTestCase(unittest.TestCase):
         #print ff.hessian_flat()
 
         delta = 1e-5
-        # test the yield_pair_gradient and yield_pair_hessian generators:
+        # test the iter_pair_gradient and iter_pair_hessian generators:
         for atom1 in xrange(len(coordinates)):
             for atom2 in xrange(atom1):
                 ff.update_coordinates(coordinates)
@@ -251,9 +251,9 @@ class PairFFTestCase(unittest.TestCase):
                 an_sh = 0.0
                 an_vh = 0.0
                 for (se, ve), (sg, vg), (sh, vh) in zip(
-                    ff.yield_pair_energies(atom1, atom2),
-                    ff.yield_pair_gradients(atom1, atom2),
-                    ff.yield_pair_hessians(atom1, atom2)
+                    ff.iter_pair_energies(atom1, atom2),
+                    ff.iter_pair_gradients(atom1, atom2),
+                    ff.iter_pair_hessians(atom1, atom2)
                 ):
                     an_se += se
                     an_ve += ve
@@ -268,14 +268,14 @@ class PairFFTestCase(unittest.TestCase):
                     delta_coordinates = coordinates.copy()
                     delta_coordinates[atom1,i] += delta
                     ff.update_coordinates(delta_coordinates)
-                    num_vg[i] = (sum(pair[1] for pair in ff.yield_pair_energies(atom1, atom2)) - an_ve)/delta
-                    num_vh[i] = (sum(pair[1] for pair in ff.yield_pair_gradients(atom1, atom2)) - an_vg)/delta
+                    num_vg[i] = (sum(pair[1] for pair in ff.iter_pair_energies(atom1, atom2)) - an_ve)/delta
+                    num_vh[i] = (sum(pair[1] for pair in ff.iter_pair_gradients(atom1, atom2)) - an_vg)/delta
 
-                    num_sg = (sum(pair[0] for pair in ff.yield_pair_energies(atom1, atom2)) - an_se)/(ff.distances[atom1,atom2] - distance)
+                    num_sg = (sum(pair[0] for pair in ff.iter_pair_energies(atom1, atom2)) - an_se)/(ff.distances[atom1,atom2] - distance)
                     error = sum((num_sg - an_sg).ravel()**2)
                     reference = sum(num_sg.ravel()**2)
                     self.assertAlmostEqual(error, 0.0, 3, "num_sg: % 12.8f / % 12.8f" % (error, reference))
-                    num_sh = (sum(pair[0] for pair in ff.yield_pair_gradients(atom1, atom2)) - an_sg)/(ff.distances[atom1,atom2] - distance)
+                    num_sh = (sum(pair[0] for pair in ff.iter_pair_gradients(atom1, atom2)) - an_sg)/(ff.distances[atom1,atom2] - distance)
                     error = sum((num_sh - an_sh).ravel()**2)
                     reference = sum(num_sh.ravel()**2)
                     self.assertAlmostEqual(error, 0.0, 3, "num_sh: % 12.8f / % 12.8f" % (error, reference))

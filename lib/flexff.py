@@ -193,7 +193,7 @@ class NonbondTerm(EnergyTerm):
         self.cutoff = cutoff
         EnergyTerm.__init__(self, label, calculate_eg)
 
-    def yield_pairs(self, graph):
+    def iter_pairs(self, graph):
         n = len(graph.numbers)
         for atom0 in xrange(n):
             for atom1 in xrange(n):
@@ -206,7 +206,7 @@ class NonbondTerm(EnergyTerm):
 
     def init_graph(self, graph):
         # The nonbonding pairs are enumerated here
-        self.indices = numpy.array(list(self.yield_pairs(graph)), int)
+        self.indices = numpy.array(list(self.iter_pairs(graph)), int)
         #for row in self.indices:
         #    print [graph.numbers[index] for index in row]
 
@@ -226,7 +226,7 @@ class NonbondTerm(EnergyTerm):
         #neighbor_cells = [[0, 0, 0]]
         neighbor_cells = []
 
-        def yield_shell(p):
+        def iter_shell(p):
             for a in xrange(0, p+1):
                 for b in xrange(0, p-a+1):
                     c = p-a-b
@@ -249,7 +249,7 @@ class NonbondTerm(EnergyTerm):
         while found_new:
             #print "p", p, len(neighbor_cells)
             found_new = False
-            for indices in yield_shell(p):
+            for indices in iter_shell(p):
                 #print "indices", indices
                 corners_center = numpy.dot(0.5*signs, unit_cell.matrix.transpose())
                 corners_other = numpy.dot(0.5*signs + indices, unit_cell.matrix.transpose())

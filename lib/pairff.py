@@ -67,19 +67,19 @@ class PairFF(object):
                     self.directions[index1, index2] = tmp
                     self.dirouters[index1, index2] = numpy.outer(tmp, tmp)
 
-    def yield_pair_energies(self, index1, index2):
+    def iter_pair_energies(self, index1, index2):
         """
         Yields pairs ((s(r_ij), v(bar{r}_ij)). (implemented in derived classes)
         """
         raise NotImplementedError
 
-    def yield_pair_gradients(self, index1, index2):
+    def iter_pair_gradients(self, index1, index2):
         """
         Yields pairs ((s'(r_ij), grad_i v(bar{r}_ij)). (implemented in derived classes)
         """
         raise NotImplementedError
 
-    def yield_pair_hessians(self, index1, index2):
+    def iter_pair_hessians(self, index1, index2):
         """
         Yields pairs ((s''(r_ij), grad_i (x) grad_i v(bar{r}_ij)). (implemented in derived classes)
         """
@@ -90,7 +90,7 @@ class PairFF(object):
         for index1 in xrange(self.numc):
             for index2 in xrange(index1):
                 if not frozenset([index1, index2]) in self.exclude_pairs:
-                    for se, ve in self.yield_pair_energies(index1, index2):
+                    for se, ve in self.iter_pair_energies(index1, index2):
                         result += se*ve
         return result
 
@@ -98,7 +98,7 @@ class PairFF(object):
         result = numpy.zeros(3, float)
         for index2 in xrange(self.numc):
             if index2 != index1 and not frozenset([index1, index2]) in self.exclude_pairs:
-                for (se, ve), (sg, vg) in zip(self.yield_pair_energies(index1, index2), self.yield_pair_gradients(index1, index2)):
+                for (se, ve), (sg, vg) in zip(self.iter_pair_energies(index1, index2), self.iter_pair_gradients(index1, index2)):
                     result += sg*self.directions[index1, index2]*ve + se*vg
         return result
 
@@ -115,9 +115,9 @@ class PairFF(object):
                 if index3 != index1 and not frozenset([index1, index3]) in self.exclude_pairs:
                     d_1 = 1/self.distances[index1,index3]
                     for (se, ve), (sg, vg), (sh, vh) in zip(
-                        self.yield_pair_energies(index1, index3),
-                        self.yield_pair_gradients(index1, index3),
-                        self.yield_pair_hessians(index1, index3)
+                        self.iter_pair_energies(index1, index3),
+                        self.iter_pair_gradients(index1, index3),
+                        self.iter_pair_hessians(index1, index3)
                     ):
                         result += (
                             +sh*self.dirouters[index1,index3]*ve
@@ -129,9 +129,9 @@ class PairFF(object):
         elif not frozenset([index1, index2]) in self.exclude_pairs:
             d_1 = 1/self.distances[index1,index2]
             for (se, ve), (sg, vg), (sh, vh) in zip(
-                self.yield_pair_energies(index1, index2),
-                self.yield_pair_gradients(index1, index2),
-                self.yield_pair_hessians(index1, index2)
+                self.iter_pair_energies(index1, index2),
+                self.iter_pair_gradients(index1, index2),
+                self.iter_pair_hessians(index1, index2)
             ):
                 result -= (
                     +sh*self.dirouters[index1,index2]*ve
@@ -167,7 +167,7 @@ class CoulombFF(PairFF):
         self.charges = charges
         self.dipoles = dipoles
 
-    def yield_pair_energies(self, index1, index2):
+    def iter_pair_energies(self, index1, index2):
         d_1 = 1/self.distances[index1, index2]
         if self.charges is not None:
             c1 = self.charges[index1]
@@ -185,7 +185,7 @@ class CoulombFF(PairFF):
                 yield c1*d_3, numpy.dot(p2, delta)
                 yield c2*d_3, numpy.dot(p1, -delta)
 
-    def yield_pair_gradients(self, index1, index2):
+    def iter_pair_gradients(self, index1, index2):
         d_2 = 1/self.distances[index1, index2]**2
         if self.charges is not None:
             c1 = self.charges[index1]
@@ -203,7 +203,7 @@ class CoulombFF(PairFF):
                 yield -3*c1*d_4, p2
                 yield -3*c2*d_4, -p1
 
-    def yield_pair_hessians(self, index1, index2):
+    def iter_pair_hessians(self, index1, index2):
         d_1 = 1/self.distances[index1, index2]
         d_3 = d_1**3
         if self.charges is not None:
@@ -228,17 +228,17 @@ class DispersionFF(PairFF):
         PairFF.__init__(self, coordinates, exclude_pairs)
         self.strengths = strengths
 
-    def yield_pair_energies(self, index1, index2):
+    def iter_pair_energies(self, index1, index2):
         strength = self.strengths[index1, index2]
         distance = self.distances[index1, index2]
         yield strength*distance**(-6), 1
 
-    def yield_pair_gradients(self, index1, index2):
+    def iter_pair_gradients(self, index1, index2):
         strength = self.strengths[index1, index2]
         distance = self.distances[index1, index2]
         yield -6*strength*distance**(-7), numpy.zeros(3)
 
-    def yield_pair_hessians(self, index1, index2):
+    def iter_pair_hessians(self, index1, index2):
         strength = self.strengths[index1, index2]
         distance = self.distances[index1, index2]
         yield 42*strength*distance**(-8), numpy.zeros((3,3))
@@ -249,17 +249,17 @@ class PauliRepulsionFF(PairFF):
         PairFF.__init__(self, coordinates, exclude_pairs)
         self.strengths = strengths
 
-    def yield_pair_energies(self, index1, index2):
+    def iter_pair_energies(self, index1, index2):
         strength = self.strengths[index1, index2]
         distance = self.distances[index1, index2]
         yield strength*distance**(-12), 1
 
-    def yield_pair_gradients(self, index1, index2):
+    def iter_pair_gradients(self, index1, index2):
         strength = self.strengths[index1, index2]
         distance = self.distances[index1, index2]
         yield -12*strength*distance**(-13), numpy.zeros(3)
 
-    def yield_pair_hessians(self, index1, index2):
+    def iter_pair_hessians(self, index1, index2):
         strength = self.strengths[index1, index2]
         distance = self.distances[index1, index2]
         yield 12*13*strength*distance**(-14), numpy.zeros((3,3))

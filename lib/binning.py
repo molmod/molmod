@@ -89,7 +89,7 @@ class SparseBinnedObjects(object):
                 self.bins[indices] = bin
             bin.add(positioned_object)
 
-    def yield_surrounding(self, r, deltas):
+    def iter_surrounding(self, r, deltas):
         """
         Iterate over all objects in the bins that surround the bin that
         contains coordinate r.
@@ -137,7 +137,7 @@ class AnalyseNeighboringObjects(object):
     def call_delta(self, delta):
         for center_bin in self.binned_objects1.bins.itervalues():
             for positioned1 in center_bin:
-                for neighbor_bin, positioned2 in self.binned_objects2.yield_surrounding(positioned1.coordinate + delta, self.compare_indices):
+                for neighbor_bin, positioned2 in self.binned_objects2.iter_surrounding(positioned1.coordinate + delta, self.compare_indices):
                     if self.allow(center_bin, neighbor_bin, positioned1, positioned2):
                         result = self.compare_function(positioned1, positioned2)
                         if result is not None:
