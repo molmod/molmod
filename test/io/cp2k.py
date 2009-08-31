@@ -30,7 +30,7 @@ __all__ = ["CP2KTestCase"]
 
 class CP2KTestCase(unittest.TestCase):
     def test_input_file(self):
-        cp2k_input = InputFile.read_from_file("input/water_md.inp")
+        cp2k_input = CP2KInputFile.read_from_file("input/water_md.inp")
         self.assert_(cp2k_input._consistent())
 
         # test that the read_from_file works
@@ -44,29 +44,29 @@ class CP2KTestCase(unittest.TestCase):
         self.assert_(cp2k_input._consistent())
         try:
             print cp2k_input["MOTION"]["MD"]["ENSEMBLE"].value
-            self.fail("Keyword ENSEMBLE should no longer exist.")
+            self.fail("CP2KKeyword ENSEMBLE should no longer exist.")
         except KeyError:
             pass
 
-        cp2k_input["MOTION"]["MD"]["ENSEMBLE"] = Keyword("ENSEMBLE", "NVE")
+        cp2k_input["MOTION"]["MD"]["ENSEMBLE"] = CP2KKeyword("ENSEMBLE", "NVE")
         self.assert_(cp2k_input._consistent())
         self.assertEqual(cp2k_input["MOTION"]["MD"]["ENSEMBLE"].value, "NVE")
 
         try:
-            cp2k_input["MOTION"]["MD"]["ENSEMBLE"] = Keyword("JOS", "NVE")
-            self.fail("Keyword should have the correct name.")
+            cp2k_input["MOTION"]["MD"]["ENSEMBLE"] = CP2KKeyword("JOS", "NVE")
+            self.fail("CP2KKeyword should have the correct name.")
         except KeyError:
             pass
 
         try:
-            cp2k_input["MOTION"]["MD"]["ENSEMBLE"] = [Keyword("ENSEMBLE", "NVE"), Keyword("JOS", "NVE")]
-            self.fail("Keyword should have the correct name.")
+            cp2k_input["MOTION"]["MD"]["ENSEMBLE"] = [CP2KKeyword("ENSEMBLE", "NVE"), CP2KKeyword("JOS", "NVE")]
+            self.fail("CP2KKeyword should have the correct name.")
         except KeyError:
             pass
 
-        cp2k_input["MOTION"]["MD"]["ENSEMBLE"] = [Keyword("ENSEMBLE", "NVE"), Keyword("ENSEMBLE", "NVT")]
+        cp2k_input["MOTION"]["MD"]["ENSEMBLE"] = [CP2KKeyword("ENSEMBLE", "NVE"), CP2KKeyword("ENSEMBLE", "NVT")]
         self.assert_(cp2k_input._consistent())
-        cp2k_input["MOTION"]["MD"]["ENSEMBLE", 0] = Keyword("ENSEMBLE", "NVE")
+        cp2k_input["MOTION"]["MD"]["ENSEMBLE", 0] = CP2KKeyword("ENSEMBLE", "NVE")
         self.assert_(cp2k_input._consistent())
 
         self.assertEqual(len(cp2k_input["MOTION"]["MD"]["ENSEMBLE"]), 2)
@@ -81,16 +81,16 @@ class CP2KTestCase(unittest.TestCase):
         # test __len__
         self.assertEqual(len(cp2k_input), 3)
         self.assertEqual(len(cp2k_input["MOTION"]["MD"]), 5)
-        cp2k_input["MOTION"]["MD"]["ENSEMBLE"] = [Keyword("ENSEMBLE", "NVE"), Keyword("ENSEMBLE", "NVT")]
+        cp2k_input["MOTION"]["MD"]["ENSEMBLE"] = [CP2KKeyword("ENSEMBLE", "NVE"), CP2KKeyword("ENSEMBLE", "NVT")]
         self.assert_(cp2k_input._consistent())
         self.assertEqual(len(cp2k_input["MOTION"]["MD"]), 6)
         del cp2k_input["MOTION"]["MD"]["ENSEMBLE", 1]
         self.assert_(cp2k_input._consistent())
 
         # test creating new parts
-        nose = Section("NOSE", [
-            Keyword("LENGTH", "3"),
-            Keyword("TIMECON", "10.0")
+        nose = CP2KSection("NOSE", [
+            CP2KKeyword("LENGTH", "3"),
+            CP2KKeyword("TIMECON", "10.0")
         ])
         self.assert_(nose._consistent())
 
@@ -101,12 +101,12 @@ class CP2KTestCase(unittest.TestCase):
 
         # test dump, load consistency, part 1: dump a file, load it again, should be the same
         cp2k_input.write_to_file("output/water_md.inp")
-        cp2k_input_check = InputFile.read_from_file("output/water_md.inp")
+        cp2k_input_check = CP2KInputFile.read_from_file("output/water_md.inp")
         self.assert_(cp2k_input_check._consistent())
         self.assertEqual(cp2k_input, cp2k_input_check)
 
         # test dump-load consistency, part 2: no reordering of sections and keywords should be allowed
-        cp2k_input = InputFile.read_from_file("input/water_md.inp")
+        cp2k_input = CP2KInputFile.read_from_file("input/water_md.inp")
         cp2k_input.write_to_file("output/water_md.inp")
         f1 = file("input/water_md.inp")
         f2 = file("output/water_md.inp")
@@ -115,7 +115,15 @@ class CP2KTestCase(unittest.TestCase):
         f1.close()
         f2.close()
 
-
+    def test_cell_reader(self):
+        cr = CP2KCellReader("input/thf_64.cell")
+        for step, time, matrix, volume in cr:
+            self.assertEqual(step, 0)
+            self.assertAlmostEqual(time/femtosecond, 0.0)
+            self.assertAlmostEqual(matrix[0,0]/angstrom, 20.5)
+            self.assertAlmostEqual(matrix[1,0]/angstrom, 0.0)
+            self.assertAlmostEqual(volume/angstrom**3, 8615.125)
+            break
 
 
 

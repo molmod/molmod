@@ -17,24 +17,37 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-
+"""Tools for generating CP2K input files and a Reader for unit cell trajectories"""
 
 from molmod.units import angstrom
+from molmod.io.common import FileFormatError
 
 import numpy
 
 
-__all__ = ["FileFormatError", "Section", "Keyword", "InputFile", "CellReader"]
+__all__ = ["CP2KSection", "CP2KKeyword", "CP2KInputFile", "CP2KCellReader"]
 
 
-class FileFormatError(Exception):
-    pass
+class CP2KSection(object):
+    """Data structure representing a section in a CP2K input file
 
+       Instances of this class are iterable and support full element access.
+    """
 
-class Section(object):
     def __init__(self, name="", children=None, section_parameters=""):
+        """Initialize a CP2KSection object
+
+           Arguments:
+             name  --  the name of the section
+             children  --  a list of CP2KSection and CP2KKeyword objects
+             section_parameters  --  the value assigned to the section
+        """
         if not isinstance(name, str):
             raise TypeError("A name must be a string, got %s." % name)
+        if children is not None:
+            for child in children:
+                if not (isinstance(child, CP2KSection) or isinstance(child, CP2KKeyword)):
+                    raise TypeError("All children must be CP2KSection or CP2KKeyword objects, found: %s." % child)
         if not isinstance(section_parameters, str):
             raise TypeError("The section_parameters argument must be a string, got %s." % section_parameters)
         self.__name = name.upper()
@@ -59,7 +72,7 @@ class Section(object):
                     tmp.remove(value)
                 else:
                     return False
-                if isinstance(value, Section):
+                if isinstance(value, CP2KSection):
                     if not value._consistent():
                         return False
         return True
@@ -68,7 +81,7 @@ class Section(object):
         return iter(self.order)
 
     def __eq__(self, other):
-        if not (isinstance(other, Section) and self.name == other.name):
+        if not (isinstance(other, CP2KSection) and self.name == other.name):
             return False
         if len(self.__index) != len(other.__index):
             #print "len(self.__index) != len(other.__index)"
@@ -116,8 +129,8 @@ class Section(object):
         if isinstance(key, str):
             if isinstance(value, list):
                 for item in value:
-                    if not (isinstance(item, Section) or isinstance(item, Keyword)):
-                        raise TypeError("The value must be an Section or a Keyword, got: %s." % value)
+                    if not (isinstance(item, CP2KSection) or isinstance(item, CP2KKeyword)):
+                        raise TypeError("The value must be a CP2KSection or a CP2KKeyword, got: %s." % value)
                     if item.name != key:
                         raise KeyError("The name of the child must correspond to the given key, %s!=%s" % (key, item.name))
                 self.__index[key] = value
@@ -125,7 +138,7 @@ class Section(object):
                 index = delete_all(key)
                 for item in value[::-1]:
                     self.__order.insert(index, item)
-            elif isinstance(value, Section) or isinstance(value, Keyword):
+            elif isinstance(value, CP2KSection) or isinstance(value, CP2KKeyword):
                 if value.name != key:
                     raise KeyError("The name of the child must correspond to the given key, %s!=%s" % (key, value.name))
                 self.__index[key] = [value]
@@ -158,29 +171,34 @@ class Section(object):
     name = property(get_name)
 
     def append(self, child):
-        if not (isinstance(child, Section) or isinstance(child, Keyword)):
-            raise TypeError("The child must be an Section or a Keyword, got: %s." % value)
+        """Add a child section or keyword"""
+        if not (isinstance(child, CP2KSection) or isinstance(child, CP2KKeyword)):
+            raise TypeError("The child must be a CP2KSection or a CP2KKeyword, got: %s." % value)
         l = self.__index.setdefault(child.name, [])
         l.append(child)
         self.__order.append(child)
 
     def insert(self, index, child):
-        if not (isinstance(child, Section) or isinstance(child, Keyword)):
-            raise TypeError("The child must be an Section or a Keyword, got: %s." % value)
+        """Insert a child section or keyword"""
+        if not (isinstance(child, CP2KSection) or isinstance(child, CP2KKeyword)):
+            raise TypeError("The child must be a CP2KSection or a CP2KKeyword, got: %s." % value)
         l = self.__index.setdefault(child.name, [])
         l.append(child)
         self.__order.insert(index, child)
 
     def dump_children(self, f, indent=''):
+        """Dump the children of the current section to a file-like object"""
         for child in self.__order:
             child.dump(f, indent+'  ')
 
     def dump(self, f, indent=''):
+        """Dump this section and its children to a file-like object"""
         print >> f, ("%s&%s %s" % (indent, self.__name, self.section_parameters)).rstrip()
         self.dump_children(f, indent)
         print >> f, "%s&END %s" % (indent, self.__name)
 
     def readline(self, f):
+        """A helper method that only reads uncommented lines"""
         while True:
             line = f.readline()
             if len(line) == 0:
@@ -191,25 +209,27 @@ class Section(object):
                 return line
 
     def load_children(self, f):
+        """Load the children of this section from a file-like object"""
         while True:
             line = self.readline(f)
             if line[0] == '&':
                 if line[1:].startswith("END"):
                     check_name = line[4:].strip().upper()
                     if check_name != self.__name:
-                        raise FileFormatError("Section end mismatch, pos=%s", f.tell())
+                        raise FileFormatError("CP2KSection end mismatch, pos=%s", f.tell())
                     break
                 else:
-                    section = Section()
+                    section = CP2KSection()
                     section.load(f, line)
                     self.append(section)
             else:
-                keyword = Keyword()
+                keyword = CP2KKeyword()
                 keyword.load(line)
                 self.append(keyword)
 
 
     def load(self, f, line=None):
+        """Load this section from a file-like object"""
         if line is None:
             # in case the file contains only a fragment of an input file,
             # this is useful.
@@ -223,8 +243,17 @@ class Section(object):
             raise FileFormatError("Unexpected end of file, section '%s' not ended." % self.__name)
 
 
-class Keyword(object):
+class CP2KKeyword(object):
+    """Data structure representing a keyword-value pair in a CP2K input file"""
+
     def __init__(self, name="", value="", unit=None):
+        """Initialize a CP2KKeyword
+
+           Arguments:
+             name  --  The keyword name
+             value  --  The associated value
+             unit  --  The unit (user must guarantee validity of the unit)
+        """
         self.__name = name.upper()
         self.__value = value
         self.__unit = unit
@@ -232,19 +261,21 @@ class Keyword(object):
     def __eq__(self, other):
         #print (self.name, other.name), (self.value, other.value)
         return (
-            isinstance(other, Keyword) and
+            isinstance(other, CP2KKeyword) and
             self.name == other.name and
             self.value == other.value and
             self.unit == other.unit
         )
 
     def dump(self, f, indent=''):
+        """Dump this keyword to a file-like object"""
         if self.__unit is None:
             print >> f, ("%s%s %s" % (indent, self.__name, self.__value)).rstrip()
         else:
             print >> f, ("%s%s [%s] %s" % (indent, self.__name, self.__unit, self.__value)).rstrip()
 
     def load(self, line):
+        """Load this keyword from a file-like object"""
         words = line.split()
         try:
             float(words[0])
@@ -260,17 +291,21 @@ class Keyword(object):
 
 
     def set_value(self, value):
+        """Set the value associated with the keyword"""
         if not isinstance(value, str):
             raise TypeError("A value must be a string, got %s." % value)
         self.__value = value
 
     def get_name(self):
+        """Get the name of the keyword"""
         return self.__name
 
     def get_value(self):
+        """Get the value of the keyword"""
         return self.__value
 
     def get_unit(self):
+        """Get the name of the unit"""
         return self.__unit
 
     value = property(get_value, set_value)
@@ -278,11 +313,24 @@ class Keyword(object):
     unit = property(get_unit)
 
 
-class InputFile(Section):
+class CP2KInputFile(CP2KSection):
+    """Data structure representing an entire CP2K input file"""
+
     @staticmethod
     def read_from_file(filename):
+        """Constructs a new CP2KInputFile object based on the contents of a file
+
+           Arguments:
+             filename  --  the filename of the input file
+
+           Use as follows:
+
+           >>> if = CP2KInputFile.read_from_file("somefile.inp")
+           >>> for section in if:
+           ...     print section.name
+        """
         f = file(filename)
-        result = InputFile()
+        result = CP2KInputFile()
         try:
             while True:
                 result.load_children(f)
@@ -292,18 +340,30 @@ class InputFile(Section):
         return result
 
     def __init__(self, children=None):
-        Section.__init__(self, "__ROOT__", children)
+        """Initialize a new (empty) CP2KInputFile object"""
+        CP2KSection.__init__(self, "__ROOT__", children)
 
     def write_to_file(self, filename):
+        """Write the CP2KInput data structure to a file"""
         f = file(filename, "w")
         self.dump(f)
         f.close()
 
     def dump(self, f, indent=''):
+        """Dump the CP2KInput data structure to a file-like object"""
         self.dump_children(f, indent)
 
 
-class CellReader(object):
+class CP2KCellReader(object):
+    """Reads time dependent unit cell data generated by a recent version of CP2K
+
+       This object acts as an iterator. Use it as follows:
+
+       cr = CP2KCellReader("somefile.cell")
+       for step, time, matrix, volume in cr:
+           # do something, e.g.
+           print step
+    """
     def __init__(self, filename):
         self.f = file(filename)
 
@@ -314,6 +374,10 @@ class CellReader(object):
         return self
 
     def next(self):
+        """Read the next time frame
+
+           This method is part of the iterator protocol.
+        """
         while True:
             line = self.f.next()
             line = line[:line.find("#")].strip()
@@ -325,6 +389,5 @@ class CellReader(object):
             [float(words[5]), float(words[6]), float(words[7])],
             [float(words[8]), float(words[9]), float(words[10])],
         ])*angstrom
-        return int(words[0]), float(words[1]), cell, float(words[11])
-
+        return int(words[0]), float(words[1]), cell, float(words[11])*angstrom**3
 
