@@ -17,6 +17,16 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Basic support for the Chemical Markup Language
+
+Not all features of the CML standard are supported in this module, only the
+basic aspects that are relevant for computational chemistry. For more info
+on the CML format, visit: http://cml.sourceforge.net/
+
+In this module, only atoms, their 3D coordinates, atom numbers, bonds and bond
+orders are supported.
+"""
+
 
 from molmod.units import angstrom
 from molmod.molecules import Molecule
@@ -124,12 +134,20 @@ class CMLMoleculeLoader(ContentHandler):
             self.current_title = None
 
 
-def load_cml(f):
+def load_cml(cml_filename):
+    """Load the molecules from a CML file
+
+       Argument:
+         cml_filename  --  The filename of a CML file.
+
+       Returns a list of molecule objects with optional molecular graph
+       attribute and extra attributes.
+    """
     parser = make_parser()
     parser.setFeature(feature_namespaces, 0)
     dh = CMLMoleculeLoader()
     parser.setContentHandler(dh)
-    parser.parse(f)
+    parser.parse(cml_filename)
     return dh.molecules
 
 
@@ -160,6 +178,12 @@ def _dump_cml_molecule(f, molecule):
 
 
 def dump_cml(f, molecules):
+    """Write a list of molecules to a CML file
+
+       Arguments:
+         f  --  a filename of a CML file or a file-like object
+         molecules  --  a list of molecule objects.
+    """
     if isinstance(f, basestring):
         f = file(f, "w")
         close = True
