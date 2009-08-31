@@ -19,8 +19,25 @@
 # --
 
 
-from fchk import *
-from file_parsers import *
+from molmod.io.fchk import FCHKFile
+
+import numpy
+
+import unittest
+
+
+__all__ = ["FCHKTestCase"]
+
+
+class FCHKTestCase(unittest.TestCase):
+    def test_fchk(self):
+        fchk = FCHKFile("input/1TOH.b3lyp.fchk")
+        fchk = FCHKFile("input/1TOH.b3lyp.trim.fchk", ignore_errors=True)
+        #print fchk.molecule.numbers
+        #print fchk.molecule.coordinates
+        #print fchk.optimization_coordinates()
+        #print fchk.optimized_molecule()
+
 
 
 

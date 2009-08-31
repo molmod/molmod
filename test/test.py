@@ -52,8 +52,6 @@ from data import *
 from unit_cells import *
 from clusters import *
 from transformations import *
-from environments import *
-from descriptors import *
 from similarity import *
 from quaternions import *
 from io import *

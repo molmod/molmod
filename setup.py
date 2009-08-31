@@ -60,8 +60,6 @@ setup(
         'molmod',
         'molmod.data',
         'molmod.io',
-        'molmod.io.gaussian03',
-        'molmod.io.mpqc',
     ],
     data_files=[
         ('share/molmod', [

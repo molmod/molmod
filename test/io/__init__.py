@@ -19,7 +19,7 @@
 # --
 
 from cp2k import *
-from gaussian03 import *
+from fchk import *
 from gdma import *
 from psf import *
 from number_state import *
