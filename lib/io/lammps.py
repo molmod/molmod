@@ -19,20 +19,32 @@
 # --
 
 
-from molmod.io.common import slice_match
+from molmod.io.common import slice_match, FileFormatError
 
 import numpy
 
 
-__all__ = ["Error", "DumpReader"]
+__all__ = ["LAMMPSDumpReader"]
 
 
-class Error(Exception):
-    pass
+class LAMMPSDumpReader(object):
+    """A Reader for LAMMPS dump files
 
-
-class DumpReader(object):
+       Use this reader as an iterator:
+       >>> ldr = LAMMPSDumpReader("some_file.dump", [some, units])
+       >>> for fields in ldr:
+       ...     print fields[0]
+    """
     def __init__(self, filename, units, sub=slice(None)):
+        """Initialize a LAMMPSDumpReader object
+
+           Arguments:
+             filename  --  The filename of the LAMMPS dump file
+             units  --  The units of the atom fields. The number of fields,
+                        their unit and their meaning depends on the input file
+                        of the LAMMPS simulation.
+             sub  --  a slice object indicating which time frames to skip/read
+        """
         # first read the number of atoms
         self._f = file(filename)
         try:
@@ -44,9 +56,9 @@ class DumpReader(object):
                 line = self._f.next()
                 self.num_atoms = int(line)
             except ValueError:
-                raise Error("Could not read the number of atoms. Expected an integer. Got '%s'" % line)
+                raise FileFormatError("Could not read the number of atoms. Expected an integer. Got '%s'" % line)
         except StopIteration:
-            raise Error("Could not find line 'ITEM: NUMBER OF ATOMS'.")
+            raise FileFormatError("Could not find line 'ITEM: NUMBER OF ATOMS'.")
         self._f.seek(0) # go back to the beginning of the file
         self._f = file(filename)
         self.units = units
@@ -60,30 +72,34 @@ class DumpReader(object):
         return self
 
     def next(self):
+        """Read and return the next time frame
+
+           This method is part of the iterator protocol.
+        """
         # Read one frame, we assume that the current file position is at the
         # line 'ITEM: TIMESTEP' and that this line marks the beginning of a
         # time frame.
         line = self._f.next()
         if line != 'ITEM: TIMESTEP\n':
-            raise Error("Expecting line 'ITEM: TIMESTEP' at the beginning of a time frame.")
+            raise FileFormatError("Expecting line 'ITEM: TIMESTEP' at the beginning of a time frame.")
         try:
             line = self._f.next()
             step = int(line)
         except ValueError:
-            raise Error("Could not read the step number. Expected an integer. Got '%s'" % line[:-1])
+            raise FileFormatError("Could not read the step number. Expected an integer. Got '%s'" % line[:-1])
 
         # Now we assume that the next section contains (again) the number of
         # atoms.
         line = self._f.next()
         if line != 'ITEM: NUMBER OF ATOMS\n':
-            raise Error("Expecting line 'ITEM: NUMBER OF ATOMS'.")
+            raise FileFormatError("Expecting line 'ITEM: NUMBER OF ATOMS'.")
         try:
             line = self._f.next()
             num_atoms = int(line)
         except ValueError:
-            raise Error("Could not read the number of atoms. Expected an integer. Got '%s'" % line[:-1])
+            raise FileFormatError("Could not read the number of atoms. Expected an integer. Got '%s'" % line[:-1])
         if num_atoms != self.num_atoms:
-            raise Error("A variable number of atoms is not supported.")
+            raise FileFormatError("A variable number of atoms is not supported.")
 
         # The next section contains the box boundaries. We will skip it
         for i in xrange(4):
@@ -92,7 +108,7 @@ class DumpReader(object):
         # The next and last section contains the atom related properties
         line = self._f.next()
         if line != 'ITEM: ATOMS\n':
-            raise Error("Expecting line 'ITEM: ATOMS'.")
+            raise FileFormatError("Expecting line 'ITEM: ATOMS'.")
         fields = [list() for i in xrange(len(self.units))]
         for i in xrange(self.num_atoms):
             line = self._f.next()
@@ -102,8 +118,4 @@ class DumpReader(object):
         fields = [step] + [numpy.array(field)*unit for field, unit in zip(fields, self.units)]
 
         return fields
-
-
-
-
 

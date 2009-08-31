@@ -25,6 +25,7 @@ from cube import *
 from dlpoly import *
 from fchk import *
 from gromacs import *
+from lammps import *
 from number_state import *
 from psf import *
 from sdf import *

@@ -26,4 +26,5 @@ from cube import *
 from dlpoly import *
 from fchk import *
 from gromacs import *
+from lammps import *
 
