@@ -89,22 +89,22 @@ class PSFFile(object):
         # C) interpret the supported sections
         # C.1) The title
         self.title = sections['TITLE'][0]
-        self.molecules = []
-        self.numbers = []
+        molecules = []
+        numbers = []
         # C.2) The atoms and molecules
         for line in sections['ATOM']:
             words = line.split()
             self.atom_types.append(words[5])
             self.charges.append(float(words[6]))
             self.names.append(words[3])
-            self.molecules.append(int(words[2]))
+            molecules.append(int(words[2]))
             atom = periodic[words[4]]
             if atom is None:
-                self.numbers.append(0)
+                numbers.append(0)
             else:
-                self.numbers.append(periodic[words[4]].number)
-        self.molecules = numpy.array(self.molecules)-1
-        self.numbers = numpy.array(self.numbers)
+                numbers.append(periodic[words[4]].number)
+        self.molecules = numpy.array(molecules)-1
+        self.numbers = numpy.array(numbers)
         self.charges = numpy.array(self.charges)
         # C.3) The bonds section
         tmp = []

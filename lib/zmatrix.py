@@ -93,7 +93,7 @@ class ZMatrixGenerator(object):
                     result = n
             if result is not None:
                 return result
-        raise ZMatrixException("Could not find new reference.")
+        raise RuntimeError("Could not find new reference.")
 
     def cart_to_zmat(self, coordinates):
         """Convert cartesian coordinates to ZMatrix format

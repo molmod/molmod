@@ -232,12 +232,12 @@ class XYZFile(object):
         if sub.stop is not None:
             start = sub.start
             if start is None: start = 0
-            stride = sub.stride
-            if stride is None: stride = 1
-            count = (sub.stop - start)/stride
+            step = sub.step
+            if step is None: step = 1
+            count = (sub.stop - start)/step
             self.geometries = numpy.zeros((count, len(self.numbers), 3), float)
 
-            for counter, (title, coordinates) in xyz_reader:
+            for counter, (title, coordinates) in enumerate(xyz_reader):
                 self.titles.append(title)
                 self.geometries[counter] = coordinates
         else:

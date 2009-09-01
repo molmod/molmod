@@ -280,8 +280,9 @@ class NumberState(object):
             if not words[1].startswith("kind="):
                 raise FileFormatError("Malformatted array header line. (kind)")
             kind = words[1][5:]
-            if kind != attr.get_kind(attr.get()):
-                raise FileFormatError("Wrong header: kind of field %s does not match. Got %s, expected %s" % (name, kind, array.dtype.kind))
+            expected_kind = attr.get_kind(attr.get())
+            if kind != expected_kind:
+                raise FileFormatError("Wrong header: kind of field %s does not match. Got %s, expected %s" % (name, kind, expected_kind))
 
             skip = ((subset is not None) and (name not in subset))
 
@@ -295,8 +296,9 @@ class NumberState(object):
                     shape = tuple(int(word) for word in shape.split(","))
                 except ValueError:
                     raise FileFormatError("Malformatted array header. (shape)")
-                if shape != attr.get().shape:
-                    raise FileFormatError("Wrong header: shape of field %s does not match. Got %s, expected %s" % (name, shape, array.shape))
+                expected_shape = attr.get().shape
+                if shape != expected_shape:
+                    raise FileFormatError("Wrong header: shape of field %s does not match. Got %s, expected %s" % (name, shape, expected_shape))
                 attr.load(f, skip)
             elif words[2].startswith("value="):
                 if not isinstance(attr, ScalarAttr):

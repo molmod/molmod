@@ -51,17 +51,26 @@ class MinimizerTestCase(unittest.TestCase):
 
     def test_golden(self):
         x_init = numpy.zeros(2, float)
-        minimizer = Minimizer(x_init, fun, GoldenLineSearch, 1e-5, 1e-5, 1e-1, 1000, 50, do_gradient=True)
+        minimizer = Minimizer(
+            x_init, fun, GoldenLineSearch, 1e-5, 1e-5, 1e-1, 1000, 50,
+            do_gradient=True, verbose=False,
+        )
         self.check_min(minimizer.x, 1e-5, 1e-5)
 
     def test_newton(self):
         x_init = numpy.zeros(2, float)
-        minimizer = Minimizer(x_init, fun, NewtonLineSearch, 1e-5, 1e-5, 1e-1, 1000, 50, do_gradient=True)
+        minimizer = Minimizer(
+            x_init, fun, NewtonLineSearch, 1e-5, 1e-5, 1e-1, 1000, 50,
+            do_gradient=True, verbose=False,
+        )
         self.check_min(minimizer.x, 1e-5, 1e-5)
 
     def test_newtong(self):
         x_init = numpy.zeros(2, float)
-        minimizer = Minimizer(x_init, fun, NewtonGLineSearch, 1e-5, 1e-5, 1e-1, 1000, 50, do_gradient=True)
+        minimizer = Minimizer(
+            x_init, fun, NewtonGLineSearch, 1e-5, 1e-5, 1e-1, 1000, 50,
+            do_gradient=True, verbose=False,
+        )
         self.check_min(minimizer.x, 1e-5, 1e-5)
 
 

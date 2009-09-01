@@ -65,7 +65,7 @@ class CubeReader(object):
         self.num_b, self.vector_b = read_header_line(self.f.readline())
         self.num_c, self.vector_c = read_header_line(self.f.readline())
 
-        def read_header_line(line):
+        def read_data_line(line):
             words = line.split()
             return (
                 int(words[0]),
@@ -76,7 +76,7 @@ class CubeReader(object):
         self.numbers = numpy.zeros(self.num_atoms, int)
         self.coordinates = numpy.zeros((self.num_atoms, 3), float)
         for i in xrange(self.num_atoms):
-            self.numbers[i], self.coordinates[i] = read_header_line(self.f.readline())
+            self.numbers[i], self.coordinates[i] = read_data_line(self.f.readline())
 
         self.counter_a = 0
         self.counter_b = 0

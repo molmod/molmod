@@ -24,7 +24,7 @@ functions are provided: rotation_around_center and superpose. The latter is an
 implementation of the Kabsch algorithm.
 """
 
-from utils import cached, cached_writable, ReadOnly, rmsd
+from utils import cached, ReadOnly, rmsd
 from molmod.unit_cells import UnitCell
 
 import numpy
@@ -99,11 +99,11 @@ class Translation(ReadOnly):
         result[0:3, 3] = self.t
         return result
 
-    @cached_writable
+    @cached
     def inv(self):
         """The inverse translation"""
         result = Translation(-self.t)
-        result.inv = self
+        result._cache_inv = self
         return result
 
     def apply_to(self, x):
@@ -239,11 +239,11 @@ class Rotation(ReadOnly):
         result[0:3, 0:3] = self.r
         return result
 
-    @cached_writable
+    @cached
     def inv(self):
         """The inverse rotation"""
         result = Rotation(self.r.transpose())
-        result.inv = self
+        result._cache_inv = self
         return result
 
     def apply_to(self, x):
@@ -334,11 +334,11 @@ class Complete(Translation, Rotation):
         angle, axis, invert = rot.properties
         return angle, axis, invert, self.t
 
-    @cached_writable
+    @cached
     def inv(self):
         """The inverse transformation"""
         result = Complete(self.r.transpose(), numpy.dot(self.r.transpose(), -self.t))
-        result.inv = self
+        result._cache_inv = self
         return result
 
     def apply_to(self, x):

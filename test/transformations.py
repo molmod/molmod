@@ -228,6 +228,7 @@ class TransformationsTestCase(BaseTestCase):
             self.assertArraysAlmostEqual((t.inv*t).t, numpy.zeros(3,float), doabs=True)
             self.assertTrue((t*t.inv).compare(Translation.identity()))
             self.assertTrue((t.inv*t).compare(Translation.identity()))
+        self.assertEqual(id(t), id(t.inv.inv))
 
     def test_inv_rotation(self):
         for r in self.iter_random_rotations():
@@ -236,6 +237,7 @@ class TransformationsTestCase(BaseTestCase):
             self.assertArraysAlmostEqual((r.inv*r).r, numpy.identity(3,float))
             self.assertTrue((r*r.inv).compare(Rotation.identity()))
             self.assertTrue((r.inv*r).compare(Rotation.identity()))
+        self.assertEqual(id(r), id(r.inv.inv))
 
     def test_inv_complete(self):
         for c in self.iter_random_completes():
@@ -246,6 +248,7 @@ class TransformationsTestCase(BaseTestCase):
             self.assertArraysAlmostEqual((c.inv*c).r, numpy.identity(3,float))
             self.assertTrue((c*c.inv).compare(Complete.identity()))
             self.assertTrue((c.inv*c).compare(Complete.identity()))
+        self.assertEqual(id(c), id(c.inv.inv))
 
     def test_translation_from_matrix(self):
         for t in self.iter_random_translations():

@@ -78,7 +78,7 @@ class CP2KSection(object):
         return True
 
     def __iter__(self):
-        return iter(self.order)
+        return iter(self.__order)
 
     def __eq__(self, other):
         if not (isinstance(other, CP2KSection) and self.name == other.name):
@@ -173,7 +173,7 @@ class CP2KSection(object):
     def append(self, child):
         """Add a child section or keyword"""
         if not (isinstance(child, CP2KSection) or isinstance(child, CP2KKeyword)):
-            raise TypeError("The child must be a CP2KSection or a CP2KKeyword, got: %s." % value)
+            raise TypeError("The child must be a CP2KSection or a CP2KKeyword, got: %s." % child)
         l = self.__index.setdefault(child.name, [])
         l.append(child)
         self.__order.append(child)
@@ -181,7 +181,7 @@ class CP2KSection(object):
     def insert(self, index, child):
         """Insert a child section or keyword"""
         if not (isinstance(child, CP2KSection) or isinstance(child, CP2KKeyword)):
-            raise TypeError("The child must be a CP2KSection or a CP2KKeyword, got: %s." % value)
+            raise TypeError("The child must be a CP2KSection or a CP2KKeyword, got: %s." % child)
         l = self.__index.setdefault(child.name, [])
         l.append(child)
         self.__order.insert(index, child)

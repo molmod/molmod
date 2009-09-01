@@ -94,6 +94,11 @@ class CP2KTestCase(unittest.TestCase):
         ])
         self.assert_(nose._consistent())
 
+        # test iter
+        tmp = [child for child in nose]
+        self.assertEqual(len(tmp), 2)
+        del tmp
+
         # test append
         cp2k_input["MOTION"]["MD"].append(nose)
         self.assert_(cp2k_input._consistent())

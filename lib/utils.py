@@ -22,7 +22,7 @@
 import numpy
 
 
-__all__ = ["cached", "cached_writable", "ReadOnly", "rmsd"]
+__all__ = ["cached", "ReadOnly", "rmsd"]
 
 
 class cached(object):
@@ -46,21 +46,6 @@ class cached(object):
             if isinstance(value, numpy.ndarray):
                 value.setflags(write=False)
         return value
-
-
-class cached_writable(cached):
-    """The writable variant of the normal caching descriptor
-
-       This can be useful when constructing an object of which some results
-       are at available without further computation. See transformations.py for
-       an example.
-    """
-    def __set__(self, instance, value):
-        value = getattr(instance, self.attribute_name, self)
-        if value is not self:
-            raise AttributeError("Value is already set.")
-        else:
-            setattr(instance, self.attribute_name, value)
 
 
 class ReadOnly(object):

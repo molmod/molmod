@@ -91,16 +91,6 @@ class OneToOne(object):
             result += " %s -> %s |" % (source, destination)
         return result
 
-    def __copy__(self):
-        class EmptyClass(object):
-            pass
-        result = EmptyClass()
-        result.__class__ = self.__class__
-        result.__dict__ = self.__dict__.copy()
-        result.forward = self.forward.copy()
-        result.reverse = self.reverse.copy()
-        return result
-
     def __mul__(self, other):
         """Return the result of the 'after' operator."""
         result = OneToOne()
@@ -849,9 +839,11 @@ class Graph(ReadOnly):
 
 
 class Match(OneToOne):
-    def __init__(self, node0, node1):
-        OneToOne.__init__(self, [(node0, node1)])
-        self.previous_ends1 = set([node1])
+    @classmethod
+    def from_first_pair(cls, node0, node1):
+        result = cls([(node0, node1)])
+        result.previous_ends1 = set([node1])
+        return result
 
     def get_new_pairs(self, graph):
         result = []
@@ -863,7 +855,7 @@ class Match(OneToOne):
         return result
 
     def copy_with_new_relations(self, new_relations):
-        result = self.__copy__()
+        result = self.__class__(self.forward.iteritems())
         result.add_relations(new_relations.iteritems())
         result.previous_ends1 = set(new_relations.itervalues())
         return result
@@ -1381,7 +1373,7 @@ class GraphSearch(object):
         self.pattern.init_graph(graph, one_match)
         # Matches are grown iteratively.
         for node0, node1 in self.pattern.iter_initial_relations():
-            init_match = self.pattern.MatchClass(node0, node1)
+            init_match = self.pattern.MatchClass.from_first_pair(node0, node1)
             # init_match cotains only one source -> dest relation. starting from
             # this initial match, the function iter_matches extends the match
             # in all possible ways and yields the completed matches
