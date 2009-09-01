@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Tools to guess initial geometries quickly based on the molecular graph"""
 
 
 from molmod import context
@@ -28,7 +29,7 @@ from molmod.ext import ff_dm_quad, ff_dm_reci, ff_bond_quad, ff_bond_hyper
 import numpy
 
 
-__all__ = ["guess_geometry", "tune_geometry", "ToyFF"]
+__all__ = ["guess_geometry", "tune_geometry"]
 
 
 def guess_geometry(graph):
@@ -127,6 +128,12 @@ class ToyFF(object):
     """
 
     def __init__(self, graph):
+        """Initialize a Toy Force field
+
+           Argument:
+             graph  --  the molecular graph from which the force field terms
+                        are extracted.
+        """
         from molmod.data.bonds import bonds
 
         self.dm = graph.distances.astype(numpy.int32)
@@ -200,6 +207,13 @@ class ToyFF(object):
         self.bond_hyper = 0.0
 
     def __call__(self, x, do_gradient=False):
+        """Compute the energy (and gradient) for a set of Cartesian coordinates
+
+           Argument:
+             x  --  the Cartesian coordinates
+             do_gradient  --  when set to True, the gradient is also computed
+                              and returned. (default=False)
+        """
         x = x.reshape((-1,3))
         result = 0.0
 
@@ -222,17 +236,27 @@ class ToyFF(object):
 
 
 class SpecialAngles(object):
+    """A database with precomputed valence angles from small molecules"""
     def __init__(self):
-        self.angle_dict = {}
+        """Initialize the database (loads data from share files)"""
+        self._angle_dict = {}
         f = open(context.get_share_filename('toyff_angles.txt'))
         for line in f:
             if line[0] != '#':
                 key = tuple(int(word) for word in line[0:line.index(':')].split(","))
                 value = numpy.pi/180.0*float(line[line.index(':')+1:-1])
-                self.angle_dict[key] = value
+                self._angle_dict[key] = value
 
     def get_angle(self,triplet):
-        return self.angle_dict.get(triplet)
+        """Get a rest angle for a given triplet
+
+           A triplet consists of a tuple with six elements: (n0,v0,n1,v1,n2,v2)
+           The indexes refer to consecutive atoms forming a valence angle. n0,
+           n1 and n2 are the atom numbers of the angle and v0, v1 and v2 are the
+           valences of the corresponding atoms. n1 and v1 are the values for the
+           central atom in the angle.
+        """
+        return self._angle_dict.get(triplet)
 
 
 

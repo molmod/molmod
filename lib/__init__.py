@@ -61,6 +61,7 @@ from molecules import *
 from molecular_graphs import *
 from quaternions import *
 from similarity import *
+from toyff import *
 from transformations import *
 from unit_cells import *
 from units import *
