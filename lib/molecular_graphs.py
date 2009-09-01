@@ -17,7 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-
+"""Extension of the graphs module with molecular features"""
 
 from molmod.graphs import cached, Graph, SubgraphPattern
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, \
@@ -37,14 +37,20 @@ __all__ = [
 class MolecularGraph(Graph):
     """Describes a molecular graph: connectivity, atom numbers and bond orders.
 
-    This class inherits all features from the Graph class and adds methods and
-    attributes that are specific from molecular graphs. Instances are immutable,
-    so if you want to modify a molecular graph, just instantiate a new object
-    with modified connectivity, numbers and orders. The advantage is that
-    various graph analysis and properties can be cached.
+       This class inherits all features from the Graph class and adds methods
+       and attributes that are specific from molecular graphs. Instances are
+       immutable, so if you want to modify a molecular graph, just instantiate a
+       new object with modified connectivity, numbers and orders. The advantage
+       is that various graph analysis and properties can be cached.
     """
     @classmethod
     def from_geometry(cls, molecule, unit_cell=None, do_orders=False):
+        """Construct a MolecularGraph object based on interatomic distances
+
+           All short distances are computed with the binning module and compared
+           with a database of bond lengths. Based on this comparison, bonded
+           atoms are detected.
+        """
         from molmod.data.bonds import bonds
 
         def iter_positioned_atoms():
@@ -149,6 +155,7 @@ class MolecularGraph(Graph):
         return "%s %s" % (atom_str, pair_str)
 
     def get_node_string(self, i):
+        """Return a string based on the atom number"""
         number = self.numbers[i]
         if number == 0:
             return Graph.get_node_string(self, i)
@@ -157,6 +164,7 @@ class MolecularGraph(Graph):
             return "%03i" % number
 
     def get_pair_string(self, i):
+        """Return a string based on the bond order"""
         order = self.orders[i]
         if order == 0:
             return Graph.get_pair_string(self, i)

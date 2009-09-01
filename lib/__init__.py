@@ -17,7 +17,20 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Collection of utilities to automate molecular modeling research
 
+   The scope of MolMod is twofold. (A) On the one hand does it provide the
+   necessary building blocks for user-made batch scripts that facilitate
+   molecular modeling research. Often it is just a matter of taking away the
+   burden of manual repetitive work when processing computational data or when
+   preparing simulations. By providing a package with various common building
+   blocks, one also avoids the repetitive work in the implementation of
+   user-made scripts. (B) The second purpose of MolMod is to serve as a toolkit
+   for more serious and long-term molecular modeling projects such as Zeobuilder
+   or MD-Tracks. Such programs also benefit from the general-purpose nature of
+   MolMod. This imposes a certain level of modularity and hence facilitates
+   maintainability.
+"""
 
 import sys, os
 

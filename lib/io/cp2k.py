@@ -115,6 +115,7 @@ class CP2KSection(object):
 
     def __setitem__(self, key, value):
         def delete_all(key):
+            """Delete all children whose name is equal to the argument key"""
             indexes = []
             for index, item in enumerate(self.__order):
                 if item.name == key:
@@ -166,6 +167,7 @@ class CP2KSection(object):
             raise TypeError("Unsupported key: %s" % key)
 
     def get_name(self):
+        """Return the name of this section"""
         return self.__name
 
     name = property(get_name)

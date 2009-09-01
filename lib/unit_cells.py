@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Data structure & tools to work with periodic systems"""
 
 
 from molmod.units import angstrom
@@ -111,6 +112,15 @@ class UnitCell(ReadOnly):
 
     @cached
     def generalized_volume(self):
+        """The volume of the unit cell
+
+           The actual definition of the volume depends on the number of active
+           directions:
+             num_active == 0  --  always -1
+             num_active == 1  --  length of the cell vector
+             num_active == 2  --  surface of the parallellogram
+             num_active == 3  --  volume of the parallelepiped
+        """
         active = self.active_inactive[0]
         if len(active) == 0:
             return -1

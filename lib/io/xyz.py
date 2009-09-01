@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Tools for reading and writing XYZ trajectory files"""
 
 
 from molmod.io.common import slice_match, FileFormatError
@@ -82,7 +83,9 @@ class XYZReader(object):
             self._file.close()
 
     def _read(self):
+        """Read a frame from the XYZ file"""
         def read_size():
+            """Read the number of atoms"""
             try:
                 return int(self._file.readline().strip())
             except ValueError:

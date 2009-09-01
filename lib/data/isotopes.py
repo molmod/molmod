@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Databases with isotope information"""
 
 
 from molmod import context
@@ -29,7 +30,13 @@ __all__ = ["ame2003", "nubtab03"]
 class Ame2003(object):
     """An interface to a subset of the data from Ame2003.
 
-       If you use this interface, also refer to:
+       This object contains an attribute masses. This is a dictionary whose keys
+       are the proton numbers (Z) and values are the corresponding values are
+       again dictionaries. The latter dictionaries have the mass number (A) as
+       keys and the corresponding isotope masses in atomic units as values. E.g.
+       self.masses[6][12] is the mass of carbon 12.
+
+       If you use this interface, also cite:
 
        The AME2003 atomic mass evaluation (I). Evaluation of input data, adjustment
        procedures. A.H. Wapstra, G. Audi, and C. Thibault. Nuclear Physics A729,
@@ -39,6 +46,12 @@ class Ame2003(object):
        Audi, A.H. Wapstra, and C. Thibault. Nuclear Physics A729, 337 (2003).
     """
     def __init__(self, filename):
+        """Initialize the Ame2003 database (and load data)
+
+           An object of this type is created in this module, so there is not
+           need to construct it externally. Just use the ame2003 variable
+           defined below.
+        """
         self.masses = {}
 
         def add_mass(N, Z, mass):
@@ -64,6 +77,12 @@ ame2003 = Ame2003(context.get_share_filename("mass.mas03"))
 class NubTab03(object):
     """An interface to a subset of the data that from NubTab03.
 
+       This object contains an attribute abundances. This is a dictionary whose
+       keys are the proton numbers (Z) and values are the corresponding values
+       are again dictionaries. The latter dictionaries have the mass number (A)
+       as keys and the corresponding isotope abundances as values. E.g.
+       self.masses[6][12] is the abundance of carbon 12.
+
        If you use this interface, also refer to:
 
        The NUBASE evaluation of nuclear and decay properties. G. Audi, O. Bersillon,
@@ -71,6 +90,12 @@ class NubTab03(object):
     """
 
     def __init__(self, filename):
+        """Initialize a NubTab database
+
+           An object of this type is created in this module, so there is not
+           need to construct it externally. Just use the nubtab03 variable
+           defined below.
+        """
         self.abundances = {}
 
         def add_abundance(A, Z, abundance):

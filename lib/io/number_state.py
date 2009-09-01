@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Persistance, i.e. storage on disk, for objects with numerical attributes"""
 
 
 from molmod.io.common import FileFormatError

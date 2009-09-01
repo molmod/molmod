@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Utilities that are used in all parts of the MolMod library"""
 
 
 import numpy
@@ -116,6 +117,11 @@ class ReadOnly(object):
             object.__setattr__(self, name, value)
 
 
-def rmsd(a,b):
+def rmsd(a, b):
+    """Compute the root-mean-square deviation between two arrays
+
+       Arguments:
+         a, b  --  Two numpy arrays with the same shape
+    """
     return numpy.sqrt(((a-b)**2).mean())
 

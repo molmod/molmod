@@ -19,12 +19,12 @@
 # --
 """Basic support for the Chemical Markup Language
 
-Not all features of the CML standard are supported in this module, only the
-basic aspects that are relevant for computational chemistry. For more info
-on the CML format, visit: http://cml.sourceforge.net/
+   Not all features of the CML standard are supported in this module, only the
+   basic aspects that are relevant for computational chemistry. For more info
+   on the CML format, visit: http://cml.sourceforge.net/
 
-In this module, only atoms, their 3D coordinates, atom numbers, bonds and bond
-orders are supported.
+   In this module, only atoms, their 3D coordinates, atom numbers, bonds and
+   bond orders are supported.
 """
 
 
@@ -43,7 +43,9 @@ __all__ = ["load_cml", "dump_cml"]
 
 
 class CMLMoleculeLoader(ContentHandler):
+    """A ContentHandler that reads the essentials out of a CML file"""
     def __init__(self):
+        """Initialize the CMLMoleculeLoader"""
         self.molecules = []
         self.current_title = None # current molecule
         ContentHandler.__init__(self)
@@ -52,7 +54,8 @@ class CMLMoleculeLoader(ContentHandler):
     bond_exclude = frozenset(['id', 'atomRefs2', 'order'])
     molecule_exclude = frozenset(['id', 'xmlns'])
 
-    def get_extra(self, attrs, exclude):
+    def _get_extra(self, attrs, exclude):
+        """Read the extra properties, taking into account an exclude list"""
         result = {}
         for key in attrs.getNames():
             if key not in exclude:
@@ -68,7 +71,7 @@ class CMLMoleculeLoader(ContentHandler):
             self.current_coordinates = []
             self.current_atom_names = []
             self.current_bonds = []
-            self.current_extra = self.get_extra(attrs, self.molecule_exclude)
+            self.current_extra = self._get_extra(attrs, self.molecule_exclude)
             self.current_atoms_extra = {}
         elif self.current_title is not None:
             if name == 'atom':
@@ -88,7 +91,7 @@ class CMLMoleculeLoader(ContentHandler):
                 self.current_numbers.append(atom_record.number)
                 self.current_coordinates.append([x,y,z])
                 # find potential extra attributes
-                extra = self.get_extra(attrs, self.atom_exclude)
+                extra = self._get_extra(attrs, self.atom_exclude)
                 if len(extra) > 0:
                     self.current_atoms_extra[len(self.current_numbers)-1] = extra
             elif name == 'bond':
@@ -96,7 +99,7 @@ class CMLMoleculeLoader(ContentHandler):
                 if not isinstance(refs, basestring): return
                 if refs.count(" ") != 1: return
                 name1, name2 = refs.split(" ")
-                extra = self.get_extra(attrs, self.bond_exclude)
+                extra = self._get_extra(attrs, self.bond_exclude)
                 self.current_bonds.append((name1,name2,extra))
 
     def endElement(self, name):
@@ -153,6 +156,12 @@ def load_cml(cml_filename):
 
 
 def _dump_cml_molecule(f, molecule):
+    """Dump a single molecule to a CML file
+
+       Arguments:
+         f  --  a file-like object
+         molecule  --  a Molecule instance
+    """
     extra = getattr(molecule, "extra", {})
     attr_str = " ".join("%s='%s'" % (key,value) for key,value in extra.iteritems())
     f.write(" <molecule id='%s' %s>\n" % (molecule.title, attr_str))

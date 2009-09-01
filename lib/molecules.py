@@ -17,6 +17,8 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Data structure for molecular geometries"""
+
 
 from molmod.data.periodic import periodic
 from molmod.units import angstrom

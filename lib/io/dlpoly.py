@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Readers for DLPoly file formats"""
 
 
 from molmod.units import picosecond, amu, angstrom, atm, deg
@@ -85,7 +86,7 @@ class DLPolyHistoryReader(object):
         """
         # auxiliary read function
         def read_three(msg):
-            # read three words as floating point numbers
+            """Read three words as floating point numbers"""
             line = self._f.next()
             try:
                 return [float(line[:12]), float(line[12:24]), float(line[24:])]
@@ -232,7 +233,12 @@ class DLPolyOutputReader(object):
         return self
 
     def next(self):
+        """Read the next frame from the file
+
+           This method is part of the iterator protocol.
+        """
         def goto_next_frame():
+            """Continue reading until the next frame is reached"""
             marked = False
             while True:
                 line = self._f.next()[:-1]

@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Readers for Gromacs related file formats"""
 
 
 from molmod.units import picosecond, nanometer
@@ -26,10 +27,6 @@ import numpy
 
 
 __all__ = ["GroReader"]
-
-
-class Error(Exception):
-    pass
 
 
 class GroReader(object):

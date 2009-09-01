@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Tools for parsing LAMMPS data files"""
 
 
 from molmod.io.common import slice_match, FileFormatError

@@ -17,6 +17,14 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Collection of routines to handle computational chemistry file formats
+
+   It is not the intention to duplicate the work done in the OpenBabel project
+   Several file formats below are rather specific for molecular dynamics
+   simulations and do not always deal with representing molecular systems. The
+   scope is more generic. The selection of supported formats is purely driven
+   by the convenience of the MolMod developers.
+"""
 
 from molmod.io.atrj import *
 from molmod.io.cml import *

@@ -17,7 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-
+"""Common functionality used by the molmod.io package"""
 
 __all__ = ["slice_match", "FileFormatError"]
 

@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Bond length database and bond type defintions"""
 
 
 from molmod.data.periodic import periodic
@@ -77,6 +78,7 @@ class BondData(object):
         """
 
         def read_units(unit_names):
+            """convert unit_names into conversion factors"""
             tmp = {
                 "A": units.angstrom,
                 "pm": units.picometer,
@@ -85,6 +87,7 @@ class BondData(object):
             return [tmp[unit_name] for unit_name in unit_names]
 
         def read_length(BOND_TYPE, words, col):
+            """Read the bondlengths from a single line in the data file"""
             nlow = int(words[2])
             nhigh = int(words[3])
             for i, conversion in zip(xrange((len(words) - 4) / 3), conversions):

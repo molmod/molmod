@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Database with periodic elements"""
 
 
 import molmod.units as units
@@ -63,6 +64,7 @@ class PeriodicData(object):
 
 
         def append_convertor(word):
+            """Convert a format specifier into a conversion functions"""
             if word == "str":
                 convertors.append(str)
             elif word == "int":
@@ -105,6 +107,7 @@ class PeriodicData(object):
         f.close()
 
     def _add_atom_info(self, atom_info):
+        """Add an atom info object to the database"""
         self.atoms_by_number[atom_info.number] = atom_info
         self.atoms_by_symbol[atom_info.symbol.lower()] = atom_info
 

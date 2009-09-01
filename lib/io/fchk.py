@@ -62,8 +62,15 @@ class FCHKFile(object):
         self._analyze()
 
     def _read(self, filename, field_labels=None):
+        """Read all the requested fields
+
+           Arguments:
+             filename  --  the filename of the FCHK file
+             field_labels  --  when given, only these fields are read
+        """
         # if fields is None, all fields are read
         def read_field(f):
+            """Read a single field"""
             datatype = None
             while datatype is None:
                 # find a sane header line
@@ -128,6 +135,7 @@ class FCHKFile(object):
         f.close()
 
     def _analyze(self):
+        """Convert a few elementary fields into a molecule object"""
         if ("Atomic numbers" in self.fields) and ("Current cartesian coordinates" in self.fields):
             self.molecule = Molecule(
                 self.fields["Atomic numbers"],

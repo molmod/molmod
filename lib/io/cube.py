@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Reader for the cube format"""
 
 
 import numpy
@@ -48,7 +49,8 @@ class CubeReader(object):
         self.f.readline()
         self.f.readline()
 
-        def read_header_line(line):
+        def read_grid_line(line):
+            """Read a grid line from the cube file"""
             words = line.split()
             return (
                 int(words[0]),
@@ -57,13 +59,14 @@ class CubeReader(object):
             )
 
         # number of atoms and origin of the grid
-        self.num_atoms, self.origin = read_header_line(self.f.readline())
+        self.num_atoms, self.origin = read_grid_line(self.f.readline())
         # numer of grid points in A direction and step vector A, and so on
-        self.num_a, self.vector_a = read_header_line(self.f.readline())
-        self.num_b, self.vector_b = read_header_line(self.f.readline())
-        self.num_c, self.vector_c = read_header_line(self.f.readline())
+        self.num_a, self.vector_a = read_grid_line(self.f.readline())
+        self.num_b, self.vector_b = read_grid_line(self.f.readline())
+        self.num_c, self.vector_c = read_grid_line(self.f.readline())
 
-        def read_data_line(line):
+        def read_coordinate_line(line):
+            """Read an atom number and coordinate from the cube file"""
             words = line.split()
             return (
                 int(words[0]),
@@ -74,7 +77,7 @@ class CubeReader(object):
         self.numbers = numpy.zeros(self.num_atoms, int)
         self.coordinates = numpy.zeros((self.num_atoms, 3), float)
         for i in xrange(self.num_atoms):
-            self.numbers[i], self.coordinates[i] = read_data_line(self.f.readline())
+            self.numbers[i], self.coordinates[i] = read_coordinate_line(self.f.readline())
 
         self.counter_a = 0
         self.counter_b = 0

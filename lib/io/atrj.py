@@ -43,16 +43,19 @@ class SectionFile(object):
         self._f.close()
 
     def _get_current_label(self):
+        """Get the label from the last line read"""
         if len(self._last) == 0:
             raise StopIteration
         return self._last[:self._last.find(":")]
 
     def _skip_section(self):
+        """Skip a section"""
         self._last = self._f.readline()
         while len(self._last) > 0 and len(self._last[0].strip()) == 0:
             self._last = self._f.readline()
 
     def _read_section(self):
+        """Read and return an entire section"""
         lines = [self._last[self._last.find(":")+1:]]
         self._last = self._f.readline()
         while len(self._last) > 0 and len(self._last[0].strip()) == 0:
@@ -61,6 +64,7 @@ class SectionFile(object):
         return lines
 
     def get_next(self, label):
+        """Get the next section with the given label"""
         while self._get_current_label() != label:
             self._skip_section()
         return self._read_section()
@@ -99,13 +103,17 @@ class ATRJReader(object):
         self._read_header()
 
     def _read_header(self):
+        """Read the number of atoms from the first section"""
         self.num_atoms = int(self._secfile.get_next("FilNum")[0].split()[4])
 
     def __iter__(self):
         return self
 
     def next(self):
-        """Read the next frame"""
+        """Read the next frame
+
+           This method is part of the iterator protocol.
+        """
         while True:
             # skip to the next frame
             self._secfile.get_next("Frame Number")
