@@ -17,44 +17,45 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Basic support for the PDB format"""
 
 
 from molmod.data.periodic import periodic
 from molmod.units import angstrom
 from molmod.molecules import Molecule
+from molmod.io.common import FileFormatError
 
 import numpy
 
 
-__all__ = ["dump_pdb"]
+__all__ = ["load_pdb", "dump_pdb"]
 
 
 def dump_pdb(filename, molecule, atomnames=None, resnames=None, chain_ids=None, occupancies=None, betas=None):
-    """
-    Writes a single molecule to a pdb file.
+    """Writes a single molecule to a pdb file.
 
-    This function is based on the pdb file specification:
-    http://www.wwpdb.org/documentation/format32/sect9.html
-    For convenience, the relevant table is copied and the character indexes are
-    transformed to C-style (starting from zero).
+       This function is based on the pdb file specification:
+       http://www.wwpdb.org/documentation/format32/sect9.html
+       For convenience, the relevant table is copied and the character indexes are
+       transformed to C-style (starting from zero).
 
-    COLUMNS        DATA  TYPE    FIELD        DEFINITION
-    -------------------------------------------------------------------------------------
-     0 -  5        Record name   "ATOM  "
-     6 - 10        Integer       serial       Atom  serial number.
-    12 - 15        Atom          name         Atom name.
-    16             Character     altLoc       Alternate location indicator.
-    17 - 19        Residue name  resName      Residue name.
-    21             Character     chainID      Chain identifier.
-    22 - 25        Integer       resSeq       Residue sequence number.
-    26             AChar         iCode        Code for insertion of residues.
-    30 - 37        Real(8.3)     x            Orthogonal coordinates for X in Angstroms.
-    38 - 45        Real(8.3)     y            Orthogonal coordinates for Y in Angstroms.
-    46 - 53        Real(8.3)     z            Orthogonal coordinates for Z in Angstroms.
-    54 - 59        Real(6.2)     occupancy    Occupancy.
-    60 - 65        Real(6.2)     tempFactor   Temperature  factor.
-    76 - 77        LString(2)    element      Element symbol, right-justified.
-    78 - 79        LString(2)    charge       Charge  on the atom.
+       COLUMNS        DATA  TYPE    FIELD        DEFINITION
+       -------------------------------------------------------------------------------------
+        0 -  5        Record name   "ATOM  "
+        6 - 10        Integer       serial       Atom  serial number.
+       12 - 15        Atom          name         Atom name.
+       16             Character     altLoc       Alternate location indicator.
+       17 - 19        Residue name  resName      Residue name.
+       21             Character     chainID      Chain identifier.
+       22 - 25        Integer       resSeq       Residue sequence number.
+       26             AChar         iCode        Code for insertion of residues.
+       30 - 37        Real(8.3)     x            Orthogonal coordinates for X in Angstroms.
+       38 - 45        Real(8.3)     y            Orthogonal coordinates for Y in Angstroms.
+       46 - 53        Real(8.3)     z            Orthogonal coordinates for Z in Angstroms.
+       54 - 59        Real(6.2)     occupancy    Occupancy.
+       60 - 65        Real(6.2)     tempFactor   Temperature  factor.
+       76 - 77        LString(2)    element      Element symbol, right-justified.
+       78 - 79        LString(2)    charge       Charge  on the atom.
     """
 
     f = file(filename, "w")
@@ -98,11 +99,10 @@ def dump_pdb(filename, molecule, atomnames=None, resnames=None, chain_ids=None, 
 
 
 def load_pdb(filename):
-    """
-    Loads a single molecule from a pdb file.
+    """Loads a single molecule from a pdb file.
 
-    This function does support only a small fragment from the pdb specification.
-    It assumes that there is only one molecular geometry in the pdb file.
+       This function does support only a small fragment from the pdb specification.
+       It assumes that there is only one molecular geometry in the pdb file.
     """
     f = file(filename)
     numbers = []
@@ -113,7 +113,7 @@ def load_pdb(filename):
         if line.startswith("ATOM"):
             symbol = line[76:78].strip()
             numbers.append(periodic[symbol].number)
-            coordinates.append([float(line[30:38]), float(line[38:46]), float(line[46:54])])
+            coordinates.append([float(line[30:38])*angstrom, float(line[38:46])*angstrom, float(line[46:54])*angstrom])
             occupancies.append(float(line[54:60]))
             betas.append(float(line[60:66]))
     f.close()
@@ -123,6 +123,5 @@ def load_pdb(filename):
         molecule.betas = numpy.array(betas)
         return molecule
     else:
-        raise IOError("No molecule found in pdb file %s" % filename)
-
+        raise FileFormatError("No molecule found in pdb file %s" % filename)
 
