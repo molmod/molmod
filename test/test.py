@@ -43,21 +43,21 @@ if not os.path.exists("output"):
 import unittest
 
 from binning import *
+from clusters import *
+from data import *
 from graphs import *
+from ic import *
+from io import *
 from molecules import *
 from molecular_graphs import *
-from data import *
-from unit_cells import *
-from clusters import *
-from transformations import *
-from similarity import *
 from quaternions import *
-from io import *
 from randomize import *
-from zmatrix import *
-from ic import *
+from similarity import *
+from transformations import *
+from unit_cells import *
 from vectors import *
 from volume import *
+from zmatrix import *
 
 unittest.main()
 
