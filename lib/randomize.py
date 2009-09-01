@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Tools for randomizing molecular geometries with reasonable distortions"""
 
 
 from random import shuffle, sample
@@ -32,8 +33,9 @@ import numpy, copy
 
 
 __all__ = [
-    "MolecularTransformation",
-    "RandomManipulation", "RandomStretch", "RandomTorsion", "RandomBend", "RandomDoubleStretch",
+    "MolecularDistortion",
+    "RandomManipulation", "RandomStretch", "RandomTorsion",
+    "RandomBend", "RandomDoubleStretch",
     "iter_halfs_bond", "iter_halfs_bend", "iter_halfs_double",
     "generate_manipulations", "check_nonbond",
     "randomize_molecule", "randomize_molecule_low",
@@ -42,9 +44,16 @@ __all__ = [
 ]
 
 
-class MolecularTransformation(object):
+class MolecularDistortion(object):
+    """A geometeric manipulation (rotation + translation) of a part of molecule
+
+       The data structure also comes with a straight forward human readable
+       file format, which makes it easy to save the distortions for later
+       reference.
+    """
     @classmethod
     def read_from_file(cls, filename):
+        """Construct a MolecularDistortion object from a file"""
         f = file(filename)
         lines = list(line for line in f if line[0] != '#')
         f.close()
@@ -58,14 +67,23 @@ class MolecularTransformation(object):
         affected_atoms = set(int(word) for word in lines[3].split())
         return cls(affected_atoms, transformation)
 
-    def __init__(self, affected_atoms, transformation, molecule=None):
+    def __init__(self, affected_atoms, transformation):
+        """Initialize a new MolecularDistortion object
+
+           Arguments:
+             affected_atoms  --  a list of atoms that undergo the transformation
+             transformation  --  a transformation object
+        """
         self.affected_atoms = affected_atoms
         self.transformation = Complete.cast(transformation)
-        if molecule is not None:
-            for i in affected_atoms:
-                molecule.coordinates[i] = transformation*molecule.coordinates[i]
+
+    def apply(self, coordinates):
+        """Apply this distortion to Cartesian coordinates"""
+        for i in self.affected_atoms:
+            coordinates[i] = self.transformation*coordinates[i]
 
     def write_to_file(self, filename):
+        """Write the object to a file"""
         r = self.transformation.r
         t = self.transformation.t
         f = file(filename, "w")
@@ -82,9 +100,18 @@ class MolecularTransformation(object):
 
 
 class RandomManipulation(object):
+    """Base class for a random manipulation"""
     num_hinge_atoms = None
 
     def __init__(self, affected_atoms, max_amplitude, hinge_atoms):
+        """Initialize a RandomManipulation object
+
+           Arguments:
+             affected_atoms  --  a list of atoms that undergo the transformation
+             max_amplitude  --  the maximum displacement (unit depends on
+                                actual implementation)
+             hinge_atoms  --  atoms that are invariant under the transformation
+        """
         if len(hinge_atoms) != self.num_hinge_atoms:
             raise ValueError("The number of hinge atoms must be %i, got %i." % (
                 self.num_hinge_atoms,
@@ -94,21 +121,26 @@ class RandomManipulation(object):
         self.max_amplitude = max_amplitude
         self.hinge_atoms = hinge_atoms
 
-    def apply(self, molecule):
-        return MolecularTransformation(
-            self.affected_atoms, self.get_transformation(molecule), molecule
-        )
+    def apply(self, coordinates):
+        """Generate, apply and return a random manipulation"""
+        transform = self.get_transformation(coordinates)
+        result = MolecularDistortion(self.affected_atoms, transform)
+        result.apply(coordinates)
+        return result
 
-    def get_transformation(self, molecule):
+    def get_transformation(self, coordinates):
+        """Construct a transformation object"""
         raise NotImplementedError
 
 
 class RandomStretch(RandomManipulation):
+    """A random variation in a bond length by displacing a part of a molecule"""
     num_hinge_atoms = 2
 
-    def get_transformation(self, molecule):
+    def get_transformation(self, coordinates):
+        """Construct a transformation object"""
         atom1, atom2 = self.hinge_atoms
-        direction = molecule.coordinates[atom1] - molecule.coordinates[atom2]
+        direction = coordinates[atom1] - coordinates[atom2]
         direction /= numpy.linalg.norm(direction)
         direction *= numpy.random.uniform(-self.max_amplitude, self.max_amplitude)
         result = Translation(direction)
@@ -116,25 +148,29 @@ class RandomStretch(RandomManipulation):
 
 
 class RandomTorsion(RandomManipulation):
+    """A random bond torsion by rotation a part of a molecule"""
     num_hinge_atoms = 2
 
-    def get_transformation(self, molecule):
+    def get_transformation(self, coordinates):
+        """Construct a transformation object"""
         atom1, atom2 = self.hinge_atoms
-        center = molecule.coordinates[atom1]
-        axis = molecule.coordinates[atom1] - molecule.coordinates[atom2]
+        center = coordinates[atom1]
+        axis = coordinates[atom1] - coordinates[atom2]
         axis /= numpy.linalg.norm(axis)
         angle = numpy.random.uniform(-self.max_amplitude, self.max_amplitude)
         return rotation_about_axis(center, angle, axis)
 
 
 class RandomBend(RandomManipulation):
+    """A random bend by rotation a part of a molecule"""
     num_hinge_atoms = 3
 
-    def get_transformation(self, molecule):
+    def get_transformation(self, coordinates):
+        """Construct a transformation object"""
         atom1, atom2, atom3 = self.hinge_atoms
-        center = molecule.coordinates[atom2]
-        a = molecule.coordinates[atom1] - molecule.coordinates[atom2]
-        b = molecule.coordinates[atom3] - molecule.coordinates[atom2]
+        center = coordinates[atom2]
+        a = coordinates[atom1] - coordinates[atom2]
+        b = coordinates[atom3] - coordinates[atom2]
         axis = numpy.cross(a, b)
         norm = numpy.linalg.norm(axis)
         if norm < 1e-5:
@@ -147,13 +183,15 @@ class RandomBend(RandomManipulation):
 
 
 class RandomDoubleStretch(RandomManipulation):
+    """A random bend by rotation a part of a molecule, works also on single rings"""
     num_hinge_atoms = 4
 
-    def get_transformation(self, molecule):
+    def get_transformation(self, coordinates):
+        """Construct a transformation object"""
         atom1, atom2, atom3, atom4 = self.hinge_atoms
-        a = molecule.coordinates[atom1] - molecule.coordinates[atom2]
+        a = coordinates[atom1] - coordinates[atom2]
         a /= numpy.linalg.norm(a)
-        b = molecule.coordinates[atom3] - molecule.coordinates[atom4]
+        b = coordinates[atom3] - coordinates[atom4]
         b /= numpy.linalg.norm(b)
         direction = 0.5*(a+b)
         direction *= numpy.random.uniform(-self.max_amplitude, self.max_amplitude)
@@ -162,6 +200,7 @@ class RandomDoubleStretch(RandomManipulation):
 
 
 def iter_halfs_bond(graph):
+    """Select a random bond (pair of atoms) that divides the molecule in two"""
     for atom1, atom2 in graph.pairs:
         try:
             affected_atoms1, affected_atoms2 = graph.get_halfs(atom1, atom2)
@@ -171,6 +210,7 @@ def iter_halfs_bond(graph):
 
 
 def iter_halfs_bend(graph):
+    """Select randomly two consecutive bonds that divide the molecule in two"""
     for atom2 in xrange(graph.num_nodes):
         neighbors = list(graph.neighbors[atom2])
         for index1, atom1 in enumerate(neighbors):
@@ -191,6 +231,7 @@ def iter_halfs_bend(graph):
 
 
 def iter_halfs_double(graph):
+    """Select two random non-consecutive bonds that divide the molecule in two"""
     pairs = graph.pairs
     for index1, (atom_a1, atom_b1) in enumerate(pairs):
         for atom_a2, atom_b2 in pairs[:index1]:
@@ -206,6 +247,22 @@ def generate_manipulations(
     graph, molecule, bond_stretch_factor=0.15, torsion_amplitude=numpy.pi,
     bending_amplitude=0.30
 ):
+    """Generate a (complete) set of manipulations
+
+       The result can be used as input for the functions 'randomize_molecule'
+       and 'single_random_manipulation'
+
+       Arguments:
+         graph  --  a molecular graph
+         molecule  --  a reference geometry of the molecule
+         bond_stretch_factor  --  the maximum relative change in bond length by
+                                  one bond stretch manipulatio
+         torsion_amplitude  --  the maximum change a dihdral angle
+         bending_amplitude  --  the maximum change in a bending angle
+
+       The return value is a list of RandomManipulation objects. They can be
+       used to generate different random distortions of the original molecule.
+    """
     do_stretch = (bond_stretch_factor > 0)
     do_double_stretch = (bond_stretch_factor > 0)
     do_bend = (bending_amplitude > 0)
@@ -308,10 +365,10 @@ def randomize_molecule_low(molecule, manipulations):
 
     manipulations = copy.copy(manipulations)
     shuffle(manipulations)
-    randomized_molecule = copy.deepcopy(molecule)
+    coordinates = molecule.coordinates.copy()
     for manipulation in manipulations:
-        manipulation.apply(randomized_molecule)
-    return randomized_molecule
+        manipulation.apply(coordinates)
+    return Molecule(molecule.numbers, coordinates)
 
 
 def single_random_manipulation(molecule, graph, manipulations, nonbond_thresholds, max_tries=1000):
@@ -333,9 +390,9 @@ def single_random_manipulation_low(molecule, manipulations):
     """Return a randomized copy of the molecule, without the nonbond check."""
 
     manipulation = sample(manipulations, 1)[0]
-    randomized_molecule = copy.deepcopy(molecule)
-    transformation = manipulation.apply(randomized_molecule)
-    return randomized_molecule, transformation
+    coordinates = molecule.coordinates.copy()
+    transformation = manipulation.apply(coordinates)
+    return Molecule(molecule.numbers, coordinates), transformation
 
 
 def random_dimer(molecule0, molecule1, thresholds, shoot_max, max_tries=1000):

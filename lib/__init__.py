@@ -60,6 +60,7 @@ from io import *
 from molecules import *
 from molecular_graphs import *
 from quaternions import *
+from randomize import *
 from similarity import *
 from toyff import *
 from transformations import *
@@ -67,5 +68,6 @@ from unit_cells import *
 from units import *
 from vectors import *
 from volume import *
+from zmatrix import *
 
 

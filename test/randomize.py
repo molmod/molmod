@@ -86,7 +86,7 @@ class RandomizeTestCase(BaseTestCase):
                 randomized_molecule, mol_transformation = single_random_manipulation(molecule, graph, manipulations, nonbond_thresholds)
                 randomized_molecule.write_to_file(os.path.join("output", molecule.filename))
                 mol_transformation.write_to_file(os.path.join("output", "tmp"))
-                check_transformation = MolecularTransformation.read_from_file(os.path.join("output", "tmp"))
+                check_transformation = MolecularDistortion.read_from_file(os.path.join("output", "tmp"))
                 self.assertEqual(mol_transformation.affected_atoms, check_transformation.affected_atoms)
                 self.assertArraysAlmostEqual(mol_transformation.transformation.r, check_transformation.transformation.r, 1e-5, doabs=True)
                 self.assertArraysAlmostEqual(mol_transformation.transformation.t, check_transformation.transformation.t, 1e-5, doabs=True)
