@@ -55,12 +55,13 @@ context = Context()
 
 from clusters import *
 from graphs import *
+from ic import *
+from io import *
 from molecules import *
 from molecular_graphs import *
 from quaternions import *
 from transformations import *
 from unit_cells import *
 from units import *
-from ic import *
 
 

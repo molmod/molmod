@@ -19,23 +19,40 @@
 # --
 
 
-from molmod.io.common import slice_match
+from molmod.io.common import slice_match, FileFormatError
 from molmod.data.periodic import periodic
 from molmod.molecules import Molecule
 from molmod.units import angstrom
 
 import numpy
+from itertools import izip
 
 
-__all__ = ["Error", "XYZReader", "XYZWriter", "XYZFile"]
-
-
-class Error(Exception):
-    pass
+__all__ = ["XYZReader", "XYZWriter", "XYZFile"]
 
 
 class XYZReader(object):
+    """A reader for XYZ trajectory files
+
+       Use this reader as an iterator:
+       >>> xr = XYZReader("somefile.xyz")
+       >>> for title, coordinates in xr:
+               print title
+    """
+
     def __init__(self, f, sub=slice(None), file_unit=angstrom):
+        """Initialize an XYZ reader
+
+           Arguments:
+             f  --  a filename or a file-like object
+             sub  --  a slice indicating which frames to read/skip
+             file_unit  --  the conversion constant to convert data into atomic
+                            units (default=angstrom)
+
+           After initialization, the following attributes are defined:
+             self.symbols  --  The atom symbols
+             self.numbers  --  The atom numbers
+        """
         if isinstance(f, file):
             self._auto_close = False
             self._file = f
@@ -58,7 +75,7 @@ class XYZReader(object):
                 else:
                     self.numbers[index] = atom_info.number
         except StopIteration:
-            raise Error("Could not read first frame from XYZ file. Incorrect file format.")
+            raise FileFormatError("Could not read first frame from XYZ file. Incorrect file format.")
 
     def __del__(self):
         if self._auto_close:
@@ -105,6 +122,10 @@ class XYZReader(object):
         return self
 
     def next(self):
+        """Read the next frame from the XYZ trajectory file
+
+           This method is part of the iterator protocol
+        """
         if self._first is not None:
             tmp = self._first
             self._first = None
@@ -116,17 +137,39 @@ class XYZReader(object):
         return result
 
     def get_first_molecule(self):
+        """Get the first molecule from the trajectory
+
+           This can be useful to configure your program before handeling the
+           actual trajectory.
+        """
         if self._first is None:
-            raise Error("get_first_molecule must be called before the first iteration.")
+            raise RuntimeError("get_first_molecule must be called before the first iteration.")
         else:
             title, coordinates = self._first
             molecule = Molecule(self.numbers, coordinates, title)
             return molecule
 
 
-
 class XYZWriter(object):
+    """A XYZ trajectory file writer
+
+       This writer is designed to be used in conjunction with an iterator that
+       generates coordinates in one way or the other. Example:
+
+       xr = XYZReader("somefile.xyz")
+       xw = XYZWriter("otherfile.xyz", xr.symbols[5:10])
+       for title, coordinates in xr:
+           xw.dump(title, -coordinates[5:10])
+    """
     def __init__(self, f, symbols, file_unit=angstrom):
+        """Initialize a XYZWriter object
+
+           Arguments:
+             f  -- a filename or a file-like object to write to
+             symbols  --  the atom symbols
+             file_unit  --  the unit of the values written to file
+                            (default=angstrom)
+        """
         if isinstance(f, file):
             self._auto_close = False
             self._file = f
@@ -141,6 +184,12 @@ class XYZWriter(object):
             self._file.close()
 
     def dump(self, title, coordinates):
+        """Dump a frame to the trajectory file
+
+           Arguments:
+             title  --  the title of the frame
+             coordinates  --  a numpy array with coordinates in atomic units
+        """
         print >> self._file, "% 8i" % len(self.symbols)
         print >> self._file, str(title)
         for symbol, coordinate in zip(self.symbols, coordinates):
@@ -148,7 +197,32 @@ class XYZWriter(object):
 
 
 class XYZFile(object):
+    """Data structure representing an XYZ File
+
+       This implementation is extra layer on top the XYZReader and XYZWriter,
+       and is somewhat easier to use. Example:
+
+       xyz_file = XYZFile("some.xyz")
+       mol = xyz_file.get_molecule(3)
+       print mol.title
+       xyz_file.geometries[0,4,2] = 5.0 # frame 0, atom 4, Z-coordinate
+       xyz_file.write_to_file("other.xyz")
+    """
     def __init__(self, f, sub=slice(None), file_unit=angstrom):
+        """Initialize an XYZFile object
+
+           Argument:
+             f  --  a filename or a file-like object to read from
+             sub  --  a slice indicating which frames to read/skip
+             file_unit  --  the conversion constant to convert data into atomic
+                            units (default=angstrom)
+
+           XYZFile instances always have to following attriubtes:
+             numbers  --  The atom numbers (of one frame)
+             symbols  --  The atom symbols (of one frame)
+             titles   --  The titles of all the frames
+             geometries  --  A MxNx3 array with all the atom coordinates
+        """
         xyz_reader = XYZReader(f, file_unit=file_unit)
         self.file_unit = file_unit
 
@@ -174,17 +248,22 @@ class XYZFile(object):
             self.geometries = numpy.array(geometries, float)
 
     def get_molecule(self, index=0):
+        """Get a molecule from the trajectory
+
+           Argument:
+             index  --  The frame index (default=0)
+        """
         return Molecule(self.numbers, self.geometries[index], self.titles[index])
 
     def write_to_file(self, f, file_unit=angstrom):
-        symbols = []
-        for number in self.numbers:
-            atom_info = periodic[number]
-            if atom_info is None:
-                symbols.append("X")
-            else:
-                symbols.append(atom_info.symbol)
-        xyz_writer = XYZWriter(f, symbols, file_unit=file_unit)
-        for index, coordinates in enumerate(self.geometries):
-            xyz_writer.dump("Step %i" % index, coordinates)
+        """Write the trajectory to a file
+
+           Arguments:
+             f  -- a filename or a file-like object to write to
+             file_unit  --  the unit of the values written to file
+                            (default=angstrom)
+        """
+        xyz_writer = XYZWriter(f, self.symbols, file_unit=file_unit)
+        for title, coordinates in izip(self.titles, self.geometries):
+            xyz_writer.dump(title, coordinates)
 
