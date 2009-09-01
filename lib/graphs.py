@@ -76,10 +76,11 @@ class OneToOne(object):
     relations, stored in dictionaries.
     """
 
-    def __init__(self, pairs=[]):
+    def __init__(self, pairs=None):
         self.forward = {}
         self.reverse = {}
-        self.add_relations(pairs)
+        if pairs is not None:
+            self.add_relations(pairs)
 
     def __len__(self):
         return len(self.forward)
@@ -199,22 +200,20 @@ class Graph(ReadOnly):
         for pair in pairs:
             if len(pair) != 2:
                 raise TypeError("The pairs must be a iterable with 2 elements")
-
-                raise TypeError("The pairs must be frozen sets of exactly 2 elements each.")
-            i,j = pair
-            if i==j:
+            i, j = pair
+            if i == j:
                 raise ValueError("A pair must contain two different values.")
             if not (isinstance(i, int) and isinstance(j, int)):
                 raise TypeError("The pairs must contain integers.")
             if i < 0 or j < 0:
                 raise TypeError("The pairs must contain positive integers.")
-            tmp.append(frozenset([i,j]))
+            tmp.append(frozenset([i, j]))
         pairs = tuple(tmp)
 
         if len(pairs) == 0:
             real_num_nodes = 0
         else:
-            real_num_nodes = max(max(a,b) for a,b in pairs)+1
+            real_num_nodes = max(max(a, b) for a, b in pairs)+1
         if num_nodes is not None:
             if not isinstance(num_nodes, int):
                 raise TypeError("The optional argument num_nodes must be an integer when given.")
@@ -237,13 +236,13 @@ class Graph(ReadOnly):
         new_pairs = []
         for i in xrange(repeat):
             for node1, node2 in self.pairs:
-                new_pairs.append(frozenset([node1+i*self.num_nodes,node2+i*self.num_nodes]))
+                new_pairs.append(frozenset([node1+i*self.num_nodes, node2+i*self.num_nodes]))
         return Graph(new_pairs, self.num_nodes*repeat)
 
     __rmul__ = __mul__
 
     def __str__(self):
-        return " ".join("%i-%i" % tuple(sorted([i,j])) for i,j in self.pairs)
+        return " ".join("%i-%i" % tuple(sorted([i, j])) for i, j in self.pairs)
 
     # functions that should be implemented by derived classes
 
@@ -266,7 +265,7 @@ class Graph(ReadOnly):
     @cached
     def pair_index(self):
         """construct a map to look up the index of a pair"""
-        return dict((pair,index) for index,pair in enumerate(self.pairs))
+        return dict((pair, index) for index, pair in enumerate(self.pairs))
 
     @cached
     def neighbors(self):
@@ -292,8 +291,8 @@ class Graph(ReadOnly):
         #distances[:] = -1 # set all -1, which is just a very big integer
         #distances.ravel()[::len(distances)+1] = 0 # set diagonal to zero
         for i,j in self.pairs: # set pairs to one
-            distances[i,j] = 1
-            distances[j,i] = 1
+            distances[i, j] = 1
+            distances[j, i] = 1
         graphs_floyd_warshall(distances)
         return distances
 
@@ -309,8 +308,8 @@ class Graph(ReadOnly):
     def central_nodes(self):
         """Define the nodes that have the lowest maximum distance to any other node."""
         max_distances = self.distances.max(0)
-        max_distances_min = max_distances[max_distances>0].min()
-        return (max_distances==max_distances_min).nonzero()[0]
+        max_distances_min = max_distances[max_distances > 0].min()
+        return (max_distances == max_distances_min).nonzero()[0]
 
     @cached
     def central_node(self):
@@ -578,14 +577,14 @@ class Graph(ReadOnly):
             distance = work[parent]
             for current in self.neighbors[parent]:
                 if work[current] == -1:
-                    yield (parent,current), distance, False
+                    yield (parent, current), distance, False
                     work[current] = distance+1
                     todo.append(current)
-                elif work[current] == distance and current>parent:
+                elif work[current] == distance and current > parent:
                     # second equation in elif avoids duplicates
-                    yield (parent,current), distance, True
+                    yield (parent, current), distance, True
                 elif work[current] == distance+1:
-                    yield (parent,current), distance, False
+                    yield (parent, current), distance, False
 
     def get_subgraph(self, subnodes, normalize=False):
         """Constructs a subgraph of the current graph
@@ -613,10 +612,10 @@ class Graph(ReadOnly):
         The attribute old_node_indexes is only constructed when normalize==True.
         """
         if normalize:
-            revorder = dict((j,i) for i,j in enumerate(subnodes))
+            revorder = dict((j, i) for i, j in enumerate(subnodes))
             new_pairs = []
             old_pair_indexes = []
-            for counter, (i,j) in enumerate(self.pairs):
+            for counter, (i, j) in enumerate(self.pairs):
                 new_i = revorder.get(i)
                 if new_i is None:
                     continue
@@ -657,7 +656,7 @@ class Graph(ReadOnly):
         for i in xrange(self.num_nodes):
             result[i] = hashrow(str2array(node_strings[i]))
         for i in xrange(self.num_pairs):
-            a,b = self.pairs[i]
+            a, b = self.pairs[i]
             tmp = hashrow(str2array(pair_strings[i]))
             result[a] += tmp
             result[b] += tmp
@@ -666,7 +665,7 @@ class Graph(ReadOnly):
         if num_iter is None:
             num_iter = self.max_distance
         for i in xrange(num_iter):
-            for a,b in self.pairs:
+            for a, b in self.pairs:
                 work[a] += result[b]
                 work[b] += result[a]
             #for a in xrange(self.num_nodes):
@@ -747,7 +746,8 @@ class Graph(ReadOnly):
             # below will fail otherwise in this 'exotic' case.
             node_a2, node_b2 = node_b2, node_a2
             #node_a_new.discard(node_a2) # in case there is overlap
-        if node_a1 == node_a2: node_a_new.discard(node_b2) # in case there is overlap
+        if node_a1 == node_a2:
+            node_a_new.discard(node_b2) # in case there is overlap
         node_a_part = set([node_a1])
 
         touched = False # True if (the switched) node_a2 has been reached.
@@ -813,7 +813,7 @@ class Graph(ReadOnly):
         aware of the different nature of certain nodes. In case molecules,
         this would make the algorithm sensitive to atom numbers etc.
         """
-        graphs0 = [self.get_subgraph(group,normalize=True) for group in self.independent_nodes]
+        graphs0 = [self.get_subgraph(group, normalize=True) for group in self.independent_nodes]
         # we need normalize subgraphs because these graphs are used as patterns.
         graphs1 = [other.get_subgraph(group) for group in other.independent_nodes]
 
@@ -826,12 +826,12 @@ class Graph(ReadOnly):
             pattern = EqualPattern(graph0)
             found_match = False
             for i, graph1 in enumerate(graphs1):
-                local_matches = list(GraphSearch(pattern)(graph1,one_match=True))
+                local_matches = list(GraphSearch(pattern)(graph1, one_match=True))
                 if len(local_matches) == 1:
                     match = local_matches[0]
                     # we need to restore the relation between the normalize graph0
                     # and its original indexes
-                    old_to_new = OneToOne(((j,i) for i,j in enumerate(graph0._old_node_indexes)))
+                    old_to_new = OneToOne(((j, i) for i, j in enumerate(graph0._old_node_indexes)))
                     matches.append(match * old_to_new)
                     del graphs1[i]
                     found_match = True
@@ -850,7 +850,7 @@ class Graph(ReadOnly):
 
 class Match(OneToOne):
     def __init__(self, node0, node1):
-        OneToOne.__init__(self, [(node0,node1)])
+        OneToOne.__init__(self, [(node0, node1)])
         self.previous_ends1 = set([node1])
 
     def get_new_pairs(self, graph):
@@ -874,8 +874,6 @@ class PatternError(Exception):
 
 
 class Pattern(object):
-    sub = True # This means that matching nodes must not have equal number of neighbors
-
     """Base class for a pattern in a graph.
 
     Note the following conventions:
@@ -887,6 +885,8 @@ class Pattern(object):
       * The graph in which we search for the pattern, is called the 'SUBJECT
         GRAPH'. Variables related to this graph often get suffix '1'.
     """
+
+    sub = True # This means that matching nodes must not have equal number of neighbors
     MatchClass = Match
 
     def init_graph(self, graph, one_match):
@@ -955,16 +955,19 @@ class CriteriaSet(object):
     def test_match(self, match, subgraph, graph):
         for node0, c in self.thing_criteria.iteritems():
             node1 = match.forward[node0]
-            if not c(node1, graph): return False
+            if not c(node1, graph):
+                return False
         for pair0_index, c in self.relation_criteria.iteritems():
             node0a, node0b = subgraph.pairs[pair0_index]
             pair1_index = graph.pair_index[frozenset([
                 match.forward[node0a],
                 match.forward[node0b],
             ])]
-            if not c(pair1_index, graph): return False
+            if not c(pair1_index, graph):
+                return False
         for c in self.global_criteria:
-            if not c(match, graph): return False
+            if not c(match, graph):
+                return False
         return True
 
 # few basic example criteria
@@ -1023,7 +1026,7 @@ class CritNodeString(object):
     def __call__(self, index, graph):
         s0 = self.reference.get_node_string(index)
         s1 = graph.get_node_string(index)
-        return s1=="" or s2=="" or s1==s2 # an aspecific node acts as a wildcard
+        return s0 == "" or s1 == "" or s0 == s1 # an aspecific node acts as a wildcard
 
 
 class CritPairString(object):
@@ -1033,7 +1036,7 @@ class CritPairString(object):
     def __call__(self, index, graph):
         s0 = self.reference.get_pair_string(index)
         s1 = graph.get_pair_string(index)
-        return s1=="" or s2=="" or s1==s2 # an aspecific node acts as a wildcard
+        return s0 == "" or s1 == "" or s0 == s1 # an aspecific node acts as a wildcard
 
 
 # pattern and match stuff
@@ -1043,7 +1046,7 @@ class SubgraphPatternError(PatternError):
 
 
 class SubgraphPattern(Pattern):
-    def __init__(self, subgraph, criteria_sets=None, node_tags={}):
+    def __init__(self, subgraph, criteria_sets=None, node_tags=None):
         """Initialise a subgraph pattern.
 
         Arguments:
@@ -1064,6 +1067,8 @@ class SubgraphPattern(Pattern):
               node_tags at all.
         """
         self.criteria_sets = criteria_sets
+        if node_tags is None:
+            node_tags = {}
         self.node_tags = node_tags
         # get the essential information from the subgraph:
         self.set_subgraph(subgraph)
@@ -1279,12 +1284,12 @@ class RingPattern(Pattern):
 
     def get_new_pairs(self, level):
         if level == 0:
-            pairs0 = [(0,1),(0,2)]
+            pairs0 = [(0, 1), (0, 2)]
         elif level >= (self.max_size-1)/2:
             pairs0 = []
         else:
             l2 = level*2
-            pairs0 = [(l2-1,l2+1),(l2,l2+2)]
+            pairs0 = [(l2-1, l2+1), (l2, l2+2)]
         return pairs0, []
 
     def check_next_match(self, match, new_relations):
@@ -1315,7 +1320,7 @@ class RingPattern(Pattern):
         # check whether we have an odd strong ring
         if match.forward[size-1] in self.graph.neighbors[match.forward[size-2]]:
             # we have an odd closed cycle. check if this is a strong ring
-            order = range(0,size,2) + range(1, size-1, 2)[::-1]
+            order = range(0, size, 2) + range(1, size-1, 2)[::-1]
             ok = True
             for i in xrange(len(order)/2):
                 if len(list(self.graph.iter_shortest_paths(match.forward[order[i]], match.forward[order[(i+size/2)%size]]))) > 1:
@@ -1340,7 +1345,7 @@ class RingPattern(Pattern):
             # we have an even closed cycle. check if this is a strong ring
             match.add_relation(size, path[1])
             size += 1
-            order = range(0,size,2) + range(size-1, 0, -2)
+            order = range(0, size, 2) + range(size-1, 0, -2)
             ok = True
             for i in xrange(len(order)/2):
                 if len(list(self.graph.iter_shortest_paths(match.forward[order[i]], match.forward[order[(i+size/2)%size]]))) != 2:
@@ -1417,7 +1422,7 @@ class GraphSearch(object):
     def _iter_new_relations(self, init_match, graph, pairs0, constraints0, pairs1):
         # Count the number of unique pairs0[i][1] values. This is also be
         # the number of new relations.
-        num_new_relations = len(set(j for i,j in pairs0))
+        num_new_relations = len(set(j for i, j in pairs0))
 
         def combine_small(relations, num):
             if len(relations) == 0:
@@ -1443,8 +1448,8 @@ class GraphSearch(object):
             l = []
             for end_node0 in end_nodes0:
                 for end_node1 in end_nodes1:
-                    if self.pattern.compare(end_node0,end_node1):
-                        l.append((end_node0,end_node1))
+                    if self.pattern.compare(end_node0, end_node1):
+                        l.append((end_node0, end_node1))
             # len(end_nodes0) = the total number of relations that must be made in this group
             if len(l) > 0:
                 # turn l into a list of sets of internally compatible candidate
@@ -1477,11 +1482,11 @@ class GraphSearch(object):
             forward = dict(new_relations)
             if len(forward) != num_new_relations:
                 continue
-            reverse = dict((j,i) for i,j in new_relations)
+            reverse = dict((j, i) for i, j in new_relations)
             if len(reverse) != num_new_relations:
                 continue
             # check the constraints
-            for a0,b0 in constraints0:
+            for a0, b0 in constraints0:
                 if forward[a0] not in graph.neighbors[forward[b0]]:
                     forward = None
                     break

@@ -39,12 +39,12 @@ eps = 1.0e-6
 
 def check_matrix(m):
     """Check the sanity of the given 4x4 transformation matrix"""
-    if m.shape != (4,4):
+    if m.shape != (4, 4):
         raise ValueError("The argument must be a 4x4 array.")
     z = m[3, 0:3]
     if max(abs(m[3, 0:3])) > eps:
         raise ValueError("The given matrix does not have correct translational part")
-    if abs(m[3,3] - 1.0) > eps:
+    if abs(m[3, 3] - 1.0) > eps:
         raise ValueError("The lower right element of the given matrix must be 1.0.")
 
 
@@ -56,7 +56,7 @@ def check_translation_vector(t):
 
 def check_rotation_matrix(r):
     """Check the sanity of a rotation matrix"""
-    if r.shape != (3,3):
+    if r.shape != (3, 3):
         raise ValueError("The rotation matrix must be a 3 by 3 array.")
     if abs(numpy.dot(r[:,0], r[:,0]) - 1) > eps or \
         abs(numpy.dot(r[:,0], r[:,0]) - 1) > eps or \
@@ -173,7 +173,7 @@ class Rotation(ReadOnly):
 
     @classmethod
     def identity(cls):
-        return cls(numpy.identity(3,float))
+        return cls(numpy.identity(3, float))
 
     @classmethod
     def from_properties(cls, angle, axis, invert):
@@ -196,6 +196,7 @@ class Rotation(ReadOnly):
 
     @classmethod
     def cast(cls, c):
+        """Convert the first argument into a Complete object"""
         if isinstance(c, Complete):
             return c
         elif isinstance(c, Translation):
