@@ -17,131 +17,121 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Tool for comparing molecules and molecular geometries
+
+In order to measure the similarity between two molecules or graphs, one must
+first create a similarity descriptor of both molecules:
+
+a = SimilarityDescriptor.from_molecule(mol_a)
+b = SimilarityDescriptor.from_molecule(mol_b)
+print compute_similarity(a,b)
+
+There are several ways to construct a similarity_descriptor:
+
+a1 = SimilarityDescriptor.from_molecule(molecule)
+a1 = SimilarityDescriptor.from_molecular_graph(molecular_graph)
+a1 = SimilarityDescriptor.from_coordinates(coordinates, labels)
+a1 = SimilarityDescriptor(distance_matrix, labels)
+"""
 
 
-from molmod.ext import similarity_table_labels, similarity_table_distances, similarity_measure
-from molmod.molecular_graphs import MolecularGraph
-from molmod.molecules import Molecule
+from molmod.ext import similarity_table_labels, similarity_table_distances, \
+    similarity_measure
 
 import numpy
 
-__all__ = ["DistanceDescriptor", "distances_cor", "distances_dm", "compute_similarity"]
+
+__all__ = ["SimilarityDescriptor", "compute_similarity"]
 
 
-class DistanceDescriptor(object):
-    def __init__(self, mol_or_graph, labels=None):
-        if labels is None:
-            self.labels = mol_or_graph.numbers.astype(numpy.int32)
-        else:
-            self.labels = labels.astype(numpy.int32)
-        self.table_labels = similarity_table_labels(self.labels)
-        if isinstance(mol_or_graph, Molecule):
-            self.table_distances = similarity_table_distances(mol_or_graph.distance_matrix)
-        elif isinstance(mol_or_graph, MolecularGraph):
-            self.table_distances = similarity_table_distances(mol_or_graph.distances)
-        #order = self.table_labels.argsort(axis=0,kind='heapsort')
+class SimilarityDescriptor(object):
+    """A descriptor used to compute the similarity between two molecules"""
+    def __init__(self, distance_matrix, labels):
+        """Initialize a similarity descriptor
+
+           Arguments:
+             distance_matrix  --  a matrix with interatomic distances, this can
+                                  also be distances in a graph
+             labels  --  a list with integer labels used to identify atoms of
+                         the same type
+        """
+        self.table_distances = similarity_table_distances(distance_matrix)
+        self.table_labels = similarity_table_labels(labels.astype(numpy.int32))
         order = numpy.lexsort([self.table_labels[:,1], self.table_labels[:,0]])
         self.table_labels = self.table_labels[order]
         self.table_distances = self.table_distances[order]
 
-    def similarity(self, other, margin=1.0, cutoff=10.0):
-        return similarity_measure(
-            self.table_labels, self.table_distances,
-            other.table_labels, other.table_distances,
-            margin, cutoff
-        )
+    @classmethod
+    def from_molecule(cls, molecule, labels=None):
+        """Initialize a similarity descriptor
 
-    def norm(self, margin=1.0, cutoff=10.0):
-        return numpy.sqrt(self.similarity(self, margin, cutoff))
+           Arguments:
+             molecule  --  a Molecules object
+             labels  --  a list with integer labels used to identify atoms of
+                         the same type. When not given, the atom numbers from
+                         the molecule are used.
+        """
+        if labels is None:
+            labels = molecule.numbers
+        return cls(molecule.distance_matrix, labels)
 
+    @classmethod
+    def from_molecular_graph(cls, molecular_graph, labels=None):
+        """Initialize a similarity descriptor
 
-def distances_cor(coordinates, labels):
-    """Computes all interatomic distances, puts them into a table and sorts the table."""
-    N = len(coordinates)
-    if len(labels) != N:
-        raise SimilarityError("The number of labels must match the size of the molecule.")
-    all_distances = numpy.zeros((N*(N-1))/2, [("label1",int),("label2",int),("distance",float)])
-    counter = 0
-    for i1, l1 in enumerate(labels):
-        for i2, l2 in enumerate(labels[:i1]):
-            d = numpy.linalg.norm(coordinates[i1] - coordinates[i2])
-            if l1 < l2:
-                all_distances[counter] = (l1,l2,d)
-            else:
-                all_distances[counter] = (l2,l1,d)
-            counter += 1
-    all_distances.sort()
-    return all_distances
+           Arguments:
+             molecular_graphs  --  A MolecularGraphs object
+             labels  --  a list with integer labels used to identify atoms of
+                         the same type. When not given, the atom numbers from
+                         the molecular graph are used.
+        """
+        if labels is None:
+            labels = molecular_graph.numbers.astype(numpy.int32)
+        return cls(molecular_graph.distances, labels)
 
+    @classmethod
+    def from_coordinates(cls, coordinates, labels):
+        """Initialize a similarity descriptor
 
-def distances_dm(distance_matrix, labels):
-    """Loads all interatomic distances, puts them into a table and sorts the table."""
-    N = len(distance_matrix)
-    if len(labels) != N:
-        raise SimilarityError("The number of labels must match the size of the molecule.")
-    all_distances = numpy.zeros((N*(N-1))/2, [("label1",int),("label2",int),("distance",float)])
-    counter = 0
-    for i1, l1 in enumerate(labels):
-        for i2, l2 in enumerate(labels[:i1]):
-            d = distance_matrix[i1,i2]
-            if l1 < l2:
-                all_distances[counter] = (l1,l2,d)
-            else:
-                all_distances[counter] = (l2,l1,d)
-            counter += 1
-    all_distances.sort()
-    return all_distances
+           Arguments:
+             coordinates  --  a Nx3 numpy array
+             labels  --  a list with integer labels used to identify atoms of
+                         the same type
+        """
+        from molmod.ext import molecules_distance_matrix
+        distance_matrix = molecules_distance_matrix(coordinates)
+        return cls(distance_matrix, labels)
 
 
-def compute_similarity(table_dist1, table_dist2, margin=1.0, cutoff=10.0):
-    similarity = 0.0
+def compute_similarity(a, b, margin=1.0, cutoff=10.0):
+    """Compute the similarity between two molecules based on their descriptors
 
-    #print "table1"
-    #print table_dist1
-    #print "table2"
-    #print table_dist2
+       Arguments:
+         a  --  the similarity measure of the first molecule
+         b  --  the similarity measure of the second molecule
+         margin  --  the sensitivity when comparing distances (default = 1.0)
+         cutoff  --  don't compare distances longer than the cutoff (default = 10.0 au)
 
-    #print "="*20
-    #print "="*20
-    start2 = 0
-    la2,lb2,d2 = table_dist2[start2]
-    for la1,lb1,d1 in table_dist1:
-        #print "TRY", la1,lb1, "  ", la2,lb2, "  ", cmp((la1,lb1),(la2,lb2))
-        if (la1,lb1) < (la2,lb2):
-            continue
-        while (la1,lb1) > (la2,lb2):
-            #print "HERE", start2
-            start2 += 1
-            if start2 == len(table_dist2):
-                start2 = None
-                break
-            la2,lb2,d2 = table_dist2[start2]
-        if (la1,lb1) < (la2,lb2):
-            continue
-        #print start2
-        if start2 is None:
-            break
-        #print la1,lb1, "  ", la2,lb2, "  ", cmp((la1,lb1),(la2,lb2))
-        current2 = start2
-        while (la1,lb1) == (la2,lb2):
-            dav = 0.5*(d1+d2)
-            if dav < cutoff:
-                delta = abs(d1-d2)
-                if abs(delta) < margin:
-                    scale = 1-dav/cutoff
-                    similarity += scale*(numpy.cos(delta/margin/numpy.pi)+1)/2
-            current2 += 1
-            if current2 == len(table_dist2):
-                break
-            la2,lb2,d2 = table_dist2[current2]
-        la2,lb2,d2 = table_dist2[start2]
-    #print "="*20
-    #print "="*20
-    return similarity
+       When comparing two distances (always between two atom pairs with
+       identical labels), the folowing formula is used:
 
+       dav = (distance1+distance2)/2
+       delta = abs(distance1-distance2)
 
+       When the delta is within the margin and dav is below the cutoff:
 
+         (1-dav/cutoff)*(cos(delta/margin/numpy.pi)+1)/2
 
+       and zero otherwise. The returned value is the sum of such terms over all
+       distance pairs with matching atom types. When comparing similarities it
+       might be useful to normalize them in some way, e.g.
 
+       similarity(a,b)/(similarity(a,a)*similarity(b,b))**0.5
+    """
+    return similarity_measure(
+        a.table_labels, a.table_distances,
+        b.table_labels, b.table_distances,
+        margin, cutoff
+    )
 
 

@@ -21,7 +21,7 @@
 
 from molmod.molecular_graphs import MolecularGraph
 from molmod.units import angstrom
-from molmod.similarity import DistanceDescriptor
+from molmod.similarity import *
 
 from molmod.io.xyz import XYZFile
 
@@ -44,21 +44,26 @@ class SimilarityTestCase(unittest.TestCase):
     def test_mol(self):
         molecules = self.get_molecules()
         for molecule in molecules:
-            molecule.descriptor = DistanceDescriptor(molecule)
+            molecule.descriptor = SimilarityDescriptor.from_molecule(molecule)
         self.do_test(molecules, margin=0.2*angstrom, cutoff=7.0*angstrom)
 
     def test_graph(self):
         molecules = self.get_molecules()
         for molecule in molecules:
             molecule.graph = MolecularGraph.from_geometry(molecule)
-            molecule.descriptor = DistanceDescriptor(molecule.graph)
+            molecule.descriptor = SimilarityDescriptor.from_molecular_graph(molecule.graph)
         self.do_test(molecules, margin=0.2, cutoff=10.0)
 
     def do_test(self, molecules, margin, cutoff, verbose=False):
         if verbose:
             print
         for molecule in molecules:
-            molecule.norm = molecule.descriptor.norm(margin, cutoff)
+            molecule.norm = compute_similarity(
+                molecule.descriptor,
+                molecule.descriptor,
+                margin,
+                cutoff
+             )**0.5
             if verbose:
                 print molecule.title, "norm:", molecule.norm
         if verbose:
@@ -70,10 +75,11 @@ class SimilarityTestCase(unittest.TestCase):
             row = []
             result.append(row)
             for index2, molecule2 in enumerate(molecules):
-                similarity = (
-                    molecule1.descriptor.similarity(molecule2.descriptor, margin, cutoff)/
-                    (molecule1.norm*molecule2.norm)
-                )
+                similarity = compute_similarity(
+                    molecule1.descriptor,
+                    molecule2.descriptor,
+                    margin, cutoff
+                )/(molecule1.norm*molecule2.norm)
                 row.append(similarity)
                 if verbose: print ("%14.5f" % similarity),
             if verbose: print
