@@ -322,17 +322,17 @@ def generate_manipulations(
 def check_nonbond(molecule, graph, thresholds):
     """Check whether all nonbonded atoms are well separated.
 
-    If a nonbond atom pair is found that has an interatomic distance below
-    the given thresholds. The thresholds dictionary has the following format:
-    {frozenset([atom_number1, atom_number2]): distance}
+       If a nonbond atom pair is found that has an interatomic distance below
+       the given thresholds. The thresholds dictionary has the following format:
+       {frozenset([atom_number1, atom_number2]): distance}
 
-    When random geometries are generated for sampling the conformational space
-    of a molecule without strong repulsive nonbonding interactions, try to
-    underestimate the thresholds at first instance and exclude bond stretches
-    and bending motions for the random manipuulations. Then compute the forces
-    projected on the nonbonding distance gradients. The distance for which the
-    absolute value of these gradients drops below 100 kJ/mol is a rough guess
-    of a proper threshold value.
+       When random geometries are generated for sampling the conformational
+       space of a molecule without strong repulsive nonbonding interactions, try
+       to underestimate the thresholds at first instance and exclude bond
+       stretches and bending motions for the random manipuulations. Then compute
+       the forces projected on the nonbonding distance gradients. The distance
+       for which the absolute value of these gradients drops below 100 kJ/mol is
+       a coarse guess of a proper threshold value.
     """
 
     # check that no atoms overlap
@@ -348,9 +348,10 @@ def check_nonbond(molecule, graph, thresholds):
 def randomize_molecule(molecule, graph, manipulations, nonbond_thresholds, max_tries=1000):
     """Return a randomized copy of the molecule.
 
-    If no randomized molecule can be generated that survives the nonbond check
-    after max_tries repetitions, None is returned. In case of success, the
-    randomized molecule is returned. The original molecule is not altered.
+       If no randomized molecule can be generated that survives the nonbond
+       check after max_tries repetitions, None is returned. In case of success,
+       the randomized molecule is returned. The original molecule is not
+       altered.
     """
     for m in xrange(max_tries):
         random_molecule = randomize_molecule_low(molecule, manipulations)
@@ -372,10 +373,10 @@ def randomize_molecule_low(molecule, manipulations):
 def single_random_manipulation(molecule, graph, manipulations, nonbond_thresholds, max_tries=1000):
     """Apply a single random manipulation.
 
-    If no randomized molecule can be generated that survives the nonbond check
-    after max_tries repetitions, None is returned. In case of success, the
-    randomized molecule and the corresponding transformation is returned.
-    The original molecule is not altered.
+       If no randomized molecule can be generated that survives the nonbond
+       check after max_tries repetitions, None is returned. In case of success,
+       the randomized molecule and the corresponding transformation is returned.
+       The original molecule is not altered.
     """
     for m in xrange(max_tries):
         random_molecule, transformation = single_random_manipulation_low(molecule, manipulations)
@@ -396,14 +397,14 @@ def single_random_manipulation_low(molecule, manipulations):
 def random_dimer(molecule0, molecule1, thresholds, shoot_max):
     """Create a random dimer.
 
-    molecule0 and molecule1 are placed in one reference frame at random relative
-    positions. Interatomic distances are above the thresholds. Initially a dimer
-    is created where one interatomic distance approximates the threshold value.
-    Then the molecules are given an additional separation in the range
-    [0,shoot_max].
+       molecule0 and molecule1 are placed in one reference frame at random
+       relative positions. Interatomic distances are above the thresholds.
+       Initially a dimer is created where one interatomic distance approximates
+       the threshold value. Then the molecules are given an additional
+       separation in the range [0,shoot_max].
 
-    thresholds has the following format:
-    {frozenset([atom_number1, atom_number2]): distance}
+       thresholds has the following format:
+       {frozenset([atom_number1, atom_number2]): distance}
     """
 
     # apply a random rotation to molecule1
