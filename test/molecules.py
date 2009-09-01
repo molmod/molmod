@@ -38,4 +38,21 @@ class MoleculesTestCase(unittest.TestCase):
         dm = numpy.sqrt(dm)
         self.assert_((abs(molecule.distance_matrix - dm) < 1e-5).all(), "Wrong distance matrix")
 
+    def test_read_only(self):
+        numbers = [8, 1]
+        coordinates = [
+            [0, 1, 2],
+            [-2, 3, 1],
+        ]
+        mol = Molecule(numbers, coordinates)
+        try:
+            mol.coordinates[0,1] = 5.0
+            self.fail("Should have raise an error")
+        except RuntimeError:
+            pass
+        self.assert_(isinstance(mol.coordinates[0,0], float))
 
+        coordinates = numpy.array(coordinates)
+        mol = Molecule(numbers, coordinates)
+        coordinates[0,1] = 5.0
+        self.assertAlmostEqual(mol.coordinates[0,1], 1.0)

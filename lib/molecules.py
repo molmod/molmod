@@ -53,9 +53,15 @@ class Molecule(ReadOnly):
              graph  --  a MolecularGraph instance
         """
         ReadOnly.__init__(self)
-        mandatory = {"numbers": numbers}
+        mandatory = {"numbers": numpy.array(numbers)}
+        if coordinates is not None:
+            coordinates = numpy.array(coordinates, float)
+        if masses is not None:
+            masses = numpy.array(masses, float)
         optional = {
-            "coordinates": coordinates, "title": title, "masses": masses,
+            "coordinates": coordinates,
+            "title": title,
+            "masses": masses,
             "graph": graph,
         }
         self._init_attributes(mandatory, optional)
