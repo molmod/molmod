@@ -1265,6 +1265,7 @@ class RingPattern(Pattern):
         if max_size < 3:
             raise ValueError("Ring sizes must be at least 3.")
         self.max_size = max_size
+        Pattern.__init__(self)
 
     def init_graph(self, graph, one_match):
         Pattern.init_graph(self, graph, one_match)

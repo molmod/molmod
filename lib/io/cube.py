@@ -19,8 +19,6 @@
 # --
 
 
-from molmod.units import angstrom
-
 import numpy
 
 

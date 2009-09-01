@@ -46,6 +46,7 @@ class CMLMoleculeLoader(ContentHandler):
     def __init__(self):
         self.molecules = []
         self.current_title = None # current molecule
+        ContentHandler.__init__(self)
 
     atom_exclude = frozenset(['id', 'elementType', 'x3', 'y3', 'z3', 'x2', 'y2'])
     bond_exclude = frozenset(['id', 'atomRefs2', 'order'])

@@ -71,8 +71,8 @@ def random_orthonormal(normal):
     u /= numpy.linalg.norm(u)
     v = numpy.cross(normal, u)
     v /= numpy.linalg.norm(v)
-    angle = numpy.random.uniform(0.0, numpy.pi*2)
-    return numpy.cos(angle)*u + numpy.sin(angle)*v
+    alpha = numpy.random.uniform(0.0, numpy.pi*2)
+    return numpy.cos(alpha)*u + numpy.sin(alpha)*v
 
 def triangle_normal(a, b, c):
     """Return a vector orthogonal to the given triangle

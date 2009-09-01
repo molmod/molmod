@@ -90,7 +90,7 @@ def estimate_radius(mol, max_error=0.02):
     radius = 1.0*angstrom
     while True:
         max_vol_error = min(4*numpy.pi*radius*radius*max_error, 2.65)
-        vdw_volume, sas_volume, ses_volume, vol_error = estimate_volumes(mol, radius, max_vol_error, False)
+        ses_volume, vol_error = estimate_volumes(mol, radius, max_vol_error, False)[2:]
         new_radius = (3*ses_volume/4/numpy.pi)**(1.0/3)
         error = max(vol_error/(4*numpy.pi*new_radius*new_radius), abs(new_radius-radius))
         radius = new_radius

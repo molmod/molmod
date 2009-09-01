@@ -22,7 +22,7 @@
 from molmod.molecules import Molecule
 from molmod.io.common import FileFormatError
 
-import numpy, copy
+import numpy
 
 
 __all__ = ["FCHKFile"]

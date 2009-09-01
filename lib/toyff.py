@@ -143,10 +143,9 @@ class ToyFF(object):
         self.vdw_radii = numpy.array([periodic[number].vdw_radius for number in graph.numbers], dtype=float)
         self.covalent_radii = numpy.array([periodic[number].covalent_radius for number in graph.numbers], dtype=float)
 
-        num_bonds = len(graph.pairs)
         bond_pairs = []
         bond_lengths = []
-        for counter, (i,j) in enumerate(graph.pairs):
+        for i, j in graph.pairs:
             bond_pairs.append((i,j))
             bond_lengths.append(bonds.get_length(graph.numbers[i],graph.numbers[j]))
         self.bond_pairs = numpy.array(bond_pairs, numpy.int32)

@@ -50,7 +50,7 @@ class GroReader(object):
         self._f = file(filename)
         self._sub = sub
         self.num_atoms = None
-        (time, pos, vel, cell) = self._read_frame()
+        pos = self._read_frame()[1]
         self.num_atoms = len(pos)
         self._counter = 0
         self._f.seek(0)
@@ -109,7 +109,7 @@ class GroReader(object):
 
     def _skip_frame(self):
         """Skip one frame"""
-        line = self._get_line()
+        self._get_line()
         num_atoms = int(self._get_line())
         if self.num_atoms is not None and self.num_atoms != num_atoms:
             raise ValueError("The number of atoms must be the same over the entire file.")

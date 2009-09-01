@@ -24,7 +24,7 @@ functions are provided: rotation_around_center and superpose. The latter is an
 implementation of the Kabsch algorithm.
 """
 
-from utils import cached, ReadOnly, rmsd
+from molmod.utils import cached, ReadOnly, rmsd
 from molmod.unit_cells import UnitCell
 
 import numpy
@@ -41,7 +41,6 @@ def check_matrix(m):
     """Check the sanity of the given 4x4 transformation matrix"""
     if m.shape != (4, 4):
         raise ValueError("The argument must be a 4x4 array.")
-    z = m[3, 0:3]
     if max(abs(m[3, 0:3])) > eps:
         raise ValueError("The given matrix does not have correct translational part")
     if abs(m[3, 3] - 1.0) > eps:

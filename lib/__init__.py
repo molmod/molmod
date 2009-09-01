@@ -25,12 +25,14 @@ import sys, os
 __all__ = ["context"]
 
 
-class Error(Exception):
-    pass
-
-
 class Context(object):
+    """Global variable to find and use share directory"""
     def __init__(self):
+        """Initialize the Context object
+
+           This is done once when importing a molmod module. There is no need
+           to do this externally a second time.
+        """
         # find the data files
         fn_datadir = os.path.join(os.path.dirname(__file__), "datadir.txt")
         if os.path.isfile(fn_datadir):
@@ -39,11 +41,13 @@ class Context(object):
             f.close()
             self.share_dir = os.path.join(datadir, "share", "molmod")
         else:
-            self.share_dir = "../share" # When running from the build directory for the tests.
+            # When running from the build directory for the tests.
+            self.share_dir = "../share"
         if not os.path.isdir(self.share_dir):
             raise RuntimeError("Share dir '%s' does not exist." % self.share_dir)
 
     def get_share_filename(self, filename):
+        """Retrieve the full path for a given filename in the share folder"""
         result = os.path.join(self.share_dir, filename)
         if not os.path.isfile(result):
             raise ValueError("Data file '%s' not found." % result)
@@ -53,22 +57,21 @@ class Context(object):
 context = Context()
 
 
-from clusters import *
-from graphs import *
-from ic import *
-from io import *
-from minimizer import *
-from molecules import *
-from molecular_graphs import *
-from quaternions import *
-from randomize import *
-from similarity import *
-from toyff import *
-from transformations import *
-from unit_cells import *
-from units import *
-from vectors import *
-from volume import *
-from zmatrix import *
+from molmod.clusters import *
+from molmod.graphs import *
+from molmod.ic import *
+from molmod.minimizer import *
+from molmod.molecules import *
+from molmod.molecular_graphs import *
+from molmod.quaternions import *
+from molmod.randomize import *
+from molmod.similarity import *
+from molmod.toyff import *
+from molmod.transformations import *
+from molmod.unit_cells import *
+from molmod.units import *
+from molmod.vectors import *
+from molmod.volume import *
+from molmod.zmatrix import *
 
 

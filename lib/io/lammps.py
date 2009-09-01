@@ -62,8 +62,8 @@ class LAMMPSDumpReader(object):
         self._f.seek(0) # go back to the beginning of the file
         self._f = file(filename)
         self.units = units
-        self.sub = sub
-        self.counter = 0
+        self._sub = sub
+        self._counter = 0
 
     def __del__(self):
         self._f.close()
@@ -71,7 +71,7 @@ class LAMMPSDumpReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def _read_frame(self):
         """Read and return the next time frame
 
            This method is part of the iterator protocol.
@@ -118,4 +118,24 @@ class LAMMPSDumpReader(object):
         fields = [step] + [numpy.array(field)*unit for field, unit in zip(fields, self.units)]
 
         return fields
+
+    def _skip_frame(self):
+        for line in self._f:
+            if line == 'ITEM: ATOMS\n':
+                break
+        for i in xrange(self.num_atoms):
+            self._f.next()
+
+    def next(self):
+        """Get the next frame from the file, taking into account the slice
+
+           This method is part of the iterator protocol.
+        """
+        # skip frames as requested
+        while not slice_match(self._sub, self._counter):
+            self._counter += 1
+            self._skip_frame()
+
+        self._counter += 1
+        return self._read_frame()
 

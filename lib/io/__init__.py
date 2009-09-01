@@ -18,18 +18,18 @@
 #
 # --
 
-from atrj import *
-from cml import *
-from common import *
-from cp2k import *
-from cube import *
-from dlpoly import *
-from fchk import *
-from gromacs import *
-from lammps import *
-from number_state import *
-from pdb import *
-from psf import *
-from sdf import *
-from xyz import *
+from molmod.io.atrj import *
+from molmod.io.cml import *
+from molmod.io.common import *
+from molmod.io.cp2k import *
+from molmod.io.cube import *
+from molmod.io.dlpoly import *
+from molmod.io.fchk import *
+from molmod.io.gromacs import *
+from molmod.io.lammps import *
+from molmod.io.number_state import *
+from molmod.io.pdb import *
+from molmod.io.psf import *
+from molmod.io.sdf import *
+from molmod.io.xyz import *
 

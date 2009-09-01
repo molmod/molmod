@@ -23,8 +23,6 @@ from molmod.data.periodic import periodic
 import molmod.units as units
 from molmod import context
 
-import numpy, os
-
 
 __all__ = [
     "BOND_SINGLE", "BOND_DOUBLE", "BOND_TRIPLE", "BOND_HYBRID",

@@ -19,13 +19,11 @@
 # --
 
 
-from molmod.graphs import cached, Graph, SubgraphPattern, EqualPattern, Match, \
-    OneToOne, GraphSearch, CriteriaSet
+from molmod.graphs import cached, Graph, SubgraphPattern
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, \
     SparseBinnedObjects
-from molmod.units import angstrom
 
-import numpy, copy
+import numpy
 
 
 __all__ = [
@@ -317,37 +315,49 @@ def atom_criteria(*params):
 
 
 class BondPattern(SubgraphPattern):
-    def __init__(self, criteria_sets=None, node_tags={}):
+    def __init__(self, criteria_sets=None, node_tags=None):
+        if node_tags is None:
+            node_tags = {}
         subgraph = Graph([(0, 1)])
         SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
 
 
 class BendingAnglePattern(SubgraphPattern):
-    def __init__(self, criteria_sets=None, node_tags={}):
+    def __init__(self, criteria_sets=None, node_tags=None):
+        if node_tags is None:
+            node_tags = {}
         subgraph = Graph([(0, 1), (1, 2)])
         SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
 
 
 class DihedralAnglePattern(SubgraphPattern):
-    def __init__(self, criteria_sets=None, node_tags={}):
+    def __init__(self, criteria_sets=None, node_tags=None):
+        if node_tags is None:
+            node_tags = {}
         subgraph = Graph([(0, 1), (1, 2), (2, 3)])
         SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
 
 
 class OutOfPlanePattern(SubgraphPattern):
-    def __init__(self, criteria_sets=None, node_tags={}):
+    def __init__(self, criteria_sets=None, node_tags=None):
+        if node_tags is None:
+            node_tags = {}
         subgraph = Graph([(0, 1), (0, 2), (0, 3)])
         SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
 
 
 class TetraPattern(SubgraphPattern):
-    def __init__(self, criteria_sets=None, node_tags={}):
+    def __init__(self, criteria_sets=None, node_tags=None):
+        if node_tags is None:
+            node_tags = {}
         subgraph = Graph([(0, 1), (0, 2), (0, 3), (0, 4)])
         SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
 
 
 class NRingPattern(SubgraphPattern):
-    def __init__(self, size, criteria_sets=None, node_tags={}, strong=False):
+    def __init__(self, size, criteria_sets=None, node_tags=None, strong=False):
+        if node_tags is None:
+            node_tags = {}
         self.size = size
         self.strong = strong
         subgraph = Graph([(i,(i+1)%size) for i in xrange(size)])
@@ -414,3 +424,4 @@ class NRingPattern(SubgraphPattern):
                     if len(paths[0]) != self.size/2+1:
                         return False
         return True
+

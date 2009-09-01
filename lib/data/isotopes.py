@@ -22,8 +22,6 @@
 from molmod import context
 from molmod.units import amu
 
-import os
-
 
 __all__ = ["ame2003", "nubtab03"]
 

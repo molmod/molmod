@@ -306,8 +306,8 @@ class NewtonGLineSearch(LineSearch):
              epsilon  --  a value that is small compared to last_step_size
         """
         # determine the curvature:
-        fl, dl = fun(-epsilon, do_gradient=True)
-        fh, dh = fun(+epsilon, do_gradient=True)
+        dl = fun(-epsilon, do_gradient=True)[1]
+        dh = fun(+epsilon, do_gradient=True)[1]
 
         f_d1 = 0.5*(dl+dh)
         f_d2 = (dh-dl)/(2*epsilon)

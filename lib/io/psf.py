@@ -24,7 +24,7 @@ from molmod.data.periodic import periodic
 from molmod.units import unified
 from molmod.graphs import CriteriaSet, GraphSearch
 from molmod.molecular_graphs import MolecularGraph, BondPattern, \
-    BendingAnglePattern, DihedralAnglePattern, HasAtomNumber
+    BendingAnglePattern, DihedralAnglePattern
 from molmod.graphs import Graph
 from molmod.io.common import FileFormatError
 
@@ -326,7 +326,7 @@ class PSFFile(object):
         """Return the bond graph represented by the data structure"""
         return Graph(self.bonds)
 
-    def get_molecular_graph(self, labels=None):
+    def get_molecular_graph(self):
         """Return the molecular graph represented by the data structure"""
         return MolecularGraph(self.bonds, self.numbers)
 

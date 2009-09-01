@@ -34,7 +34,7 @@
 # written to the output.
 
 
-from constants import avogadro, lightspeed
+from molmod.constants import avogadro
 
 
 def parse_unit(expression):

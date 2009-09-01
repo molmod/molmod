@@ -22,8 +22,6 @@
 import molmod.units as units
 from molmod import context
 
-import numpy, copy
-
 
 __all__ = ["AtomInfo", "PeriodicData", "periodic"]
 

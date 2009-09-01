@@ -24,9 +24,7 @@ from random import shuffle, sample
 
 from molmod.molecules import Molecule
 from molmod.graphs import GraphError
-from molmod.data.bonds import bonds
-from molmod.data.periodic import periodic
-from molmod.transformations import rotation_about_axis, Translation, Rotation, Complete
+from molmod.transformations import rotation_about_axis, Translation, Complete
 from molmod.vectors import random_orthonormal, random_unit
 
 import numpy, copy
@@ -206,7 +204,8 @@ def iter_halfs_bond(graph):
             affected_atoms1, affected_atoms2 = graph.get_halfs(atom1, atom2)
             yield affected_atoms1, affected_atoms2, (atom1, atom2)
         except GraphError:
-            pass
+            # just try again
+            continue
 
 
 def iter_halfs_bend(graph):
@@ -216,14 +215,14 @@ def iter_halfs_bend(graph):
         for index1, atom1 in enumerate(neighbors):
             for atom3 in neighbors[index1+1:]:
                 try:
-                    affected_atoms, foo = graph.get_halfs(atom2, atom1)
+                    affected_atoms = graph.get_halfs(atom2, atom1)[0]
                     # the affected atoms never contain atom1!
                     yield affected_atoms, (atom1, atom2, atom3)
                     continue
                 except GraphError:
                     pass
                 try:
-                    affected_atoms, foo = graph.get_halfs(atom2, atom3)
+                    affected_atoms = graph.get_halfs(atom2, atom3)[0]
                     # the affected atoms never contain atom3!
                     yield affected_atoms, (atom3, atom2, atom1)
                 except GraphError:
@@ -238,7 +237,7 @@ def iter_halfs_double(graph):
             try:
                 affected_atoms1, affected_atoms2, hinge_atoms = graph.get_halfs_double(atom_a1, atom_b1, atom_a2, atom_b2)
                 yield affected_atoms1, affected_atoms2, hinge_atoms
-            except GraphError, e:
+            except GraphError:
                 pass
 
 
@@ -357,7 +356,6 @@ def randomize_molecule(molecule, graph, manipulations, nonbond_thresholds, max_t
         random_molecule = randomize_molecule_low(molecule, manipulations)
         if check_nonbond(random_molecule, graph, nonbond_thresholds):
             return random_molecule
-    return None
 
 
 def randomize_molecule_low(molecule, manipulations):
@@ -395,7 +393,7 @@ def single_random_manipulation_low(molecule, manipulations):
     return Molecule(molecule.numbers, coordinates), transformation
 
 
-def random_dimer(molecule0, molecule1, thresholds, shoot_max, max_tries=1000):
+def random_dimer(molecule0, molecule1, thresholds, shoot_max):
     """Create a random dimer.
 
     molecule0 and molecule1 are placed in one reference frame at random relative
