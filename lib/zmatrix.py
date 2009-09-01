@@ -17,6 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Conversion between Cartesian coordinates and ZMatrices"""
 
 
 import molmod.ic as ic
@@ -25,11 +26,7 @@ from molmod.vectors import random_orthonormal
 import numpy
 
 
-__all__ = ["ZMatrixError", "ZMatrixGenerator", "zmat_to_cart"]
-
-
-class ZMatrixError(Exception):
-    pass
+__all__ = ["ZMatrixGenerator", "zmat_to_cart"]
 
 
 class ZMatrixGenerator(object):
@@ -48,9 +45,14 @@ class ZMatrixGenerator(object):
         # located 'ref' rows earlier in the zmatrix
     ]
     def __init__(self, graph):
+        """Initialize a ZMatrix generator
+
+           Argument:
+             graph  --  an inseparable molecular graph
+        """
         # Check that the graph is inseparable.
         if len(graph.independent_nodes) > 1:
-            raise ZMatrixError("The graph must be inseparable.")
+            raise ValueError("The graph must be inseparable.")
         self.graph = graph
         # First step is to reorder the atoms so that the zmatrix is somewhat
         # workable. The constraint is that each subsequent atom must be bonded
@@ -80,7 +82,7 @@ class ZMatrixGenerator(object):
         for i,j in enumerate(self.old_index):
             self.new_index[j] = i
 
-    def get_new_ref(self, existing_refs):
+    def _get_new_ref(self, existing_refs):
         ref0 = existing_refs[0]
         for ref in existing_refs:
             result = None
@@ -94,7 +96,17 @@ class ZMatrixGenerator(object):
         raise ZMatrixException("Could not find new reference.")
 
     def cart_to_zmat(self, coordinates):
+        """Convert cartesian coordinates to ZMatrix format
+
+           Argument:
+             coordinates  --  Cartesian coordinates (numpy array Nx3)
+
+           The coordinates must match with the graph that was used to initialize
+           the ZMatrixGenerator object.
+        """
         N = len(self.graph.numbers)
+        if coordinates.shape != (N,3):
+            raise ValueError("The shape of the coordinates must be (%i,3)" % N)
         result = numpy.zeros(N, dtype=self.dtype)
         for i in xrange(N):
             ref0 = self.old_index[i]
@@ -105,15 +117,15 @@ class ZMatrixGenerator(object):
             angle = 0
             dihed = 0
             if i > 0:
-                ref1 = self.get_new_ref([ref0])
+                ref1 = self._get_new_ref([ref0])
                 distance = numpy.linalg.norm(coordinates[ref0]-coordinates[ref1])
                 rel1 = i - self.new_index[ref1]
             if i > 1:
-                ref2 = self.get_new_ref([ref0, ref1])
+                ref2 = self._get_new_ref([ref0, ref1])
                 angle, = ic.bend_angle(coordinates[ref0], coordinates[ref1], coordinates[ref2])
                 rel2 = i - self.new_index[ref2]
             if i > 2:
-                ref3 = self.get_new_ref([ref0, ref1, ref2])
+                ref3 = self._get_new_ref([ref0, ref1, ref2])
                 dihed, = ic.dihed_angle(coordinates[ref0], coordinates[ref1], coordinates[ref2], coordinates[ref3])
                 rel3 = i - self.new_index[ref3]
             result[i] = (self.graph.numbers[i], distance, rel1, angle, rel2, dihed, rel3)
