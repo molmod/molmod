@@ -17,7 +17,10 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Computation of molecular volumes with monte carlo methods
 
+This approach is slow, but robust and simple to implement.
+"""
 
 from molmod.ext import monte_carlo_volumes
 from molmod.data.periodic import periodic

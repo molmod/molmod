@@ -65,5 +65,7 @@ from toyff import *
 from transformations import *
 from unit_cells import *
 from units import *
+from vectors import *
+from volume import *
 
 
