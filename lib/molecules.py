@@ -53,7 +53,7 @@ class Molecule(ReadOnly):
              graph  --  a MolecularGraph instance
         """
         ReadOnly.__init__(self)
-        mandatory = {"numbers": numpy.array(numbers)}
+        mandatory = {"numbers": numpy.array(numbers, int)}
         if coordinates is not None:
             coordinates = numpy.array(coordinates, float)
         if masses is not None:
