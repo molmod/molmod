@@ -23,19 +23,28 @@ from molmod.units import angstrom
 from molmod.data.periodic import periodic
 from molmod.molecules import Molecule
 from molmod.molecular_graphs import MolecularGraph
+from molmod.io.common import FileFormatError
 
 import numpy
 
 
-__all__ = ["SDFError", "SDFReader"]
-
-
-class SDFError(Exception):
-    pass
+__all__ = ["SDFReader"]
 
 
 class SDFReader(object):
+    """A basic reader for SDF files.
+
+       Use this reader as an iterator:
+       >>> sr = SDFReader("somefile.sdf")
+       >>> for mol in sr:
+       ...     print mol.title
+    """
     def __init__(self, f):
+        """Initialize an SDFReader object
+
+           Argument:
+             f  --  a filename or a file-like object
+        """
         if isinstance(f, basestring):
             self.filename = f
             self.f = file(f)
@@ -53,6 +62,10 @@ class SDFReader(object):
         return self
 
     def next(self):
+        """Load the next molecule from the SDF file
+
+           This method is part of the iterator protocol.
+        """
         while True:
             title = self.f.next()
             if len(title) == 0:
@@ -63,28 +76,28 @@ class SDFReader(object):
             self.f.next() # skip empty line
             words = self.f.next().split()
             if len(words) < 2:
-                raise SDFError("Expecting at least two numbers at fourth line.")
+                raise FileFormatError("Expecting at least two numbers at fourth line.")
             try:
                 num_atoms = int(words[0])
                 num_bonds = int(words[1])
             except ValueError:
-                raise SDFError("Expecting at least two numbers at fourth line.")
+                raise FileFormatError("Expecting at least two numbers at fourth line.")
 
             numbers = numpy.zeros(num_atoms, int)
             coordinates = numpy.zeros((num_atoms,3), float)
             for i in xrange(num_atoms):
                 words = self.f.next().split()
                 if len(words) < 4:
-                    raise SDFError("Expecting at least four words on an atom line.")
+                    raise FileFormatError("Expecting at least four words on an atom line.")
                 try:
                     coordinates[i,0] = float(words[0])
                     coordinates[i,1] = float(words[1])
                     coordinates[i,2] = float(words[2])
                 except ValueError:
-                    raise SDFError("Coordinates must be floating point numbers.")
+                    raise FileFormatError("Coordinates must be floating point numbers.")
                 atom = periodic[words[3]]
                 if atom is None:
-                    raise SDFError("Unrecognized atom symbol: %s" % words[3])
+                    raise FileFormatError("Unrecognized atom symbol: %s" % words[3])
                 numbers[i] = atom.number
             coordinates *= angstrom
 
@@ -93,12 +106,12 @@ class SDFReader(object):
             for i in xrange(num_bonds):
                 words = self.f.next().split()
                 if len(words) < 3:
-                    raise SDFError("Expecting at least three numbers on a bond line.")
+                    raise FileFormatError("Expecting at least three numbers on a bond line.")
                 try:
                     pairs.append((int(words[0])-1,int(words[1])-1))
                     orders[i] = int(words[2])
                 except ValueError:
-                    raise SDFError("Expecting at least three numbers on a bond line.")
+                    raise FileFormatError("Expecting at least three numbers on a bond line.")
 
             formal_charges = numpy.zeros(len(numbers), int)
 
@@ -111,7 +124,7 @@ class SDFReader(object):
                         try:
                             formal_charges[int(words[i])-1] = int(words[i+1])
                         except ValueError:
-                            raise SDFError("Expecting only integer formal charges.")
+                            raise FileFormatError("Expecting only integer formal charges.")
                         i += 2
                 line = self.f.next()
 
@@ -125,6 +138,4 @@ class SDFReader(object):
             molecule.formal_charges.setflags(write=False)
             molecule.graph = MolecularGraph(pairs, numbers, orders)
             return molecule
-
-
 
