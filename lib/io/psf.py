@@ -26,24 +26,29 @@ from molmod.graphs import CriteriaSet, GraphSearch
 from molmod.molecular_graphs import MolecularGraph, BondPattern, \
     BendingAnglePattern, DihedralAnglePattern, HasAtomNumber
 from molmod.graphs import Graph
+from molmod.io.common import FileFormatError
 
 
-__all__ = ["Error", "PSFFile"]
-
-class Error(Exception):
-    pass
+__all__ = ["PSFFile"]
 
 
 class PSFFile(object):
-    "A very simplistic and limited implementation of the PSF file format."
+    "A very simplistic and limited implementation of the PSF file format"
 
     def __init__(self, filename=None):
+        """Initialize a PSF file
+
+           Argument:
+             filename  --  When not given, an empty data structure is created,
+                           otherwise the file is loaded from disk
+        """
         if filename is None:
             self.clear()
         else:
             self.read_from_file(filename)
 
     def clear(self):
+        """Clear the contents of the data structure"""
         self.title = None
         self.numbers = numpy.zeros(0,int)
         self.atom_types = [] # the atom_types in the second column, used to associate ff parameters
@@ -57,12 +62,13 @@ class PSFFile(object):
         self.name_cache = {}
 
     def read_from_file(self, filename):
+        """Load a PSF file"""
         self.clear()
         f = file(filename)
         # A) check the first line
         line = f.next()
         if not line.startswith("PSF"):
-            raise Error("Error while reading: A PSF file must start with a line 'PSF'.")
+            raise FileFormatError("Error while reading: A PSF file must start with a line 'PSF'.")
         # B) read in all the sections, without interpreting them
         current_section = None
         sections = {}
@@ -128,11 +134,13 @@ class PSFFile(object):
         return name
 
     def write_to_file(self, filename):
+        """Write the data structure to a file"""
         f = file(filename, 'w')
         self.dump(f)
         f.close()
 
     def dump(self, f):
+        """Dump the data structure to a file-like object"""
         # header
         print >> f, "PSF"
         print >> f
@@ -208,10 +216,31 @@ class PSFFile(object):
         print >> f
 
     def add_molecule(self, molecule, atom_types=None, charges=None, split=True):
+        """Add the graph of the molecule to the data structure
+
+           The molecular graph is estimated from the molecular geometry based on
+           interatomic distances.
+
+           Arguments:
+             molecule  --  a Molecule instance
+             atom_types  --  a list with atom type strings (optional)
+             charges  --  The net atom charges
+             split  --  When True, the molecule is split into disconnected
+                        molecules (default=True)
+        """
         molecular_graph = MolecularGraph.from_geometry(molecule)
         self.add_molecular_graph(molecular_graph, atom_types, charges, split)
 
     def add_molecular_graph(self, molecular_graph, atom_types=None, charges=None, split=True):
+        """Add the molecular graph to the data structure
+
+           Arguments:
+             molecule  --  a Molecule instance
+             atom_types  --  a list with atom type strings (optional)
+             charges  --  The net atom charges
+             split  --  When True, the molecule is split into disconnected
+                        molecules (default=True)
+        """
         # add atom numbers and molecule indices
         new = len(molecular_graph.numbers)
         if new == 0: return
@@ -294,12 +323,18 @@ class PSFFile(object):
             self.dihedrals[-len(tmp):] += offset
 
     def get_graph(self):
+        """Return the bond graph represented by the data structure"""
         return Graph(self.bonds)
 
     def get_molecular_graph(self, labels=None):
+        """Return the molecular graph represented by the data structure"""
         return MolecularGraph(self.bonds, self.numbers)
 
     def get_groups(self):
+        """Return a list of groups of atom indexes
+
+           Each atom in a group belongs to the same molecule or residue.
+        """
         groups = []
         for a_index, m_index in enumerate(self.molecules):
             if m_index >= len(groups):
@@ -307,6 +342,4 @@ class PSFFile(object):
             else:
                 groups[m_index].append(a_index)
         return groups
-
-
 
