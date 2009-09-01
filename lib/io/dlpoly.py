@@ -20,16 +20,12 @@
 
 
 from molmod.units import picosecond, amu, angstrom, atm, deg
-from molmod.io.common import slice_match
+from molmod.io.common import slice_match, FileFormatError
 
 import numpy
 
 
-__all__ = ["Error", "DLPolyHistoryReader", "DLPolyOutputReader"]
-
-
-class Error(Exception):
-    pass
+__all__ = ["DLPolyHistoryReader", "DLPolyOutputReader"]
 
 
 class DLPolyHistoryReader(object):
@@ -67,12 +63,12 @@ class DLPolyHistoryReader(object):
             self.header = self._f.next()[:-1]
             integers = tuple(int(word) for word in self._f.next().split())
             if len(integers) != 3:
-                raise Error("Second line must contain three integers.")
+                raise FileFormatError("Second line must contain three integers.")
             self.keytrj, self.imcon, self.num_atoms = integers
         except StopIteration:
-            raise Error("File is too short. Could not read header.")
+            raise FileFormatError("File is too short. Could not read header.")
         except ValueError:
-            raise Error("Second line must contain three integers.")
+            raise FileFormatError("Second line must contain three integers.")
         self._counter = 1
         self._frame_size = 4 + self.num_atoms*(self.keytrj+2)
 
@@ -94,7 +90,7 @@ class DLPolyHistoryReader(object):
             try:
                 return [float(line[:12]), float(line[12:24]), float(line[24:])]
             except ValueError:
-                raise Error(msg)
+                raise FileFormatError(msg)
 
         # skip frames as requested
         while not slice_match(self._sub, self._counter):
@@ -106,22 +102,22 @@ class DLPolyHistoryReader(object):
         # read the frame header line
         words = self._f.next().split()
         if len(words) != 6:
-            raise Error("The first line of each time frame must contain 6 words. (%i'th frame)" % self._counter)
+            raise FileFormatError("The first line of each time frame must contain 6 words. (%i'th frame)" % self._counter)
         if words[0] != "timestep":
-            raise Error("The first word of the first line of each time frame must be 'timestep'. (%i'th frame)" % self._counter)
+            raise FileFormatError("The first word of the first line of each time frame must be 'timestep'. (%i'th frame)" % self._counter)
         try:
             step = int(words[1])
             frame["step"] = step
             if int(words[2]) != self.num_atoms:
-                raise Error("The number of atoms has changed. (%i'th frame, %i'th step)" % (self._counter, step))
+                raise FileFormatError("The number of atoms has changed. (%i'th frame, %i'th step)" % (self._counter, step))
             if int(words[3]) != self.keytrj:
-                raise Error("keytrj has changed. (%i'th frame, %i'th step)" % (self._counter, step))
+                raise FileFormatError("keytrj has changed. (%i'th frame, %i'th step)" % (self._counter, step))
             if int(words[4]) != self.imcon:
-                raise Error("imcon has changed. (%i'th frame, %i'th step)" % (self._counter, step))
+                raise FileFormatError("imcon has changed. (%i'th frame, %i'th step)" % (self._counter, step))
             frame["timestep"] = float(words[5])*self.time_unit
             frame["time"] = frame["timestep"]*step # this is ugly, or wait ... dlpoly is a bit ugly. we are not to blame!
         except ValueError:
-            raise Error("Could not convert all numbers on the first line of the current time frame. (%i'th frame)" % self._counter)
+            raise FileFormatError("Could not convert all numbers on the first line of the current time frame. (%i'th frame)" % self._counter)
         # the three cell lines
         cell = numpy.zeros((3,3), float)
         frame["cell"] = cell
@@ -148,13 +144,13 @@ class DLPolyHistoryReader(object):
             # the atom header line
             words = self._f.next().split()
             if len(words) != 4:
-                raise Error("The atom header line must contain 4 words. (%i'th frame, %i'th step, %i'th atom)" % (self._counter, step, i+1))
+                raise FileFormatError("The atom header line must contain 4 words. (%i'th frame, %i'th step, %i'th atom)" % (self._counter, step, i+1))
             symbols.append(words[0])
             try:
                 masses[i] = float(words[2])*self.mass_unit
                 charges[i] = float(words[3])
             except ValueError:
-                raise Error("The numbers in the atom header line could not be interpreted.")
+                raise FileFormatError("The numbers in the atom header line could not be interpreted.")
             # the pos line
             pos_msg = "The position lines must consist of three floating point values. (%i'th frame, %i'th step, %i'th atom)" % (self._counter, step, i+1)
             pos[i] = read_three(pos_msg)
@@ -225,9 +221,9 @@ class DLPolyOutputReader(object):
                     self.equi_period = int(line[30:])
                     break
         except StopIteration:
-            raise Error("DL_POLY OUTPUT file is too short. Could not find line with the number of equilibration steps.")
+            raise FileFormatError("DL_POLY OUTPUT file is too short. Could not find line with the number of equilibration steps.")
         except ValueError:
-            raise Error("Could not read the number of equilibration steps. (expecting an integer)")
+            raise FileFormatError("Could not read the number of equilibration steps. (expecting an integer)")
 
     def __del__(self):
         self._f.close()
@@ -273,7 +269,7 @@ class DLPolyOutputReader(object):
             for i in xrange(9):
                 row.append(float(line[10+i*12:10+(i+1)*12]))
         except ValueError:
-            raise Error("Some numbers in the output file could not be read. (expecting floating point numbers)")
+            raise FileFormatError("Some numbers in the output file could not be read. (expecting floating point numbers)")
 
         # convert all the numbers to atomic units
         for i in xrange(30):
