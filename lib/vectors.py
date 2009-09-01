@@ -17,35 +17,46 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-
+"""Cartesian vector manipulation routines"""
 
 import numpy
 
 
 __all__= [
-    "cosine", "angle", "random_orthonormal", "trivial_orthonormal",
-    "triangle_normal", "random_normal",
+    "cosine", "angle", "random_unit", "random_normal", "random_orthonormal",
+    "triangle_normal",
 ]
 
 
 
 def cosine(a, b):
+    """Compute the cosine between two vectors
+
+       The result is clipped within the range [-1,1]
+    """
     result = numpy.dot(a, b) / numpy.linalg.norm(a) / numpy.linalg.norm(b)
-    if result <= -1: return -1
-    elif result >= 1: return 1
-    else: return result
+    return numpy.clip(result, -1, 1)
 
 
 def angle(a, b):
+    """Compute the angle between two vectors
+
+       The result is clipped within the range [-1,1]
+    """
     return numpy.arccos(cosine(a, b))
 
 
 def random_unit(size):
+    """Return a random unit vector of the given dimension"""
     while True:
-        result = numpy.random.uniform(-1, 1, size)
+        result = numpy.random.normal(0, 1, size)
         length = numpy.linalg.norm(result)
-        if length <= 1.0 and length > 1e-3:
+        if length > 1e-3:
             return result/length
+
+def random_normal():
+    """Return a random 3D unit vector"""
+    return random_unit(3)
 
 
 normal_fns = [
@@ -55,30 +66,23 @@ normal_fns = [
 ]
 
 def random_orthonormal(normal):
+    """Return a random normalized vector orthogonal to the given vector"""
     u = normal_fns[numpy.argmin(numpy.fabs(normal))](normal)
     u /= numpy.linalg.norm(u)
     v = numpy.cross(normal, u)
+    v /= numpy.linalg.norm(v)
     angle = numpy.random.uniform(0.0, numpy.pi*2)
     return numpy.cos(angle)*u + numpy.sin(angle)*v
 
-
-def trivial_orthonormal(normal):
-    u = normal_fns[numpy.argmin(numpy.fabs(normal))](normal)
-    u /= numpy.linalg.norm(u)
-    return u
-
-
 def triangle_normal(a, b, c):
+    """Return a vector orthogonal to the given triangle
+
+       Arguments:
+         a, b, c  --  three 3D numpy vectors
+    """
     normal = numpy.cross(a - c, b - c)
     norm = numpy.linalg.norm(normal)
-    if norm <= 1e-8:
-        return numpy.zeros(3, float)
-    else:
-        normal /= norm
-        return normal
+    return normal/norm
 
-
-def random_normal():
-    return random_unit(3)
 
 

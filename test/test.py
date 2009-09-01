@@ -56,6 +56,7 @@ from io import *
 from randomize import *
 from zmatrix import *
 from ic import *
+from vectors import *
 from volume import *
 
 unittest.main()
