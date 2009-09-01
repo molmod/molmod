@@ -21,9 +21,9 @@
 
 import unittest
 
-from molmod.data.periodic import periodic
-from molmod.data.bonds import bonds, BOND_SINGLE
-from molmod.data.isotopes import ame2003, nubtab03
+from molmod.periodic import periodic
+from molmod.bonds import bonds, BOND_SINGLE
+from molmod.isotopes import ame2003, nubtab03
 from molmod.units import angstrom, unified
 
 

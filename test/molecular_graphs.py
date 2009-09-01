@@ -22,7 +22,7 @@ from molmod.units import angstrom
 from molmod.molecular_graphs import *
 from molmod.graphs import GraphError, GraphSearch, CriteriaSet, CritOr, RingPattern
 from molmod.toyff import guess_geometry
-from molmod.data.bonds import BOND_SINGLE
+from molmod.bonds import BOND_SINGLE
 from molmod.io.sdf import SDFReader
 from molmod.io.xyz import XYZFile
 

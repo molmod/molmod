@@ -23,7 +23,7 @@ This approach is slow, but robust and simple to implement.
 """
 
 from molmod.ext import monte_carlo_volumes
-from molmod.data.periodic import periodic
+from molmod.periodic import periodic
 from molmod.units import angstrom
 
 import numpy

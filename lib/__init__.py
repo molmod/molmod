@@ -30,6 +30,16 @@
    or MD-Tracks. Such programs also benefit from the general-purpose nature of
    MolMod. This imposes a certain level of modularity and hence facilitates
    maintainability.
+
+   Most of the submodules are loaded directly into the molmod namespace. There
+   are some exceptions. Due to long loading times the submodules with large
+   amounts of data must be imported explicitly: molmod.bonds molmod.isotopes,
+   molmod.periodic. Example:
+
+   from molmod.periodic import periodic
+
+   One must also load the molmod.io subpackage explicitely. It is not loaded
+   by default to avoid namespace flooding.
 """
 
 import sys, os

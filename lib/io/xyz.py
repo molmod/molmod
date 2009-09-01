@@ -21,7 +21,7 @@
 
 
 from molmod.io.common import slice_match, FileFormatError
-from molmod.data.periodic import periodic
+from molmod.periodic import periodic
 from molmod.molecules import Molecule
 from molmod.units import angstrom
 

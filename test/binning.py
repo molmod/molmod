@@ -23,7 +23,7 @@ from molmod.binning import InterAnalyseNeighboringObjects, \
     IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
 from molmod.unit_cells import UnitCell
 from molmod.units import angstrom, deg
-from molmod.data.periodic import periodic
+from molmod.periodic import periodic
 
 from molmod.io.xyz import XYZFile
 

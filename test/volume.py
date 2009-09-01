@@ -23,7 +23,7 @@ from molmod.volume import *
 from molmod.units import angstrom
 from molmod.io.xyz import XYZFile
 from molmod.transformations import rotation_about_axis
-from molmod.data.periodic import periodic
+from molmod.periodic import periodic
 
 
 import unittest, numpy

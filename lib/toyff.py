@@ -22,7 +22,7 @@
 
 from molmod import context
 from molmod.molecules import Molecule
-from molmod.data.periodic import periodic
+from molmod.periodic import periodic
 
 from molmod.ext import ff_dm_quad, ff_dm_reci, ff_bond_quad, ff_bond_hyper
 
@@ -134,7 +134,7 @@ class ToyFF(object):
              graph  --  the molecular graph from which the force field terms
                         are extracted.
         """
-        from molmod.data.bonds import bonds
+        from molmod.bonds import bonds
 
         self.dm = graph.distances.astype(numpy.int32)
         dm = self.dm.astype(float)

@@ -20,7 +20,7 @@
 """Bond length database and bond type defintions"""
 
 
-from molmod.data.periodic import periodic
+from molmod.periodic import periodic
 import molmod.units as units
 from molmod import context
 

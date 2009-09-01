@@ -51,7 +51,7 @@ class MolecularGraph(Graph):
            with a database of bond lengths. Based on this comparison, bonded
            atoms are detected.
         """
-        from molmod.data.bonds import bonds
+        from molmod.bonds import bonds
 
         def iter_positioned_atoms():
             for index in xrange(molecule.size):

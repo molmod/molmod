@@ -20,7 +20,7 @@
 
 
 from molmod.units import angstrom
-from molmod.data.periodic import periodic
+from molmod.periodic import periodic
 from molmod.molecules import Molecule
 from molmod.molecular_graphs import MolecularGraph
 from molmod.io.common import FileFormatError

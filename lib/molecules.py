@@ -20,7 +20,7 @@
 """Data structure for molecular geometries"""
 
 
-from molmod.data.periodic import periodic
+from molmod.periodic import periodic
 from molmod.units import angstrom
 from molmod.utils import cached, ReadOnly
 

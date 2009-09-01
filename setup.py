@@ -58,7 +58,6 @@ setup(
     package_dir = {'molmod': 'lib'},
     packages=[
         'molmod',
-        'molmod.data',
         'molmod.io',
     ],
     data_files=[

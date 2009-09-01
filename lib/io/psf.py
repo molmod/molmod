@@ -20,7 +20,7 @@
 
 
 import numpy
-from molmod.data.periodic import periodic
+from molmod.periodic import periodic
 from molmod.units import unified
 from molmod.graphs import CriteriaSet, GraphSearch
 from molmod.molecular_graphs import MolecularGraph, BondPattern, \

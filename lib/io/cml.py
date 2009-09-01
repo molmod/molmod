@@ -31,7 +31,7 @@
 from molmod.units import angstrom
 from molmod.molecules import Molecule
 from molmod.molecular_graphs import MolecularGraph
-from molmod.data.periodic import periodic
+from molmod.periodic import periodic
 
 import numpy
 

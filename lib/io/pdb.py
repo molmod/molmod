@@ -20,7 +20,7 @@
 """Basic support for the PDB format"""
 
 
-from molmod.data.periodic import periodic
+from molmod.periodic import periodic
 from molmod.units import angstrom
 from molmod.molecules import Molecule
 from molmod.io.common import FileFormatError
