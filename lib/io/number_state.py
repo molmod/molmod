@@ -188,6 +188,8 @@ class NumberState(object):
                 self._register(name, ArrayAttr)
             elif isinstance(value, int) or isinstance(value, float):
                 self._register(name, ScalarAttr)
+            else:
+                raise TypeError("Can not handle attribute %s=%s" % (name, value))
 
     def _register(self, name, AttrCls):
         """Register a new attribute to take care of with dump and load
