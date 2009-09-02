@@ -17,6 +17,11 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Tools for reading SDF (Structure Data Format) files
+
+   For more information about the file format, see
+   http://www.epa.gov/ncct/dsstox/MoreonSDF.html
+"""
 
 
 from molmod.units import angstrom

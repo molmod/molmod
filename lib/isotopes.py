@@ -55,6 +55,7 @@ class Ame2003(object):
         self.masses = {}
 
         def add_mass(N, Z, mass):
+            """Put a new mass into the dictionary"""
             n_masses = self.masses.setdefault(Z, {})
             n_masses[Z+N] = mass
 
@@ -99,6 +100,7 @@ class NubTab03(object):
         self.abundances = {}
 
         def add_abundance(A, Z, abundance):
+            """Put a new abundance into the dictionary"""
             n_abundances = self.abundances.setdefault(Z, {})
             n_abundances[A] = abundance
 

@@ -335,6 +335,7 @@ def bond_length(r0, r1, deriv=0):
 pair_distance = bond_length
 
 def _bond_length_low(r, deriv):
+    """Similar to bond_length, but with a relative vector"""
     r = Vector3(3, deriv, r, (0,1,2))
     d = r.norm()
     return d.results()
@@ -380,6 +381,7 @@ def bend_cos(r0, r1, r2, deriv=0):
     raise ValueError("deriv must be 0, 1 or 2.")
 
 def _bend_cos_low(a, b, deriv):
+    """Similar to bend_cos, but with relative vectors"""
     a = Vector3(6, deriv, a, (0,1,2))
     b = Vector3(6, deriv, b, (3,4,5))
     a /= a.norm()
@@ -387,6 +389,7 @@ def _bend_cos_low(a, b, deriv):
     return dot(a,b).results()
 
 def _cos_to_angle(result, deriv, sign=1):
+    """Convert a cosine and its derivatives to an angle"""
     v = numpy.arccos(numpy.clip(result[0],-1,1))
     if deriv == 0:
         return v*sign,
@@ -479,6 +482,7 @@ def dihed_cos(r0, r1, r2, r3, deriv=0):
     raise ValueError("deriv must be 0, 1 or 2.")
 
 def _dihed_cos_low(a, b, c, deriv):
+    """Similar to dihed_cos, but with relative vectors"""
     a = Vector3(9, deriv, a, (0,1,2))
     b = Vector3(9, deriv, b, (3,4,5))
     c = Vector3(9, deriv, c, (6,7,8))

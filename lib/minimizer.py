@@ -146,6 +146,7 @@ class GoldenLineSearch(LineSearch):
         return True, qopt, fopt
 
     def _bracket(self, qinit, f0, fun):
+        """Find a bracket that does contain the minimum"""
         self.num_bracket = 0
         qa = qinit
         fa = fun(qa)
@@ -186,6 +187,7 @@ class GoldenLineSearch(LineSearch):
                     raise Exception("Line search did not converge.")
 
     def _golden(self, triplet, fun):
+        """Reduce the size of the bracket until the minimum is found"""
         self.num_golden = 0
         (qa, fa), (qb, fb), (qc, fc) = triplet
         while True:
@@ -465,6 +467,7 @@ class Minimizer(object):
             return False
         direction = direction/numpy.linalg.norm(direction)
         def fun_aux(q, do_gradient=False):
+            """One-dimensional cut of the function along the search direction"""
             xq = self.x + q*direction
             if do_gradient:
                 fq, gq = self.fun(xq, do_gradient=True)

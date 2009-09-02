@@ -17,27 +17,35 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-#
-# References for the conversion values:
-#    * B. J. Mohr and B. N. Taylor,
-#      CODATA recommended values of the fundamental physical
-#      constants: 1998, Rev. Mod. Phys. 72(2), 351 (2000)
-#    * The NIST Reference on Constants, Units, and Uncertainty
-#      (http://physics.nist.gov/cuu/Constants/)
-#    * 1 calorie = 4.184 Joules
-#
-# Naming conventions in this module: unit is the value of one external unit
-# in internal - i.e. atomic - units. e.g. If you want to have a distance of
-# five angstrom in internal units: 5*angstrom. If you want to convert a length
-# of 5 internal units to angstrom: 5/angstrom. It is recommended to perform
-# this kind of conversions, only when data is read from the input and data is
-# written to the output.
+"""Conversion from and to atomic units
 
+   Internally the MolMod package works always in atomic units. This unit system
+   is consistent, like the SI unit system one does not need conversion factors
+   in the middle of a computation once all values are converted to atomic units.
+   This facilitates the programming and reduces accidental bugs due to
+   forgetting these conversion factor in the body of the code.
+
+   References for the conversion values:
+    * B. J. Mohr and B. N. Taylor,
+      CODATA recommended values of the fundamental physical
+      constants: 1998, Rev. Mod. Phys. 72(2), 351 (2000)
+    * The NIST Reference on Constants, Units, and Uncertainty
+      (http://physics.nist.gov/cuu/Constants/)
+    * 1 calorie = 4.184 Joules
+
+   Naming conventions in this module: unit is the value of one external unit
+   in internal - i.e. atomic - units. e.g. If you want to have a distance of
+   five angstrom in internal units: 5*angstrom. If you want to convert a length
+   of 5 internal units to angstrom: 5/angstrom. It is recommended to perform
+   this kind of conversions, only when data is read from the input and data is
+   written to the output.
+"""
 
 from molmod.constants import avogadro
 
 
 def parse_unit(expression):
+    """Evaluate a python expression string containing constants"""
     try:
         g = globals()
         return float(eval(str(expression), g))

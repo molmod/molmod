@@ -19,6 +19,7 @@
 # --
 """Extension of the graphs module with molecular features"""
 
+
 from molmod.graphs import cached, Graph, SubgraphPattern
 from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, \
     SparseBinnedObjects
@@ -43,6 +44,7 @@ class MolecularGraph(Graph):
        new object with modified connectivity, numbers and orders. The advantage
        is that various graph analysis and properties can be cached.
     """
+
     @classmethod
     def from_geometry(cls, molecule, unit_cell=None, do_orders=False):
         """Construct a MolecularGraph object based on interatomic distances
@@ -87,7 +89,7 @@ class MolecularGraph(Graph):
 
     @classmethod
     def from_blob(cls, s):
-        """Construct a molecular graph from the blob representation created with get_blob"""
+        """Construct a molecular graph from the blob representation"""
         atom_str, pair_str = s.split()
         numbers = numpy.array([int(s) for s in atom_str.split(",")])
         pairs = []
@@ -101,19 +103,19 @@ class MolecularGraph(Graph):
     def __init__(self, pairs, numbers, orders=None):
         """Initialize a molecular graph
 
-        Arguments:
-          pairs -- See base class (Graph) documentation
-          numbers -- consecutive atom numbers
-          orders -- bond orders
+           Arguments:
+             pairs -- See base class (Graph) documentation
+             numbers -- consecutive atom numbers
+             orders -- bond orders
 
-        When the nature of an atom or a bond is unclear ambiguous, set the
-        corresponding integer to zero. This means the nature of the atom or bond
-        is unspecified. When the bond orders are not given, they are all set to
-        zero.
+           When the nature of an atom or a bond is unclear ambiguous, set the
+           corresponding integer to zero. This means the nature of the atom or
+           bond is unspecified. When the bond orders are not given, they are all
+           set to  zero.
 
-        If you want to use 'special' atom types, use negative numbers. The same
-        for bond orders. e.g. a nice choice for the bond order of a hybrid bond
-        is -1.
+           If you want to use 'special' atom types, use negative numbers. The
+           same for bond orders. e.g. a nice choice for the bond order of a
+           hybrid bond is -1.
         """
         if orders is None:
             orders = numpy.ones(len(pairs), int)
@@ -123,10 +125,10 @@ class MolecularGraph(Graph):
         self._init_attributes({"numbers": numbers, "orders": orders}, {})
 
     def __mul__(self, repeat):
-        """Construct a graph that repeats this graph a number of times.
+        """Construct a graph that repeats this graph a number of times
 
-        Arguments:
-          repeat -- The number of repetitions.
+           Arguments:
+             repeat -- The number of repetitions.
         """
         if not isinstance(repeat, int):
             raise TypeError("Can only multiply a graph with an integer")
@@ -149,7 +151,7 @@ class MolecularGraph(Graph):
 
     @cached
     def blob(self):
-        """Create a compact text representation of the graph."""
+        """Create a compact text representation of the graph"""
         atom_str = ",".join(str(number) for number in self.numbers)
         pair_str = ",".join("%i_%i_%i" % (i,j,o) for (i,j),o in zip(self.pairs,self.orders))
         return "%s %s" % (atom_str, pair_str)
@@ -173,9 +175,9 @@ class MolecularGraph(Graph):
             return "%03i" % order
 
     def get_subgraph(self, subnodes, normalize=False):
-        """Creates a subgraph of the current graph.
+        """Creates a subgraph of the current graph
 
-        See help(Graph.get_subgraph) for more information.
+           See help(Graph.get_subgraph) for more information.
         """
         graph = Graph.get_subgraph(self, subnodes, normalize)
         if normalize:
@@ -190,15 +192,15 @@ class MolecularGraph(Graph):
         return result
 
     def add_hydrogens(self, formal_charges=None):
-        """Returns a molecular graph where hydrogens are added explicitely.
+        """Returns a molecular graph where hydrogens are added explicitely
 
-        When the bond order is unknown, it assumes bond order one. If the graph
-        has an attribute formal_charges, this routine will take it into account
-        when counting the number of hydrogens to be added. The returned graph
-        will also have a formal_charges attribute.
+           When the bond order is unknown, it assumes bond order one. If the
+           graph  has an attribute formal_charges, this routine will take it
+           into account when counting the number of hydrogens to be added. The
+           returned graph will also have a formal_charges attribute.
 
-        This routine only adds hydrogen atoms for a limited set of atoms from
-        the periodic system: B, C, N, O, F, Al, Si, P, S, Cl, Br.
+           This routine only adds hydrogen atoms for a limited set of atoms from
+           the periodic system: B, C, N, O, F, Al, Si, P, S, Cl, Br.
         """
 
         new_pairs = list(self.pairs)
@@ -240,28 +242,70 @@ class MolecularGraph(Graph):
 # basic criteria for molecular patterns
 
 class HasAtomNumber(object):
+    """Criterion for the atom number of a vertex"""
+
     def __init__(self, number):
+        """Initialize a HasAtomNumber object
+
+           Arguments:
+             number  --  the expected atom number
+        """
         self.number = number
 
-    def __call__(self, atom, graph):
-        return graph.numbers[atom] == self.number
+    def __call__(self, index, graph):
+        """Return True only if the atom number is correct
+
+           Arguments:
+             index  --  the index of the vertex/edge on which the criterion is
+                        applied
+             graph  --  the graph on which the criterion is tested
+        """
+        return graph.numbers[index] == self.number
 
 
 class HasNumNeighbors(object):
+    """Criterion for the number of neighboring vertexes"""
+
     def __init__(self, count):
+        """Initialize a HasNumNeighbors object
+
+           Arguments:
+             count  --  the expected number of neighbors
+        """
         self.count = count
 
-    def __call__(self, atom, graph):
-        return len(graph.neighbors[atom]) == self.count
+    def __call__(self, index, graph):
+        """Return True only if the number of neighbors is correct
+
+           Arguments:
+             index  --  the index of the vertex/edge on which the criterion is
+                        applied
+             graph  --  the graph on which the criterion is tested
+        """
+        return len(graph.neighbors[index]) == self.count
 
 
 class HasNeighborNumbers(object):
+    """Criterion for the atom numbers of the neighbor vertexes"""
+
     def __init__(self, *numbers):
+        """Initialize a HasNeighborNumbers object
+
+           Arguments:
+             *numbers  --  a list with atom numbers
+        """
         self.numbers = list(numbers)
         self.numbers.sort()
 
-    def __call__(self, atom, graph):
-        neighbors = graph.neighbors[atom]
+    def __call__(self, index, graph):
+        """Return True only if each neighbor can be linked with an atom number
+
+           Arguments:
+             index  --  the index of the vertex/edge on which the criterion is
+                        applied
+             graph  --  the graph on which the criterion is tested
+        """
+        neighbors = graph.neighbors[index]
         if not len(neighbors) == len(self.numbers):
             return
         neighbor_numbers = [graph.numbers[neighbor] for neighbor in neighbors]
@@ -270,11 +314,26 @@ class HasNeighborNumbers(object):
 
 
 class HasNeighbors(object):
+    """Tests if the neighbors of a vertex match the given criteria"""
     def __init__(self, *neighbor_criteria):
+        """Initialize a HasNeighbors object
+
+           Arguments:
+             *neighbor_criteria  --  a list of criteria objects
+        """
         self.neighbor_criteria = list(neighbor_criteria)
 
-    def __call__(self, atom, graph):
+    def __call__(self, index, graph):
+        """Return True only if each neighbor can be linked with a positive criterion
+
+           Arguments:
+             index  --  the index of the vertex/edge on which the criterion is
+                        applied
+             graph  --  the graph on which the criterion is tested
+        """
+
         def all_permutations(l):
+            """Iterate over all permutations"""
             if len(l) == 1:
                 yield l
                 return
@@ -282,7 +341,7 @@ class HasNeighbors(object):
                 for sub in all_permutations(l[:i]+l[i+1:]):
                     yield [l[i]] + sub
 
-        neighbors = graph.neighbors[atom]
+        neighbors = graph.neighbors[index]
         if not len(neighbors) == len(self.neighbor_criteria):
             return
         # consider all permutations. If one matches, return True
@@ -298,16 +357,31 @@ class HasNeighbors(object):
 
 
 class BondLongerThan(object):
+    """A vertex criterion to select bonds longer than a given threshold"""
     def __init__(self, length):
+        """Initialize a BondLongerThan object
+
+           This criterion assumes that the molecular graph has an attribute
+           self.bond_lengths
+
+           Argument:
+             length -- the minimum length of the bond
+        """
         self.length = length
 
-    def __call__(self, pair_index, graph):
-        return graph.bond_lengths[pair_index] > self.length
+    def __call__(self, index, graph):
+        """Return True only if the bond is longer than the threshold
+
+           Arguments:
+             index  --  the index of the vertex/edge on which the criterion is
+                        applied
+             graph  --  the graph on which the criterion is tested
+        """
+        return graph.bond_lengths[index] > self.length
 
 
 def atom_criteria(*params):
-    """An auxiliary function to construct a dictionary of Criteria geared
-    towards molecular patterns."""
+    """An auxiliary function to construct a dictionary of Criteria"""
     result = {}
     for index, param in enumerate(params):
         if param is None:
@@ -323,7 +397,12 @@ def atom_criteria(*params):
 
 
 class BondPattern(SubgraphPattern):
+    """Pattern for two consecutive vertices"""
     def __init__(self, criteria_sets=None, node_tags=None):
+        """Initialize a BondPattern object
+
+           Arguments: see SubgraphPattern.__init__
+        """
         if node_tags is None:
             node_tags = {}
         subgraph = Graph([(0, 1)])
@@ -331,7 +410,12 @@ class BondPattern(SubgraphPattern):
 
 
 class BendingAnglePattern(SubgraphPattern):
+    """Pattern for three consecutive vertices"""
     def __init__(self, criteria_sets=None, node_tags=None):
+        """Initialize a BendingAnglePattern object
+
+           Arguments: see SubgraphPattern.__init__
+        """
         if node_tags is None:
             node_tags = {}
         subgraph = Graph([(0, 1), (1, 2)])
@@ -339,7 +423,12 @@ class BendingAnglePattern(SubgraphPattern):
 
 
 class DihedralAnglePattern(SubgraphPattern):
+    """Pattern for four consecutive vertices"""
     def __init__(self, criteria_sets=None, node_tags=None):
+        """Initialize a DihedralAnglePattern object
+
+           Arguments: see SubgraphPattern.__init__
+        """
         if node_tags is None:
             node_tags = {}
         subgraph = Graph([(0, 1), (1, 2), (2, 3)])
@@ -347,7 +436,12 @@ class DihedralAnglePattern(SubgraphPattern):
 
 
 class OutOfPlanePattern(SubgraphPattern):
+    """Pattern for a central vertex connected to three other vertices"""
     def __init__(self, criteria_sets=None, node_tags=None):
+        """Initialize a TetraPattern object
+
+           Arguments: see SubgraphPattern.__init__
+        """
         if node_tags is None:
             node_tags = {}
         subgraph = Graph([(0, 1), (0, 2), (0, 3)])
@@ -355,7 +449,12 @@ class OutOfPlanePattern(SubgraphPattern):
 
 
 class TetraPattern(SubgraphPattern):
+    """Pattern for a central vertex connected to four other vertices"""
     def __init__(self, criteria_sets=None, node_tags=None):
+        """Initialize a TetraPattern object
+
+           Arguments: see SubgraphPattern.__init__
+        """
         if node_tags is None:
             node_tags = {}
         subgraph = Graph([(0, 1), (0, 2), (0, 3), (0, 4)])
@@ -363,7 +462,14 @@ class TetraPattern(SubgraphPattern):
 
 
 class NRingPattern(SubgraphPattern):
+    """Pattern for strong rings with a fixed size"""
+
     def __init__(self, size, criteria_sets=None, node_tags=None, strong=False):
+        """Initialize a NRingPattern object
+
+           Argument:
+             size  --  the size of the ring
+        """
         if node_tags is None:
             node_tags = {}
         self.size = size
@@ -372,6 +478,7 @@ class NRingPattern(SubgraphPattern):
         SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
 
     def check_next_match(self, match, new_relations):
+        """Check if the (onset for a) match can be a valid (part of a) ring"""
         if not SubgraphPattern.check_next_match(self, match, new_relations):
             return False
         if self.strong:
@@ -398,6 +505,7 @@ class NRingPattern(SubgraphPattern):
         return True
 
     def complete(self, match):
+        """Check the completeness of the ring match"""
         if not SubgraphPattern.complete(self, match):
             return False
         if self.strong:

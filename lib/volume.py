@@ -56,6 +56,7 @@ def estimate_volumes(molecule, probe_radius=2.65, max_error=6.0, bigbox=True):
     radii = numpy.array([periodic[number].vdw_radius for number in molecule.numbers])
 
     def mean_error(box_volume, count, total):
+        """compute the mean and the error on the mean of a binomial distro"""
         fraction = float(count)/total
         mean = box_volume*fraction
         error = box_volume*numpy.sqrt(fraction*(1-fraction)/total)

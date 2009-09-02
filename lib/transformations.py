@@ -75,7 +75,8 @@ class Translation(ReadOnly):
     def __init__(self, t):
         """Initialize a translation object
 
-           The first argument must be a list-like object with three numbers.
+           Argument:
+             t  --  translation vector, a list-like object with three numbers
         """
         ReadOnly.__init__(self)
         self._init_attributes({"t": numpy.array(t, float)}, {})
@@ -89,6 +90,7 @@ class Translation(ReadOnly):
 
     @classmethod
     def identity(cls):
+        """Return the identity transformation"""
         return cls(numpy.zeros(3,float))
 
     @cached
@@ -158,7 +160,8 @@ class Rotation(ReadOnly):
     def __init__(self, r):
         """Initialize a rotation object.
 
-           The first argument must be a 3 by 3 array-like object.
+           Argument:
+             r  --  rotation matrix, a 3 by 3 orthonormal array-like object
         """
         ReadOnly.__init__(self)
         self._init_attributes({"r": numpy.array(r, float)}, {})
@@ -172,6 +175,7 @@ class Rotation(ReadOnly):
 
     @classmethod
     def identity(cls):
+        """Return the identity transformation"""
         return cls(numpy.identity(3, float))
 
     @classmethod
@@ -192,16 +196,6 @@ class Rotation(ReadOnly):
         else:
             r = numpy.identity(3) * (1-2*invert)
         return cls(r)
-
-    @classmethod
-    def cast(cls, c):
-        """Convert the first argument into a Complete object"""
-        if isinstance(c, Complete):
-            return c
-        elif isinstance(c, Translation):
-            return Complete(numpy.identity(3, float), c.t)
-        elif isinstance(c, Rotation):
-            return Complete(c.r, numpy.zeros(3, float))
 
     @cached
     def properties(self):
@@ -288,14 +282,21 @@ class Rotation(ReadOnly):
 
 
 class Complete(Translation, Rotation):
+    """Represents a rotation and translation in 3D
+
+       The attribute t contains the actual translation vector, which is a numpy
+       array with three elements. The attribute r contains the actual rotation
+       matrix, which is a numpy array with shape (3,3).
+
+       Internally the translation part is always applied after the rotation
+       part.
+    """
     def __init__(self, r, t):
-        """Initialize a complete transformation object, i.e. rotation & translation
+        """Initialize a complete transformation, i.e. rotation & translation
 
-           The first argument must be a 3 by 3 orthonormal array-like object.
-           The second argument must be a list-like object with three numbers.
-
-           Internally the translation part is always applied after the rotation
-           part.
+           Arguments:
+             r  --  rotation matrix, a 3 by 3 orthonormal array-like object
+             t  --  translation vector, a list-like object with three numbers
         """
         ReadOnly.__init__(self)
         self._init_attributes({"r": numpy.array(r, float), "t": numpy.array(t, float)}, {})
@@ -310,6 +311,7 @@ class Complete(Translation, Rotation):
 
     @classmethod
     def identity(cls):
+        """Return the identity transformation"""
         return cls(numpy.identity(3,float), numpy.zeros(3, float))
 
     @classmethod
@@ -317,6 +319,16 @@ class Complete(Translation, Rotation):
         """Initialize a transformation based on the properties"""
         rot = Rotation.from_properties(angle, axis, invert)
         return Complete(rot.r, translation)
+
+    @classmethod
+    def cast(cls, c):
+        """Convert the first argument into a Complete object"""
+        if isinstance(c, Complete):
+            return c
+        elif isinstance(c, Translation):
+            return Complete(numpy.identity(3, float), c.t)
+        elif isinstance(c, Rotation):
+            return Complete(c.r, numpy.zeros(3, float))
 
     @cached
     def matrix(self):

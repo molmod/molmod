@@ -19,22 +19,24 @@
 # --
 """Basic cluster analysis tool
 
-Given a mixed set of related and unrelated data pionts, it is often interesting
-to extract clusters of related items. The basic workflow is as follows:
+   Given a mixed set of related and unrelated data pionts, it is often interesting
+   to extract clusters of related items. The basic workflow is as follows:
 
-cf = ClusterFactory()
+   >>> cf = ClusterFactory()
 
-some loop:
-    cf.add_related(some, related, items)
+   >>> some loop:
+   ...     cf.add_related(some, related, items)
 
-for cluster in cf.iter_clusters():
-    print cluster
+   >>> for cluster in cf.iter_clusters():
+   ...     print cluster
 """
 
 __all__ = ["ClusterFactory"]
 
 
 class ClusterFactory(object):
+    """A very basic cluster algorithm"""
+
     def __init__(self):
         """Initialize a ClusterFactory"""
         # mapping: item -> cluster. Each cluster is a tuple of related items.

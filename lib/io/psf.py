@@ -17,6 +17,19 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Tools for reading and writing PSF (Protein Structure File) files
+
+   This format is orignally developed in conjunction with the CHARMM program,
+   but is also used by CP2K as a generic format to define the molecular bond
+   graph and other topological aspects of a molecular model. This module just
+   creates files that can be read with CP2K.
+
+   Due to the lack of public definition of a PSF file format, several variations
+   exist. Therefore we do not make any attempt to follow the original format
+   strictly, nor one of these variations. It would be more interesting to
+   define a new public standard for molecular topologies, which is also suitable
+   for non-protein systems.
+"""
 
 
 import numpy
@@ -123,6 +136,10 @@ class PSFFile(object):
         self.dihedrals = numpy.reshape(numpy.array(tmp), (-1,4))-1
 
     def _get_name(self, graph, group=None):
+        """Convert a molecular graph into a unique name
+
+           This method is not sensitive to the order of the atoms in the graph.
+        """
         if group is not None:
             graph = graph.get_subgraph(group, normalize=True)
 

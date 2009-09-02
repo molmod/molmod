@@ -17,8 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-
-# Some useful physicochemical constants in atomic units:
+"""Some useful physicochemical constants in atomic units"""
 
 boltzmann = 3.1668154051341965e-06
 avogadro = 6.0221415e23

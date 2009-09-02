@@ -73,10 +73,7 @@ class LAMMPSDumpReader(object):
         return self
 
     def _read_frame(self):
-        """Read and return the next time frame
-
-           This method is part of the iterator protocol.
-        """
+        """Read and return the next time frame"""
         # Read one frame, we assume that the current file position is at the
         # line 'ITEM: TIMESTEP' and that this line marks the beginning of a
         # time frame.
@@ -121,6 +118,7 @@ class LAMMPSDumpReader(object):
         return fields
 
     def _skip_frame(self):
+        """Skip the next time frame"""
         for line in self._f:
             if line == 'ITEM: ATOMS\n':
                 break

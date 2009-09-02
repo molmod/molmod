@@ -20,33 +20,34 @@
 #
 
 
-"""
-This module contains tools for creating and analyzing graphs. For some historic
-reasons, vertices are called nodes and edges are called pairs.
+"""Graph data structure, analysis and pattern matching
 
-Some distinctive features include:
-* Iterating over all shortest paths between two nodes (Dijkstra)
-    http://en.wikipedia.org/wiki/Dijkstra's_algorithm
-* Iterating over nodes or pairs using the Breadth First convention
-    http://en.wikipedia.org/wiki/Breadth-first_search
-* The all pairs shortest path matrix (Floyd-Warshall)
-    http://en.wikipedia.org/wiki/Floyd-Warshall_algorithm
-* Symmetry analysis of graphs (automorphisms)
-    The Graph class can generate a list of permutations between nodes that
-    map the graph onto itself. This can be used to generate (and test) all
-    possible geometric symmetries in a molecule.
-    http://en.wikipedia.org/wiki/Graph_automorphism
-* Scanning a graph for patterns
-    The GraphSearch is a generic class that can scan a graph for certain
-    patterns, e.g. given subgraphs, strong rings, isomorphisms,
-    automorphisms, ... The subgraph patter can deal with (multiple sets of)
-    additional conditions that must be satisfied, such as "give me all dihedral
-    angles where the central atoms are carbons" without duplicates.
+   This module contains tools for creating and analyzing graphs. For some
+   historic reasons, vertices are called nodes and edges are called pairs.
 
-The central class in this module is 'Graph'. It caches most of the analysis
-results, which implies that the graph structure can not be changed once the
-object is created. If you feel the need to do this, just construct a new graph
-object.
+   Some distinctive features include:
+   * Iterating over all shortest paths between two nodes (Dijkstra)
+       http://en.wikipedia.org/wiki/Dijkstra's_algorithm
+   * Iterating over nodes or pairs using the Breadth First convention
+       http://en.wikipedia.org/wiki/Breadth-first_search
+   * The all pairs shortest path matrix (Floyd-Warshall)
+       http://en.wikipedia.org/wiki/Floyd-Warshall_algorithm
+   * Symmetry analysis of graphs (automorphisms)
+       The Graph class can generate a list of permutations between nodes that
+       map the graph onto itself. This can be used to generate (and test) all
+       possible geometric symmetries in a molecule.
+       http://en.wikipedia.org/wiki/Graph_automorphism
+   * Scanning a graph for patterns
+       The GraphSearch is a generic class that can scan a graph for certain
+       patterns, e.g. given subgraphs, strong rings, isomorphisms,
+       automorphisms, ... The subgraph patter can deal with (multiple sets of)
+       additional conditions that must be satisfied, such as "give me all
+       dihedral angles where the central atoms are carbons" without duplicates.
+
+   The central class in this module is 'Graph'. It caches most of the analysis
+   results, which implies that the graph structure can not be changed once the
+   object is created. If you feel the need to do this, just construct a new
+   graph object.
 """
 
 
@@ -56,135 +57,62 @@ from molmod.utils import cached, ReadOnly
 
 
 __all__ = [
-    "OneToOneError", "OneToOne", "GraphError", "Graph",
-    "Match", "PatternError", "Pattern",
+    "GraphError", "Graph", "OneToOne", "Match", "Pattern",
     "CriteriaSet", "Anything", "CritOr", "CritAnd", "CritXor", "CritNot",
-    "CritNodeString", "CritPairString",
-    "SubgraphPatternError", "SubgraphPattern", "EqualPattern", "EgoMatch",
+    "SubgraphPattern", "EqualPattern", "EgoMatch",
     "EgoPattern", "RingPattern", "GraphSearch",
 ]
 
-class OneToOneError(Exception):
-    pass
-
-
-class OneToOne(object):
-    """
-    Implements a discrete bijection between source and destination elements.
-
-    The implementation is based on a consistent set of forward and reverse
-    relations, stored in dictionaries.
-    """
-
-    def __init__(self, pairs=None):
-        self.forward = {}
-        self.reverse = {}
-        if pairs is not None:
-            self.add_relations(pairs)
-
-    def __len__(self):
-        return len(self.forward)
-
-    def __str__(self):
-        result = "|"
-        for source, destination in self.forward.iteritems():
-            result += " %s -> %s |" % (source, destination)
-        return result
-
-    def __mul__(self, other):
-        """Return the result of the 'after' operator."""
-        result = OneToOne()
-        for source, mid in other.forward.iteritems():
-            destination = self.forward[mid]
-            result.forward[source] = destination
-            result.reverse[destination] = source
-        return result
-
-    def add_relation(self, source, destination):
-        if self.in_sources(source):
-            if self.forward[source] != destination:
-                raise OneToOneError("Source is already in use. Destination does not match.")
-            else:
-                raise OneToOneError("Source-Destination relation already exists.")
-        elif self.in_destinations(destination):
-            raise OneToOneError("Destination is already in use. Source does not match.")
-        else:
-            self.forward[source] = destination
-            self.reverse[destination] = source
-
-    def add_relations(self, pairs):
-        for source, destination in pairs:
-            self.add_relation(source, destination)
-
-    def get_destination(self, source):
-        return self.forward[source]
-
-    def get_source(self, destination):
-        return self.reverse[destination]
-
-    def in_destinations(self, destination):
-        return destination in self.reverse
-
-    def in_sources(self, source):
-        return source in self.forward
-
-    def inverse(self):
-        """Returns the inverse bijection."""
-        result = self.__class__()
-        result.forward = copy.copy(self.reverse)
-        result.reverse = copy.copy(self.forward)
-        return result
-
 
 class GraphError(Exception):
+    """Raised when something goes wrong in one of the graph algorithms"""
     pass
 
 
 class Graph(ReadOnly):
     """The Graph class implements an undirected graph. All pairs have equal weight.
 
-    The pairs attribute is the most elementary and is always available. All
-    other attributes are optional and can be generated with their respective
-    init_* methods.
+       The pairs attribute is the most elementary and is always available. All
+       other attributes are optional and can be generated with their respective
+       init_* methods.
 
-    Graphs are meant to be immutable objects. Once created they are not
-    supposed to be modified. If you want an adapted graph, create a new object.
-    The main reason is that all graph analysis work is cached in this object.
-    When the pairs change, the cache becomes invalid and should be erased. The
-    latter is not supported as it is easier to create just a new graph object
-    with the modified pairs.
+       Graphs are meant to be immutable objects. Once created they are not
+       supposed to be modified. If you want an adapted graph, create a new
+       object. The main reason is that all graph analysis work is cached in this
+       object. When the pairs change, the cache becomes invalid and should be
+       erased. The latter is not supported as it is easier to create just a new
+       graph object with the modified pairs.
 
-    If you want to associate data with nodes or pairs, add custom dictionary or
-    list attributes to the graph object. This is the way to work attributes that
-    are not applicable to all nodes or pairs:
+       If you want to associate data with nodes or pairs, add custom dictionary
+       or list attributes to the graph object. This is the way to work
+       attributes that are not applicable to all nodes or pairs:
 
-    node_property = {node1: blablabla, node2: blablabla, ...}
-    pair_property = {frozenset([node1,node2]): blablabla, ..}
+       node_property = {node1: blablabla, node2: blablabla, ...}
+       pair_property = {frozenset([node1,node2]): blablabla, ..}
 
-    If a certain property applies to all nodes or pairs, it is sometimes more
-    practical to work with lists are numpy arrays that have the same ordering
-    as the nodes or the pairs:
+       If a certain property applies to all nodes or pairs, it is sometimes more
+       practical to work with lists are numpy arrays that have the same ordering
+       as the nodes or the pairs:
 
-    node_property = numpy.array([6, 6, 1, 1, 1, 1], int) # atom numbers for ethene
-    pair_property = numpy.array([2, 1, 1, 1, 1], int)    # bond orders for ethene
-
+       node_property = numpy.array([6, 6, 1, 1, 1, 1], int) # atom numbers for ethene
+       pair_property = numpy.array([2, 1, 1, 1, 1], int)    # bond orders for ethene
     """
 
     def __init__(self, pairs, num_nodes=None):
         """Initialize a Graph object.
 
-        Arguments:
-          pairs -- tuple(frozenset([node1, node2]), ...)
-          num_nodes -- number of nodes
+           Arguments:
+             pairs -- tuple(frozenset([node1, node2]), ...)
+             num_nodes -- number of nodes
 
-        node1 to nodeN must be integers from 0 to N-1. If nodes above the
-        highest node value are not connected by pairs, use the num_nodes
-        argument to tell what the total number of nodes is.
+           node1 to nodeN must be integers from 0 to N-1. If nodes above the
+           highest node value are not connected by pairs, use the num_nodes
+           argument to tell what the total number of nodes is.
 
-        If the pairs argument does not have the correct format, it will be
-        converted.
-
+           If the pairs argument does not have the correct format, it will be
+           converted.
         """
+
         ReadOnly.__init__(self)
         tmp = []
         for pair in pairs:
@@ -216,10 +144,10 @@ class Graph(ReadOnly):
     num_pairs = property(lambda self: len(self.pairs))
 
     def __mul__(self, repeat):
-        """Construct a graph that repeats this graph a number of times.
+        """Construct a graph that repeats this graph a number of times
 
-        Arguments:
-          repeat -- The number of repetitions.
+           Arguments:
+             repeat -- The number of repetitions.
         """
         if not isinstance(repeat, int):
             raise TypeError("Can only multiply a graph with an integer")
@@ -237,16 +165,16 @@ class Graph(ReadOnly):
     # functions that should be implemented by derived classes
 
     def get_node_string(self, i):
-        """Returns a string that fully characterizes the nature of the node.
+        """Returns a string that fully characterizes the nature of the node
 
-        In case of an ordinary graph, all nodes are the same.
+           In case of an ordinary graph, all nodes are the same.
         """
         return ""
 
     def get_pair_string(self, i):
-        """Returns a string that fully characterizes the nature of a pair.
+        """Returns a string that fully characterizes the nature of a pair
 
-        In case of an ordinary graph, all pairs are the same.
+           In case of an ordinary graph, all pairs are the same.
         """
         return ""
 
@@ -254,18 +182,18 @@ class Graph(ReadOnly):
 
     @cached
     def pair_index(self):
-        """construct a map to look up the index of a pair"""
+        """Construct a map to look up the index of a pair"""
         return dict((pair, index) for index, pair in enumerate(self.pairs))
 
     @cached
     def neighbors(self):
-        """Setup a dictionary with neighbors.
+        """Setup a dictionary with neighbors
 
-        The dictionary will have the following form:
-          {nodeX: (nodeY1, nodeY2, ...), ...}
-        This means that nodeX and nodeY1 have a pair etc. This also implies
-        that the following elements are part of the dictionary:
-          {nodeY1: (nodeX, ...), nodeY2: (nodeX, ...), ...}
+           The dictionary will have the following form:
+             {nodeX: (nodeY1, nodeY2, ...), ...}
+           This means that nodeX and nodeY1 have a pair etc. This also implies
+           that the following elements are part of the dictionary:
+             {nodeY1: (nodeX, ...), nodeY2: (nodeX, ...), ...}
         """
         neighbors = dict((node, set([])) for node in xrange(self.num_nodes))
         for a, b in self.pairs:
@@ -275,7 +203,7 @@ class Graph(ReadOnly):
 
     @cached
     def distances(self):
-        """Construct the matrix with the all-pairs shortest path."""
+        """Construct the matrix with the all-pairs shortest path lenghts"""
         from molmod.ext import graphs_floyd_warshall
         distances = numpy.zeros((self.num_nodes, self.num_nodes), numpy.int32)
         #distances[:] = -1 # set all -1, which is just a very big integer
@@ -296,27 +224,27 @@ class Graph(ReadOnly):
 
     @cached
     def central_nodes(self):
-        """Define the nodes that have the lowest maximum distance to any other node."""
+        """The nodes that have the lowest maximum distance to any other node"""
         max_distances = self.distances.max(0)
         max_distances_min = max_distances[max_distances > 0].min()
         return (max_distances == max_distances_min).nonzero()[0]
 
     @cached
     def central_node(self):
-        """Define the node that has the lowest maximum distance to any other node.
+        """The node that has the lowest maximum distance to any other node
 
-        This definition does not lead to a unique solution. One arbitrary solution
-        is selected.
+           This definition does not lead to a unique solution. One arbitrary
+           solution is selected.
         """
         return self.central_nodes[0]
 
     @cached
     def independent_nodes(self):
-        """Generate lists of nodes are only interconnected within each list.
+        """Lists of nodes that are only interconnected within each list
 
-        This means that there is no path from a node in one list to a node
-        in another list. In case of a molecular graph, this would yield the
-        atoms that belong to individual molecules.
+           This means that there is no path from a node in one list to a node
+           in another list. In case of a molecular graph, this would yield the
+           atoms that belong to individual molecules.
         """
         candidates = set(xrange(self.num_nodes))
 
@@ -333,9 +261,11 @@ class Graph(ReadOnly):
 
     @cached
     def fingerprint(self):
-        """A total graph fingerprint that is invariant under permutation if the
-        node indexes. The chance that two different (molecular) graphs yield
-        the same fingerprint is small but not zero. (See unit tests.)"""
+        """A total graph fingerprint
+
+           The result is invariant under permutation of the node indexes. The
+           chance that two different (molecular) graphs yield the same
+           fingerprint is small but not zero. (See unit tests.)"""
         if self.num_nodes == 0:
             return numpy.zeros(20, numpy.ubyte)
         else:
@@ -343,10 +273,13 @@ class Graph(ReadOnly):
 
     @cached
     def node_fingerprints(self):
-        """A per-node fingerprint that is invariant under permutation if the
-        node indexes. Atoms that are symmetrically equivalent will get the same
-        finger print, e.g. the hydrogens in methane would get the same
-        fingerprint."""
+        """A fingerprint for each node
+
+           The result is invariant under permutation of the node indexes.
+           Vertices that are symmetrically equivalent will get the same
+           fingerprint, e.g. the hydrogens in methane would get the same
+           fingerprint.
+        """
         return self.get_node_fingerprints(
             [self.get_node_string(i) for i in xrange(self.num_nodes)],
             [self.get_pair_string(i) for i in xrange(self.num_pairs)],
@@ -395,20 +328,21 @@ class Graph(ReadOnly):
     def canonical_order(self):
         """The nodes in a canonical or normalized order.
 
-        This routine will return a list of nodes in an order that does not
-        depend on the initial order, but only depends on the connectivity and
-        the return values of the function self.get_node_string.
+           This routine will return a list of nodes in an order that does not
+           depend on the initial order, but only depends on the connectivity and
+           the return values of the function self.get_node_string.
 
-        Only the nodes that are involved in pairs will be included. The result
-        can be given as first argument to self.get_subgraph, with reduce=True
-        as second argument. This will return a complete canonical graph.
+           Only the nodes that are involved in pairs will be included. The
+           result can be given as first argument to self.get_subgraph, with
+           reduce=True as second argument. This will return a complete canonical
+           graph.
 
-        The routine is designed not to use symmetry relations that are obtained
-        with the GraphSearch routine. We also tried to create an ordering that
-        feels like natural, i.e. starting in the center and pushing nodes with
-        few equivalents to the front. If necessary, the nature of the nodes and
-        their bonds to atoms closer to the center will also play a role, but
-        only as a last resort.
+           The routine is designed not to use symmetry relations that are
+           obtained with the GraphSearch routine. We also tried to create an
+           ordering that feels like natural, i.e. starting in the center and
+           pushing nodes with few equivalents to the front. If necessary, the
+           nature of the nodes and  their bonds to atoms closer to the center
+           will also play a role, but only as a last resort.
         """
         # A) find an appropriate starting node.
         # Here we take a central node that has a minimal number of symmetrical
@@ -475,15 +409,16 @@ class Graph(ReadOnly):
     def iter_breadth_first(self, start=None, do_paths=False, do_duplicates=False):
         """Iterate over the nodes with the breadth first algorithm.
 
-        See http://en.wikipedia.org/wiki/Breadth-first_search for more info.
-        If not start node is given, the central node is taken.
+           See http://en.wikipedia.org/wiki/Breadth-first_search for more info.
+           If not start node is given, the central node is taken.
 
-        By default, the distance to the starting node is also computed. If the
-        path to the starting node should be computed instead, set path to True.
+           By default, the distance to the starting node is also computed. If
+           the path to the starting node should be computed instead, set path to
+           True.
 
-        When duplicate is True, then nodes that can be reached trhough different
-        paths of equal length, will be iterated twice. This tipically only makes
-        sencse when path==True.
+           When duplicate is True, then nodes that can be reached through
+           different  paths of equal length, will be iterated twice. This
+           typically only makes sense when path==True.
         """
         if start is None:
             start = self.central_node
@@ -537,16 +472,16 @@ class Graph(ReadOnly):
     def iter_breadth_first_pairs(self, start=None):
         """Iterate over the pairs with the breadth first convention.
 
-        We need this for the pattern matching algorithms, but a quick look at
-        wikipedia did not result in a known and named algorithm.
+           We need this for the pattern matching algorithms, but a quick look at
+           Wikipedia did not result in a known and named algorithm.
 
-        The pairs are yield one by one, together with the distance of the pair
-        from the starting node and a flag that indicates whether the yielded
-        pair connects two nodes that are at the same distance from the starting
-        node. If that flag is False, the distance from the starting node to
-        pair[0] is equal to the distance variable and the distance from pair[1]
-        to the starting node is equal to distance+1. One item has the following
-        format: ((i,j), distance, flag)
+           The pairs are yield one by one, together with the distance of the
+           pair from the starting node and a flag that indicates whether the
+           yielded pair connects two nodes that are at the same distance from
+           the starting node. If that flag is False, the distance from the
+           starting node to pair[0] is equal to the distance variable and the
+           distance from pair[1] to the starting node is equal to distance+1.
+           One item has the following format: ((i, j), distance, flag)
         """
         if start is None:
             start = self.central_node
@@ -579,27 +514,33 @@ class Graph(ReadOnly):
     def get_subgraph(self, subnodes, normalize=False):
         """Constructs a subgraph of the current graph
 
-        Arguments:
-          subnodes -- The nodes that should be retained.
-          normalize -- Whether or not the nodes should renumbered and reduced to
-              the given set of subnodes. When True, also the pairs are sorted.
-              It the end, this means that new order of the pairs does not depend
-              on the original order, but only on the order of the argument
-              subnodes.
-              This option is False by default. When False, only pairs will be
-              discarded, but the retained data remain unchanged. Also the
-              parameter num_nodes is not affected.
+           Arguments:
+             subnodes -- The nodes that should be retained.
+             normalize -- Whether or not the nodes should renumbered and reduced
+                to the given set of subnodes. When True, also the pairs are
+                sorted. It the end, this means that new order of the pairs does
+                not depend on the original order, but only on the order of the
+                argument subnodes.
+                This option is False by default. When False, only pairs will be
+                discarded, but the retained data remain unchanged. Also the
+                parameter num_nodes is not affected.
 
-        The returned graph will have an attribute old_pair_indexes that relates
-        the positions of the new and the old pairs as follows:
-          self.pairs[result._old_pair_indexes[i]] = result.pairs[i]
-        In derived classes, the following should be supported:
-          self.pair_property[result._old_pair_indexes[i]] = result.pair_property[i]
+           The returned graph will have an attribute old_pair_indexes that
+           relates the positions of the new and the old pairs as follows:
 
-        When normalize==True, also the nodes are affected and the derived classes
-        should make sure that the following works:
-          self.node_property[result._old_node_indexes[i]] = result.node_property[i]
-        The attribute old_node_indexes is only constructed when normalize==True.
+             self.pairs[result._old_pair_indexes[i]] = result.pairs[i]
+
+           In derived classes, the following should be supported:
+
+             self.pair_property[result._old_pair_indexes[i]] = result.pair_property[i]
+
+           When normaliz e== True, also the nodes are affected and the derived
+           classes should make sure that the following works:
+
+             self.node_property[result._old_node_indexes[i]] = result.node_property[i]
+
+           The attribute old_node_indexes is only constructed when normalize ==
+           True.
         """
         if normalize:
             revorder = dict((j, i) for i, j in enumerate(subnodes))
@@ -634,8 +575,10 @@ class Graph(ReadOnly):
         return result
 
     def get_node_fingerprints(self, node_strings, pair_strings, num_iter=None):
+        """Return an array with fingerprints for each vertex"""
         import hashlib
         def str2array(x):
+            """convert a has string to a numpy array of bytes"""
             if len(x) == 0:
                 return numpy.zeros(0, numpy.ubyte)
             else:
@@ -668,10 +611,10 @@ class Graph(ReadOnly):
     def get_halfs(self, node1, node2):
         """Compute the two parts of the graph separated by the pair (node1, node2)
 
-        If this is not possible (due to loops connecting both ends), a GraphError
-        is raised.
+           If this is not possible (due to loops connecting both ends), a
+           GraphError is raised.
 
-        Returns the nodes in both halfs.
+           Returns the nodes in both halfs.
         """
         node1_new = set(self.neighbors[node1])
         if node2 not in node1_new:
@@ -694,9 +637,7 @@ class Graph(ReadOnly):
         return node1_part, node2_part
 
     def get_part(self, node_in, nodes_border):
-        """List all nodes that are connected to node_in, but are not included in
-        or 'behind' nodes_border.
-        """
+        """List all nodes that are connected to node_in, but are not included in or 'behind' nodes_border."""
         nodes_new = set(self.neighbors[node_in])
         nodes_part = set([node_in])
 
@@ -714,14 +655,14 @@ class Graph(ReadOnly):
     def get_halfs_double(self, node_a1, node_b1, node_a2, node_b2):
         """Compute the two parts separated by (node_a1, node_b1) and (node_a2, node_b2)
 
-        Raise a GraphError when (node_a1, node_b1) and (node_a2, node_b2) do not
-        separate the graph in two disconnected parts. The pairs must be
-        neigbors. If not a GraphError is raised. The for nodes must not coincide
-        or a GraphError is raised.
+           Raise a GraphError when (node_a1, node_b1) and (node_a2, node_b2) do
+           not separate the graph in two disconnected parts. The pairs must be
+           neigbors. If not a GraphError is raised. The for nodes must not
+           coincide or a GraphError is raised.
 
-        Returns the nodes of the two halfs and the four 'hinge' nodes in the
-        correct order, i.e. both node_a1 and node_a2 are in the first half and
-        both node_b1 and node_b2 are in the second half.
+           Returns the nodes of the two halfs and the four 'hinge' nodes in the
+           correct order, i.e. both node_a1 and node_a2 are in the first half
+           and both node_b1 and node_b2 are in the second half.
         """
         if node_a1 not in self.neighbors[node_b1]:
             raise GraphError("Node_a1 must be a neighbor of node_b1.")
@@ -795,13 +736,12 @@ class Graph(ReadOnly):
         return node_a_part, node_b_part, (node_a1, node_b1, node_a2, node_b2)
 
     def full_match(self, other):
-        """Given another graph with the same connectivity, find the mapping
-        between node indexes in self and other.
+        """Find the mapping between node indexes in self and other.
 
-        This also works on disconnected graphs. Derived classes should just
-        implement get_node_string and get_pair_string to make this method
-        aware of the different nature of certain nodes. In case molecules,
-        this would make the algorithm sensitive to atom numbers etc.
+           This also works on disconnected graphs. Derived classes should just
+           implement get_node_string and get_pair_string to make this method
+           aware of the different nature of certain nodes. In case molecules,
+           this would make the algorithm sensitive to atom numbers etc.
         """
         graphs0 = [self.get_subgraph(group, normalize=True) for group in self.independent_nodes]
         # we need normalize subgraphs because these graphs are used as patterns.
@@ -838,14 +778,95 @@ class Graph(ReadOnly):
 # Pattern matching
 
 
+class OneToOne(object):
+    """Implements a discrete bijection between source and destination elements
+
+       The implementation is based on a consistent set of forward and reverse
+       relations, stored in dictionaries.
+    """
+
+    def __init__(self, relations=None):
+        """Initialize a OneToOne object
+
+           Argument:
+             relations  --  initial relations for the bijection
+        """
+        self.forward = {}
+        self.reverse = {}
+        if relations is not None:
+            self.add_relations(relations)
+
+    def __len__(self):
+        return len(self.forward)
+
+    def __str__(self):
+        result = "|"
+        for source, destination in self.forward.iteritems():
+            result += " %s -> %s |" % (source, destination)
+        return result
+
+    def __mul__(self, other):
+        """Return the result of the 'after' operator."""
+        result = OneToOne()
+        for source, mid in other.forward.iteritems():
+            destination = self.forward[mid]
+            result.forward[source] = destination
+            result.reverse[destination] = source
+        return result
+
+    def add_relation(self, source, destination):
+        """Add new a relation to the bejection"""
+        if self.in_sources(source):
+            if self.forward[source] != destination:
+                raise ValueError("Source is already in use. Destination does not match.")
+            else:
+                raise ValueError("Source-Destination relation already exists.")
+        elif self.in_destinations(destination):
+            raise ValueError("Destination is already in use. Source does not match.")
+        else:
+            self.forward[source] = destination
+            self.reverse[destination] = source
+
+    def add_relations(self, relations):
+        """Add multiple relations to a bijection"""
+        for source, destination in relations:
+            self.add_relation(source, destination)
+
+    def get_destination(self, source):
+        """Get the end point of a relation that start with 'source'"""
+        return self.forward[source]
+
+    def get_source(self, destination):
+        """Get the starting point of a relation that ends with 'destination'"""
+        return self.reverse[destination]
+
+    def in_destinations(self, destination):
+        """Test if the given destination is present"""
+        return destination in self.reverse
+
+    def in_sources(self, source):
+        """Test if the given source is present"""
+        return source in self.forward
+
+    def inverse(self):
+        """Returns the inverse bijection."""
+        result = self.__class__()
+        result.forward = copy.copy(self.reverse)
+        result.reverse = copy.copy(self.forward)
+        return result
+
+
 class Match(OneToOne):
+    """A match between a pattern and a graph"""
     @classmethod
     def from_first_pair(cls, node0, node1):
+        """Intialize a fresh match based on the first relation"""
         result = cls([(node0, node1)])
         result.previous_ends1 = set([node1])
         return result
 
     def get_new_pairs(self, graph):
+        """Get new pairs to use in the graph search algorithm."""
         result = []
         #print "Match.get_new_pairs self.previous_ends1", self.previous_ends1
         for node in self.previous_ends1:
@@ -855,27 +876,24 @@ class Match(OneToOne):
         return result
 
     def copy_with_new_relations(self, new_relations):
+        """Create a new match object extended with new relations"""
         result = self.__class__(self.forward.iteritems())
         result.add_relations(new_relations.iteritems())
         result.previous_ends1 = set(new_relations.itervalues())
         return result
 
 
-class PatternError(Exception):
-    pass
-
-
 class Pattern(object):
     """Base class for a pattern in a graph.
 
-    Note the following conventions:
-      * A pattern can always be represented by a graph (or a set of graphs) and
-        some additional conditions. This graph is the so called 'PATTERN GRAPH'.
-        For technical reasons, this pattern graph is not always constructed
-        explicitly. Variables related to this graph often get suffix '0'. Note
-        that a pattern graph is always fully connected.
-      * The graph in which we search for the pattern, is called the 'SUBJECT
-        GRAPH'. Variables related to this graph often get suffix '1'.
+       Note the following conventions:
+         * A pattern can always be represented by a graph (or a set of graphs)
+           and some additional conditions. This graph is the so called 'PATTERN
+           GRAPH'. For technical reasons, this pattern graph is not always
+           constructed explicitly. Variables related to this graph often get
+           suffix '0'. Note that a pattern graph is always fully connected.
+         * The graph in which we search for the pattern, is called the 'SUBJECT
+           GRAPH'. Variables related to this graph often get suffix '1'.
     """
 
     sub = True # This means that matching nodes must not have equal number of neighbors
@@ -889,47 +907,67 @@ class Pattern(object):
     def iter_initial_relations(self):
         """Yields the initial relations (source,destination) to start with.
 
-        The function iterates of single relations between a pattern node and a
-        subject node. In practice it is sufficient to select one node in the
-        pattern and then associate it with each (reasonable) node in the subject
-        graph.
+           The function iterates of single relations between a pattern node and
+           a subject node. In practice it is sufficient to select one node in
+           the pattern and then associate it with each (reasonable) node in the
+           subject graph.
         """
         raise NotImplementedError
 
     def get_new_pairs(self, level):
+        """Iterate over all valid initial relations for a match"""
         raise NotImplementedError
 
     def check_symmetry(self, new_relations, current_match, next_match):
-        "Check wether the new_relations correspond the reference case of all possible symetric equivalents"
+        """Off all symmetric new_relations, only allow one"""
         return True
 
     def compare(self, node0, node1):
-        """
-        Test if node0 and node1 can be equal. False positives are allowed, but
-        the less false positives, the more efficient the GraphSearch will be.
+        """Test if node0 and node1 can be equal
+
+           False positives are allowed, but the less false positives, the more
+           efficient the GraphSearch will be.
         """
         return True
 
     def check_next_match(self, match, new_relations):
-        """Does this match object make sense for the current pattern.
+        """Does this match object make sense for the current pattern
 
-        Return False if some symmetry or other considerations are not satisfied.
-        The checks in this function are typically only possible by considering
-        the whole instead of looking just at a few nodes/pairs/relations.
+           Return False if some symmetry or other considerations are not
+           satisfied. The checks in this function are typically only possible by
+           considering the whole instead of looking just at a few nodes/pairs/
+           relations.
         """
         return True
 
     def complete(self, match):
-        """Returns True if not more additional relations are required."""
+        """Returns True if no more additional relations are required"""
         return True
 
     def iter_final_matches(self, match):
+        """Just return the original match
+
+           Derived classes can specialize here to make efficient use of
+           symmetries
+        """
         yield match
 
 
 class CriteriaSet(object):
     """A set of criteria that can be associated with a subgraph pattern."""
-    def __init__(self, thing_criteria=None, relation_criteria=None, global_criteria=None, **kwargs):
+
+    def __init__(self, thing_criteria=None, relation_criteria=None, **kwargs):
+        """Initialize a CriteriaSet object
+
+           Arguments:
+             thing_criteria  --  a dictionary with criteria for the vertices
+                                 key=vertex index, value=criterion object
+             relation_criteria  --  a dictionary with criteria for the edges
+                                 key=edge index, value=criterion object
+
+           Any other keyword argument will be assigned as attribute to matches
+           that fulfill the criteria of this set.
+        """
         if thing_criteria is None:
             self.thing_criteria = {}
         else:
@@ -938,13 +976,10 @@ class CriteriaSet(object):
             self.relation_criteria = {}
         else:
             self.relation_criteria = relation_criteria
-        if global_criteria is None:
-            self.global_criteria = {}
-        else:
-            self.global_criteria = global_criteria
         self.info = kwargs
 
     def test_match(self, match, subgraph, graph):
+        """Test if a match satisfies the criteria"""
         for node0, c in self.thing_criteria.iteritems():
             node1 = match.forward[node0]
             if not c(node1, graph):
@@ -957,23 +992,36 @@ class CriteriaSet(object):
             ])]
             if not c(pair1_index, graph):
                 return False
-        for c in self.global_criteria:
-            if not c(match, graph):
-                return False
         return True
 
 # few basic example criteria
 
 class Anything(object):
+    """A criterion that always returns True"""
     def __call__(self, index, graph):
+        """Always returns True"""
         return True
 
 
 class CritOr(object):
+    """OR Operator for criteria objects"""
+
     def __init__(self, *criteria):
+        """Initialize a CritOr object
+
+           Argument:
+             criteria  --  a list of criteria to apply the OR operation to.
+        """
         self.criteria = criteria
 
     def __call__(self, index, graph):
+        """Evaluates all the criteria and applies an OR opartion
+
+           Arguments:
+             index  --  the index of the vertex/edge on which the criterion is
+                        applied
+             graph  --  the graph on which the criterion is tested
+        """
         for c in self.criteria:
             if c(index, graph):
                 return True
@@ -981,10 +1029,24 @@ class CritOr(object):
 
 
 class CritAnd(object):
+    """AND Operator for criteria objects"""
+
     def __init__(self, *criteria):
+        """Initialize a CritAnd object
+
+           Argument:
+             criteria  --  a list of criteria to apply the AND operation to.
+        """
         self.criteria = criteria
 
     def __call__(self, index, graph):
+        """Evaluates all the criteria and applies an AND opartion
+
+           Arguments:
+             index  --  the index of the vertex/edge on which the criterion is
+                        applied
+             graph  --  the graph on which the criterion is tested
+        """
         for c in self.criteria:
             if not c(index, graph):
                 return False
@@ -992,10 +1054,27 @@ class CritAnd(object):
 
 
 class CritXor(object):
+    """XOR Operator for criteria objects"""
+
     def __init__(self, *criteria):
+        """Initialize a CritXor object
+
+           Argument:
+             criteria  --  a list of criteria to apply the XOR operation to.
+        """
         self.criteria = criteria
 
     def __call__(self, index, graph):
+        """Evaluates all the criteria and applies a generalized XOR opartion
+
+           Arguments:
+             index  --  the index of the vertex/edge on which the criterion is
+                        applied
+             graph  --  the graph on which the criterion is tested
+
+           when the XOR operation is applied to more than two criteria, True
+           is only returned when an odd number of criteria return True.
+        """
         count = 0
         for c in self.criteria:
             if c(index, graph):
@@ -1004,40 +1083,37 @@ class CritXor(object):
 
 
 class CritNot(object):
+    """Inverion of another criterion"""
+
     def __init__(self, criterion):
+        """Initialize a CritNot
+
+           Argument:
+             criterion  --  another criterion object
+        """
         self.criterion = criterion
 
     def __call__(self, index, graph):
+        """Evaluates all the criterion and applies an inversion opartion
+
+           Arguments:
+             index  --  the index of the vertex/edge on which the criterion is
+                        applied
+             graph  --  the graph on which the criterion is tested
+        """
         return not self.criterion(index, graph)
-
-
-class CritNodeString(object):
-    def __init__(self, reference):
-        self.reference = reference
-
-    def __call__(self, index, graph):
-        s0 = self.reference.get_node_string(index)
-        s1 = graph.get_node_string(index)
-        return s0 == "" or s1 == "" or s0 == s1 # an aspecific node acts as a wildcard
-
-
-class CritPairString(object):
-    def __init__(self, reference):
-        self.reference = reference
-
-    def __call__(self, index, graph):
-        s0 = self.reference.get_pair_string(index)
-        s1 = graph.get_pair_string(index)
-        return s0 == "" or s1 == "" or s0 == s1 # an aspecific node acts as a wildcard
 
 
 # pattern and match stuff
 
-class SubgraphPatternError(PatternError):
-    pass
-
 
 class SubgraphPattern(Pattern):
+    """A pattern based on a given subgraph
+
+       The subgraph can be complemented with additional criteria for the nodes
+       and pairs. Additionally the effective symmetry of the subgraph can be
+       reduced by tagging the nodes in the subgraph with different labels.
+    """
     def __init__(self, subgraph, criteria_sets=None, node_tags=None):
         """Initialise a subgraph pattern.
 
@@ -1063,44 +1139,49 @@ class SubgraphPattern(Pattern):
             node_tags = {}
         self.node_tags = node_tags
         # get the essential information from the subgraph:
-        self.set_subgraph(subgraph)
+        self._set_subgraph(subgraph)
         Pattern.__init__(self)
 
-    def set_subgraph(self, subgraph):
-        if subgraph is not None and len(subgraph.independent_nodes) != 1:
-            raise SubgraphPatternError("A subgraph pattern must not be a disconnected graph.")
+    def _set_subgraph(self, subgraph):
+        """Initialize the subgraph"""
         self.subgraph = subgraph
-        # A) the levels for the incremental pattern matching
         self.level_pairs = {}
         self.level_constraints = {}
-        if subgraph is not None:
-            for pair, distance, constraint in self.subgraph.iter_breadth_first_pairs():
-                if constraint:
-                    l = self.level_constraints.setdefault(distance-1, [])
-                else:
-                    l = self.level_pairs.setdefault(distance, [])
-                l.append(pair)
+        self.duplicate_checks = set([])
+        if subgraph is None:
+            return
+        if len(subgraph.independent_nodes) != 1:
+            raise ValueError("A subgraph pattern must not be a disconnected graph.")
+        # A) the levels for the incremental pattern matching
+        for pair, distance, constraint in self.subgraph.iter_breadth_first_pairs():
+            if constraint:
+                l = self.level_constraints.setdefault(distance-1, [])
+            else:
+                l = self.level_pairs.setdefault(distance, [])
+            l.append(pair)
         #print "level_pairs", self.level_pairs
         #print "level_constraints", self.level_constraints
         # B) The comparisons the should me checked when one wants to avoid
         # symmetrically duplicate pattern matches
-        self.duplicate_checks = set([])
-        if not (subgraph is None or self.criteria_sets is None):
+        if self.criteria_sets is not None:
             for cycles in subgraph.symmetry_cycles:
                 if len(cycles) > 0:
                     self.duplicate_checks.add((cycles[0][0], cycles[0][1]))
 
 
     def iter_initial_relations(self):
+        """Iterate over all valid initial relations for a match"""
         node0 = self.subgraph.central_node
         for node1 in xrange(self.graph.num_nodes):
             if self.compare(node0, node1):
                 yield node0, node1
 
     def get_new_pairs(self, level):
+        """Get the next pairs from the pattern"""
         return self.level_pairs.get(level, []), self.level_constraints.get(level, [])
 
     def check_next_match(self, match, new_relations):
+        """Check if the (onset for a) match can be a valid"""
         # only returns true for ecaxtly one set of new_relations from all the
         # ones that are symmetrically equivalent
         if not (self.criteria_sets is None or self.one_match):
@@ -1145,9 +1226,16 @@ class SubgraphPattern(Pattern):
         return True
 
     def complete(self, match):
+        """Return True of the match is complete"""
         return len(match) == self.subgraph.num_nodes
 
     def iter_final_matches(self, canonical_match):
+        """Given a match, iterate over all related equivalent matches
+
+           When criteria sets are defined, the iterator runs over all symmetric
+           equivalent matches that fulfill one of the criteria sets. When not
+           criteria sets are defined, the iterator only yields the input match.
+        """
         if self.criteria_sets is None or self.one_match:
             yield canonical_match
         else:
@@ -1169,13 +1257,17 @@ class SubgraphPattern(Pattern):
 
 
 class EqualPattern(SubgraphPattern):
+    """Like SubgraphPattern, but the pattern must have the same size as the graph"""
     sub = False
 
     def __init__(self, subgraph):
-        # Don't allow criteria sets and node_tags
+        """Initialize a EqualPattern"""
+        # Don't allow criteria sets and node_tags. This limitation is due to
+        # the compare method below. TODO: Is this a good idea?
         SubgraphPattern.__init__(self, subgraph)
 
     def iter_initial_relations(self):
+        """Iterate over all valid initial relations for a match"""
         if self.subgraph.num_pairs != self.graph.num_pairs:
             return # don't even try
         node0 = self.subgraph.central_node
@@ -1184,19 +1276,14 @@ class EqualPattern(SubgraphPattern):
                 yield node0, node1
 
     def compare(self, node0, node1):
+        """Returns true when the two nodes are of the same kind"""
         return (self.subgraph.node_fingerprints[node0] == self.graph.node_fingerprints[node1]).all()
 
 
 class EgoMatch(Match):
-    def get_closed(self):
-        """Return wether this permutation is closed."""
-        for source in self.forward:
-            if source not in self.reverse:
-                return False
-        return True
-
+    """A Match object with specialized functions for the EgoPattern"""
     def get_closed_cycles(self):
-        """Return the closed cycles corresponding to this permutation.
+        """Return the closed cycles corresponding to this permutation
 
         The cycle will be normalized to facilitate the elimination of
         duplicates. The following is guaranteed:
@@ -1250,18 +1337,27 @@ class EgoMatch(Match):
 
 
 class EgoPattern(EqualPattern):
+    """A pattern that finds the isometries of a graph onto itself"""
     MatchClass = EgoMatch
 
     def __init__(self):
+        """Initialize an EgoPattern"""
         EqualPattern.__init__(self, None)
 
     def init_graph(self, graph, one_match):
-        self.set_subgraph(graph)
+        self._set_subgraph(graph)
         EqualPattern.init_graph(self, graph, one_match)
 
 
 class RingPattern(Pattern):
+    """A pattern that matches strong rings up to a given size"""
+
     def __init__(self, max_size):
+        """Initialize a ring pattern
+
+           Argument:
+             max_size  --  the maximum number of vertices in a ring
+        """
         if max_size < 3:
             raise ValueError("Ring sizes must be at least 3.")
         self.max_size = max_size
@@ -1271,11 +1367,13 @@ class RingPattern(Pattern):
         Pattern.init_graph(self, graph, one_match)
 
     def iter_initial_relations(self):
+        """Iterate over all valid initial relations for a match"""
         node0 = 0
         for node1 in xrange(self.graph.num_nodes):
             yield node0, node1
 
     def get_new_pairs(self, level):
+        """Get the next pairs from the pattern"""
         if level == 0:
             pairs0 = [(0, 1), (0, 2)]
         elif level >= (self.max_size-1)/2:
@@ -1286,6 +1384,7 @@ class RingPattern(Pattern):
         return pairs0, []
 
     def check_next_match(self, match, new_relations):
+        """Check if the (onset for a) match can be a valid (part of a) ring"""
         # avoid duplicate rings (order of traversal)
         if len(match) == 3:
             if match.forward[1] < match.forward[2]:
@@ -1309,6 +1408,7 @@ class RingPattern(Pattern):
         return True
 
     def complete(self, match):
+        """Check the completeness of a ring match"""
         size = len(match)
         # check whether we have an odd strong ring
         if match.forward[size-1] in self.graph.neighbors[match.forward[size-2]]:
@@ -1358,18 +1458,33 @@ class RingPattern(Pattern):
 
 
 class GraphSearch(object):
+    """An algorithm that searches for all matches of a pattern in a graph
+
+       Usage:
+       >>> gs = GraphSearch(pattern)
+       >>> for match in gs(graph):
+       ...     print match.forward
+    """
+
     def __init__(self, pattern, debug=False):
+        """Initialize a GraphSearch object
+
+           Arguments:
+             pattern  --  A Pattern instance, describing the pattern to look for
+             debug  --  When true, debugging info is printed on screen
+                        (default=False)
+        """
         self.pattern = pattern
         self.debug = debug
 
     def __call__(self, graph, one_match=False):
-        """Yields all match of self.pattern in the given graph.
+        """Iterator over all matches of self.pattern in the given graph.
 
-        Arguments:
-            graph  --  The graph in which the matches according to
-                       self.matchdefinition have to be found.
-            one_match --  If True, only one match will be returned. This
-                          allows certain optimizations.
+           Arguments:
+               graph  --  The graph in which the matches according to
+                          self.matchdefinition have to be found.
+               one_match --  If True, only one match will be returned. This
+                             allows certain optimizations.
         """
         self.pattern.init_graph(graph, one_match)
         # Matches are grown iteratively.
@@ -1389,6 +1504,7 @@ class GraphSearch(object):
                     if one_match: return
 
     def print_debug(self, text, indent=0):
+        """Only prints debug info on screen when self.debug == True."""
         if self.debug:
             if indent > 0:
                 print " "*self.debug, text
@@ -1397,6 +1513,7 @@ class GraphSearch(object):
                 print " "*self.debug, text
 
     def _iter_candidate_groups(self, init_match, pairs0, pairs1):
+        """Divide the pairs into groups"""
         # collect all end nodes0 and end nodes1 that belong to the same group.
         sources = {}
         for start_node0, end_node0 in pairs0:
@@ -1413,11 +1530,13 @@ class GraphSearch(object):
 
 
     def _iter_new_relations(self, init_match, graph, pairs0, constraints0, pairs1):
+        """Given an onset for a match, iterate over all possible new key-value pairs"""
         # Count the number of unique pairs0[i][1] values. This is also be
         # the number of new relations.
         num_new_relations = len(set(j for i, j in pairs0))
 
         def combine_small(relations, num):
+            """iterate over all compatible combinations within one set of relations"""
             if len(relations) == 0:
                 return
             for i, pivot in enumerate(relations):
@@ -1454,6 +1573,7 @@ class GraphSearch(object):
         self.print_debug("candidate_relations: %s" % candidate_relations)
 
         def combine_big(pos=0):
+            """Iterate over all possible sets of relations"""
             # pos is an index in candidate_relations
             crs = candidate_relations[pos]
             if pos == len(candidate_relations)-1:
@@ -1488,6 +1608,11 @@ class GraphSearch(object):
             yield forward
 
     def _iter_matches(self, input_match, graph, level=0):
+        """Given an onset for a match, iterate over all completions of that match
+
+           This iterator works recursively. At each level the match is extended
+           with one key-value pair.
+        """
         self.print_debug("ENTERING _ITER_MATCHES", 1)
         self.print_debug("input_match: %s" % input_match)
         # A) collect the new pairs to extend the match.

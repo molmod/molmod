@@ -17,7 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-
+"""Tools for reading Gaussian03 formatted checkpoint files"""
 
 from molmod.molecules import Molecule
 from molmod.io.common import FileFormatError
