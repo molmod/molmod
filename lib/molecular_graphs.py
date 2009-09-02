@@ -510,7 +510,7 @@ class NRingPattern(SubgraphPattern):
             return False
         if self.strong:
             # If the ring is not strong, return False
-            if self.size%2 == 0:
+            if self.size % 2 == 0:
                 # even ring
                 for i in xrange(self.size/2):
                     node1_start = match.forward[i]

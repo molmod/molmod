@@ -178,7 +178,7 @@ class ToyFF(object):
             for j in neighbors:
                 number_j = graph.numbers[j]
                 for k in neighbors:
-                    if j<k and not frozenset([j, k]) in graph.pairs:
+                    if j < k and not frozenset([j, k]) in graph.pairs:
                         number_k = graph.numbers[k]
 
                         triplet = (

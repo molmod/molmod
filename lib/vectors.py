@@ -22,7 +22,7 @@
 import numpy
 
 
-__all__= [
+__all__ = [
     "cosine", "angle", "random_unit", "random_normal", "random_orthonormal",
     "triangle_normal",
 ]

@@ -291,7 +291,7 @@ class NumberState(object):
                 if not isinstance(attr, ArrayAttr):
                     raise FileFormatError("field '%s' is not an array." % name)
                 shape = words[2][7:-1]
-                if shape[-1]==', ':
+                if shape[-1] == ', ':
                     shape = shape[:-1]
                 try:
                     shape = tuple(int(word) for word in shape.split(","))
