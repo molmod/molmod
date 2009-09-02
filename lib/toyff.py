@@ -48,7 +48,7 @@ def guess_geometry(graph):
     from molmod.minimizer import Minimizer, NewtonGLineSearch
 
     ff = ToyFF(graph)
-    x_init = numpy.random.normal(0,1,N*3)
+    x_init = numpy.random.normal(0, 1, N*3)
 
     #  level 1 geometry optimization: graph based
     ff.dm_quad = 1.0
@@ -80,7 +80,7 @@ def guess_geometry(graph):
 
     x_opt = x_init
 
-    mol = Molecule(graph.numbers, x_opt.reshape((N,3)))
+    mol = Molecule(graph.numbers, x_opt.reshape((N, 3)))
     return mol
 
 
@@ -117,7 +117,7 @@ def tune_geometry(graph, mol):
 
     x_opt = x_init
 
-    mol = Molecule(graph.numbers, x_opt.reshape((N,3)))
+    mol = Molecule(graph.numbers, x_opt.reshape((N, 3)))
     return mol
 
 
@@ -146,8 +146,8 @@ class ToyFF(object):
         bond_pairs = []
         bond_lengths = []
         for i, j in graph.pairs:
-            bond_pairs.append((i,j))
-            bond_lengths.append(bonds.get_length(graph.numbers[i],graph.numbers[j]))
+            bond_pairs.append((i, j))
+            bond_lengths.append(bonds.get_length(graph.numbers[i], graph.numbers[j]))
         self.bond_pairs = numpy.array(bond_pairs, numpy.int32)
         self.bond_lengths = numpy.array(bond_lengths, float)
 
@@ -178,7 +178,7 @@ class ToyFF(object):
             for j in neighbors:
                 number_j = graph.numbers[j]
                 for k in neighbors:
-                    if j<k and not frozenset([j,k]) in graph.pairs:
+                    if j<k and not frozenset([j, k]) in graph.pairs:
                         number_k = graph.numbers[k]
 
                         triplet = (
@@ -191,10 +191,10 @@ class ToyFF(object):
                         if angle is None:
                             angle = default_angle
 
-                        dj = bonds.get_length(number_i,number_j)
-                        dk = bonds.get_length(number_i,number_k)
+                        dj = bonds.get_length(number_i, number_j)
+                        dk = bonds.get_length(number_i, number_k)
                         d = numpy.sqrt(dj**2+dk**2-2*dj*dk*numpy.cos(angle))
-                        span_pairs.append((j,k))
+                        span_pairs.append((j, k))
                         span_lengths.append(d)
         self.span_pairs = numpy.array(span_pairs, numpy.int32)
         self.span_lengths = numpy.array(span_lengths, float)
@@ -213,7 +213,7 @@ class ToyFF(object):
              do_gradient  --  when set to True, the gradient is also computed
                               and returned. (default=False)
         """
-        x = x.reshape((-1,3))
+        x = x.reshape((-1, 3))
         result = 0.0
 
         gradient = numpy.zeros(x.shape, float)
@@ -246,10 +246,10 @@ class SpecialAngles(object):
                 value = numpy.pi/180.0*float(line[line.index(':')+1:-1])
                 self._angle_dict[key] = value
 
-    def get_angle(self,triplet):
+    def get_angle(self, triplet):
         """Get a rest angle for a given triplet
 
-           A triplet consists of a tuple with six elements: (n0,v0,n1,v1,n2,v2)
+           A triplet consists of a tuple with six elements: (n0, v0, n1, v1, n2, v2)
            The indexes refer to consecutive atoms forming a valence angle. n0,
            n1 and n2 are the atom numbers of the angle and v0, v1 and v2 are the
            valences of the corresponding atoms. n1 and v1 are the values for the

@@ -112,9 +112,9 @@ class XYZReader(object):
                 raise StopIteration
             symbols.append(words[0])
             try:
-                coordinates[counter,0] = float(words[1])
-                coordinates[counter,1] = float(words[2])
-                coordinates[counter,2] = float(words[3])
+                coordinates[counter, 0] = float(words[1])
+                coordinates[counter, 1] = float(words[2])
+                coordinates[counter, 2] = float(words[3])
             except ValueError:
                 raise StopIteration
         coordinates *= self.file_unit
@@ -196,7 +196,7 @@ class XYZWriter(object):
         print >> self._file, "% 8i" % len(self.symbols)
         print >> self._file, str(title)
         for symbol, coordinate in zip(self.symbols, coordinates):
-            print >> self._file, "% 2s % 12.9f % 12.9f % 12.9f" % ((symbol,) + tuple(coordinate/self.file_unit))
+            print >> self._file, "% 2s % 12.9f % 12.9f % 12.9f" % ((symbol, ) + tuple(coordinate/self.file_unit))
 
 
 class XYZFile(object):
@@ -208,7 +208,7 @@ class XYZFile(object):
        xyz_file = XYZFile("some.xyz")
        mol = xyz_file.get_molecule(3)
        print mol.title
-       xyz_file.geometries[0,4,2] = 5.0 # frame 0, atom 4, Z-coordinate
+       xyz_file.geometries[0, 4, 2] = 5.0 # frame 0, atom 4, Z-coordinate
        xyz_file.write_to_file("other.xyz")
     """
     def __init__(self, f, sub=slice(None), file_unit=angstrom):

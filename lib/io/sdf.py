@@ -89,15 +89,15 @@ class SDFReader(object):
                 raise FileFormatError("Expecting at least two numbers at fourth line.")
 
             numbers = numpy.zeros(num_atoms, int)
-            coordinates = numpy.zeros((num_atoms,3), float)
+            coordinates = numpy.zeros((num_atoms, 3), float)
             for i in xrange(num_atoms):
                 words = self.f.next().split()
                 if len(words) < 4:
                     raise FileFormatError("Expecting at least four words on an atom line.")
                 try:
-                    coordinates[i,0] = float(words[0])
-                    coordinates[i,1] = float(words[1])
-                    coordinates[i,2] = float(words[2])
+                    coordinates[i, 0] = float(words[0])
+                    coordinates[i, 1] = float(words[1])
+                    coordinates[i, 2] = float(words[2])
                 except ValueError:
                     raise FileFormatError("Coordinates must be floating point numbers.")
                 atom = periodic[words[3]]
@@ -113,7 +113,7 @@ class SDFReader(object):
                 if len(words) < 3:
                     raise FileFormatError("Expecting at least three numbers on a bond line.")
                 try:
-                    pairs.append((int(words[0])-1,int(words[1])-1))
+                    pairs.append((int(words[0])-1, int(words[1])-1))
                     orders[i] = int(words[2])
                 except ValueError:
                     raise FileFormatError("Expecting at least three numbers on a bond line.")

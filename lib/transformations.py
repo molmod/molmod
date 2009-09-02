@@ -49,7 +49,7 @@ def check_matrix(m):
 
 def check_translation_vector(t):
     """Check the sanity of a translation vector"""
-    if t.shape != (3,):
+    if t.shape != (3, ):
         raise ValueError("The translation vector must contain three elements.")
 
 
@@ -57,12 +57,12 @@ def check_rotation_matrix(r):
     """Check the sanity of a rotation matrix"""
     if r.shape != (3, 3):
         raise ValueError("The rotation matrix must be a 3 by 3 array.")
-    if abs(numpy.dot(r[:,0], r[:,0]) - 1) > eps or \
-        abs(numpy.dot(r[:,0], r[:,0]) - 1) > eps or \
-        abs(numpy.dot(r[:,0], r[:,0]) - 1) > eps or \
-        numpy.dot(r[:,0], r[:,1]) > eps or \
-        numpy.dot(r[:,1], r[:,2]) > eps or \
-        numpy.dot(r[:,2], r[:,0]) > eps:
+    if abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
+        abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
+        abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
+        numpy.dot(r[:, 0], r[:, 1]) > eps or \
+        numpy.dot(r[:, 1], r[:, 2]) > eps or \
+        numpy.dot(r[:, 2], r[:, 0]) > eps:
         raise ValueError("The rotation matrix is significantly non-orthonormal.")
 
 
@@ -91,7 +91,7 @@ class Translation(ReadOnly):
     @classmethod
     def identity(cls):
         """Return the identity transformation"""
-        return cls(numpy.zeros(3,float))
+        return cls(numpy.zeros(3, float))
 
     @cached
     def matrix(self):
@@ -111,8 +111,8 @@ class Translation(ReadOnly):
         """Apply this translation to the given object
 
            The argument can be several sorts of objects:
-             * numpy array with shape (3,)
-             * numpy array with shape (N,3)
+             * numpy array with shape (3, )
+             * numpy array with shape (N, 3)
              * Translation
              * Rotation
              * Complete
@@ -125,7 +125,7 @@ class Translation(ReadOnly):
 
            This method is equivalent to self*x.
         """
-        if isinstance(x, numpy.ndarray) and (x.shape == (3,) or (len(x.shape) == 2 and x.shape[1] == 3)):
+        if isinstance(x, numpy.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)):
             return x + self.t
         elif isinstance(x, Complete):
             return Complete(x.r, x.t + self.t)
@@ -154,7 +154,7 @@ class Rotation(ReadOnly):
     """Represents a rotation in 3D about the origin
 
        The attribute r contains the actual rotation matrix, which is a numpy
-       array with shape (3,3).
+       array with shape (3, 3).
     """
 
     def __init__(self, r):
@@ -243,8 +243,8 @@ class Rotation(ReadOnly):
         """Apply this rotation to the given object
 
            The argument can be several sorts of objects:
-             * numpy array with shape (3,)
-             * numpy array with shape (N,3)
+             * numpy array with shape (3, )
+             * numpy array with shape (N, 3)
              * Translation
              * Rotation
              * Complete
@@ -256,7 +256,7 @@ class Rotation(ReadOnly):
 
            This method is equivalent to self*x.
         """
-        if isinstance(x, numpy.ndarray) and (x.shape == (3,) or (len(x.shape) == 2 and x.shape[1] == 3)):
+        if isinstance(x, numpy.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)):
             return numpy.dot(x, self.r.transpose())
         elif isinstance(x, Complete):
             return Complete(numpy.dot(self.r, x.r), numpy.dot(self.r, x.t))
@@ -286,7 +286,7 @@ class Complete(Translation, Rotation):
 
        The attribute t contains the actual translation vector, which is a numpy
        array with three elements. The attribute r contains the actual rotation
-       matrix, which is a numpy array with shape (3,3).
+       matrix, which is a numpy array with shape (3, 3).
 
        Internally the translation part is always applied after the rotation
        part.
@@ -312,7 +312,7 @@ class Complete(Translation, Rotation):
     @classmethod
     def identity(cls):
         """Return the identity transformation"""
-        return cls(numpy.identity(3,float), numpy.zeros(3, float))
+        return cls(numpy.identity(3, float), numpy.zeros(3, float))
 
     @classmethod
     def from_properties(cls, angle, axis, invert, translation):
@@ -356,8 +356,8 @@ class Complete(Translation, Rotation):
         """Apply this transformation to the given object
 
            The argument can be several sorts of objects:
-             * numpy array with shape (3,)
-             * numpy array with shape (N,3)
+             * numpy array with shape (3, )
+             * numpy array with shape (N, 3)
              * Translation
              * Rotation
              * Complete
@@ -370,7 +370,7 @@ class Complete(Translation, Rotation):
 
            This method is equivalent to self*x.
         """
-        if isinstance(x, numpy.ndarray) and (x.shape == (3,) or (len(x.shape) == 2 and x.shape[1] == 3)):
+        if isinstance(x, numpy.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)):
             return numpy.dot(x, self.r.transpose()) + self.t
         elif isinstance(x, Complete):
             return Complete(numpy.dot(self.r, x.r), numpy.dot(self.r, x.t) + self.t)
@@ -433,7 +433,7 @@ def superpose(ras, rbs, weights=None):
     if weights is None:
         A = numpy.dot((rbs-mb).transpose(), ras-ma)
     else:
-        weights = weights.reshape((-1,1))
+        weights = weights.reshape((-1, 1))
         A = numpy.dot(((rbs-mb)*weights).transpose(), (ras-ma)*weights)
     B = numpy.dot(A.transpose(), A)
     evals, evecs = numpy.linalg.eigh(B)

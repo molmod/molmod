@@ -66,7 +66,7 @@ def quaternion_rotation(quat, vector):
     ], float)
 
 
-off_diagonals = [[2,1], [0,2], [1,0]]
+off_diagonals = [[2, 1], [0, 2], [1, 0]]
 
 def rotation_matrix_to_quaternion(rotation_matrix):
     """Compute the quaternion representing the rotation given by the matrix"""

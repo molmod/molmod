@@ -55,7 +55,7 @@ class UnitCell(ReadOnly):
         # sanity checks for the unit cell
         for col, name in enumerate(["a", "b", "c"]):
             if self.active[col]:
-                norm = numpy.linalg.norm(matrix[:,col])
+                norm = numpy.linalg.norm(matrix[:, col])
                 if norm < self.eps:
                     raise ValueError("The length of ridge %s is (nearly) zero." % name)
         if abs(self.generalized_volume) < self.eps:
@@ -84,14 +84,14 @@ class UnitCell(ReadOnly):
         del length
         del angle
 
-        matrix = numpy.zeros((3,3), float)
+        matrix = numpy.zeros((3, 3), float)
 
         # first cell vector
-        matrix[0,0] = lengths[0]
+        matrix[0, 0] = lengths[0]
 
         # second cell vector
-        matrix[0,1] = numpy.cos(angles[2])*lengths[1]
-        matrix[1,1] = numpy.sin(angles[2])*lengths[1]
+        matrix[0, 1] = numpy.cos(angles[2])*lengths[1]
+        matrix[1, 1] = numpy.sin(angles[2])*lengths[1]
 
         # Finding the third cell vector is slightly more difficult. :-)
         # It works like this:
@@ -100,12 +100,12 @@ class UnitCell(ReadOnly):
         # in the following equations:
         u_a = lengths[0]*lengths[2]*numpy.cos(angles[1])
         u_b = lengths[1]*lengths[2]*numpy.cos(angles[0])
-        matrix[0,2] = u_a/matrix[0,0]
-        matrix[1,2] = (u_b - matrix[0,1]*matrix[0,2])/matrix[1,1]
-        u_c = lengths[2]**2 - matrix[0,2]**2 - matrix[1,2]**2
+        matrix[0, 2] = u_a/matrix[0, 0]
+        matrix[1, 2] = (u_b - matrix[0, 1]*matrix[0, 2])/matrix[1, 1]
+        u_c = lengths[2]**2 - matrix[0, 2]**2 - matrix[1, 2]**2
         if u_c < 0:
             raise ValueError("The given cell parameters do not correspond to a unit cell.")
-        matrix[2,2] = numpy.sqrt(u_c)
+        matrix[2, 2] = numpy.sqrt(u_c)
 
         active = numpy.ones(3, bool)
         return cls(matrix, active)
@@ -125,9 +125,9 @@ class UnitCell(ReadOnly):
         if len(active) == 0:
             return -1
         elif len(active) == 1:
-            return numpy.linalg.norm(self.matrix[:,active[0]])
+            return numpy.linalg.norm(self.matrix[:, active[0]])
         elif len(active) == 2:
-            return numpy.linalg.norm(numpy.cross(self.matrix[:,active[0]], self.matrix[:,active[1]]))
+            return numpy.linalg.norm(numpy.cross(self.matrix[:, active[0]], self.matrix[:, active[1]]))
         elif len(active) == 3:
             return abs(numpy.linalg.det(self.matrix))
 
@@ -157,13 +157,13 @@ class UnitCell(ReadOnly):
             return numpy.zeros((3, 3), float)
         elif len(active) == 1:
             temp = self.matrix.copy()
-            if numpy.linalg.norm(temp[:,inactive[0]]) < self.eps:
+            if numpy.linalg.norm(temp[:, inactive[0]]) < self.eps:
                 temp[:, inactive[0]] = random_orthonormal(temp[:, active[0]])
-            if numpy.linalg.norm(temp[:,inactive[1]]) < self.eps:
+            if numpy.linalg.norm(temp[:, inactive[1]]) < self.eps:
                 temp[:, inactive[1]] = numpy.cross(temp[:, inactive[0]], temp[:, active[0]])
         elif len(active) == 2:
             temp = self.matrix.copy()
-            if numpy.linalg.norm(temp[:,inactive[0]]) < self.eps:
+            if numpy.linalg.norm(temp[:, inactive[0]]) < self.eps:
                 temp[:, inactive[0]] = numpy.cross(temp[:, active[0]], temp[:, active[1]])
         elif len(active) == 3:
             temp = self.matrix
@@ -172,12 +172,12 @@ class UnitCell(ReadOnly):
     @cached
     def parameters(self):
         """The cell parameters (lengths and angles)"""
-        length_a = numpy.linalg.norm(self.matrix[:,0])
-        length_b = numpy.linalg.norm(self.matrix[:,1])
-        length_c = numpy.linalg.norm(self.matrix[:,2])
-        alpha = numpy.arccos(numpy.dot(self.matrix[:,1], self.matrix[:,2]) / (length_b * length_c))
-        beta = numpy.arccos(numpy.dot(self.matrix[:,2], self.matrix[:,0]) / (length_c * length_a))
-        gamma = numpy.arccos(numpy.dot(self.matrix[:,0], self.matrix[:,1]) / (length_a * length_b))
+        length_a = numpy.linalg.norm(self.matrix[:, 0])
+        length_b = numpy.linalg.norm(self.matrix[:, 1])
+        length_c = numpy.linalg.norm(self.matrix[:, 2])
+        alpha = numpy.arccos(numpy.dot(self.matrix[:, 1], self.matrix[:, 2]) / (length_b * length_c))
+        beta = numpy.arccos(numpy.dot(self.matrix[:, 2], self.matrix[:, 0]) / (length_c * length_a))
+        gamma = numpy.arccos(numpy.dot(self.matrix[:, 0], self.matrix[:, 1]) / (length_a * length_b))
         return (numpy.array([length_a, length_b, length_c], float), numpy.array([alpha, beta, gamma], float))
 
     @cached
@@ -190,9 +190,9 @@ class UnitCell(ReadOnly):
               c with c_z positive
         """
         from molmod.transformations import Rotation
-        new_x = self.matrix[:,0].copy()
+        new_x = self.matrix[:, 0].copy()
         new_x /= numpy.linalg.norm(new_x)
-        new_z = numpy.cross(new_x, self.matrix[:,1])
+        new_z = numpy.cross(new_x, self.matrix[:, 1])
         new_z /= numpy.linalg.norm(new_z)
         new_y = numpy.cross(new_z, new_x)
         new_y /= numpy.linalg.norm(new_y)
@@ -208,9 +208,9 @@ class UnitCell(ReadOnly):
               a with a_x positive
         """
         from molmod.transformations import Rotation
-        new_z = self.matrix[:,2].copy()
+        new_z = self.matrix[:, 2].copy()
         new_z /= numpy.linalg.norm(new_z)
-        new_x = numpy.cross(self.matrix[:,1], new_z)
+        new_x = numpy.cross(self.matrix[:, 1], new_z)
         new_x /= numpy.linalg.norm(new_x)
         new_y = numpy.cross(new_z, new_x)
         new_y /= numpy.linalg.norm(new_y)
@@ -225,8 +225,8 @@ class UnitCell(ReadOnly):
         """Convert Cartesian to fractional coordinates
 
            Argument:
-             cartesian  --  Can be a numpy array with shape (3,) or with shape
-                            (N,3).
+             cartesian  --  Can be a numpy array with shape (3, ) or with shape
+                            (N, 3).
 
            The return value has the same shape as the argument. This function is
            the inverse of to_cartesian.
@@ -237,8 +237,8 @@ class UnitCell(ReadOnly):
         """Converts fractional to Cartesian coordinates
 
            Argument:
-             fractional  --  Can be a numpy array with shape (3,) or with shape
-                             (N,3).
+             fractional  --  Can be a numpy array with shape (3, ) or with shape
+                             (N, 3).
 
            The return value has the same shape as the argument. This function is
            the inverse of to_fractional.
@@ -263,29 +263,29 @@ class UnitCell(ReadOnly):
         act = self.active_inactive[0]
         if len(act) == 3:
             raise ValueError("The unit cell already has three active cell vectors.")
-        matrix = numpy.zeros((3,3), float)
+        matrix = numpy.zeros((3, 3), float)
         active = numpy.zeros(3, bool)
         if len(act) == 0:
             # Add the new vector
-            matrix[:,0] = vector
+            matrix[:, 0] = vector
             active[0] = True
             return UnitCell(matrix, active)
 
-        a = self.matrix[:,act[0]]
-        matrix[:,0] = a
+        a = self.matrix[:, act[0]]
+        matrix[:, 0] = a
         active[0] = True
         if len(act) == 1:
             # Add the new vector
-            matrix[:,1] = vector
+            matrix[:, 1] = vector
             active[1] = True
             return UnitCell(matrix, active)
 
-        b = self.matrix[:,act[1]]
-        matrix[:,1] = b
+        b = self.matrix[:, act[1]]
+        matrix[:, 1] = b
         active[1] = True
         if len(act) == 2:
             # Add the new vector
-            matrix[:,2] = vector
+            matrix[:, 2] = vector
             active[2] = True
             return UnitCell(matrix, active)
 

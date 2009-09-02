@@ -131,9 +131,9 @@ class ATRJReader(object):
                 frame.coordinates = numpy.zeros((self.num_atoms, 3), float)
                 for index, line in enumerate(coord_lines):
                     words = line.split()
-                    frame.coordinates[index,0] = float(words[1])
-                    frame.coordinates[index,1] = float(words[2])
-                    frame.coordinates[index,2] = float(words[3])
+                    frame.coordinates[index, 0] = float(words[1])
+                    frame.coordinates[index, 1] = float(words[2])
+                    frame.coordinates[index, 2] = float(words[3])
                 frame.coordinates *= angstrom
                 # Done
                 return frame

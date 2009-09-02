@@ -47,10 +47,10 @@ class PositionedObject(object):
 
         Arguments:
         id -- A user defined id that is associated with the coordinate.
-        coordinate -- A numpy array with shape (3,)
+        coordinate -- A numpy array with shape (3, )
         """
         assert isinstance(coordinate, numpy.ndarray)
-        assert coordinate.shape == (3,)
+        assert coordinate.shape == (3, )
         self.id = id
         self.coordinate = coordinate
 
@@ -64,7 +64,7 @@ class SparseBinnedObjects(object):
     only created in memory when an object is encountered that belongs in that
     bin.
 
-    All bins are uniquely defined by their indices i,j,k as defined in __init__.
+    All bins are uniquely defined by their indices i, j, k as defined in __init__.
     """
 
     def __init__(self, positioned_objects, gridsize=1):

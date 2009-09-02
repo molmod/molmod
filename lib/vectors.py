@@ -32,7 +32,7 @@ __all__= [
 def cosine(a, b):
     """Compute the cosine between two vectors
 
-       The result is clipped within the range [-1,1]
+       The result is clipped within the range [-1, 1]
     """
     result = numpy.dot(a, b) / numpy.linalg.norm(a) / numpy.linalg.norm(b)
     return numpy.clip(result, -1, 1)
@@ -41,7 +41,7 @@ def cosine(a, b):
 def angle(a, b):
     """Compute the angle between two vectors
 
-       The result is clipped within the range [-1,1]
+       The result is clipped within the range [-1, 1]
     """
     return numpy.arccos(cosine(a, b))
 

@@ -75,32 +75,32 @@ class GroReader(object):
         if self.num_atoms is not None and self.num_atoms != num_atoms:
             raise ValueError("The number of atoms must be the same over the entire file.")
         # Read the atom lines
-        pos = numpy.zeros((num_atoms,3),numpy.float32)
-        vel = numpy.zeros((num_atoms,3),numpy.float32)
+        pos = numpy.zeros((num_atoms, 3), numpy.float32)
+        vel = numpy.zeros((num_atoms, 3), numpy.float32)
         for i in xrange(num_atoms):
             words = self._get_line()[22:].split()
-            pos[i,0] = float(words[0])
-            pos[i,1] = float(words[1])
-            pos[i,2] = float(words[2])
-            vel[i,0] = float(words[3])
-            vel[i,1] = float(words[4])
-            vel[i,2] = float(words[5])
+            pos[i, 0] = float(words[0])
+            pos[i, 1] = float(words[1])
+            pos[i, 2] = float(words[2])
+            vel[i, 0] = float(words[3])
+            vel[i, 1] = float(words[4])
+            vel[i, 2] = float(words[5])
         pos *= nanometer
         vel *= nanometer/picosecond
         # Read the cell line
-        cell = numpy.zeros((3,3), numpy.float32)
+        cell = numpy.zeros((3, 3), numpy.float32)
         words = self._get_line().split()
         if len(words) >= 3:
-            cell[0,0] = float(words[0])
-            cell[1,1] = float(words[1])
-            cell[2,2] = float(words[2])
+            cell[0, 0] = float(words[0])
+            cell[1, 1] = float(words[1])
+            cell[2, 2] = float(words[2])
         if len(words) == 9:
-            cell[1,0] = float(words[3])
-            cell[2,0] = float(words[4])
-            cell[0,1] = float(words[5])
-            cell[2,1] = float(words[6])
-            cell[0,2] = float(words[7])
-            cell[1,2] = float(words[8])
+            cell[1, 0] = float(words[3])
+            cell[2, 0] = float(words[4])
+            cell[0, 1] = float(words[5])
+            cell[2, 1] = float(words[6])
+            cell[0, 2] = float(words[7])
+            cell[1, 2] = float(words[8])
         cell *= nanometer
         return time, pos, vel, cell
 

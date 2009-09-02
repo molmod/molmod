@@ -120,7 +120,7 @@ class ArrayAttr(StateAttr):
         print >> f, "% 40s  kind=%s  shape=%s" % (
             name,
             array.dtype.kind,
-            ("%s" % (array.shape,)).replace(" ", ""),
+            ("%s" % (array.shape, )).replace(" ", ""),
         )
         # print the numbers
         counter = 0
@@ -170,7 +170,7 @@ class NumberState(object):
        In this example a is an array and b is a single scalar. One can now
        read/write these attributes to a file as follows:
 
-       foo = Foo(a,b)
+       foo = Foo(a, b)
        foo.state.dump("somefile.txt")
        foo.state.load("somefile.txt")
     """
@@ -291,7 +291,7 @@ class NumberState(object):
                 if not isinstance(attr, ArrayAttr):
                     raise FileFormatError("field '%s' is not an array." % name)
                 shape = words[2][7:-1]
-                if shape[-1]==',':
+                if shape[-1]==', ':
                     shape = shape[:-1]
                 try:
                     shape = tuple(int(word) for word in shape.split(","))

@@ -139,7 +139,7 @@ class FCHKFile(object):
         if ("Atomic numbers" in self.fields) and ("Current cartesian coordinates" in self.fields):
             self.molecule = Molecule(
                 self.fields["Atomic numbers"],
-                numpy.reshape(self.fields["Current cartesian coordinates"], (-1,3)),
+                numpy.reshape(self.fields["Current cartesian coordinates"], (-1, 3)),
                 self.title,
             )
 
@@ -193,12 +193,12 @@ class FCHKFile(object):
     def get_hessian(self):
         """Return the hessian"""
         N = len(self.molecule.numbers)
-        result = numpy.zeros((3*N,3*N), float)
+        result = numpy.zeros((3*N, 3*N), float)
         counter = 0
         force_const = self.fields["Cartesian Force Constants"]
         for row in xrange(3*N):
-            result[row,:row+1] = force_const[counter:counter+row+1]
-            result[:row+1,row] = force_const[counter:counter+row+1]
+            result[row, :row+1] = force_const[counter:counter+row+1]
+            result[:row+1, row] = force_const[counter:counter+row+1]
             counter += row + 1
         return result
 

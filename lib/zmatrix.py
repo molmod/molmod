@@ -79,7 +79,7 @@ class ZMatrixGenerator(object):
         # store the orders as indexes
         self.old_index = numpy.array(new_order)
         self.new_index = numpy.zeros(self.old_index.shape, int)
-        for i,j in enumerate(self.old_index):
+        for i, j in enumerate(self.old_index):
             self.new_index[j] = i
 
     def _get_new_ref(self, existing_refs):
@@ -123,8 +123,8 @@ class ZMatrixGenerator(object):
            the ZMatrixGenerator object.
         """
         N = len(self.graph.numbers)
-        if coordinates.shape != (N,3):
-            raise ValueError("The shape of the coordinates must be (%i,3)" % N)
+        if coordinates.shape != (N, 3):
+            raise ValueError("The shape of the coordinates must be (%i, 3)" % N)
         result = numpy.zeros(N, dtype=self.dtype)
         for i in xrange(N):
             ref0 = self.old_index[i]
@@ -155,16 +155,16 @@ def zmat_to_cart(zmat):
 
     numbers = zmat["number"]
     N = len(numbers)
-    coordinates = numpy.zeros((N,3), float)
+    coordinates = numpy.zeros((N, 3), float)
 
     # special cases for the first coordinates
-    coordinates[1,2] = zmat["distance"][1]
+    coordinates[1, 2] = zmat["distance"][1]
     if zmat["rel1"][2] == 1:
         sign = -1
     else:
         sign = 1
-    coordinates[2,2] = zmat["distance"][2]*sign*numpy.cos(zmat["angle"][2])
-    coordinates[2,1] = zmat["distance"][2]*sign*numpy.sin(zmat["angle"][2])
+    coordinates[2, 2] = zmat["distance"][2]*sign*numpy.cos(zmat["angle"][2])
+    coordinates[2, 1] = zmat["distance"][2]*sign*numpy.sin(zmat["angle"][2])
     coordinates[2] += coordinates[2-zmat["rel1"][2]]
 
     ref0 = 3
@@ -180,7 +180,7 @@ def zmat_to_cart(zmat):
         new_z = coordinates[ref2] - origin
         norm_z = numpy.linalg.norm(new_z)
         if norm_z < 1e-15:
-            new_z = numpy.array([0,0,1], float)
+            new_z = numpy.array([0, 0, 1], float)
         else:
             new_z /= numpy.linalg.norm(new_z)
         new_x = coordinates[ref3] - origin

@@ -63,14 +63,14 @@ class PSFFile(object):
     def clear(self):
         """Clear the contents of the data structure"""
         self.title = None
-        self.numbers = numpy.zeros(0,int)
+        self.numbers = numpy.zeros(0, int)
         self.atom_types = [] # the atom_types in the second column, used to associate ff parameters
         self.charges = [] # ff charges
         self.names = [] # a name that is unique for the molecule composition and connectivity
-        self.molecules = numpy.zeros(0,int) # a counter for each molecule
-        self.bonds = numpy.zeros((0,2),int)
-        self.bends = numpy.zeros((0,3),int)
-        self.dihedrals = numpy.zeros((0,4),int)
+        self.molecules = numpy.zeros(0, int) # a counter for each molecule
+        self.bonds = numpy.zeros((0, 2), int)
+        self.bends = numpy.zeros((0, 3), int)
+        self.dihedrals = numpy.zeros((0, 4), int)
 
         self.name_cache = {}
 
@@ -123,17 +123,17 @@ class PSFFile(object):
         tmp = []
         for line in sections['BOND']:
             tmp.extend(int(word) for word in line.split())
-        self.bonds = numpy.reshape(numpy.array(tmp), (-1,2))-1
+        self.bonds = numpy.reshape(numpy.array(tmp), (-1, 2))-1
         # C.4) The bends section
         tmp = []
         for line in sections['THETA']:
             tmp.extend(int(word) for word in line.split())
-        self.bends = numpy.reshape(numpy.array(tmp), (-1,3))-1
+        self.bends = numpy.reshape(numpy.array(tmp), (-1, 3))-1
         # C.5) The dihedral section
         tmp = []
         for line in sections['PHI']:
             tmp.extend(int(word) for word in line.split())
-        self.dihedrals = numpy.reshape(numpy.array(tmp), (-1,4))-1
+        self.dihedrals = numpy.reshape(numpy.array(tmp), (-1, 4))-1
 
     def _get_name(self, graph, group=None):
         """Convert a molecular graph into a unique name
@@ -170,7 +170,7 @@ class PSFFile(object):
         # atoms
         print >> f, "% 7i !NATOM" % len(self.numbers)
         if len(self.numbers) > 0:
-            for index, (number, atom_type, charge, name, molecule) in enumerate(zip(self.numbers,self.atom_types,self.charges,self.names,self.molecules)):
+            for index, (number, atom_type, charge, name, molecule) in enumerate(zip(self.numbers, self.atom_types, self.charges, self.names, self.molecules)):
                 atom = periodic[number]
                 print >> f, "% 7i % 4s % 4i NAME % 6s % 6s % 8.4f % 12.6f 0" % (
                     index + 1,

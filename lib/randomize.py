@@ -88,9 +88,9 @@ class MolecularDistortion(object):
         print >> f, "# A (random) transformation of a part of a molecule:"
         print >> f, "# The translation vector is in atomic units."
         print >> f, "#     Rx             Ry             Rz              T"
-        print >> f, "% 15.9e % 15.9e % 15.9e % 15.9e" % (r[0,0], r[0,1], r[0,2], t[0])
-        print >> f, "% 15.9e % 15.9e % 15.9e % 15.9e" % (r[1,0], r[1,1], r[1,2], t[1])
-        print >> f, "% 15.9e % 15.9e % 15.9e % 15.9e" % (r[2,0], r[2,1], r[2,2], t[2])
+        print >> f, "% 15.9e % 15.9e % 15.9e % 15.9e" % (r[0, 0], r[0, 1], r[0, 2], t[0])
+        print >> f, "% 15.9e % 15.9e % 15.9e % 15.9e" % (r[1, 0], r[1, 1], r[1, 2], t[1])
+        print >> f, "% 15.9e % 15.9e % 15.9e % 15.9e" % (r[2, 0], r[2, 1], r[2, 2], t[2])
         print >> f, "# The indexes of the affected atoms:"
         print >> f, " ".join(str(i) for i in self.affected_atoms)
         f.close()
@@ -401,7 +401,7 @@ def random_dimer(molecule0, molecule1, thresholds, shoot_max):
        relative positions. Interatomic distances are above the thresholds.
        Initially a dimer is created where one interatomic distance approximates
        the threshold value. Then the molecules are given an additional
-       separation in the range [0,shoot_max].
+       separation in the range [0, shoot_max].
 
        thresholds has the following format:
        {frozenset([atom_number1, atom_number2]): distance}
@@ -432,23 +432,23 @@ def random_dimer(molecule0, molecule1, thresholds, shoot_max):
     distance_mat = numpy.zeros((len(molecule0.numbers), len(molecule1.numbers)), float)
     for i1, n1 in enumerate(molecule0.numbers):
         for i2, n2 in enumerate(molecule1.numbers):
-            threshold = thresholds.get(frozenset([n1,n2]))
-            threshold_mat[i1,i2] = threshold**2
+            threshold = thresholds.get(frozenset([n1, n2]))
+            threshold_mat[i1, i2] = threshold**2
     while True:
         cor1 += 0.1*direction
         distance_mat[:] = 0
-        for i in 0,1,2:
-            distance_mat += numpy.subtract.outer(molecule0.coordinates[:,i], cor1[:,i])**2
+        for i in 0, 1, 2:
+            distance_mat += numpy.subtract.outer(molecule0.coordinates[:, i], cor1[:, i])**2
         if (distance_mat > threshold_mat).all():
             break
 
-    # translate over a random distance [0,shoot] along the same direction
+    # translate over a random distance [0, shoot] along the same direction
     # (if necessary repeat until no overlap is found)
     while True:
-        cor1 += direction*numpy.random.uniform(0,shoot_max)
+        cor1 += direction*numpy.random.uniform(0, shoot_max)
         distance_mat[:] = 0
-        for i in 0,1,2:
-            distance_mat += numpy.subtract.outer(molecule0.coordinates[:,i], cor1[:,i])**2
+        for i in 0, 1, 2:
+            distance_mat += numpy.subtract.outer(molecule0.coordinates[:, i], cor1[:, i])**2
         if (distance_mat > threshold_mat).all():
             break
 

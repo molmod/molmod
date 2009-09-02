@@ -88,7 +88,7 @@ class Graph(ReadOnly):
        attributes that are not applicable to all nodes or pairs:
 
        node_property = {node1: blablabla, node2: blablabla, ...}
-       pair_property = {frozenset([node1,node2]): blablabla, ..}
+       pair_property = {frozenset([node1, node2]): blablabla, ..}
 
        If a certain property applies to all nodes or pairs, it is sometimes more
        practical to work with lists are numpy arrays that have the same ordering
@@ -208,7 +208,7 @@ class Graph(ReadOnly):
         distances = numpy.zeros((self.num_nodes, self.num_nodes), numpy.int32)
         #distances[:] = -1 # set all -1, which is just a very big integer
         #distances.ravel()[::len(distances)+1] = 0 # set diagonal to zero
-        for i,j in self.pairs: # set pairs to one
+        for i, j in self.pairs: # set pairs to one
             distances[i, j] = 1
             distances[j, i] = 1
         graphs_floyd_warshall(distances)
@@ -428,13 +428,13 @@ class Graph(ReadOnly):
             except ValueError:
                 raise TypeError("First argument (start) must be an integer.")
             if start < 0 or start >= self.num_nodes:
-                raise ValueError("start must be in the range [0,%i[" % self.num_nodes)
+                raise ValueError("start must be in the range [0, %i[" % self.num_nodes)
         from collections import deque
         work = numpy.zeros(self.num_nodes, int)
         work[:] = -1
         work[start] = 0
         if do_paths:
-            result = (start, 0, (start,))
+            result = (start, 0, (start, ))
         else:
             result = (start, 0)
         yield result
@@ -450,7 +450,7 @@ class Graph(ReadOnly):
                 if visited == -1 or (do_duplicates and visited == current_length):
                     work[current] = current_length
                     if do_paths:
-                        current_path = parent_path + (current,)
+                        current_path = parent_path + (current, )
                         result = (current, current_length, current_path)
                     else:
                         result = (current, current_length)
@@ -491,7 +491,7 @@ class Graph(ReadOnly):
             except ValueError:
                 raise TypeError("First argument (start) must be an integer.")
             if start < 0 or start >= self.num_nodes:
-                raise ValueError("start must be in the range [0,%i[" % self.num_nodes)
+                raise ValueError("start must be in the range [0, %i[" % self.num_nodes)
         from collections import deque
         work = numpy.zeros(self.num_nodes, int)
         work[:] = -1
@@ -603,7 +603,7 @@ class Graph(ReadOnly):
                 work[b] += result[a]
             #for a in xrange(self.num_nodes):
             #    for b in xrange(self.num_nodes):
-            #        work[a] += hashrow(result[b]*self.distances[a,b])
+            #        work[a] += hashrow(result[b]*self.distances[a, b])
             for a in xrange(self.num_nodes):
                 result[a] = hashrow(work[a])
         return result
@@ -905,7 +905,7 @@ class Pattern(object):
         self.one_match = one_match
 
     def iter_initial_relations(self):
-        """Yields the initial relations (source,destination) to start with.
+        """Yields the initial relations (source, destination) to start with.
 
            The function iterates of single relations between a pattern node and
            a subject node. In practice it is sufficient to select one node in
@@ -1123,11 +1123,11 @@ class SubgraphPattern(Pattern):
               nodes and pairs, and can also introduce global match conditions.
           node_tags -- Node tags can reduce the symmetry of the subgraph
               pattern. An example case where this is usefull: Consider atoms
-              0,1,2 that are bonded in this order. We want to compute the
-              distance from atom 2 to the line (0,1). In this case the
+              0, 1, 2 that are bonded in this order. We want to compute the
+              distance from atom 2 to the line (0, 1). In this case the
               matches (0->a, 1->b, 2->c) and (0->c, 1->b, 2->a) correspond to
               different internal coordinates. We want the graph search to return
-              the two solutions. In order to do this, set node_tags={0:0,1:0,2:1}.
+              the two solutions. In order to do this, set node_tags={0:0, 1:0, 2:1}.
               This means that node 0 and 1 are equivalent, but that node 2 has a
               different nature. In the case of a bending angle, only one match
               like (0->a, 1->b, 2->c) is sufficient and we do not want to reduce
@@ -1214,10 +1214,10 @@ class SubgraphPattern(Pattern):
                     # and certainly not easy to find. if node_a > node_b, it
                     # means that there is a symmetry operation that leads to
                     # an equivalent match where node_b < node_a. The latter
-                    # match is prefered for as much pairs (node_a,node_b) as
+                    # match is prefered for as much pairs (node_a, node_b) as
                     # possible without rejecting all possible matches. The real
                     # difficulty is to construct a proper list of
-                    # (node_a,node_b) pairs that will reject all but one matches.
+                    # (node_a, node_b) pairs that will reject all but one matches.
                     # I conjecture that this list contains all the first two
                     # nodes from each normalized symmetry cycle of the sub graph.
                     # We need a math guy to do the proof. -- Toon
@@ -1328,7 +1328,7 @@ class EgoMatch(Match):
         #    # swap all cycles and bring the lowest in front
         #    for cycle in closed_cycles:
         #        cycle.reverse()
-        #        cycle.insert(0,cycle.pop(-1))
+        #        cycle.insert(0, cycle.pop(-1))
 
         # transform the structure into a tuple of tuples
         closed_cycles = tuple(tuple(cycle) for cycle in closed_cycles)
@@ -1541,14 +1541,14 @@ class GraphSearch(object):
                 return
             for i, pivot in enumerate(relations):
                 if num == 1:
-                    yield (pivot,)
+                    yield (pivot, )
                 else:
                     compatible_relations = list(
                         item for item in relations[:i]
                         if pivot[0]!=item[0] and pivot[1]!=item[1]
                     )
                     for tail in combine_small(compatible_relations, num-1):
-                        yield (pivot,) + tail
+                        yield (pivot, ) + tail
 
         # generate candidate relations
         candidate_relations = []
@@ -1587,7 +1587,7 @@ class GraphSearch(object):
         # final loop
         for new_relations in combine_big():
             new_relations = set(new_relations)
-            self.print_debug("new_relations: %s" % (new_relations,))
+            self.print_debug("new_relations: %s" % (new_relations, ))
             # check the total number of new relations
             if len(new_relations) != num_new_relations:
                 continue
@@ -1619,16 +1619,16 @@ class GraphSearch(object):
         # Note that the pairs are ordered. pair[0] is always in the match.
         # pair[1] is never in the match. The constraints contain information
         # about the end points of pairs0. It is a list of two-tupples where
-        # (a,b) means that a and b must be bonded.
+        # (a, b) means that a and b must be bonded.
         pairs0, constraints0 = self.pattern.get_new_pairs(level)
         pairs1 = input_match.get_new_pairs(graph)
         self.print_debug("pairs0: %s" % pairs0)
         self.print_debug("constraints0: %s" % constraints0)
         self.print_debug("pairs1: %s" % pairs1)
 
-        # B) iterate over the sets of new relations: [(node0[i],node1[j]), ...]
+        # B) iterate over the sets of new relations: [(node0[i], node1[j]), ...]
         # that contain all endpoints of pairs0, that satisfy the constraints0
-        # and where (node0[i],node1[j]) only occurs if these are end points
+        # and where (node0[i], node1[j]) only occurs if these are end points
         # of a pair0 and pair1 whose starting points are already in init_match.
         # These conditions are implemented in an iterator as to separate concerns.
         # This iterator also calls the routines that check whether node1[j] also

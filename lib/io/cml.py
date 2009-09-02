@@ -89,7 +89,7 @@ class CMLMoleculeLoader(ContentHandler):
                 if atom_record is None: return
                 self.current_atom_names.append(atom_name)
                 self.current_numbers.append(atom_record.number)
-                self.current_coordinates.append([x,y,z])
+                self.current_coordinates.append([x, y, z])
                 # find potential extra attributes
                 extra = self._get_extra(attrs, self.atom_exclude)
                 if len(extra) > 0:
@@ -100,7 +100,7 @@ class CMLMoleculeLoader(ContentHandler):
                 if refs.count(" ") != 1: return
                 name1, name2 = refs.split(" ")
                 extra = self._get_extra(attrs, self.bond_exclude)
-                self.current_bonds.append((name1,name2,extra))
+                self.current_bonds.append((name1, name2, extra))
 
     def endElement(self, name):
         #print "END", name
@@ -121,7 +121,7 @@ class CMLMoleculeLoader(ContentHandler):
                     i1 = name_to_index.get(name1)
                     i2 = name_to_index.get(name2)
                     if i1 is not None and i2 is not None:
-                        pair = frozenset([i1,i2])
+                        pair = frozenset([i1, i2])
                         if len(extra) > 0:
                             current_bonds_extra[pair] = extra
                         pairs.add(pair)
@@ -163,13 +163,13 @@ def _dump_cml_molecule(f, molecule):
          molecule  --  a Molecule instance
     """
     extra = getattr(molecule, "extra", {})
-    attr_str = " ".join("%s='%s'" % (key,value) for key,value in extra.iteritems())
+    attr_str = " ".join("%s='%s'" % (key, value) for key, value in extra.iteritems())
     f.write(" <molecule id='%s' %s>\n" % (molecule.title, attr_str))
     f.write("  <atomArray>\n")
     atoms_extra = getattr(molecule, "atoms_extra", {})
     for counter, number, coordinate in zip(xrange(molecule.size), molecule.numbers, molecule.coordinates/angstrom):
         atom_extra = atoms_extra.get(counter, {})
-        attr_str = " ".join("%s='%s'" % (key,value) for key,value in atom_extra.iteritems())
+        attr_str = " ".join("%s='%s'" % (key, value) for key, value in atom_extra.iteritems())
         f.write("   <atom id='a%i' elementType='%s' x3='%s' y3='%s' z3='%s' %s />\n" % (
             counter, periodic[number].symbol, coordinate[0],  coordinate[1],
             coordinate[2], attr_str,
@@ -180,8 +180,8 @@ def _dump_cml_molecule(f, molecule):
         f.write("  <bondArray>\n")
         for pair in molecule.graph.pairs:
             bond_extra = bonds_extra.get(pair, {})
-            attr_str = " ".join("%s='%s'" % (key,value) for key,value in bond_extra.iteritems())
-            i1,i2 = pair
+            attr_str = " ".join("%s='%s'" % (key, value) for key, value in bond_extra.iteritems())
+            i1, i2 = pair
             f.write("   <bond atomRefs2='a%i a%i' %s />\n" % (i1, i2, attr_str))
         f.write("  </bondArray>\n")
     f.write(" </molecule>\n")

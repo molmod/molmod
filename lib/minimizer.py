@@ -230,7 +230,7 @@ class NewtonLineSearch(LineSearch):
 
     def get_extra_log(self):
         """The values of the extra log fields from the line search"""
-        result = (self.num_reduce,)
+        result = (self.num_reduce, )
         self.num_reduce = 0
         return result
 
@@ -294,7 +294,7 @@ class NewtonGLineSearch(LineSearch):
 
     def get_extra_log(self):
         """The values of the extra log fields from the line search"""
-        result = (self.num_reduce,)
+        result = (self.num_reduce, )
         self.num_reduce = 0
         return result
 

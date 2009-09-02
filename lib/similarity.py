@@ -24,7 +24,7 @@ first create a similarity descriptor of both molecules:
 
 a = SimilarityDescriptor.from_molecule(mol_a)
 b = SimilarityDescriptor.from_molecule(mol_b)
-print compute_similarity(a,b)
+print compute_similarity(a, b)
 
 There are several ways to construct a similarity_descriptor:
 
@@ -57,7 +57,7 @@ class SimilarityDescriptor(object):
         """
         self.table_distances = similarity_table_distances(distance_matrix)
         self.table_labels = similarity_table_labels(labels.astype(numpy.int32))
-        order = numpy.lexsort([self.table_labels[:,1], self.table_labels[:,0]])
+        order = numpy.lexsort([self.table_labels[:, 1], self.table_labels[:, 0]])
         self.table_labels = self.table_labels[order]
         self.table_distances = self.table_distances[order]
 
@@ -126,7 +126,7 @@ def compute_similarity(a, b, margin=1.0, cutoff=10.0):
        distance pairs with matching atom types. When comparing similarities it
        might be useful to normalize them in some way, e.g.
 
-       similarity(a,b)/(similarity(a,a)*similarity(b,b))**0.5
+       similarity(a, b)/(similarity(a, a)*similarity(b, b))**0.5
     """
     return similarity_measure(
         a.table_labels, a.table_distances,

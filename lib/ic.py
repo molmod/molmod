@@ -70,7 +70,7 @@ class Scalar(object):
             if index is not None:
                 self.d[index] = 1
         if deriv > 1:
-            self.dd = numpy.zeros((size,size), float)
+            self.dd = numpy.zeros((size, size), float)
         if deriv > 2:
             raise ValueError("This implementation (only) supports up to second order derivatives.")
 
@@ -165,7 +165,7 @@ class Vector3(object):
        This object is nothing more than a tier for three Scalar objects.
     """
 
-    def __init__(self, size, deriv=0, values=(0,0,0), indexes=(None,None,None)):
+    def __init__(self, size, deriv=0, values=(0, 0, 0), indexes=(None, None, None)):
         """Initialize a Vector3 object
 
            Arguments:
@@ -318,16 +318,16 @@ def bond_length(r0, r1, deriv=0):
     v = result[0]
     if deriv == 0:
         return v,
-    d = numpy.zeros((2,3), float)
+    d = numpy.zeros((2, 3), float)
     d[0] = result[1]
     d[1] = -result[1]
     if deriv == 1:
         return v, d
-    dd = numpy.zeros((2,3,2,3), float)
-    dd[0,:,0,:] = result[2]
-    dd[1,:,1,:] = result[2]
-    dd[0,:,1,:] = -result[2]
-    dd[1,:,0,:] = -result[2]
+    dd = numpy.zeros((2, 3, 2, 3), float)
+    dd[0, :, 0, :] = result[2]
+    dd[1, :, 1, :] = result[2]
+    dd[0, :, 1, :] = -result[2]
+    dd[1, :, 0, :] = -result[2]
     if deriv == 2:
         return v, d, dd
     raise ValueError("deriv must be 0, 1 or 2.")
@@ -336,7 +336,7 @@ pair_distance = bond_length
 
 def _bond_length_low(r, deriv):
     """Similar to bond_length, but with a relative vector"""
-    r = Vector3(3, deriv, r, (0,1,2))
+    r = Vector3(3, deriv, r, (0, 1, 2))
     d = r.norm()
     return d.results()
 
@@ -356,41 +356,41 @@ def bend_cos(r0, r1, r2, deriv=0):
     v = result[0]
     if deriv == 0:
         return v,
-    d = numpy.zeros((3,3), float)
+    d = numpy.zeros((3, 3), float)
     d[0] = result[1][:3]
     d[1] = -result[1][:3]-result[1][3:]
     d[2] = result[1][3:]
     if deriv == 1:
         return v, d
-    dd = numpy.zeros((3,3,3,3), float)
-    aa = result[2][:3,:3]
-    ab = result[2][:3,3:]
-    ba = result[2][3:,:3]
-    bb = result[2][3:,3:]
-    dd[0,:,0,:] =   aa
-    dd[0,:,1,:] = - aa - ab
-    dd[0,:,2,:] =   ab
-    dd[1,:,0,:] = - aa - ba
-    dd[1,:,1,:] =   aa + ba + ab + bb
-    dd[1,:,2,:] = - ab - bb
-    dd[2,:,0,:] =   ba
-    dd[2,:,1,:] = - ba - bb
-    dd[2,:,2,:] =   bb
+    dd = numpy.zeros((3, 3, 3, 3), float)
+    aa = result[2][:3, :3]
+    ab = result[2][:3, 3:]
+    ba = result[2][3:, :3]
+    bb = result[2][3:, 3:]
+    dd[0, :, 0, :] =   aa
+    dd[0, :, 1, :] = - aa - ab
+    dd[0, :, 2, :] =   ab
+    dd[1, :, 0, :] = - aa - ba
+    dd[1, :, 1, :] =   aa + ba + ab + bb
+    dd[1, :, 2, :] = - ab - bb
+    dd[2, :, 0, :] =   ba
+    dd[2, :, 1, :] = - ba - bb
+    dd[2, :, 2, :] =   bb
     if deriv == 2:
         return v, d, dd
     raise ValueError("deriv must be 0, 1 or 2.")
 
 def _bend_cos_low(a, b, deriv):
     """Similar to bend_cos, but with relative vectors"""
-    a = Vector3(6, deriv, a, (0,1,2))
-    b = Vector3(6, deriv, b, (3,4,5))
+    a = Vector3(6, deriv, a, (0, 1, 2))
+    b = Vector3(6, deriv, b, (3, 4, 5))
     a /= a.norm()
     b /= b.norm()
-    return dot(a,b).results()
+    return dot(a, b).results()
 
 def _cos_to_angle(result, deriv, sign=1):
     """Convert a cosine and its derivatives to an angle"""
-    v = numpy.arccos(numpy.clip(result[0],-1,1))
+    v = numpy.arccos(numpy.clip(result[0], -1, 1))
     if deriv == 0:
         return v*sign,
     if abs(result[0]) >= 1:
@@ -403,7 +403,7 @@ def _cos_to_angle(result, deriv, sign=1):
     factor2 = result[0]*factor1**3
     size = result[2].shape[0]
     dd = (
-        factor2*numpy.outer(result[1].ravel(), result[1].ravel()).reshape((size,3,size,3)) +
+        factor2*numpy.outer(result[1].ravel(), result[1].ravel()).reshape((size, 3, size, 3)) +
         factor1*result[2]
     )
     if deriv == 2:
@@ -424,7 +424,7 @@ def bend_angle(r0, r1, r2, deriv=0):
 
 
 def dihed_cos(r0, r1, r2, r3, deriv=0):
-    """Compute the cosine of the angle between the planes r0,r1,r2 and r1,r2,r3
+    """Compute the cosine of the angle between the planes r0, r1, r2 and r1, r2, r3
 
        Arguments:
          r0  --  a numpy array with three elements
@@ -440,65 +440,65 @@ def dihed_cos(r0, r1, r2, r3, deriv=0):
     v = result[0]
     if deriv == 0:
         return v,
-    d = numpy.zeros((4,3), float)
+    d = numpy.zeros((4, 3), float)
     d[0] = result[1][:3]
     d[1] = -result[1][:3]-result[1][3:6]
     d[2] = result[1][3:6]-result[1][6:]
     d[3] = result[1][6:]
     if deriv == 1:
         return v, d
-    dd = numpy.zeros((4,3,4,3), float)
-    aa = result[2][:3,:3]
-    ab = result[2][:3,3:6]
-    ac = result[2][:3,6:]
-    ba = result[2][3:6,:3]
-    bb = result[2][3:6,3:6]
-    bc = result[2][3:6,6:]
-    ca = result[2][6:,:3]
-    cb = result[2][6:,3:6]
-    cc = result[2][6:,6:]
+    dd = numpy.zeros((4, 3, 4, 3), float)
+    aa = result[2][:3, :3]
+    ab = result[2][:3, 3:6]
+    ac = result[2][:3, 6:]
+    ba = result[2][3:6, :3]
+    bb = result[2][3:6, 3:6]
+    bc = result[2][3:6, 6:]
+    ca = result[2][6:, :3]
+    cb = result[2][6:, 3:6]
+    cc = result[2][6:, 6:]
 
-    dd[0,:,0,:] =   aa
-    dd[0,:,1,:] = - aa - ab
-    dd[0,:,2,:] =   ab - ac
-    dd[0,:,3,:] =   ac
+    dd[0, :, 0, :] =   aa
+    dd[0, :, 1, :] = - aa - ab
+    dd[0, :, 2, :] =   ab - ac
+    dd[0, :, 3, :] =   ac
 
-    dd[1,:,0,:] = - aa - ba
-    dd[1,:,1,:] =   aa + ba + ab + bb
-    dd[1,:,2,:] = - ab - bb + ac + bc
-    dd[1,:,3,:] = - ac - bc
+    dd[1, :, 0, :] = - aa - ba
+    dd[1, :, 1, :] =   aa + ba + ab + bb
+    dd[1, :, 2, :] = - ab - bb + ac + bc
+    dd[1, :, 3, :] = - ac - bc
 
-    dd[2,:,0,:] =   ba - ca
-    dd[2,:,1,:] = - ba + ca - bb + cb
-    dd[2,:,2,:] =   bb - cb - bc + cc
-    dd[2,:,3,:] =   bc - cc
+    dd[2, :, 0, :] =   ba - ca
+    dd[2, :, 1, :] = - ba + ca - bb + cb
+    dd[2, :, 2, :] =   bb - cb - bc + cc
+    dd[2, :, 3, :] =   bc - cc
 
-    dd[3,:,0,:] =   ca
-    dd[3,:,1,:] = - ca - cb
-    dd[3,:,2,:] =   cb - cc
-    dd[3,:,3,:] =   cc
+    dd[3, :, 0, :] =   ca
+    dd[3, :, 1, :] = - ca - cb
+    dd[3, :, 2, :] =   cb - cc
+    dd[3, :, 3, :] =   cc
     if deriv == 2:
         return v, d, dd
     raise ValueError("deriv must be 0, 1 or 2.")
 
 def _dihed_cos_low(a, b, c, deriv):
     """Similar to dihed_cos, but with relative vectors"""
-    a = Vector3(9, deriv, a, (0,1,2))
-    b = Vector3(9, deriv, b, (3,4,5))
-    c = Vector3(9, deriv, c, (6,7,8))
+    a = Vector3(9, deriv, a, (0, 1, 2))
+    b = Vector3(9, deriv, b, (3, 4, 5))
+    c = Vector3(9, deriv, c, (6, 7, 8))
     b /= b.norm()
     tmp = b.copy()
-    tmp *= dot(a,b)
+    tmp *= dot(a, b)
     a -= tmp
     tmp = b.copy()
-    tmp *= dot(c,b)
+    tmp *= dot(c, b)
     c -= tmp
     a /= a.norm()
     c /= c.norm()
-    return dot(a,c).results()
+    return dot(a, c).results()
 
 def dihed_angle(r0, r1, r2, r3, deriv=0):
-    """Compute the angle between the planes r0,r1,r2 and r1,r2,r3
+    """Compute the angle between the planes r0, r1, r2 and r1, r2, r3
 
        The sign convention corresponds to the IUPAC definition of the torsion
        angle: http://dx.doi.org/10.1351/goldbook.T06406
@@ -514,7 +514,7 @@ def dihed_angle(r0, r1, r2, r3, deriv=0):
     a = r0 - r1
     b = r2 - r1
     c = r3 - r2
-    sign = 1-(numpy.linalg.det([a,b,c]) > 0)*2
+    sign = 1-(numpy.linalg.det([a, b, c]) > 0)*2
     return _cos_to_angle(result, deriv, sign)
 
 

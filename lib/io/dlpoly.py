@@ -120,11 +120,11 @@ class DLPolyHistoryReader(object):
         except ValueError:
             raise FileFormatError("Could not convert all numbers on the first line of the current time frame. (%i'th frame)" % self._counter)
         # the three cell lines
-        cell = numpy.zeros((3,3), float)
+        cell = numpy.zeros((3, 3), float)
         frame["cell"] = cell
         cell_msg = "The cell lines must consist of three floating point values. (%i'th frame, %i'th step)" % (self._counter, step)
         for i in xrange(3):
-            cell[:,i] = read_three(cell_msg)
+            cell[:, i] = read_three(cell_msg)
         cell *= self.pos_unit
         # the atoms
         symbols = []
@@ -133,13 +133,13 @@ class DLPolyHistoryReader(object):
         frame["masses"] = masses
         charges = numpy.zeros(self.num_atoms, float)
         frame["charges"] = charges
-        pos = numpy.zeros((self.num_atoms,3), float)
+        pos = numpy.zeros((self.num_atoms, 3), float)
         frame["pos"] = pos
         if self.keytrj > 0:
-            vel = numpy.zeros((self.num_atoms,3), float)
+            vel = numpy.zeros((self.num_atoms, 3), float)
             frame["vel"] = vel
         if self.keytrj > 1:
-            frc = numpy.zeros((self.num_atoms,3), float)
+            frc = numpy.zeros((self.num_atoms, 3), float)
             frame["frc"] = frc
         for i in xrange(self.num_atoms):
             # the atom header line

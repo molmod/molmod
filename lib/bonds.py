@@ -135,7 +135,7 @@ class BondData(object):
             return None
 
         deviation = 0.0
-        pair = frozenset([n1,n2])
+        pair = frozenset([n1, n2])
         result = None
         for bond_type in bond_types:
             bond_length = self.lengths[bond_type].get(pair)

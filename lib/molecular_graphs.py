@@ -95,10 +95,10 @@ class MolecularGraph(Graph):
         pairs = []
         orders = []
         for s in pair_str.split(","):
-            i,j,o = (int(w) for w in s.split("_"))
-            pairs.append((i,j))
+            i, j, o = (int(w) for w in s.split("_"))
+            pairs.append((i, j))
             orders.append(o)
-        return cls(pairs,numbers,numpy.array(orders))
+        return cls(pairs, numbers, numpy.array(orders))
 
     def __init__(self, pairs, numbers, orders=None):
         """Initialize a molecular graph
@@ -136,7 +136,7 @@ class MolecularGraph(Graph):
         new_pairs = []
         for i in xrange(repeat):
             for node1, node2 in self.pairs:
-                new_pairs.append(frozenset([node1+i*self.num_nodes,node2+i*self.num_nodes]))
+                new_pairs.append(frozenset([node1+i*self.num_nodes, node2+i*self.num_nodes]))
         # copy numbers
         new_numbers = numpy.zeros((repeat, len(self.numbers)), int)
         new_numbers[:] = self.numbers
@@ -153,7 +153,7 @@ class MolecularGraph(Graph):
     def blob(self):
         """Create a compact text representation of the graph"""
         atom_str = ",".join(str(number) for number in self.numbers)
-        pair_str = ",".join("%i_%i_%i" % (i,j,o) for (i,j),o in zip(self.pairs,self.orders))
+        pair_str = ",".join("%i_%i_%i" % (i, j, o) for (i, j), o in zip(self.pairs, self.orders))
         return "%s %s" % (atom_str, pair_str)
 
     def get_node_string(self, i):
@@ -220,12 +220,12 @@ class MolecularGraph(Graph):
             if num_hydrogen > 4:
                 num_hydrogen = 8-num_hydrogen
             for n in self.neighbors[i]:
-                bo = self.orders[self.pair_index[frozenset([i,n])]]
+                bo = self.orders[self.pair_index[frozenset([i, n])]]
                 if bo <= 0:
                     bo = 1
                 num_hydrogen -= bo
             for j in xrange(num_hydrogen):
-                new_pairs.append((i,counter))
+                new_pairs.append((i, counter))
                 counter += 1
         new_numbers = numpy.zeros(counter, int)
         new_numbers[:self.num_nodes] = self.numbers
@@ -474,7 +474,7 @@ class NRingPattern(SubgraphPattern):
             node_tags = {}
         self.size = size
         self.strong = strong
-        subgraph = Graph([(i,(i+1)%size) for i in xrange(size)])
+        subgraph = Graph([(i, (i+1)%size) for i in xrange(size)])
         SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
 
     def check_next_match(self, match, new_relations):
