@@ -35,6 +35,8 @@ class BaseTestCase(unittest.TestCase):
 
     def assertArraysAlmostEqual(self, a, b, threshold=1e-6, mean=False, doabs=False):
         self.assertEqual(a.shape, b.shape, "The array shapes do not match.")
+        if a.shape == (0,):
+            return
         if mean:
             abserr = abs(a-b).mean()
             oom = 0.5*(abs(a).mean()+abs(b).mean())
