@@ -309,9 +309,7 @@ class UnitCell(ReadOnly):
            least one point in the central cell. This concept is of importance
            when computing pair wise long-range interactions in periodic systems.
         """
-        # The problem can be simplified to finding the shortest distance from
-        # the origin to a point in a double unit cell box centered around the
-        # relative vector between the two unit cell boxes under scrunity.
+
         def iter_indexes():
             """Iterate over all unit cell indexes in the range"""
             ranges = self.get_radius_ranges(radius)
@@ -337,7 +335,17 @@ class UnitCell(ReadOnly):
         ])
 
         def close_enough(center):
-            """Find the distance of the point closest to the origin in a double cell"""
+            """Test if two cell volumes could have interactions within radius
+
+               Arguments:
+                 center  --  the relative vector between the two cell volumes
+            """
+            # The problem can be simplified to finding the shortest distance
+            # from the origin to a point in a double unit cell box centered
+            # around the relative vector between the two unit cell boxes under
+            # scrunity. Therefore the relative vector is called 'center' in
+            # this routine.
+            #
             # This is a constrained optimization problem that would in principle
             # be solved with the active set algorithm. We prefer to keep the
             # implementation simple and will try all reasonable combinations of
