@@ -290,8 +290,99 @@ class UnitCell(ReadOnly):
             return UnitCell(matrix, active)
 
     def get_radius_ranges(self, radius):
-        """Return the ranges of indexes of the periodic cell images that overlap
-        with a sphere with the given radius and its center in the origin.
+        """Return the ranges of indexes of the interacting neighboring unit cells
+
+           Interacting neigboring unit cells have at least one point in their
+           box volume that has a distance smaller or equal than radius to at
+           least one point in the central cell. This concept is of importance
+           when computing pair wise long-range interactions in periodic systems.
         """
-        return numpy.ceil(radius/self.spacings).astype(int)
+        result = numpy.ceil(radius/self.spacings).astype(int)
+        result[True^self.active] = 0
+        return result
+
+    def get_radius_indexes(self, radius):
+        """Return the indexes of the interacting neighboring unit cells
+
+           Interacting neigboring unit cells have at least one point in their
+           box volume that has a distance smaller or equal than radius to at
+           least one point in the central cell. This concept is of importance
+           when computing pair wise long-range interactions in periodic systems.
+        """
+        # The problem can be simplified to finding the shortest distance from
+        # the origin to a point in a double unit cell box centered around the
+        # relative vector between the two unit cell boxes under scrunity.
+        def iter_indexes():
+            """Iterate over all unit cell indexes in the range"""
+            ranges = self.get_radius_ranges(radius)
+            for i0 in xrange(-ranges[0], ranges[0]+1):
+                for i1 in xrange(-ranges[1], ranges[1]+1):
+                    for i2 in xrange(0, ranges[2]+1):
+                        yield numpy.array([i0, i1, i2])
+
+        flag_combinations = numpy.array([
+            [ 1,  1,  1], [ 1,  1,  0], [ 1,  1, -1],
+            [ 1,  0,  1], [ 1,  0,  0], [ 1,  0, -1],
+            [ 1, -1,  1], [ 1, -1,  0], [ 1, -1, -1],
+            [ 0,  1,  1], [ 0,  1,  0], [ 0,  1, -1],
+            [ 0,  0,  1], [ 0,  0,  0], [ 0,  0, -1],
+            [ 0, -1,  1], [ 0, -1,  0], [ 0, -1, -1],
+            [-1,  1,  1], [-1,  1,  0], [-1,  1, -1],
+            [-1,  0,  1], [-1,  0,  0], [-1,  0, -1],
+            [-1, -1,  1], [-1, -1,  0], [-1, -1, -1],
+        ])
+        sign_combinations = numpy.array([
+            [ 1,  1,  1], [ 1,  1, -1], [ 1, -1,  1], [ 1, -1, -1],
+            [-1,  1,  1], [-1,  1, -1], [-1, -1,  1], [-1, -1, -1],
+        ])
+
+        def close_enough(center):
+            """Find the distance of the point closest to the origin in a double cell"""
+            # This is a constrained optimization problem that would in principle
+            # be solved with the active set algorithm. We prefer to keep the
+            # implementation simple and will try all reasonable combinations of
+            # constraints.
+            #
+            # There are 6 constraints, i.e. the six faces of the box, which
+            # naively leads to 2**6 possible combinations of turning constraints
+            # of and on. Constrainging the solution to two oposite faces at the
+            # same time does not make sense. Consequently, there are only 27
+            # reasonable combinations of constraints.
+            #
+            # For each combination, only those that have a solution in, or on
+            # the edge of the box are considered. From the latter, we test if
+            # it is within the radius.
+
+            for flags in flag_combinations:
+                corner = center + numpy.dot(self.matrix,flags)
+                if sum(abs(flags)) == 3:
+                    # the solution is already known
+                    pos = corner
+                else:
+                    # The basis vectors for the null space of the active
+                    # constraints are the cell vectors corresponding to the
+                    # inactive constraints.
+                    N = self.matrix[:,flags==0]
+                    Nt = N.transpose()
+                    # The particular solution is the corner.
+                    # The solution with the smallest norm:
+                    H = numpy.dot(numpy.dot(N, numpy.linalg.inv(numpy.dot(Nt, N))), Nt)
+                    pos = corner - numpy.dot(H, corner)
+                # test if pos is inside the box AND the distance is below radius
+                if abs(self.to_fractional(pos - center)).max() < 1.000001 and \
+                   numpy.linalg.norm(pos) <= radius:
+                    return True
+            # found nothing
+            return False
+
+        result = []
+        for index in iter_indexes():
+            # Run over all potential indexes and check if they are in the
+            # interaction sphere.
+            if close_enough(self.to_cartesian(index)):
+                result.append(index)
+                if index[2] != 0:
+                    result.append(-index)
+        return numpy.array(result)
+
 

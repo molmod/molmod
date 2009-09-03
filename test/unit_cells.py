@@ -33,12 +33,10 @@ __all__ = ["UnitCellTestCase"]
 class UnitCellTestCase(BaseTestCase):
     def get_random_uc(self, r=3, full=True):
         if full:
-            return UnitCell(numpy.random.uniform(-r, r, (3, 3)))
+            active = numpy.ones(3, bool)
         else:
-            return UnitCell(
-                numpy.random.uniform(-r, r, (3, 3)),
-                numpy.random.randint(1,size=3).astype(bool)
-            )
+            active = numpy.random.randint(1,size=3).astype(bool)
+        return UnitCell(numpy.random.uniform(-r, r, (3, 3)), active)
 
     def test_parameters(self):
         for counter in xrange(100):
@@ -156,7 +154,6 @@ class UnitCellTestCase(BaseTestCase):
     def test_radius_ranges(self):
         for i in xrange(20):
             uc = self.get_random_uc()
-            lengths, angles = uc.parameters
             radius = numpy.random.uniform(1,5)
             ranges = uc.get_radius_ranges(radius)
             for j in xrange(100):
@@ -164,6 +161,162 @@ class UnitCellTestCase(BaseTestCase):
                 c1 = c0 + radius*random_normal()
                 f1 = uc.to_fractional(c1)
                 self.assert_((abs(f1) <= ranges+0.5).all(), "f1=%s  ranges=%s" % (f1, ranges))
+
+    def test_radius_ranges_2d(self):
+        uc = UnitCell(numpy.identity(3, float), numpy.array([True, True, False]))
+        self.assertArraysEqual(uc.get_radius_ranges(3), numpy.array([3,3,0]))
+
+    def test_radius_indexes(self):
+        for i in xrange(20):
+            uc = self.get_random_uc()
+            radius = numpy.random.uniform(1,2)*abs(uc.generalized_volume)**(0.333)
+
+            #uc = UnitCell.from_parameters3(
+            #    numpy.array([3.73800243,  2.35503196,  3.25130153]),
+            #    numpy.array([29.78777448, 64.81228452, 86.7641093])*deg,
+            #)
+            #lengths, angles = uc.parameters
+            #radius = 1.98042040465
+
+            #matrix = numpy.array([[2,0,0],[0,2,0],[0,0,2]], float)
+            #uc = UnitCell(matrix)
+            #radius = 5.3
+
+            #lengths, angles = uc.parameters
+            #print lengths
+            #print angles/deg
+            #print radius
+
+            ranges = uc.get_radius_ranges(radius)
+            #print "ranges", ranges
+            if numpy.product(ranges) > 100:
+                continue
+            indexes = uc.get_radius_indexes(radius)
+            self.assert_(len(indexes)*abs(uc.generalized_volume) > 4.0/3.0*numpy.pi*radius**3)
+            #print "testing distances"
+            for j in xrange(20):
+                c0 = uc.to_cartesian(numpy.random.uniform(-0.5, 0.5, 3))
+                c1 = uc.to_cartesian(numpy.random.uniform(-0.5, 0.5, 3))
+                relative = c1 - c0
+                # compute all distances between c0 and c1 based on radius
+                # ranges
+                distances_slow = []
+                for i0 in xrange(-ranges[0], ranges[0]+1):
+                    for i1 in xrange(-ranges[1], ranges[1]+1):
+                        for i2 in xrange(-ranges[2], ranges[2]+1):
+                            delta = uc.to_cartesian([i0,i1,i2])
+                            distance = numpy.linalg.norm(relative + delta)
+                            if distance <= radius:
+                                distances_slow.append(distance)
+                distances_slow.sort()
+                distances_fast = []
+                for index in indexes:
+                    delta = uc.to_cartesian(index)
+                    distance = numpy.linalg.norm(relative + delta)
+                    if distance <= radius:
+                        distances_fast.append(distance)
+                distances_fast.sort()
+                #print distances_slow
+                #print distances_fast
+                #print
+                self.assertArraysAlmostEqual(numpy.array(distances_slow), numpy.array(distances_fast))
+
+    def test_radius_indexes_1d(self):
+        uc = UnitCell(numpy.identity(3, float), numpy.array([True, False, False]))
+        indexes = uc.get_radius_indexes(0.5)
+        expected_indexes = numpy.array([
+            [-1,  0,  0],
+            [ 0,  0,  0],
+            [ 1,  0,  0],
+        ])
+        self.assertArraysEqual(indexes, expected_indexes)
+
+    def test_radius_indexes_2d(self):
+        uc = UnitCell(numpy.identity(3, float), numpy.array([True, True, False]))
+        indexes = uc.get_radius_indexes(0.5)
+        expected_indexes = numpy.array([
+            [-1, -1,  0],
+            [-1,  0,  0],
+            [-1,  1,  0],
+            [ 0, -1,  0],
+            [ 0,  0,  0],
+            [ 0,  1,  0],
+            [ 1, -1,  0],
+            [ 1,  0,  0],
+            [ 1,  1,  0],
+        ])
+        self.assertArraysEqual(indexes, expected_indexes)
+
+    def test_radius_indexes_2d_graphical(self):
+        #uc = UnitCell(numpy.array([
+        #    [2.0, 1.0, 0.0],
+        #    [0.0, 0.2, 0.0],
+        #    [0.0, 0.0, 10.0],
+        #]))
+        #radius = 0.8
+        uc = UnitCell(numpy.array([
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 10.0],
+        ]))
+        radius = 5.3
+
+        fracs = numpy.arange(-0.5, 0.55, 0.1)
+        import pylab
+        from matplotlib.patches import Circle, Polygon
+        from matplotlib.lines import Line2D
+        pylab.clf()
+        for i0 in fracs:
+            for i1 in fracs:
+                center = uc.to_cartesian([i0,i1,0.0])
+                pylab.gca().add_artist(Circle((center[0], center[1]), radius, fill=True, fc='#7777AA', ec='none'))
+        pylab.gca().add_artist(Circle((0, 0), radius, fill=True, fc='#0000AA', ec='none'))
+
+        ranges = uc.get_radius_ranges(radius)
+        indexes = uc.get_radius_indexes(radius)
+
+        for i in xrange(-ranges[0]-1, ranges[0]+1):
+            start = uc.to_cartesian([i+0.5, -ranges[1]-0.5, 0])
+            end = uc.to_cartesian([i+0.5, ranges[1]+0.5, 0])
+            pylab.gca().add_artist(Line2D([start[0], end[0]], [start[1], end[1]], color="k", linewidth=1))
+
+        for i in xrange(-ranges[1]-1, ranges[1]+1):
+            start = uc.to_cartesian([-ranges[0]-0.5, i+0.5, 0])
+            end = uc.to_cartesian([ranges[0]+0.5, i+0.5, 0])
+            pylab.gca().add_artist(Line2D([start[0], end[0]], [start[1], end[1]], color="k", linewidth=1))
+
+        for i in xrange(-ranges[0], ranges[0]+1):
+            start = uc.to_cartesian([i, -ranges[1]-0.5, 0])
+            end = uc.to_cartesian([i, ranges[1]+0.5, 0])
+            pylab.gca().add_artist(Line2D([start[0], end[0]], [start[1], end[1]], color="k", linewidth=0.5, linestyle="--"))
+
+        for i in xrange(-ranges[1], ranges[1]+1):
+            start = uc.to_cartesian([-ranges[0]-0.5, i, 0])
+            end = uc.to_cartesian([ranges[0]+0.5, i, 0])
+            pylab.gca().add_artist(Line2D([start[0], end[0]], [start[1], end[1]], color="k", linewidth=0.5, linestyle="--"))
+
+        for i0,i1,i2 in indexes:
+            if i2 != 0:
+                continue
+            corners = uc.to_cartesian(numpy.array([
+                [i0-0.5, i1-0.5, 0.0],
+                [i0-0.5, i1+0.5, 0.0],
+                [i0+0.5, i1+0.5, 0.0],
+                [i0+0.5, i1-0.5, 0.0],
+            ]))
+            pylab.gca().add_artist(Polygon(corners[:,:2], fill=True, ec='none', fc='r', alpha=0.5))
+
+        corners = uc.to_cartesian(numpy.array([
+            [-ranges[0]-0.5, -ranges[1]-0.5, 0.0],
+            [-ranges[0]-0.5, +ranges[1]+0.5, 0.0],
+            [+ranges[0]+0.5, +ranges[1]+0.5, 0.0],
+            [+ranges[0]+0.5, -ranges[1]-0.5, 0.0],
+        ]))
+        pylab.xlim(1.1*corners[:,:2].min(), 1.1*corners[:,:2].max())
+        pylab.ylim(1.1*corners[:,:2].min(), 1.1*corners[:,:2].max())
+        #pylab.xlim(-1.5*radius, 1.5*radius)
+        #pylab.ylim(-1.5*radius, 1.5*radius)
+        pylab.savefig("output/radius_indexes_2d.png")
 
     def test_div(self):
         for i in xrange(20):
