@@ -321,8 +321,17 @@ class UnitCellTestCase(BaseTestCase):
     def test_div(self):
         for i in xrange(20):
             uc0 = self.get_random_uc(full=False)
-            uc1 = uc0/4
-            self.assertArraysAlmostEqual(uc0.matrix/4, uc1.matrix)
+            x = numpy.random.uniform(1,2,3)
+            uc1 = uc0/x
+            self.assertArraysAlmostEqual(uc0.matrix/x, uc1.matrix)
+            self.assertArraysEqual(uc0.active, uc1.active)
+
+    def test_mul(self):
+        for i in xrange(20):
+            uc0 = self.get_random_uc(full=False)
+            x = numpy.random.uniform(1,2,3)
+            uc1 = uc0*x
+            self.assertArraysAlmostEqual(uc0.matrix*x, uc1.matrix)
             self.assertArraysEqual(uc0.active, uc1.active)
 
     def test_generalized_volume(self):

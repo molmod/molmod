@@ -61,10 +61,11 @@ class UnitCell(ReadOnly):
         if abs(self.generalized_volume) < self.eps:
             raise ValueError("The ridges of the unit cell are (nearly) linearly dependent vectors.")
 
-    def __div__(self, i):
-        if not isinstance(i, int) or i <= 0:
-            raise ValueError("Can only divide a unit cell by a strictly positive integer.")
-        return UnitCell(self.matrix/i, self.active)
+    def __mul__(self, x):
+        return UnitCell(self.matrix*x, self.active)
+
+    def __div__(self, x):
+        return UnitCell(self.matrix/x, self.active)
 
     @classmethod
     def from_parameters3(cls, lengths, angles):
