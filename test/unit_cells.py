@@ -260,6 +260,12 @@ class UnitCellTestCase(BaseTestCase):
             [0.0, 0.0, 10.0],
         ]))
         radius = 5.3
+        #uc = UnitCell(numpy.array([
+        #    [1.0, 1.0, 0.0],
+        #    [0.0, 1.0, 0.0],
+        #    [0.0, 0.0, 1.0],
+        #]))
+        #radius = 0.9
 
         fracs = numpy.arange(-0.5, 0.55, 0.1)
         import pylab

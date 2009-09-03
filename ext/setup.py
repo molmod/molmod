@@ -31,9 +31,9 @@ setup(
     author_email='Toon.Verstraelen@UGent.be',
     url='http://molmod.ugent.be/code/',
     ext_modules=[
-        Extension("molmod.ext", ["lib/interface.pyf",
+        Extension("molmod.ext", ["lib/interface.pyf", "lib/common.c",
             "lib/ff.c", "lib/graphs.c", "lib/similarity.c", "lib/molecules.c",
-            "lib/volume.c",
+            "lib/unit_cells.c", "lib/volume.c",
         ]),
     ],
     packages=['molmod'],
