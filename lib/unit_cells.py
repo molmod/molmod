@@ -37,7 +37,7 @@ class UnitCell(ReadOnly):
        want to modify the unit cell, just create a modified UnitCell
        object. This facilitates the caching of derived quantities such as the
        distance matrices, while it imposes a cleaner coding style without
-       a signifacant computational overhead.
+       a significant computational overhead.
     """
     eps = 1e-6 # small positive number, below this value is approximately zero
 
@@ -119,7 +119,7 @@ class UnitCell(ReadOnly):
            directions:
              num_active == 0  --  always -1
              num_active == 1  --  length of the cell vector
-             num_active == 2  --  surface of the parallellogram
+             num_active == 2  --  surface of the parallelogram
              num_active == 3  --  volume of the parallelepiped
         """
         active = self.active_inactive[0]
@@ -293,7 +293,7 @@ class UnitCell(ReadOnly):
     def get_radius_ranges(self, radius):
         """Return the ranges of indexes of the interacting neighboring unit cells
 
-           Interacting neigboring unit cells have at least one point in their
+           Interacting neighboring unit cells have at least one point in their
            box volume that has a distance smaller or equal than radius to at
            least one point in the central cell. This concept is of importance
            when computing pair wise long-range interactions in periodic systems.
@@ -305,7 +305,7 @@ class UnitCell(ReadOnly):
     def get_radius_indexes(self, radius):
         """Return the indexes of the interacting neighboring unit cells
 
-           Interacting neigboring unit cells have at least one point in their
+           Interacting neighboring unit cells have at least one point in their
            box volume that has a distance smaller or equal than radius to at
            least one point in the central cell. This concept is of importance
            when computing pair wise long-range interactions in periodic systems.
