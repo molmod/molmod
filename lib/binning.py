@@ -17,182 +17,139 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Efficiently compute all distances below a cutoff
+
+   Binning is a useful technique for efficiently calculating all distances
+   between a number of coordinates when you are only interested in the distances
+   below a given cutoff. The algorithm consists of two major steps:
+
+     1) Divide the given set of coordinates into bins on a regular grid
+     2) Calculate the distances (or other useful things) between coordinates in
+        neighboring bins.
 """
-Binning is a usefull technique for efficiently calculating all distances between
-a set of coordinates, when you are only interested in the distances below a given
-cutoff. The algorithm consists of two major steps:
-1) Divide the given set of coordinates into bins on a regular grid in space.
-2) Calculate the distances (or other usefull things) between coordinates in
-   neighboring bins.
-"""
 
 
-import numpy, copy
-
-__all__ = ["PositionedObject", "SparseBinnedObjects",
-           "AnalyseNeighboringObjects", "IntraAnalyseNeighboringObjects",
-           "InterAnalyseNeighboringObjects"]
+from molmod.unit_cells import UnitCell
+from molmod.units import deg # TODO: REMOVE
+import numpy
 
 
-class PositionedObject(object):
-    """
-    PositionedObject instances are used to feed a SparseBinnedObjects instance
-    with information about the coordinates that should be binned. Throug the use of
-    a PositionedObject, each coordinate is associated with an id.
+__all__ = ["PairSearch"]
+
+
+class PairSearch(object):
+    """Efficient iterator over all pairs of coordinates with a distance below a cutoff.
+
+       Example usage:
+       >>> coordinates = numpy.random.uniform(0,10,(10,3))
+       >>> for i, j, distance, delta in  PairSearch(coordinates, 2.5):
+       ...     print i, j, distance
     """
 
-    def __init__(self, id, coordinate):
+    def __init__(self, coordinates, cutoff, unit_cell=None, grid=None):
+        """Initialize a PairSearch object
+
+           Argument:
+             coordinates  --  A Nx3 numpy array with Cartesian coordinates
+             radius  --  The cutoff radius for the pair distances. Distances
+                         larger than the cutoff will be neglected in the
+                         pair search.
+
+           Optional argument:
+             unit_cell  --  Specifies the periodic boundary conditions
+             grid  --  Specification of the grid, can be a floating point number
+                       which will result in cubic bins with edge length equal to
+                       the given number. Otherwise a UnitCell object can be
+                       specified to construct non-cubic bins. In the latter case
+                       and when a unit_cell is given, the unit cell vectors must
+                       be integer linear combinations of the grid cell vectors
+                       (for those directions that are active in the unit cell).
+                       If this is not the case, a ValueError is raised.
+
+           The default value of grid depends on other parameters:
+             1) When no unit cell is given, it is equal to cutoff/2.9.
+             2) When a unit cell is given, the grid cell is as close to cubic
+                as possible, with spacings below cutoff/2 that are integer
+                divisions of the unit cell spacings
+
+
         """
-        Initialize a PositionedObject instance.
+        self.cutoff = cutoff
+        self.unit_cell = unit_cell
 
-        Arguments:
-        id -- A user defined id that is associated with the coordinate.
-        coordinate -- A numpy array with shape (3, )
-        """
-        assert isinstance(coordinate, numpy.ndarray)
-        assert coordinate.shape == (3, )
-        self.id = id
-        self.coordinate = coordinate
+        if grid is None:
+            if unit_cell is None:
+                grid = cutoff/2.9
+            else:
+                grid = unit_cell.get_optimal_subcell(cutoff/2.0)
 
+        if isinstance(grid, float):
+            self.grid_cell = UnitCell(numpy.array([[grid, 0, 0], [0, grid, 0], [0, 0, grid]]))
+        elif isinstance(grid, UnitCell):
+            self.grid_cell = grid
+        else:
+            raise TypeError("Grid must be None, a float or a UnitCell instance.")
 
-class SparseBinnedObjects(object):
-    """
-    A SparseBinnedObjects instance divides 3D space into a sparse grid.
-
-    Each cell in the grid is called a bin. Each bin can contain a set of
-    Positioned objects. This implementation works with sparse bins: A bin is
-    only created in memory when an object is encountered that belongs in that
-    bin.
-
-    All bins are uniquely defined by their indices i, j, k as defined in __init__.
-    """
-
-    def __init__(self, positioned_objects, gridsize=1):
-        """
-        Initialize a BinnedObjects instance.
-
-        Arguments:
-        positioned_objects -- An iterator over the PositionedObject instances
-                              that have to be binned.
-        gridsize -- Defines the size of the bins.
-        """
-        self.gridsize = gridsize
-        self.reciproke = 1/gridsize
+        if unit_cell is not None:
+            # The columns of integer_matrix are the unit cell vectors in
+            # fractional coordinates of the grid cell.
+            integer_matrix = self.grid_cell.to_fractional(unit_cell.matrix.transpose()).transpose()
+            if abs((integer_matrix - numpy.round(integer_matrix))*self.unit_cell.active).max() > 1e-6:
+                raise ValueError("The unit cell vectors are not an integer linear combination of grid cell vectors.")
+            integer_matrix = integer_matrix.round()
+            self.integer_cell = UnitCell(integer_matrix, unit_cell.active)
 
         self.bins = {}
 
-        for positioned_object in positioned_objects:
-            indices = tuple(numpy.floor(positioned_object.coordinate*self.reciproke).astype(int))
-            bin = self.bins.get(indices)
+        fractional = self.grid_cell.to_fractional(coordinates)
+        for i in xrange(len(coordinates)):
+            if unit_cell is None:
+                key = fractional[i].astype(int)
+            else:
+                key = self.integer_cell.shortest_vector(fractional[i].astype(int)).astype(int)
+            key = tuple(key)
+            bin = self.bins.get(key)
             if bin is None:
-                bin = set()
-                self.bins[indices] = bin
-            bin.add(positioned_object)
+                bin = []
+                self.bins[key] = bin
+            bin.append((i,coordinates[i]))
 
-    def iter_surrounding(self, r, deltas):
-        """
-        Iterate over all objects in the bins that surround the bin that
-        contains coordinate r.
-        """
-        center = numpy.floor(r*self.reciproke).astype(int)
-        for delta in deltas:
-            bin = self.bins.get(tuple(center + delta))
-            if bin is not None:
-                for positioned_object in bin:
-                    yield bin, positioned_object
-
-
-class AnalyseNeighboringObjects(object):
-    """
-    AnalyseNeighboringObjects is the base class for 'comparing' coordinates between
-    neigbouring bins.
-    """
-
-    def __init__(self, compare_function):
-        """
-        Intialize a AnalyseNeighboringObjects instance.
-
-        compare_function -- for each positioned_object pair that lives in
-                            neighboring bins, this function is called.
-        """
-        self.compare_function = compare_function
-        # All these parameters have to be defined by the base class
-        self.compare_indices = None
-        self.binned_objects1 = None
-        self.binned_objects2 = None
-
-    def __call__(self, unit_cell=None):
-        if unit_cell is None:
-            for result in self.call_delta(numpy.zeros(3, float)):
-                yield result
+        neighbor_indexes = self.grid_cell.get_radius_indexes(cutoff)
+        if self.unit_cell is None:
+            self.neighbor_indexes = neighbor_indexes
         else:
-            active_a, active_b, active_c = unit_cell.active.astype(int)
-            for index_a in xrange(-active_a, active_a+1):
-                for index_b in xrange(-active_b, active_b+1):
-                    for index_c in xrange(-active_c, active_c+1):
-                        delta = unit_cell.to_cartesian(numpy.array([index_a, index_b, index_c]))
-                        for result in self.call_delta(delta):
-                            yield result
+            self.neighbor_indexes = []
+            for index in neighbor_indexes:
+                shortest_index = numpy.round(self.integer_cell.shortest_vector(index)).astype(int)
+                if (index == shortest_index).all():
+                    self.neighbor_indexes.append(index)
+            self.neighbor_indexes = numpy.array(self.neighbor_indexes)
 
-    def call_delta(self, delta):
-        for center_bin in self.binned_objects1.bins.itervalues():
-            for positioned1 in center_bin:
-                for neighbor_bin, positioned2 in self.binned_objects2.iter_surrounding(positioned1.coordinate + delta, self.compare_indices):
-                    if self.allow(center_bin, neighbor_bin, positioned1, positioned2):
-                        result = self.compare_function(positioned1, positioned2)
-                        if result is not None:
-                            yield (positioned1, positioned2), result
-
-
-    def allow(self, bin1, bin2, positioned1, positioned2):
-        return True
-
-
-class IntraAnalyseNeighboringObjects(AnalyseNeighboringObjects):
-    """
-    IntraAnalyseNeighboringObjects instances compare all coordinates within one
-    molecule.
-    """
-    def __init__(self, binned_objects, compare_function):
-        AnalyseNeighboringObjects.__init__(self, compare_function)
-        self.compare_indices = numpy.array([
-            (0, 0, 0), (1, 1, 1),
-            (1, 0, 0), (0, 1, 0), (0, 0, 1),
-            (0, 1, 1), (1, 0, 1), (1, 1, 0),
-            (0, 1, -1), (-1, 0, 1), (1, -1, 0),
-            (1, 1, -1), (1, -1, -1), (1, -1, 1)
-        ], int)
-        self.binned_objects1 = binned_objects
-        self.binned_objects2 = binned_objects
-
-    def allow(self, bin1, bin2, positioned1, positioned2):
-        return not (bin1 == bin2 and id(positioned1) >= id(positioned2))
+    def __iter__(self):
+        """Iterate over all pairs with a distance below the cutoff"""
+        for key0, bin0 in self.bins.iteritems():
+            for key1, bin1 in self.iter_surrounding(key0):
+                for i0, c0 in bin0:
+                    for i1, c1 in bin1:
+                        if i1 >= i0:
+                            continue
+                        delta = c1 - c0
+                        if self.unit_cell is not None:
+                            delta = self.unit_cell.shortest_vector(delta)
+                        distance = numpy.linalg.norm(delta)
+                        if distance <= self.cutoff:
+                            yield i0, i1, delta, distance
 
 
-class InterAnalyseNeighboringObjects(AnalyseNeighboringObjects):
-    """
-    InterAnalyseNeighboringObjects instances compare 'all' coordinates between two
-    molecules.
-    """
-    def __init__(self, binned_objects1, binned_objects2, compare_function):
-        AnalyseNeighboringObjects.__init__(self, compare_function)
-        assert binned_objects1.gridsize==binned_objects2.gridsize
-        self.compare_indices = numpy.array([
-            (-1, -1, -1), (-1, -1,  0), (-1, -1,  1),
-            (-1,  0, -1), (-1,  0,  0), (-1,  0,  1),
-            (-1,  1, -1), (-1,  1,  0), (-1,  1,  1),
-
-            ( 0, -1, -1), ( 0, -1,  0), ( 0, -1,  1),
-            ( 0,  0, -1), ( 0,  0,  0), ( 0,  0,  1),
-            ( 0,  1, -1), ( 0,  1,  0), ( 0,  1,  1),
-
-            ( 1, -1, -1), ( 1, -1,  0), ( 1, -1,  1),
-            ( 1,  0, -1), ( 1,  0,  0), ( 1,  0,  1),
-            ( 1,  1, -1), ( 1,  1,  0), ( 1,  1,  1),
-        ], int)
-        self.binned_objects1 = binned_objects1
-        self.binned_objects2 = binned_objects2
-
-
+    def iter_surrounding(self, center_key):
+        """Iterate over all bins that surround the given bin"""
+        for shift in self.neighbor_indexes:
+            key = numpy.add(center_key, shift)
+            if self.unit_cell is not None:
+                key = numpy.round(self.integer_cell.shortest_vector(key))
+            key = tuple(key.astype(int))
+            bin = self.bins.get(key)
+            if bin is not None:
+                yield key, bin
 
 

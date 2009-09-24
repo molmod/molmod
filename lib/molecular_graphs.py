@@ -21,8 +21,7 @@
 
 
 from molmod.graphs import cached, Graph, SubgraphPattern
-from molmod.binning import IntraAnalyseNeighboringObjects, PositionedObject, \
-    SparseBinnedObjects
+from molmod.binning import PairSearch
 
 import numpy
 
@@ -55,36 +54,30 @@ class MolecularGraph(Graph):
         """
         from molmod.bonds import bonds
 
-        def iter_positioned_atoms():
-            for index in xrange(molecule.size):
-                yield PositionedObject(index, molecule.coordinates[index])
+        pair_search = PairSearch(
+            molecule.coordinates,
+            bonds.max_length*bonds.bond_tolerance,
+            unit_cell
+        )
 
-        binned_atoms = SparseBinnedObjects(iter_positioned_atoms(), bonds.max_length*bonds.bond_tolerance)
+        orders = []
+        lengths = []
+        pairs = []
 
-        def compare_function(positioned1, positioned2):
-            delta = positioned2.coordinate - positioned1.coordinate
-            if unit_cell is not None:
-                delta = unit_cell.shortest_vector(delta)
-            distance = numpy.linalg.norm(delta)
-            if distance < binned_atoms.gridsize:
-                bond_order = bonds.bonded(molecule.numbers[positioned1.id], molecule.numbers[positioned2.id], distance)
-                if bond_order != None:
-                    return bond_order, distance
-
-        bond_data = list(dict(
-            (frozenset([positioned.id for positioned in key]), data)
-            for key, data
-            in IntraAnalyseNeighboringObjects(binned_atoms, compare_function)(unit_cell)
-        ).iteritems())
-        pairs = tuple(pair for pair, data in bond_data)
-        orders = numpy.array([data[0] for pair, data in bond_data], dtype=int)
-        lengths = numpy.array([data[1] for pair, data in bond_data], dtype=float)
+        for i0, i1, delta, distance in pair_search:
+            bond_order = bonds.bonded(molecule.numbers[i0], molecule.numbers[i1], distance)
+            if bond_order is not None:
+                if do_orders:
+                    orders.append(bond_order)
+                lengths.append(distance)
+                pairs.append(i0,i1)
 
         if do_orders:
             result = cls(pairs, molecule.numbers, orders)
         else:
             result = cls(pairs, molecule.numbers)
-        result.bond_lengths = lengths
+        result.bond_lengths = numpy.array(lengths)
+
         return result
 
     @classmethod

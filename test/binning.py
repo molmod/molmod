@@ -19,8 +19,7 @@
 # --
 
 
-from molmod.binning import InterAnalyseNeighboringObjects, \
-    IntraAnalyseNeighboringObjects, PositionedObject, SparseBinnedObjects
+from molmod.binning import *
 from molmod.unit_cells import UnitCell
 from molmod.units import angstrom, deg
 from molmod.periodic import periodic
@@ -34,31 +33,36 @@ __all__ = ["BinningTestCase"]
 
 
 class BinningTestCase(unittest.TestCase):
-    gridsize = periodic.max_radius*2
+    cutoff = periodic.max_radius*2
 
-    def load_binned_atoms(self, filename):
-        m = XYZFile("input/"+filename).get_molecule()
+    def verify(self, molecule, distances, unit_cell=None):
+        # a few sanity checks first
+        for key, value in distances:
+            self.assertEqual(len(key), 2, "Singletons encountered: %s" % (key))
+        count = len(distances)
+        distances = dict(distances)
+        self.assertEqual(len(distances), count, "Duplicate distances: %i > %i" % (count, len(distances)))
 
-        def iter_positioned_atoms():
-            for index in xrange(len(m.numbers)):
-                yield PositionedObject((m, index), m.coordinates[index])
-
-        return m, SparseBinnedObjects(iter_positioned_atoms(), self.gridsize)
-
-    def verify(self, iter_pairs, distances, unit_cell=None):
+        # real check of distances
         missing_pairs = []
         wrong_distances = []
         total = 0
+
+        def iter_pairs():
+            for index1, coord1 in enumerate(molecule.coordinates):
+                for index2, coord2 in enumerate(molecule.coordinates[:index1]):
+                    yield (index1, coord1), (index2, coord2)
+
         for (id1, coord1), (id2, coord2) in iter_pairs():
             delta = coord2 - coord1
             if unit_cell is not None:
                 delta = unit_cell.shortest_vector(delta)
             distance = numpy.linalg.norm(delta)
-            if distance < self.gridsize:
+            if distance < self.cutoff:
                 total += 1
                 identifier = frozenset([id1, id2])
                 fast_distance = distances.get(identifier)
-                if fast_distance == None:
+                if fast_distance is None:
                     missing_pairs.append(tuple(identifier) + (distance,))
                 elif fast_distance != distance:
                     wrong_distances.append(tuple(identifier) + (fast_distance, distance))
@@ -66,15 +70,16 @@ class BinningTestCase(unittest.TestCase):
                     del distances[identifier]
 
         message  = "-"*50+"\n"
+        message += "CUTOFF %s\n" % self.cutoff
         message += "MISSING PAIRS: %i\n" % len(missing_pairs)
-        #for missing_pair in missing_pairs:
-        #    message += "%10s %10s: \t % 10.7f\n" % missing_pair
+        for missing_pair in missing_pairs:
+            message += "%10s %10s: \t % 10.7f\n" % missing_pair
         message += "WRONG DISTANCES: %i\n" % len(wrong_distances)
-        #for wrong_distance in wrong_distances:
-        #    message += "%10s %10s: \t % 10.7f != % 10.7f\n" % wrong_distance
+        for wrong_distance in wrong_distances:
+            message += "%10s %10s: \t % 10.7f != % 10.7f\n" % wrong_distance
         message += "DUPLICATE PAIRS: %i\n" % len(distances)
-        #for identifier, fast_distance in distances.iteritems():
-        #    message += "%10s %10s: \t % 10.7f\n" % (tuple(identifier) + (fast_distance,))
+        for identifier, fast_distance in distances.iteritems():
+            message += "%10s %10s: \t % 10.7f\n" % (identifier, fast_distance)
         message += "TOTAL PAIRS: %i\n" % total
         message += "-"*50+"\n"
 
@@ -82,76 +87,35 @@ class BinningTestCase(unittest.TestCase):
         self.assertEqual(len(wrong_distances), 0, message)
         self.assertEqual(len(distances), 0, message)
 
-    def verify_intra(self, molecule, distances, unit_cell=None):
-        def iter_atom_pairs():
-            for index1, coord1 in enumerate(molecule.coordinates):
-                for index2, coord2 in enumerate(molecule.coordinates[:index1]):
-                    yield ((molecule, index1), coord1), ((molecule, index2), coord2)
-        self.verify(iter_atom_pairs, distances, unit_cell)
+    def test_distances(self):
+        molecule = XYZFile("input/lau.xyz").get_molecule()
+        distances = [
+            (frozenset([i0, i1]), distance)
+            for i0, i1, delta, distance
+            in PairSearch(molecule.coordinates, self.cutoff)
+        ]
+        self.verify(molecule, distances)
 
-    def verify_inter(self, molecule1, molecule2, distances, unit_cell=None):
-        def iter_atom_pairs():
-            for index1, coord1 in enumerate(molecule1.coordinates):
-                for index2, coord2 in enumerate(molecule2.coordinates):
-                    yield ((molecule1, index1), coord1), ((molecule2, index2), coord2)
-        self.verify(iter_atom_pairs, distances, unit_cell)
-
-    def compare_function(self, positioned1, positioned2):
-        distance = numpy.linalg.norm(positioned2.coordinate - positioned1.coordinate)
-        if distance < self.gridsize:
-            return distance
-
-    def test_distances_intra(self):
-        molecule, binned_atoms = self.load_binned_atoms("lau.xyz")
-
-        distances = dict(
-            (frozenset([positioned1.id, positioned2.id]), result)
-            for (positioned1, positioned2), result
-            in IntraAnalyseNeighboringObjects(binned_atoms, self.compare_function)()
-        )
-        self.verify_intra(molecule, distances)
-
-    def test_distances_intra_periodic(self):
-        molecule, binned_atoms = self.load_binned_atoms("lau.xyz")
+    def test_distances_periodic(self):
+        molecule = XYZFile("input/lau.xyz").get_molecule()
         unit_cell = UnitCell.from_parameters3(
             numpy.array([14.59, 12.88, 7.61])*angstrom,
             numpy.array([ 90.0, 111.0, 90.0])*deg,
         )
+        pair_search = PairSearch(molecule.coordinates, self.cutoff, unit_cell)
 
-        distances = dict(
-            (frozenset([positioned1.id, positioned2.id]), result)
-            for (positioned1, positioned2), result
-            in IntraAnalyseNeighboringObjects(binned_atoms, self.compare_function)(unit_cell)
-        )
-        self.verify_intra(molecule, distances, unit_cell)
+        for key0, bin0 in pair_search.bins.iteritems():
+            encountered = set([])
+            for key1, bin1 in pair_search.iter_surrounding(key0):
+                self.assert_(key1 not in encountered)
+                encountered.add(key1)
 
-    def test_distances_inter(self):
-        molecule1, binned_atoms1 = self.load_binned_atoms("lau.xyz")
-        molecule2, binned_atoms2 = self.load_binned_atoms("lau.xyz")
+        distances = [
+            (frozenset([i0, i1]), distance)
+            for i0, i1, delta, distance
+            in pair_search
+        ]
 
-        distances = dict(
-            (frozenset([positioned1.id, positioned2.id]), result)
-            for (positioned1, positioned2), result
-            in InterAnalyseNeighboringObjects(binned_atoms1, binned_atoms2, self.compare_function)()
-        )
-        self.verify_inter(molecule1, molecule2, distances)
-
-    def test_distances_inter_periodic(self):
-        molecule1, binned_atoms1 = self.load_binned_atoms("lau.xyz")
-        molecule2, binned_atoms2 = self.load_binned_atoms("lau.xyz")
-        unit_cell = UnitCell.from_parameters3(
-            numpy.array([14.59, 12.88, 7.61])*angstrom,
-            numpy.array([ 90.0, 111.0, 90.0])*deg,
-        )
-
-        distances = dict(
-            (frozenset([positioned1.id, positioned2.id]), result)
-            for (positioned1, positioned2), result
-            in InterAnalyseNeighboringObjects(binned_atoms1, binned_atoms2, self.compare_function)(unit_cell)
-        )
-        self.verify_inter(molecule1, molecule2, distances, unit_cell)
-
-
-
+        self.verify(molecule, distances, unit_cell)
 
 

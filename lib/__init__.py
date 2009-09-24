@@ -80,6 +80,7 @@ class Context(object):
 context = Context()
 
 
+from molmod.binning import *
 from molmod.clusters import *
 from molmod.graphs import *
 from molmod.ic import *
