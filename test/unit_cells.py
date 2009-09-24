@@ -22,7 +22,7 @@ from common import BaseTestCase
 
 from molmod.unit_cells import UnitCell
 from molmod.vectors import random_normal
-from molmod.units import deg
+from molmod.units import deg, angstrom
 
 import numpy, unittest
 
@@ -35,8 +35,11 @@ class UnitCellTestCase(BaseTestCase):
         if full:
             active = numpy.ones(3, bool)
         else:
-            active = numpy.random.randint(1,size=3).astype(bool)
-        return UnitCell(numpy.random.uniform(-r, r, (3, 3)), active)
+            active = numpy.random.randint(2,size=3).astype(bool)
+        while True:
+            result = UnitCell(numpy.random.uniform(-r, r, (3, 3)), active)
+            if result.spacings.min() > 1.0e-1:
+                return result
 
     def test_parameters(self):
         for counter in xrange(100):
@@ -378,5 +381,57 @@ class UnitCellTestCase(BaseTestCase):
             [0, 0, 10/sh],
         ])
         self.assertArraysAlmostEqual(uc.matrix, expected_matrix)
+
+    def test_reciprocal(self):
+        def check_identity(active, mat):
+            for i in xrange(3):
+                if active[i]:
+                    self.assertAlmostEqual(mat[i,i], 1.0)
+                else:
+                    self.assertAlmostEqual(mat[i,i]*(1-mat[i,i]), 0.0)
+                self.assertAlmostEqual(mat[i,(i+1)%3], 0.0)
+
+        for i in xrange(20):
+            uc = self.get_random_uc(full=False)
+            mat = numpy.dot(uc.matrix.transpose(), uc.reciprocal)
+            check_identity(uc.active, mat)
+            mat = numpy.dot(uc.reciprocal.transpose(), uc.matrix)
+            check_identity(uc.active, mat)
+            mat = numpy.dot(uc.reciprocal, uc.matrix.transpose())
+            check_identity(uc.active, mat)
+            mat = numpy.dot(uc.matrix, uc.reciprocal.transpose())
+            check_identity(uc.active, mat)
+
+    def test_optimal_subcell1(self):
+        uc = UnitCell(
+            numpy.array([
+                [4.0, 4.1, 0.0],
+                [0.0, 4.0, 0.0],
+                [0.0, 0.0, 0.0],
+            ], dtype=float),
+            numpy.array([True, True, False]),
+        )
+        sub = uc.get_optimal_subcell(2.1)
+        self.assert_((sub.active==uc.active).all())
+        expected_matrix = numpy.array([
+            [2.0, 0.05, 0.0],
+            [0.0, 2.0,  0.0],
+            [0.0, 0.0,  0.0],
+        ])
+        self.assertArraysAlmostEqual(sub.matrix, expected_matrix)
+
+    def test_optimal_subcell2(self):
+        numpy.random.seed(0)
+        for i in xrange(200):
+            uc = self.get_random_uc(full=False)
+            cutoff = uc.spacings.min()/2.1
+            sub = uc.get_optimal_subcell(cutoff)
+            self.assertArraysEqual(sub.active, uc.active)
+            integer_matrix = sub.to_fractional(uc.matrix.transpose()).transpose()
+            self.assertArraysAlmostEqual(integer_matrix, integer_matrix.round())
+            ratio_uc = abs(uc.generalized_volume)/numpy.product(uc.parameters[0][uc.active])
+            ratio_sub = abs(sub.generalized_volume)/numpy.product(sub.parameters[0][uc.active])
+            # assert that sub cell is (most of the time) more cubic
+            self.assert_(ratio_uc/ratio_sub < 1.2)
 
 

@@ -307,3 +307,79 @@ class UnitCell(ReadOnly):
         size = unit_cell_get_radius_indexes(matrix, reciprocal, radius, indexes)
         return indexes[:size]
 
+    def get_optimal_subcell(self, cutoff):
+        """Returns a maximal volume, close-to-cubic subcell with spacings below the cutoff.
+
+           The cell vectors of the original cell are integer linear combinations
+           of the subcell vectors. An attempt is made to find a subcell that is
+           as close to cubic as possible and that is not smaller in volume than
+           strictly necessary to get spacings below the cutoff.
+
+           This comes down to:
+             1) the product of the spacings must be maximal
+             2) the spacings must be below cutoff
+             3) the reciprocal subcell vectors must be integer linear
+                combinations of the original reciprocal cell vectors
+
+           The ideal solution (without the integer limitation) is a cubic box
+           with edges equal to cutoff. From all nearby solutions that satisfy
+           the integer constraint, we pick the one that that also satisfies
+           condition (2) and is optimal for condition (1).
+        """
+        # express the ideal reciprocal cell in the basis of the reciprocal
+        # vectors of the current cell. Note that the transpose of the matrix
+        # with cell vectors is 'an' inverse of the reciprocal matrix.
+        integer_matrix = numpy.dot(self.matrix.transpose(), numpy.identity(3,float)/cutoff)
+        # increase the reciprocal cell to integer multiples of the original
+        # reciprocal cell
+        signs = numpy.sign(integer_matrix)
+        integer_matrix = numpy.fix(integer_matrix)+signs
+
+
+        def int_to_sub(integer_matrix):
+            """Convert the integer_matrix to UnitCell object"""
+            subcell_reciprocal = numpy.dot(self.reciprocal, integer_matrix)
+            for i in xrange(3):
+                if self.active[i] and abs(subcell_reciprocal[:,i]).max() < self.eps:
+                    return None
+            U, S, Vt = numpy.linalg.svd(subcell_reciprocal)
+            Sinv = 1/S
+            Sinv[abs(S)<self.eps] = 0.0#/(10.0*angstrom)
+            subcell_matrix = numpy.dot(U*Sinv, Vt)
+            try:
+                result = UnitCell(subcell_matrix, self.active)
+            except ValueError:
+                return None
+            return result
+
+        sub = int_to_sub(integer_matrix)
+        if sub is None:
+            raise RuntimeError("This is a bug. sub should never be None.")
+        quality = numpy.product(sub.spacings[self.active])
+        active = self.active_inactive[0]
+        while True:
+            # iteratively improve the subcell, more cubic and bigger (i.e.
+            # the reciprocal gets smaller, but remains below the thresholds)
+            improving = False
+            for i0 in active:
+                for i1 in active:
+                    for change in -1, 1:
+                        new_integer_matrix = integer_matrix.copy()
+                        new_integer_matrix[i0,i1] += change
+                        new_sub = int_to_sub(new_integer_matrix)
+                        if new_sub is not None and (new_sub.parameters[0][self.active] < cutoff).all():
+                            new_quality = numpy.product(new_sub.spacings[self.active])
+                            if new_quality > quality:
+                                improving = True
+                                integer_matrix = new_integer_matrix
+                                quality = new_quality
+                                sub = new_sub
+                                break
+                    if improving:
+                        break
+                if improving:
+                    break
+            if not improving:
+                break
+
+        return sub
