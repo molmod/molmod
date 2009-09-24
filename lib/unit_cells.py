@@ -302,6 +302,8 @@ class UnitCell(ReadOnly):
         max_size = numpy.product(self.get_radius_ranges(radius)*2+1)
         indexes = numpy.zeros((max_size,3), numpy.int32)
         from molmod.ext import unit_cell_get_radius_indexes
-        size = unit_cell_get_radius_indexes(self.matrix, self.reciprocal, radius, indexes)
+        reciprocal = self.reciprocal*self.active
+        matrix = self.matrix*self.active
+        size = unit_cell_get_radius_indexes(matrix, reciprocal, radius, indexes)
         return indexes[:size]
 
