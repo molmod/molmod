@@ -70,7 +70,7 @@ class MolecularGraph(Graph):
                 if do_orders:
                     orders.append(bond_order)
                 lengths.append(distance)
-                pairs.append(i0,i1)
+                pairs.append((i0,i1))
 
         if do_orders:
             result = cls(pairs, molecule.numbers, orders)
