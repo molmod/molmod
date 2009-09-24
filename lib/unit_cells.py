@@ -153,22 +153,10 @@ class UnitCell(ReadOnly):
            column of the matrix corresponds to a reciprocal cell vector. In case
            of lower-dimensional periodicity, the inactive columns are zero.
         """
-        active, inactive = self.active_inactive
-        if len(active) == 0:
-            return numpy.zeros((3, 3), float)
-        elif len(active) == 1:
-            temp = self.matrix.copy()
-            if numpy.linalg.norm(temp[:, inactive[0]]) < self.eps:
-                temp[:, inactive[0]] = random_orthonormal(temp[:, active[0]])
-            if numpy.linalg.norm(temp[:, inactive[1]]) < self.eps:
-                temp[:, inactive[1]] = numpy.cross(temp[:, inactive[0]], temp[:, active[0]])
-        elif len(active) == 2:
-            temp = self.matrix.copy()
-            if numpy.linalg.norm(temp[:, inactive[0]]) < self.eps:
-                temp[:, inactive[0]] = numpy.cross(temp[:, active[0]], temp[:, active[1]])
-        elif len(active) == 3:
-            temp = self.matrix
-        return self.active*numpy.transpose(numpy.linalg.inv(temp))
+        U, S, Vt = numpy.linalg.svd(self.matrix)
+        Sinv = 1/S
+        Sinv[abs(S)<self.eps] = 0.0
+        return numpy.dot(U*Sinv, Vt)
 
     @cached
     def parameters(self):
