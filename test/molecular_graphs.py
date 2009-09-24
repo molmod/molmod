@@ -438,11 +438,10 @@ class MolecularGraphTestCase(unittest.TestCase):
 
     def test_full_match_on_self(self):
         for molecule in self.iter_molecules(allow_multi=True):
-            g1 = copy.deepcopy(molecule.graph)
-            g2 = copy.deepcopy(molecule.graph)
-            match = g1.full_match(g2)
+            g = molecule.graph
+            match = g.full_match(g)
             self.assertNotEqual(match, None)
-            self.assertEqual(len(match), g1.num_nodes)
+            self.assertEqual(len(match), g.num_nodes)
 
     def test_canonical_order(self):
         # TODO: analogous tests voor pure graphs + fixen
