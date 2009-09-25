@@ -37,12 +37,14 @@ __all__ = ["PairSearch"]
 
 
 class PairSearch(object):
-    """Efficient iterator over all pairs of coordinates with a distance below a cutoff.
+    """Iterator over all pairs of coordinates with a distance below a cutoff.
 
        Example usage:
        >>> coordinates = numpy.random.uniform(0,10,(10,3))
        >>> for i, j, distance, delta in  PairSearch(coordinates, 2.5):
        ...     print i, j, distance
+
+       Note that for periodic systems the minimum image convention is applied.
     """
 
     def __init__(self, coordinates, cutoff, unit_cell=None, grid=None):
@@ -77,10 +79,11 @@ class PairSearch(object):
         self.unit_cell = unit_cell
 
         if grid is None:
+            # automatically choose a decent grid
             if unit_cell is None:
                 grid = cutoff/2.9
             else:
-                # The following would be faster, but the code is not reliable
+                # The following would be faster, but it is not reliable
                 # enough yet.
                 #grid = unit_cell.get_optimal_subcell(cutoff/2.0)
                 divisions = numpy.ceil(unit_cell.spacings/cutoff)
@@ -102,21 +105,21 @@ class PairSearch(object):
             integer_matrix = integer_matrix.round()
             self.integer_cell = UnitCell(integer_matrix, unit_cell.active)
 
+        # setup the bins
         self.bins = {}
 
         fractional = self.grid_cell.to_fractional(coordinates)
         for i in xrange(len(coordinates)):
-            if unit_cell is None:
-                key = fractional[i].astype(int)
-            else:
-                key = numpy.round(self.integer_cell.shortest_vector(fractional[i].astype(int))).astype(int)
-            key = tuple(key)
+            key = tuple(fractional[i].astype(int))
+            if unit_cell is not None:
+                key = self.wrap_key(key)
             bin = self.bins.get(key)
             if bin is None:
                 bin = []
                 self.bins[key] = bin
             bin.append((i,coordinates[i]))
 
+        # compute the neigbouring bins within the cutoff
         neighbor_indexes = self.grid_cell.get_radius_indexes(cutoff)
         if self.unit_cell is None:
             self.neighbor_indexes = neighbor_indexes
@@ -127,6 +130,13 @@ class PairSearch(object):
                 if fr_index.max() < 0.5 and fr_index.min() >= -0.5:
                     self.neighbor_indexes.append(index)
             self.neighbor_indexes = numpy.array(self.neighbor_indexes)
+
+    def wrap_key(self, key):
+        """Translate the key into the central cell
+
+           This method is only applicable in case of a periodic system.
+        """
+        return tuple(numpy.round(self.integer_cell.shortest_vector(key)).astype(int))
 
     def __iter__(self):
         """Iterate over all pairs with a distance below the cutoff"""
@@ -147,10 +157,9 @@ class PairSearch(object):
     def iter_surrounding(self, center_key):
         """Iterate over all bins that surround the given bin"""
         for shift in self.neighbor_indexes:
-            key = numpy.add(center_key, shift)
+            key = tuple(numpy.add(center_key, shift).astype(int))
             if self.unit_cell is not None:
-                key = numpy.round(self.integer_cell.shortest_vector(key))
-            key = tuple(key.astype(int))
+                key = self.wrap_key(key)
             bin = self.bins.get(key)
             if bin is not None:
                 yield key, bin
