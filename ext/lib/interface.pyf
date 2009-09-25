@@ -133,13 +133,14 @@ interface
 !! unit_cell.c
 !!
 
-  integer function unit_cell_get_radius_indexes(n, matrix, reciprocal, radius, indexes)
+  integer function unit_cell_get_radius_indexes(n, matrix, reciprocal, radius, max_ranges, indexes)
     intent(c) unit_cell_get_radius_indexes
     intent(c)
     integer intent(hide) :: n
     double precision intent(in) :: matrix(3,3)
     double precision intent(in) :: reciprocal(3,3)
     double precision intent(in) :: radius
+    integer intent(in) :: max_ranges(3)
     integer intent(inout) :: indexes(n,3)
   end function unit_cell_get_radius_indexes
 

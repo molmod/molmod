@@ -120,16 +120,12 @@ class PairSearch(object):
             bin.append((i,coordinates[i]))
 
         # compute the neigbouring bins within the cutoff
-        neighbor_indexes = self.grid_cell.get_radius_indexes(cutoff)
         if self.unit_cell is None:
-            self.neighbor_indexes = neighbor_indexes
+            self.neighbor_indexes = self.grid_cell.get_radius_indexes(cutoff)
         else:
-            self.neighbor_indexes = []
-            for index in neighbor_indexes:
-                fr_index = self.integer_cell.to_fractional(index)
-                if fr_index.max() < 0.5 and fr_index.min() >= -0.5:
-                    self.neighbor_indexes.append(index)
-            self.neighbor_indexes = numpy.array(self.neighbor_indexes)
+            max_ranges = numpy.diag(self.integer_cell.matrix).astype(int)
+            max_ranges[True^self.unit_cell.active] = -1
+            self.neighbor_indexes = self.grid_cell.get_radius_indexes(cutoff, max_ranges)
 
     def wrap_key(self, key):
         """Translate the key into the central cell

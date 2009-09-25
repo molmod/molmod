@@ -132,8 +132,8 @@ class BinningTestCase(unittest.TestCase):
 
     def test_distances_random(self):
         for i in xrange(10):
-            coordinates = numpy.random.uniform(0,5,(100,3))
-            cutoff = 1.0
+            coordinates = numpy.random.uniform(0,5,(20,3))
+            cutoff = numpy.random.uniform(1, 6)
             distances = [
                 (frozenset([i0, i1]), distance)
                 for i0, i1, delta, distance
@@ -143,7 +143,7 @@ class BinningTestCase(unittest.TestCase):
 
     def test_distances_random_periodic(self):
         for i in xrange(10):
-            coordinates = numpy.random.uniform(0,1,(10,3))
+            coordinates = numpy.random.uniform(0,1,(20,3))
             while True:
                 unit_cell = UnitCell(
                     numpy.random.uniform(0,5,(3,3)),
@@ -152,7 +152,7 @@ class BinningTestCase(unittest.TestCase):
                 if unit_cell.spacings.min() > 0.5:
                     break
             coordinates = unit_cell.to_cartesian(coordinates)*3-unit_cell.matrix.sum(axis=1)
-            cutoff = numpy.random.uniform(0, 6)
+            cutoff = numpy.random.uniform(1, 6)
 
             pair_search = PairSearch(coordinates, cutoff, unit_cell)
             self.verify_internals_periodic(pair_search)

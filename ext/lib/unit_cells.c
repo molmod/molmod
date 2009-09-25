@@ -24,23 +24,39 @@
 #include "common.h"
 
 
-int unit_cell_get_radius_indexes(int n, double *matrix, double *reciprocal, double radius, int *indexes) {
-  int ranges[3], index[3], side[3];
+int unit_cell_get_radius_indexes(int n, double *matrix, double *reciprocal, double radius, int *max_ranges, int *indexes) {
+  int lowlim[3], uplim[3], index[3], side[3];
   int i0, i1, i2, counter, j0, j1, j2, k, sum;
   double center[3], corner[3], pos[3], frac[3];
   double scale, d;
 
-  /* See UnitCell.get_radius_ranges(self, radius) in the python code */
-  ranges[0] = ceil(radius*sqrt(reciprocal[0]*reciprocal[0] + reciprocal[3]*reciprocal[3] + reciprocal[6]*reciprocal[6]));
-  ranges[1] = ceil(radius*sqrt(reciprocal[1]*reciprocal[1] + reciprocal[4]*reciprocal[4] + reciprocal[7]*reciprocal[7]));
-  ranges[2] = ceil(radius*sqrt(reciprocal[2]*reciprocal[2] + reciprocal[5]*reciprocal[5] + reciprocal[8]*reciprocal[8]));
+  for (k = 0; k < 3; k++) {
+    /* See UnitCell.get_radius_ranges(self, radius) in the python code */
+    uplim[k] = ceil(radius*sqrt(
+        reciprocal[k  ]*reciprocal[k  ] +
+        reciprocal[k+3]*reciprocal[k+3] +
+        reciprocal[k+6]*reciprocal[k+6]
+    ));
+    lowlim[k] = -uplim[k];
+    /* reduce the ranges a priori */
+    if ((max_ranges[k] > 0) && (uplim[k]*2+1 > max_ranges[k])) {
+      if (max_ranges[k]%2 == 0) {
+        uplim[k] = max_ranges[k]/2-1;
+        lowlim[k] = -max_ranges[k]/2;
+      } else {
+        uplim[k] = max_ranges[k]/2;
+        lowlim[k] = -max_ranges[k]/2;
+      }
+      /*printf(" k=%i   max_ranges[k]=%i   lowlim[k]=%i   uplim[k]=%i\n", k, max_ranges[k], lowlim[k], uplim[k]);*/
+    }
+  }
   counter = 0;
   /* iterator over all neigboring cells in the range: i0, i1, i2 */
-  for (i0 = -ranges[0]; i0 <= ranges[0]; i0++) {
+  for (i0 = lowlim[0]; i0 <= uplim[0]; i0++) {
     index[0] = i0;
-    for (i1 = -ranges[1]; i1 <= ranges[1]; i1++) {
+    for (i1 = lowlim[1]; i1 <= uplim[1]; i1++) {
       index[1] = i1;
-      for (i2 = 0; i2 <= ranges[2]; i2++) {
+      for (i2 = lowlim[2]; i2 <= 0; i2++) {
         index[2] = i2;
         /* The center of a neighboring cell */
         dot_matrix_vector_did(matrix, index, center);
@@ -145,7 +161,7 @@ int unit_cell_get_radius_indexes(int n, double *matrix, double *reciprocal, doub
           indexes[counter+1] = i1;
           indexes[counter+2] = i2;
           counter += 3;
-          if (i2 != 0) {
+          if ((i2 != 0) && (-i2 <= uplim[2])) {
             /* since the resulting array contents is point symmetric and we
                have only half a loop over i2 */
             indexes[counter] = -i0;

@@ -242,6 +242,15 @@ class UnitCellTestCase(BaseTestCase):
             [ 1,  0,  0],
         ])
         self.assertArraysEqual(indexes, expected_indexes)
+        uc = UnitCell(numpy.identity(3, float), numpy.array([True, False, False]))
+        indexes = uc.get_radius_indexes(1.8, numpy.array([4,-1,-1]))
+        expected_indexes = numpy.array([
+            [-2,  0,  0],
+            [-1,  0,  0],
+            [ 0,  0,  0],
+            [ 1,  0,  0],
+        ])
+        self.assertArraysEqual(indexes, expected_indexes)
 
     def test_radius_indexes_2d(self):
         uc = UnitCell(numpy.identity(3, float), numpy.array([True, True, False]))
