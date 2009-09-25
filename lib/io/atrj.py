@@ -83,17 +83,17 @@ class ATRJReader(SlicedReader):
        >>> for frame in foo:
        ...    print frame.time
     """
-    def __init__(self, filename, sub=slice(None)):
+    def __init__(self, f, sub=slice(None)):
         """Create an ATRJReader
 
            Arguments:
-             filename  --  the filename of the ATRJ file
+             f  --  a filename or a file-like object
              sub  --  an optional slice object to select a subset of time frames
 
            The number of atoms is read immediately and is available as
            self.num_atoms.
         """
-        SlicedReader.__init__(self, filename, sub)
+        SlicedReader.__init__(self, f, sub)
         self._secfile = SectionFile(self._f)
         self._read_header()
 

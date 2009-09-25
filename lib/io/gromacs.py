@@ -37,14 +37,14 @@ class GroReader(SlicedReader):
        >>> for time, pos, vel, cell in gr:
        ...     print pos
     """
-    def __init__(self, filename, sub=slice(None)):
+    def __init__(self, f, sub=slice(None)):
         """Initialize a GroReader
 
            Arguments:
-             filename  --  The filename of the gro trajectory file
+             f  --  a filename or a file-like object
              sub  --  a slice object to indicate the frames to be read/skipped.
         """
-        SlicedReader.__init__(self, filename, sub)
+        SlicedReader.__init__(self, f, sub)
         self.num_atoms = None
         pos = self._read_frame()[1]
         self.num_atoms = len(pos)

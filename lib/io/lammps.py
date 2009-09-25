@@ -36,17 +36,17 @@ class LAMMPSDumpReader(SlicedReader):
        >>> for fields in ldr:
        ...     print fields[0]
     """
-    def __init__(self, filename, units, sub=slice(None)):
+    def __init__(self, f, units, sub=slice(None)):
         """Initialize a LAMMPSDumpReader object
 
            Arguments:
-             filename  --  The filename of the LAMMPS dump file
+             f  --  a filename or a file-like object
              units  --  The units of the atom fields. The number of fields,
                         their unit and their meaning depends on the input file
                         of the LAMMPS simulation.
              sub  --  a slice object indicating which time frames to skip/read
         """
-        SlicedReader.__init__(self, filename, sub)
+        SlicedReader.__init__(self, f, sub)
         # first read the number of atoms
         try:
             while True:

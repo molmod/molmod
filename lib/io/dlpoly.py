@@ -38,14 +38,14 @@ class DLPolyHistoryReader(SlicedReader):
        >>> for frame in hr:
        ...     print frame["cell"]
     """
-    def __init__(self, filename, sub=slice(None), pos_unit=angstrom,
+    def __init__(self, f, sub=slice(None), pos_unit=angstrom,
         vel_unit=angstrom/picosecond, frc_unit=amu*angstrom/picosecond**2,
         time_unit=picosecond, mass_unit=amu
     ):
         """Initialize a DLPoly history reader
 
            Arguments:
-             filename  --  the file with the history data
+             f  --  a filename or a file-like object
              sub  --  a slice indicating the frames to be skipped/selected
              pos_unit, vel_unit, frc_unit, time_unit, mass_unit
                   --  The conversion factors for the unit conversion from the
@@ -53,7 +53,7 @@ class DLPolyHistoryReader(SlicedReader):
                       of these optional arguments correspond to the defaults of
                       dlpoly.
         """
-        SlicedReader.__init__(self, filename, sub)
+        SlicedReader.__init__(self, f, sub)
         self._counter = 1 # make our counter compatible with dlpoly
         self.pos_unit = pos_unit
         self.vel_unit = vel_unit
@@ -172,14 +172,14 @@ class DLPolyOutputReader(SlicedReader):
 
     _marker = " " + "-"*130
 
-    def __init__(self, filename, sub=slice(None), skip_equi_period=True,
+    def __init__(self, f, sub=slice(None), skip_equi_period=True,
         pos_unit=angstrom, time_unit=picosecond, angle_unit=deg,
         e_unit=amu/(angstrom/picosecond)**2
     ):
         """Initialize a DLPoly output reader
 
            Arguments:
-             filename  --  the file with the history data
+             f  --  a filename or a file-like object
              sub  --  a slice indicating the frames to be skipped/selected
              skip_equi_period  -- When True, the equilibration period is not
                                   read (default=True)
@@ -189,7 +189,7 @@ class DLPolyOutputReader(SlicedReader):
                       of these optional arguments correspond to the defaults of
                       dlpoly.
         """
-        SlicedReader.__init__(self, filename, sub)
+        SlicedReader.__init__(self, f, sub)
         self._counter = 1 # make our counter compatible with dlpoly
         self.skip_equi_period = skip_equi_period
 

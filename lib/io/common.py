@@ -56,7 +56,13 @@ class SlicedReader(object):
     """Base class for readers that can read a slice of all the frames"""
 
     def __init__(self, f, sub=slice(None)):
-        """Initialize a SliceReader instance"""
+        """Initialize a SliceReader instance
+
+           Arguments:
+             f  --  a filename or a file-like object
+             sub  --  a slice indicating which frames to read/skip
+
+        """
         if isinstance(f, file):
             self._auto_close = False
             self._f = f
