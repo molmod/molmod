@@ -118,7 +118,7 @@ class UnitCellTestCase(BaseTestCase):
             uc3 = uc2.add_cell_vector(numpy.random.uniform(-2,2,3))
 
     def test_shortest_vector(self):
-        # simple case
+        # simple cases
         uc = UnitCell(numpy.identity(3,float)*3)
         self.assertArraysAlmostEqual(uc.shortest_vector([3, 0, 1]), numpy.array([0, 0, 1]))
         self.assertArraysAlmostEqual(uc.shortest_vector([-3, 0, 1]), numpy.array([0, 0, 1]))
@@ -127,18 +127,27 @@ class UnitCellTestCase(BaseTestCase):
         self.assertArraysAlmostEqual(uc.shortest_vector([-1.4, 1, 1]), numpy.array([-1.4, 1, 1]))
         # random tests
         for uc_counter in xrange(10):
-            uc = UnitCell(numpy.random.uniform(-1, 1, (3, 3)))
+            uc = self.get_random_uc(full=False)
             for r_counter in xrange(10):
                 r0 = numpy.random.normal(0, 10, 3)
                 r1 = uc.shortest_vector(r0)
                 self.assert_(numpy.linalg.norm(r0) >= numpy.linalg.norm(r1))
                 index = uc.to_fractional(r0-r1)
-                self.assertArraysAlmostEqual(index, numpy.round(index))
+                self.assertArraysAlmostEqual(index, numpy.round(index), doabs=True)
+                index = uc.to_fractional(r1)
+                self.assert_(index.max()<0.5)
+                self.assert_(index.max()>=-0.5)
             r0 = numpy.random.normal(0, 10, (10,3))
             r1 = uc.shortest_vector(r0)
             for i in xrange(10):
                 r1_row_bis = uc.shortest_vector(r0[i])
-                self.assertArraysAlmostEqual(r1_row_bis, r1[i])
+                self.assertArraysAlmostEqual(r1_row_bis, r1[i], doabs=True)
+
+    def test_shortest_vector_trivial(self):
+        uc = UnitCell(numpy.identity(3, float))
+        half = numpy.array([0.5,0.5,0.5])
+        self.assertArraysEqual(uc.shortest_vector(half), -half)
+        self.assertArraysEqual(uc.shortest_vector(-half), -half)
 
     def test_spacings(self):
         uc = UnitCell(numpy.identity(3,float)*3)
@@ -334,6 +343,21 @@ class UnitCellTestCase(BaseTestCase):
             uc1 = uc0/x
             self.assertArraysAlmostEqual(uc0.matrix/x, uc1.matrix)
             self.assertArraysEqual(uc0.active, uc1.active)
+            self.assertAlmostEqual(
+                numpy.dot(uc0.matrix[:,0], uc1.matrix[:,0])
+                /numpy.linalg.norm(uc0.matrix[:,0])
+                /numpy.linalg.norm(uc1.matrix[:,0]), 1
+            )
+            self.assertAlmostEqual(
+                numpy.dot(uc0.matrix[:,1], uc1.matrix[:,1])
+                /numpy.linalg.norm(uc0.matrix[:,1])
+                /numpy.linalg.norm(uc1.matrix[:,1]), 1
+            )
+            self.assertAlmostEqual(
+                numpy.dot(uc0.matrix[:,2], uc1.matrix[:,2])
+                /numpy.linalg.norm(uc0.matrix[:,2])
+                /numpy.linalg.norm(uc1.matrix[:,2]), 1
+            )
 
     def test_mul(self):
         for i in xrange(20):
@@ -342,6 +366,21 @@ class UnitCellTestCase(BaseTestCase):
             uc1 = uc0*x
             self.assertArraysAlmostEqual(uc0.matrix*x, uc1.matrix)
             self.assertArraysEqual(uc0.active, uc1.active)
+            self.assertAlmostEqual(
+                numpy.dot(uc0.matrix[:,0], uc1.matrix[:,0])
+                /numpy.linalg.norm(uc0.matrix[:,0])
+                /numpy.linalg.norm(uc1.matrix[:,0]), 1
+            )
+            self.assertAlmostEqual(
+                numpy.dot(uc0.matrix[:,1], uc1.matrix[:,1])
+                /numpy.linalg.norm(uc0.matrix[:,1])
+                /numpy.linalg.norm(uc1.matrix[:,1]), 1
+            )
+            self.assertAlmostEqual(
+                numpy.dot(uc0.matrix[:,2], uc1.matrix[:,2])
+                /numpy.linalg.norm(uc0.matrix[:,2])
+                /numpy.linalg.norm(uc1.matrix[:,2]), 1
+            )
 
     def test_generalized_volume(self):
         matrix = numpy.array([[10,0,0],[0,10,0],[0,0,10]], float)
@@ -428,7 +467,7 @@ class UnitCellTestCase(BaseTestCase):
             sub = uc.get_optimal_subcell(cutoff)
             self.assertArraysEqual(sub.active, uc.active)
             integer_matrix = sub.to_fractional(uc.matrix.transpose()).transpose()
-            self.assertArraysAlmostEqual(integer_matrix, integer_matrix.round())
+            self.assertArraysAlmostEqual(integer_matrix, integer_matrix.round(), doabs=True)
             ratio_uc = abs(uc.generalized_volume)/numpy.product(uc.parameters[0][uc.active])
             ratio_sub = abs(sub.generalized_volume)/numpy.product(sub.parameters[0][uc.active])
             # assert that sub cell is (most of the time) more cubic

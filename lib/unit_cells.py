@@ -220,7 +220,7 @@ class UnitCell(ReadOnly):
            The return value has the same shape as the argument. This function is
            the inverse of to_cartesian.
         """
-        return numpy.dot(cartesian, self.reciprocal)
+        return numpy.dot(cartesian, self.reciprocal)*self.active
 
     def to_cartesian(self, fractional):
         """Converts fractional to Cartesian coordinates
@@ -245,6 +245,7 @@ class UnitCell(ReadOnly):
         """
         fractional = self.to_fractional(delta)
         fractional -= fractional.round()
+        fractional[fractional>=0.5] = -0.5
         return self.to_cartesian(fractional)
 
     def add_cell_vector(self, vector):
