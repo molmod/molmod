@@ -21,7 +21,7 @@
 
 
 from molmod.units import picosecond, nanometer
-from molmod.io.common import slice_match
+from molmod.io.common import SlicedReader
 
 import numpy
 
@@ -29,7 +29,7 @@ import numpy
 __all__ = ["GroReader"]
 
 
-class GroReader(object):
+class GroReader(SlicedReader):
     """A reader from .gro trajectory files from gromacs
 
        Use this reader as an iterator:
@@ -44,12 +44,10 @@ class GroReader(object):
              filename  --  The filename of the gro trajectory file
              sub  --  a slice object to indicate the frames to be read/skipped.
         """
-        self._f = file(filename)
-        self._sub = sub
+        SlicedReader.__init__(self, filename, sub)
         self.num_atoms = None
         pos = self._read_frame()[1]
         self.num_atoms = len(pos)
-        self._counter = 0
         self._f.seek(0)
 
     def _get_line(self):
@@ -112,23 +110,4 @@ class GroReader(object):
             raise ValueError("The number of atoms must be the same over the entire file.")
         for i in xrange(num_atoms+1):
             self._get_line()
-
-    def __del__(self):
-        self._f.close()
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        """Get the next frame from the file, taking into account the slice
-
-           This method is part of the iterator protocol.
-        """
-        # skip frames as requested
-        while not slice_match(self._sub, self._counter):
-            self._counter += 1
-            self._skip_frame()
-
-        self._counter += 1
-        return self._read_frame()
 

@@ -21,7 +21,7 @@
 
 
 from molmod.units import picosecond, amu, angstrom, atm, deg
-from molmod.io.common import slice_match, FileFormatError
+from molmod.io.common import SlicedReader, FileFormatError
 
 import numpy
 
@@ -29,7 +29,7 @@ import numpy
 __all__ = ["DLPolyHistoryReader", "DLPolyOutputReader"]
 
 
-class DLPolyHistoryReader(object):
+class DLPolyHistoryReader(SlicedReader):
     """A Reader for the DLPoly history file format.
 
        Use this object as an iterator:
@@ -53,8 +53,8 @@ class DLPolyHistoryReader(object):
                       of these optional arguments correspond to the defaults of
                       dlpoly.
         """
-        self._f = file(filename)
-        self._sub = sub
+        SlicedReader.__init__(self, filename, sub)
+        self._counter = 1 # make our counter compatible with dlpoly
         self.pos_unit = pos_unit
         self.vel_unit = vel_unit
         self.frc_unit = frc_unit
@@ -70,20 +70,10 @@ class DLPolyHistoryReader(object):
             raise FileFormatError("File is too short. Could not read header.")
         except ValueError:
             raise FileFormatError("Second line must contain three integers.")
-        self._counter = 1
         self._frame_size = 4 + self.num_atoms*(self.keytrj+2)
 
-    def __del__(self):
-        self._f.close()
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        """Read the next frame
-
-           This method is part of the iterator protocol.
-        """
+    def _read_frame(self):
+        """Read a single frame from the trajectory"""
         # auxiliary read function
         def read_three(msg):
             """Read three words as floating point numbers"""
@@ -92,12 +82,6 @@ class DLPolyHistoryReader(object):
                 return [float(line[:12]), float(line[12:24]), float(line[24:])]
             except ValueError:
                 raise FileFormatError(msg)
-
-        # skip frames as requested
-        while not slice_match(self._sub, self._counter):
-            for i in xrange(self._frame_size):
-                self._f.next()
-            self._counter += 1
 
         frame = {}
         # read the frame header line
@@ -166,12 +150,15 @@ class DLPolyHistoryReader(object):
             vel *= self.vel_unit # convert to au
         if self.keytrj > 1:
             frc *= self.frc_unit # convert to au
-        # done
-        self._counter += 1
         return frame
 
+    def _skip_frame(self):
+        """Skip a single frame from the trajectory"""
+        for i in xrange(self._frame_size):
+            self._f.next()
 
-class DLPolyOutputReader(object):
+
+class DLPolyOutputReader(SlicedReader):
     """A Reader for DLPoly output files.
 
        Use this object as an iterator:
@@ -202,17 +189,15 @@ class DLPolyOutputReader(object):
                       of these optional arguments correspond to the defaults of
                       dlpoly.
         """
-        self._f = file(filename)
-        self._sub = sub
+        SlicedReader.__init__(self, filename, sub)
+        self._counter = 1 # make our counter compatible with dlpoly
         self.skip_equi_period = skip_equi_period
-        self._counter = 1
 
         self._conv = [
             1,         e_unit,      1, e_unit, e_unit, e_unit,     e_unit,     e_unit,     e_unit, e_unit,
             time_unit, e_unit,      1, e_unit, e_unit, e_unit,     e_unit,     e_unit,     e_unit, e_unit,
             1,         pos_unit**3, 1, e_unit, e_unit, angle_unit, angle_unit, angle_unit, e_unit, 1000*atm,
         ]
-        self.last_step = None
 
         # find the line that gives the number of equilibration steps:
         try:
@@ -226,42 +211,33 @@ class DLPolyOutputReader(object):
         except ValueError:
             raise FileFormatError("Could not read the number of equilibration steps. (expecting an integer)")
 
-    def __del__(self):
-        self._f.close()
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        """Read the next frame from the file
-
-           This method is part of the iterator protocol.
-        """
-        def goto_next_frame():
-            """Continue reading until the next frame is reached"""
-            marked = False
-            while True:
-                line = self._f.next()[:-1]
-                if marked and len(line) > 0 and not line.startswith(" --------"):
-                    try:
-                        step = int(line[:10])
-                        return step, line
-                    except ValueError:
-                        pass
-                marked = (len(line) == 131 and line == self._marker)
-
+    def goto_next_frame(self):
+        """Continue reading until the next frame is reached"""
+        marked = False
         while True:
-            step, line = goto_next_frame()
-            if (not self.skip_equi_period or step >= self.equi_period) and \
-               step != self.last_step:
-                break
+            line = self._f.next()[:-1]
+            if marked and len(line) > 0 and not line.startswith(" --------"):
+                try:
+                    step = int(line[:10])
+                    return step, line
+                except ValueError:
+                    pass
+            marked = (len(line) == 131 and line == self._marker)
 
-        # skip frames as requested
-        while not slice_match(self._sub, self._counter):
-            step, line = goto_next_frame()
-            self._counter += 1
+    def _read_frame(self):
+        """Read a single frame from the trajectory"""
+        # optionally skip the equilibration
+        if self.skip_equi_period:
+            while True:
+                step, line = self.goto_next_frame()
+                self._counter += 1
+                if step >= self.equi_period:
+                    break
+            self.skip_equi_period = False
+        else:
+            step, line = self.goto_next_frame()
 
-        # now really read these three lines
+        # read the three lines
         try:
             row = [step]
             for i in xrange(9):
@@ -282,7 +258,9 @@ class DLPolyOutputReader(object):
             row[i] *= self._conv[i]
 
         # done
-        self.last_step = step
         return row
 
+    def _skip_frame(self):
+        """Skip a single frame from the trajectory"""
+        self.goto_next_frame()
 

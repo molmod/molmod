@@ -19,7 +19,7 @@
 # --
 """Common functionality used by the molmod.io package"""
 
-__all__ = ["slice_match", "FileFormatError"]
+__all__ = ["slice_match", "FileFormatError", "SlicedReader"]
 
 
 def slice_match(sub, counter):
@@ -48,7 +48,67 @@ def slice_match(sub, counter):
 
 
 class FileFormatError(Exception):
-    """Is raised when unexpected data is encountered while reading a file."""
+    """Is raised when unexpected data is encountered while reading a file"""
     pass
+
+
+class SlicedReader(object):
+    """Base class for readers that can read a slice of all the frames"""
+
+    def __init__(self, f, sub=slice(None)):
+        """Initialize a SliceReader instance"""
+        if isinstance(f, file):
+            self._auto_close = False
+            self._f = f
+        else:
+            self._auto_close = True
+            self._f = file(f)
+        self._sub = sub
+        self._counter = 0
+
+    def __del__(self):
+        """Clean up the open file"""
+        if self._auto_close:
+            self._f.close()
+
+    def _read_frame(self):
+        """Read a single frame from the trajectory"""
+        raise NotImplementedError
+
+    def _skip_frame(self):
+        """Skip a single frame from the trajectory"""
+        raise NotImplementedError
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        """Read the next frame from the XYZ trajectory file
+
+           This method is part of the iterator protocol
+        """
+        if self._first is not None:
+            tmp = self._first
+            self._first = None
+            result = tmp
+        else:
+            result = self._read()[1:]
+        if result is None:
+            raise StopIteration
+        return result
+
+    def next(self):
+        """Get the next frame from the file, taking into account the slice
+
+           This method is part of the iterator protocol.
+        """
+        # skip frames as requested
+        while not slice_match(self._sub, self._counter):
+            self._counter += 1
+            self._skip_frame()
+
+        result = self._read_frame()
+        self._counter += 1
+        return result
 
 

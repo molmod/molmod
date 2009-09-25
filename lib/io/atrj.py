@@ -23,7 +23,7 @@
 import numpy
 
 from molmod.units import picosecond, angstrom, kcalmol
-from molmod.io.common import slice_match
+from molmod.io.common import SlicedReader
 
 
 __all__ = ["ATRJReader", "ATRJFrame"]
@@ -34,13 +34,10 @@ class SectionFile(object):
 
        This is an internal class and should not be used directly.
     """
-    def __init__(self, filename):
-        self.filename = filename
-        self._f = file(filename, 'r')
+    def __init__(self, f):
+        """Initialize a SectionFile object"""
+        self._f = f
         self._last = self._f.readline()
-
-    def __del__(self):
-        self._f.close()
 
     def _get_current_label(self):
         """Get the label from the last line read"""
@@ -75,7 +72,7 @@ class ATRJFrame(object):
     pass
 
 
-class ATRJReader(object):
+class ATRJReader(SlicedReader):
     """A Reader class for the ATRJ trajectory file format
 
        Once initialized, this object behaves like an iterator that runs over
@@ -87,7 +84,7 @@ class ATRJReader(object):
        ...    print frame.time
     """
     def __init__(self, filename, sub=slice(None)):
-        """Create and ATRJReader
+        """Create an ATRJReader
 
            Arguments:
              filename  --  the filename of the ATRJ file
@@ -96,47 +93,38 @@ class ATRJReader(object):
            The number of atoms is read immediately and is available as
            self.num_atoms.
         """
-        self.filename = filename
-        self._sub = sub
-        self._counter = 0
-        self._secfile = SectionFile(filename)
+        SlicedReader.__init__(self, filename, sub)
+        self._secfile = SectionFile(self._f)
         self._read_header()
 
     def _read_header(self):
         """Read the number of atoms from the first section"""
         self.num_atoms = int(self._secfile.get_next("FilNum")[0].split()[4])
 
-    def __iter__(self):
-        return self
+    def _read_frame(self):
+        """Read a single frame from the trajectory"""
+        self._secfile.get_next("Frame Number")
+        frame = ATRJFrame()
+        # Read the time and energy
+        energy_lines = self._secfile.get_next("Time/Energy")
+        energy_words = energy_lines[0].split()
+        frame.time = float(energy_words[0])*picosecond
+        frame.step = int(energy_words[1])
+        frame.total_energy = float(energy_words[2])*kcalmol
+        # Read the coordinates
+        coord_lines = self._secfile.get_next("Coordinates")
+        frame.coordinates = numpy.zeros((self.num_atoms, 3), float)
+        for index, line in enumerate(coord_lines):
+            words = line.split()
+            frame.coordinates[index, 0] = float(words[1])
+            frame.coordinates[index, 1] = float(words[2])
+            frame.coordinates[index, 2] = float(words[3])
+        frame.coordinates *= angstrom
+        # Done
+        return frame
 
-    def next(self):
-        """Read the next frame
+    def _skip_frame(self):
+        """Skip a single frame from the trajectory"""
+        self._secfile.get_next("Frame Number")
 
-           This method is part of the iterator protocol.
-        """
-        while True:
-            # skip to the next frame
-            self._secfile.get_next("Frame Number")
-            if slice_match(self._sub, self._counter):
-                self._counter += 1
-                frame = ATRJFrame()
-                # Read the time and energy
-                energy_lines = self._secfile.get_next("Time/Energy")
-                energy_words = energy_lines[0].split()
-                frame.time = float(energy_words[0])*picosecond
-                frame.step = int(energy_words[1])
-                frame.total_energy = float(energy_words[2])*kcalmol
-                # Read the coordinates
-                coord_lines = self._secfile.get_next("Coordinates")
-                frame.coordinates = numpy.zeros((self.num_atoms, 3), float)
-                for index, line in enumerate(coord_lines):
-                    words = line.split()
-                    frame.coordinates[index, 0] = float(words[1])
-                    frame.coordinates[index, 1] = float(words[2])
-                    frame.coordinates[index, 2] = float(words[3])
-                frame.coordinates *= angstrom
-                # Done
-                return frame
-            else:
-                self._counter += 1
 

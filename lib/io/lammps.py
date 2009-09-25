@@ -20,7 +20,7 @@
 """Tools for parsing LAMMPS data files"""
 
 
-from molmod.io.common import slice_match, FileFormatError
+from molmod.io.common import SlicedReader, FileFormatError
 
 import numpy
 
@@ -28,7 +28,7 @@ import numpy
 __all__ = ["LAMMPSDumpReader"]
 
 
-class LAMMPSDumpReader(object):
+class LAMMPSDumpReader(SlicedReader):
     """A Reader for LAMMPS dump files
 
        Use this reader as an iterator:
@@ -46,8 +46,8 @@ class LAMMPSDumpReader(object):
                         of the LAMMPS simulation.
              sub  --  a slice object indicating which time frames to skip/read
         """
+        SlicedReader.__init__(self, filename, sub)
         # first read the number of atoms
-        self._f = file(filename)
         try:
             while True:
                 line = self._f.next()
@@ -61,16 +61,7 @@ class LAMMPSDumpReader(object):
         except StopIteration:
             raise FileFormatError("Could not find line 'ITEM: NUMBER OF ATOMS'.")
         self._f.seek(0) # go back to the beginning of the file
-        self._f = file(filename)
         self.units = units
-        self._sub = sub
-        self._counter = 0
-
-    def __del__(self):
-        self._f.close()
-
-    def __iter__(self):
-        return self
 
     def _read_frame(self):
         """Read and return the next time frame"""
@@ -124,17 +115,4 @@ class LAMMPSDumpReader(object):
                 break
         for i in xrange(self.num_atoms):
             self._f.next()
-
-    def next(self):
-        """Get the next frame from the file, taking into account the slice
-
-           This method is part of the iterator protocol.
-        """
-        # skip frames as requested
-        while not slice_match(self._sub, self._counter):
-            self._counter += 1
-            self._skip_frame()
-
-        self._counter += 1
-        return self._read_frame()
 

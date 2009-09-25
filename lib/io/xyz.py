@@ -20,7 +20,7 @@
 """Tools for reading and writing XYZ trajectory files"""
 
 
-from molmod.io.common import slice_match, FileFormatError
+from molmod.io.common import SlicedReader, FileFormatError
 from molmod.periodic import periodic
 from molmod.molecules import Molecule
 from molmod.units import angstrom
@@ -32,7 +32,7 @@ from itertools import izip
 __all__ = ["XYZReader", "XYZWriter", "XYZFile"]
 
 
-class XYZReader(object):
+class XYZReader(SlicedReader):
     """A reader for XYZ trajectory files
 
        Use this reader as an iterator:
@@ -54,20 +54,11 @@ class XYZReader(object):
              self.symbols  --  The atom symbols
              self.numbers  --  The atom numbers
         """
-        if isinstance(f, file):
-            self._auto_close = False
-            self._file = f
-        else:
-            self._auto_close = True
-            self._file = file(f)
-        self._sub = sub
-        self._counter = 0
+        SlicedReader.__init__(self, f, sub)
         self.file_unit = file_unit
 
         try:
-            tmp = self._read()
-            self.symbols = tmp[0]
-            self._first = tmp[1:]
+            self._first = self._read_frame()
             self.numbers = numpy.zeros(len(self.symbols), int)
             for index, symbol in enumerate(self.symbols):
                 atom_info = periodic[symbol]
@@ -75,42 +66,32 @@ class XYZReader(object):
                     self.numbers[index] = 0
                 else:
                     self.numbers[index] = atom_info.number
+            self._f.seek(0)
         except StopIteration:
             raise FileFormatError("Could not read first frame from XYZ file. Incorrect file format.")
 
-    def __del__(self):
-        if self._auto_close:
-            self._file.close()
+    def read_size(self):
+        """Read the number of atoms"""
+        try:
+            return int(self._f.readline().strip())
+        except ValueError:
+            raise StopIteration
 
-    def _read(self):
+    def _read_frame(self):
         """Read a frame from the XYZ file"""
-        def read_size():
-            """Read the number of atoms"""
-            try:
-                return int(self._file.readline().strip())
-            except ValueError:
-                raise StopIteration
 
-        while not slice_match(self._sub, self._counter):
-            size = read_size()
-            for i in xrange(size+1):
-                line = self._file.readline()
-                if len(line) == 0:
-                    raise StopIteration
-            self._counter += 1
-
-        size = read_size()
-        title = self._file.readline()[:-1]
-        symbols = []
+        size = self.read_size()
+        title = self._f.readline()[:-1]
+        self.symbols = []
         coordinates = numpy.zeros((size, 3), float)
         for counter in xrange(size):
-            line = self._file.readline()
+            line = self._f.readline()
             if len(line) == 0:
                 raise StopIteration
             words = line.split()
             if len(words) < 4:
                 raise StopIteration
-            symbols.append(words[0])
+            self.symbols.append(words[0])
             try:
                 coordinates[counter, 0] = float(words[1])
                 coordinates[counter, 1] = float(words[2])
@@ -119,25 +100,15 @@ class XYZReader(object):
                 raise StopIteration
         coordinates *= self.file_unit
         self._counter += 1
-        return symbols, title, coordinates
+        return title, coordinates
 
-    def __iter__(self):
-        return self
-
-    def next(self):
-        """Read the next frame from the XYZ trajectory file
-
-           This method is part of the iterator protocol
-        """
-        if self._first is not None:
-            tmp = self._first
-            self._first = None
-            result = tmp
-        else:
-            result = self._read()[1:]
-        if result is None:
-            raise StopIteration
-        return result
+    def _skip_frame(self):
+        """Skip a single frame from the trajectory"""
+        size = self.read_size()
+        for i in xrange(size+1):
+            line = self._f.readline()
+            if len(line) == 0:
+                raise StopIteration
 
     def get_first_molecule(self):
         """Get the first molecule from the trajectory
@@ -175,16 +146,16 @@ class XYZWriter(object):
         """
         if isinstance(f, file):
             self._auto_close = False
-            self._file = f
+            self._f = f
         else:
             self._auto_close = True
-            self._file = file(f, 'w')
+            self._f = file(f, 'w')
         self.symbols = symbols
         self.file_unit = file_unit
 
     def __del__(self):
         if self._auto_close:
-            self._file.close()
+            self._f.close()
 
     def dump(self, title, coordinates):
         """Dump a frame to the trajectory file
@@ -193,10 +164,10 @@ class XYZWriter(object):
              title  --  the title of the frame
              coordinates  --  a numpy array with coordinates in atomic units
         """
-        print >> self._file, "% 8i" % len(self.symbols)
-        print >> self._file, str(title)
+        print >> self._f, "% 8i" % len(self.symbols)
+        print >> self._f, str(title)
         for symbol, coordinate in zip(self.symbols, coordinates):
-            print >> self._file, "% 2s % 12.9f % 12.9f % 12.9f" % ((symbol, ) + tuple(coordinate/self.file_unit))
+            print >> self._f, "% 2s % 12.9f % 12.9f % 12.9f" % ((symbol, ) + tuple(coordinate/self.file_unit))
 
 
 class XYZFile(object):

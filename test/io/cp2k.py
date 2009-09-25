@@ -120,16 +120,4 @@ class CP2KTestCase(unittest.TestCase):
         f1.close()
         f2.close()
 
-    def test_cell_reader(self):
-        cr = CP2KCellReader("input/thf_64.cell")
-        for step, time, matrix, volume in cr:
-            self.assertEqual(step, 0)
-            self.assertAlmostEqual(time/femtosecond, 0.0)
-            self.assertAlmostEqual(matrix[0,0]/angstrom, 20.5)
-            self.assertAlmostEqual(matrix[1,0]/angstrom, 0.0)
-            self.assertAlmostEqual(volume/angstrom**3, 8615.125)
-            break
-
-
-
 
