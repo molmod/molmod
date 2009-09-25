@@ -30,7 +30,6 @@
 
 
 from molmod.unit_cells import UnitCell
-from molmod.units import deg # TODO: REMOVE
 import numpy
 
 
@@ -81,7 +80,11 @@ class PairSearch(object):
             if unit_cell is None:
                 grid = cutoff/2.9
             else:
-                grid = unit_cell.get_optimal_subcell(cutoff/2.0)
+                # The following would be faster, but the code is not reliable
+                # enough yet.
+                #grid = unit_cell.get_optimal_subcell(cutoff/2.0)
+                divisions = numpy.ceil(unit_cell.spacings/cutoff)
+                grid = unit_cell/divisions
 
         if isinstance(grid, float):
             self.grid_cell = UnitCell(numpy.array([[grid, 0, 0], [0, grid, 0], [0, 0, grid]]))
@@ -106,7 +109,7 @@ class PairSearch(object):
             if unit_cell is None:
                 key = fractional[i].astype(int)
             else:
-                key = self.integer_cell.shortest_vector(fractional[i].astype(int)).astype(int)
+                key = numpy.round(self.integer_cell.shortest_vector(fractional[i].astype(int))).astype(int)
             key = tuple(key)
             bin = self.bins.get(key)
             if bin is None:
@@ -120,8 +123,8 @@ class PairSearch(object):
         else:
             self.neighbor_indexes = []
             for index in neighbor_indexes:
-                shortest_index = numpy.round(self.integer_cell.shortest_vector(index)).astype(int)
-                if (index == shortest_index).all():
+                fr_index = self.integer_cell.to_fractional(index)
+                if fr_index.max() < 0.5 and fr_index.min() >= -0.5:
                     self.neighbor_indexes.append(index)
             self.neighbor_indexes = numpy.array(self.neighbor_indexes)
 
