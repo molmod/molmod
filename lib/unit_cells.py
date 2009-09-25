@@ -21,7 +21,6 @@
 
 
 from molmod.units import angstrom
-from molmod.vectors import random_orthonormal
 from molmod.utils import cached, ReadOnly
 
 import numpy
@@ -167,7 +166,10 @@ class UnitCell(ReadOnly):
         alpha = numpy.arccos(numpy.dot(self.matrix[:, 1], self.matrix[:, 2]) / (length_b * length_c))
         beta = numpy.arccos(numpy.dot(self.matrix[:, 2], self.matrix[:, 0]) / (length_c * length_a))
         gamma = numpy.arccos(numpy.dot(self.matrix[:, 0], self.matrix[:, 1]) / (length_a * length_b))
-        return (numpy.array([length_a, length_b, length_c], float), numpy.array([alpha, beta, gamma], float))
+        return (
+            numpy.array([length_a, length_b, length_c], float),
+            numpy.array([alpha, beta, gamma], float)
+        )
 
     @cached
     def alignment_a(self):
@@ -245,7 +247,7 @@ class UnitCell(ReadOnly):
         """
         fractional = self.to_fractional(delta)
         fractional -= fractional.round()
-        fractional[fractional>=0.5] = -0.5
+        fractional[fractional >= 0.5] = -0.5
         return self.to_cartesian(fractional)
 
     def add_cell_vector(self, vector):
@@ -280,7 +282,7 @@ class UnitCell(ReadOnly):
             return UnitCell(matrix, active)
 
     def get_radius_ranges(self, radius):
-        """Return the ranges of indexes of the interacting neighboring unit cells
+        """Return ranges of indexes of the interacting neighboring unit cells
 
            Interacting neighboring unit cells have at least one point in their
            box volume that has a distance smaller or equal than radius to at
@@ -312,17 +314,19 @@ class UnitCell(ReadOnly):
 
         """
         if max_ranges is None:
-            max_ranges = numpy.array([-1,-1,-1])
+            max_ranges = numpy.array([-1, -1, -1])
         ranges = self.get_radius_ranges(radius)*2+1
-        mask = (max_ranges!=-1)&(max_ranges<ranges)
+        mask = (max_ranges != -1) & (max_ranges < ranges)
         ranges[mask] = max_ranges[mask]
-        max_size = numpy.product(self.get_radius_ranges(radius)*2+1)
-        indexes = numpy.zeros((max_size,3), numpy.int32)
+        max_size = numpy.product(self.get_radius_ranges(radius)*2 + 1)
+        indexes = numpy.zeros((max_size, 3), numpy.int32)
 
         from molmod.ext import unit_cell_get_radius_indexes
         reciprocal = self.reciprocal*self.active
         matrix = self.matrix*self.active
-        size = unit_cell_get_radius_indexes(matrix, reciprocal, radius, max_ranges, indexes)
+        size = unit_cell_get_radius_indexes(
+            matrix, reciprocal, radius, max_ranges, indexes
+        )
         return indexes[:size]
 
     def get_optimal_subcell(self, cutoff):
@@ -347,7 +351,10 @@ class UnitCell(ReadOnly):
         # express the ideal reciprocal cell in the basis of the reciprocal
         # vectors of the current cell. Note that the transpose of the matrix
         # with cell vectors is 'an' inverse of the reciprocal matrix.
-        integer_matrix = numpy.dot(self.matrix.transpose(), numpy.identity(3,float)/cutoff)
+        integer_matrix = numpy.dot(
+            self.matrix.transpose(),
+            numpy.identity(3, float)/cutoff
+        )
         # increase the reciprocal cell to integer multiples of the original
         # reciprocal cell
         signs = numpy.sign(integer_matrix)
@@ -357,11 +364,11 @@ class UnitCell(ReadOnly):
             """Convert the integer_matrix to UnitCell object"""
             subcell_reciprocal = numpy.dot(self.reciprocal, integer_matrix)
             for i in xrange(3):
-                if self.active[i] and abs(subcell_reciprocal[:,i]).max() < self.eps:
+                if self.active[i] and abs(subcell_reciprocal[:, i]).max() < self.eps:
                     return None
             U, S, Vt = numpy.linalg.svd(subcell_reciprocal)
             Sinv = 1/S
-            Sinv[abs(S)<self.eps] = 0.0#/(10.0*angstrom)
+            Sinv[abs(S) < self.eps] = 0.0#/(10.0*angstrom)
             subcell_matrix = numpy.dot(U*Sinv, Vt)
             try:
                 result = UnitCell(subcell_matrix, self.active)
@@ -382,7 +389,7 @@ class UnitCell(ReadOnly):
                 for i1 in active:
                     for change in -1, 1:
                         new_integer_matrix = integer_matrix.copy()
-                        new_integer_matrix[i0,i1] += change
+                        new_integer_matrix[i0, i1] += change
                         new_sub = int_to_sub(new_integer_matrix)
                         if new_sub is not None and (new_sub.parameters[0][self.active] < cutoff).all():
                             new_quality = numpy.product(new_sub.spacings[self.active])

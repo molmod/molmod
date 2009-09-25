@@ -90,7 +90,11 @@ class PairSearch(object):
                 grid = unit_cell/divisions
 
         if isinstance(grid, float):
-            self.grid_cell = UnitCell(numpy.array([[grid, 0, 0], [0, grid, 0], [0, 0, grid]]))
+            self.grid_cell = UnitCell(numpy.array([
+                [grid, 0, 0],
+                [0, grid, 0],
+                [0, 0, grid]
+            ]))
         elif isinstance(grid, UnitCell):
             self.grid_cell = grid
         else:
@@ -117,7 +121,7 @@ class PairSearch(object):
             if bin is None:
                 bin = []
                 self.bins[key] = bin
-            bin.append((i,coordinates[i]))
+            bin.append((i, coordinates[i]))
 
         # compute the neigbouring bins within the cutoff
         if self.unit_cell is None:
@@ -132,7 +136,9 @@ class PairSearch(object):
 
            This method is only applicable in case of a periodic system.
         """
-        return tuple(numpy.round(self.integer_cell.shortest_vector(key)).astype(int))
+        return tuple(numpy.round(
+            self.integer_cell.shortest_vector(key)
+        ).astype(int))
 
     def __iter__(self):
         """Iterate over all pairs with a distance below the cutoff"""
