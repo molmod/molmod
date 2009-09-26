@@ -107,12 +107,13 @@ class Translation(ReadOnly):
         result._cache_inv = self
         return result
 
-    def apply_to(self, x):
+    def apply_to(self, x, columns=False):
         """Apply this translation to the given object
 
            The argument can be several sorts of objects:
              * numpy array with shape (3, )
              * numpy array with shape (N, 3)
+             * numpy array with shape (3, N), use columns=True
              * Translation
              * Rotation
              * Complete
@@ -125,7 +126,9 @@ class Translation(ReadOnly):
 
            This method is equivalent to self*x.
         """
-        if isinstance(x, numpy.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)):
+        if isinstance(x, numpy.ndarray) and len(x.shape) == 2 and x.shape[0] == 3 and columns:
+            return x + self.t.reshape((3,1))
+        if isinstance(x, numpy.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)) and not columns:
             return x + self.t
         elif isinstance(x, Complete):
             return Complete(x.r, x.t + self.t)
@@ -239,15 +242,17 @@ class Rotation(ReadOnly):
         result._cache_inv = self
         return result
 
-    def apply_to(self, x):
+    def apply_to(self, x, columns=False):
         """Apply this rotation to the given object
 
            The argument can be several sorts of objects:
              * numpy array with shape (3, )
              * numpy array with shape (N, 3)
+             * numpy array with shape (3, N), use columns=True
              * Translation
              * Rotation
              * Complete
+             * UnitCell
 
            In case of arrays, the 3D vectors are rotated. In case of trans-
            formations, a transformation is returned that consists of this
@@ -256,7 +261,9 @@ class Rotation(ReadOnly):
 
            This method is equivalent to self*x.
         """
-        if isinstance(x, numpy.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)):
+        if isinstance(x, numpy.ndarray) and len(x.shape) == 2 and x.shape[0] == 3 and columns:
+            return numpy.dot(self.r, x)
+        if isinstance(x, numpy.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)) and not columns:
             return numpy.dot(x, self.r.transpose())
         elif isinstance(x, Complete):
             return Complete(numpy.dot(self.r, x.r), numpy.dot(self.r, x.t))
@@ -352,15 +359,17 @@ class Complete(Translation, Rotation):
         result._cache_inv = self
         return result
 
-    def apply_to(self, x):
+    def apply_to(self, x, columns=False):
         """Apply this transformation to the given object
 
            The argument can be several sorts of objects:
              * numpy array with shape (3, )
              * numpy array with shape (N, 3)
+             * numpy array with shape (3, N), use columns=True
              * Translation
              * Rotation
              * Complete
+             * UnitCell
 
            In case of arrays, the 3D vectors are transformed. In case of trans-
            formations, a transformation is returned that consists of this
@@ -370,7 +379,9 @@ class Complete(Translation, Rotation):
 
            This method is equivalent to self*x.
         """
-        if isinstance(x, numpy.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)):
+        if isinstance(x, numpy.ndarray) and len(x.shape) == 2 and x.shape[0] == 3 and columns:
+            return numpy.dot(self.r, x) + self.t.reshape((3,1))
+        if isinstance(x, numpy.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)) and not columns:
             return numpy.dot(x, self.r.transpose()) + self.t
         elif isinstance(x, Complete):
             return Complete(numpy.dot(self.r, x.r), numpy.dot(self.r, x.t) + self.t)

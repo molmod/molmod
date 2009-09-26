@@ -77,6 +77,7 @@ class TransformationsTestCase(BaseTestCase):
             self.assertArraysAlmostEqual((t.inv*t)*x, x)
             self.assertArraysAlmostEqual(t.apply_to(x), x+t.t)
             self.assertArraysAlmostEqual(t*x, x+t.t)
+            self.assertArraysAlmostEqual(t.apply_to(x).transpose(), t.apply_to(x.transpose(), columns=True))
 
     def test_translation_apply_to_translation(self):
         for t1, t2 in zip(self.iter_random_translations(), self.iter_random_translations()):
@@ -129,6 +130,7 @@ class TransformationsTestCase(BaseTestCase):
             self.assertArraysAlmostEqual((r.inv*r)*x, x)
             self.assertArraysAlmostEqual(r.apply_to(x), numpy.dot(r.r,x.transpose()).transpose())
             self.assertArraysAlmostEqual(r*x, numpy.dot(r.r,x.transpose()).transpose())
+            self.assertArraysAlmostEqual(r.apply_to(x).transpose(), r.apply_to(x.transpose(), columns=True))
 
     def test_rotation_apply_to_translation(self):
         for r, t in zip(self.iter_random_rotations(), self.iter_random_translations()):
@@ -180,6 +182,7 @@ class TransformationsTestCase(BaseTestCase):
             self.assertArraysAlmostEqual((c.inv*c)*x, x)
             self.assertArraysAlmostEqual(c.apply_to(x), numpy.dot(c.r,x.transpose()).transpose() + c.t)
             self.assertArraysAlmostEqual(c*x, numpy.dot(c.r,x.transpose()).transpose() + c.t)
+            self.assertArraysAlmostEqual(c.apply_to(x).transpose(), c.apply_to(x.transpose(), columns=True))
 
     def test_complete_apply_to_translation(self):
         for c, t in zip(self.iter_random_completes(), self.iter_random_translations()):
