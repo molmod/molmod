@@ -136,3 +136,34 @@ class ToyFFTestCase(unittest.TestCase):
             ff.dm_reci = 1.0
             self.check_toyff_gradient(ff, coordinates)
 
+    def test_bond_quad_energy(self):
+        for i in xrange(10):
+            ff, coordinates, dm, mask = self.get_random_ff()
+            ff.bond_quad = 1.0
+            energy = ff(coordinates, False)
+            lengths = numpy.sqrt(((coordinates[ff.bond_edges[:,0]] - coordinates[ff.bond_edges[:,1]])**2).sum(axis=1))
+            my_terms = (lengths - ff.bond_lengths)**2
+            self.assertAlmostEqual(energy, my_terms.sum())
+
+    def test_bond_quad_gradient(self):
+        for i in xrange(10):
+            ff, coordinates, dm, mask = self.get_random_ff()
+            ff.bond_quad = 1.0
+            self.check_toyff_gradient(ff, coordinates)
+
+    def test_bond_hyper_energy(self):
+        for i in xrange(10):
+            ff, coordinates, dm, mask = self.get_random_ff()
+            ff.bond_hyper = 1.0
+            energy = ff(coordinates, False)
+            lengths = numpy.sqrt(((coordinates[ff.bond_edges[:,0]] - coordinates[ff.bond_edges[:,1]])**2).sum(axis=1))
+            my_terms = numpy.cosh((lengths - ff.bond_lengths)*ff.bond_hyper_scale)-1
+            self.assertAlmostEqual(energy, my_terms.sum())
+
+    def test_bond_hyper_gradient(self):
+        for i in xrange(10):
+            ff, coordinates, dm, mask = self.get_random_ff()
+            ff.bond_hyper = 1.0
+            self.check_toyff_gradient(ff, coordinates)
+
+

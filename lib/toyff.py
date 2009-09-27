@@ -204,6 +204,7 @@ class ToyFF(object):
         self.bond_quad = 0.0
         self.span_quad = 0.0
         self.bond_hyper = 0.0
+        self.bond_hyper_scale = 5.0
 
     def __call__(self, x, do_gradient=False):
         """Compute the energy (and gradient) for a set of Cartesian coordinates
@@ -220,13 +221,18 @@ class ToyFF(object):
         if self.dm_quad > 0.0:
             result += ff_dm_quad(x, self.dm0, self.dmk, self.dm_quad, gradient)
         if self.dm_reci:
-            result += ff_dm_reci(x, self.vdw_radii, self.dm, self.dm_reci, gradient)
+            result += ff_dm_reci(x, self.vdw_radii, self.dm, self.dm_reci,
+                                 gradient)
         if self.bond_quad:
-            result += ff_bond_quad(x, self.bond_edges, self.bond_lengths, self.bond_quad, gradient)
+            result += ff_bond_quad(x, self.bond_edges, self.bond_lengths,
+                                   self.bond_quad, gradient)
         if self.span_quad:
-            result += ff_bond_quad(x, self.span_edges, self.span_lengths, self.span_quad, gradient)
+            result += ff_bond_quad(x, self.span_edges, self.span_lengths,
+                                   self.span_quad, gradient)
         if self.bond_hyper:
-            result += ff_bond_hyper(x, self.bond_edges, self.bond_lengths, 5.0, self.bond_hyper, gradient)
+            result += ff_bond_hyper(x, self.bond_edges, self.bond_lengths,
+                                    self.bond_hyper_scale, self.bond_hyper,
+                                    gradient)
 
         if do_gradient:
             return result, gradient.ravel()
