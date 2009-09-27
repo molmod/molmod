@@ -19,11 +19,12 @@
 # --
 
 
-from molmod.toyff import guess_geometry, ToyFF
+from molmod.toyff import guess_geometry, tune_geometry, ToyFF
 from molmod.io.xyz import XYZFile
 from molmod.io.sdf import SDFReader
 from molmod.molecular_graphs import MolecularGraph
 from molmod.unit_cells import UnitCell
+from molmod.units import angstrom
 
 import unittest, numpy, os
 
@@ -63,6 +64,12 @@ class ToyFFTestCase(unittest.TestCase):
             output_mol = guess_geometry(input_mol.graph)
             output_mol.title = input_mol.title
             output_mol.write_to_file("output/guess_%s.xyz" % input_mol.title)
+
+    def test_tune_geometry(self):
+        for input_mol in self.iter_molecules(allow_multi=False):
+            output_mol = tune_geometry(input_mol.graph, input_mol)
+            output_mol.title = input_mol.title
+            output_mol.write_to_file("output/tune_%s.xyz" % input_mol.title)
 
     def get_random_ff(self):
         N = 6
@@ -182,4 +189,19 @@ class ToyFFTestCase(unittest.TestCase):
             ff.bond_hyper = 1.0
             self.check_toyff_gradient(ff, coordinates)
 
+    def test_example_periodic(self):
+        from molmod.io.cml import load_cml
+        mol = load_cml("input/caplayer.cml")[0]
+        unit_cell = UnitCell(
+            numpy.array([
+                [14.218,  7.109,  0.0],
+                [ 0.0  , 12.313,  0.0],
+                [ 0.0  ,  0.0  , 10.0],
+            ])*angstrom,
+            numpy.array([True, True, False]),
+        )
+        dm = mol.distance_matrix
+        dm = dm + dm.max()*numpy.identity(len(dm))
+        mol = tune_geometry(mol.graph, mol, unit_cell)
+        mol.write_to_file("output/caplayer.xyz")
 
