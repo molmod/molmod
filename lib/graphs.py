@@ -952,12 +952,7 @@ class Pattern(object):
     sub = True
     MatchClass = Match
 
-    def init_graph(self, graph, one_match):
-        """Checks whether this pattern makes sense for the given subject graph."""
-        self.graph = graph
-        self.one_match = one_match
-
-    def iter_initial_relations(self):
+    def iter_initial_relations(self, graph):
         """Iterate over all initial relations to start a Graph Search
 
            The function iterates of single relations between a pattern vertex
@@ -979,7 +974,7 @@ class Pattern(object):
         """Off all symmetric new_relations, only allow one"""
         return True
 
-    def compare(self, vertex0, vertex1):
+    def compare(self, vertex0, vertex1, graph):
         """Test if vertex0 and vertex1 can be equal
 
            False positives are allowed, but the less false positives, the more
@@ -987,7 +982,7 @@ class Pattern(object):
         """
         return True
 
-    def check_next_match(self, match, new_relations):
+    def check_next_match(self, match, new_relations, graph, one_match):
         """Does this match object make sense for the current pattern
 
            Return False if some symmetry or other considerations are not
@@ -997,11 +992,11 @@ class Pattern(object):
         """
         return True
 
-    def complete(self, match):
+    def complete(self, match, graph):
         """Returns True if no more additional relations are required"""
         return True
 
-    def iter_final_matches(self, match):
+    def iter_final_matches(self, match, graph, one_match):
         """Just return the original match
 
            Derived classes can specialize here to make efficient use of
@@ -1230,11 +1225,11 @@ class SubgraphPattern(Pattern):
                     self.duplicate_checks.add((cycles[0][0], cycles[0][1]))
 
 
-    def iter_initial_relations(self):
+    def iter_initial_relations(self, graph):
         """Iterate over all valid initial relations for a match"""
         vertex0 = self.subgraph.central_vertex
-        for vertex1 in xrange(self.graph.num_vertices):
-            if self.compare(vertex0, vertex1):
+        for vertex1 in xrange(graph.num_vertices):
+            if self.compare(vertex0, vertex1, graph):
                 yield vertex0, vertex1
 
     def get_new_edges(self, level):
@@ -1248,11 +1243,11 @@ class SubgraphPattern(Pattern):
             self.level_constraints.get(level, [])
         )
 
-    def check_next_match(self, match, new_relations):
+    def check_next_match(self, match, new_relations, graph, one_match):
         """Check if the (onset for a) match can be a valid"""
         # only returns true for ecaxtly one set of new_relations from all the
         # ones that are symmetrically equivalent
-        if not (self.criteria_sets is None or self.one_match):
+        if not (self.criteria_sets is None or one_match):
             for check in self.duplicate_checks:
                 vertex_a = new_relations.get(check[0])
                 vertex_b = new_relations.get(check[1])
@@ -1295,18 +1290,18 @@ class SubgraphPattern(Pattern):
             return True
         return True
 
-    def complete(self, match):
+    def complete(self, match, graph):
         """Return True of the match is complete"""
         return len(match) == self.subgraph.num_vertices
 
-    def iter_final_matches(self, canonical_match):
+    def iter_final_matches(self, canonical_match, graph, one_match):
         """Given a match, iterate over all related equivalent matches
 
            When criteria sets are defined, the iterator runs over all symmetric
            equivalent matches that fulfill one of the criteria sets. When not
            criteria sets are defined, the iterator only yields the input match.
         """
-        if self.criteria_sets is None or self.one_match:
+        if self.criteria_sets is None or one_match:
             yield canonical_match
         else:
             for criteria_set in self.criteria_sets:
@@ -1314,7 +1309,7 @@ class SubgraphPattern(Pattern):
                 for symmetry in self.subgraph.symmetries:
                     final_match = canonical_match * symmetry
                     #print final_match
-                    if criteria_set.test_match(final_match, self.subgraph, self.graph):
+                    if criteria_set.test_match(final_match, self.subgraph, graph):
                         match_tags = tuple(
                             self.vertex_tags.get(symmetry.forward[vertex0])
                             for vertex0
@@ -1383,20 +1378,20 @@ class EqualPattern(SubgraphPattern):
         # the compare method below. TODO: Is this a good idea?
         SubgraphPattern.__init__(self, subgraph)
 
-    def iter_initial_relations(self):
+    def iter_initial_relations(self, graph):
         """Iterate over all valid initial relations for a match"""
-        if self.subgraph.num_edges != self.graph.num_edges:
+        if self.subgraph.num_edges != graph.num_edges:
             return # don't even try
         vertex0 = self.subgraph.central_vertex
-        for vertex1 in self.graph.central_vertices:
-            if self.compare(vertex0, vertex1):
+        for vertex1 in graph.central_vertices:
+            if self.compare(vertex0, vertex1, graph):
                 yield vertex0, vertex1
 
-    def compare(self, vertex0, vertex1):
+    def compare(self, vertex0, vertex1, graph):
         """Returns true when the two vertices are of the same kind"""
         return (
             self.subgraph.vertex_fingerprints[vertex0] ==
-            self.graph.vertex_fingerprints[vertex1]
+            graph.vertex_fingerprints[vertex1]
         ).all()
 
 
@@ -1414,10 +1409,10 @@ class RingPattern(Pattern):
         self.max_size = max_size
         Pattern.__init__(self)
 
-    def iter_initial_relations(self):
+    def iter_initial_relations(self, graph):
         """Iterate over all valid initial relations for a match"""
         vertex0 = 0
-        for vertex1 in xrange(self.graph.num_vertices):
+        for vertex1 in xrange(graph.num_vertices):
             yield vertex0, vertex1
 
     def get_new_edges(self, level):
@@ -1435,7 +1430,7 @@ class RingPattern(Pattern):
             edges0 = [(l2-1, l2+1), (l2, l2+2)]
         return edges0, []
 
-    def check_next_match(self, match, new_relations):
+    def check_next_match(self, match, new_relations, graph, one_match):
         """Check if the (onset for a) match can be a valid (part of a) ring"""
         # avoid duplicate rings (order of traversal)
         if len(match) == 3:
@@ -1449,7 +1444,7 @@ class RingPattern(Pattern):
                 return False
         # can this ever become a strong ring?
         for vertex1 in new_relations.itervalues():
-            paths = list(self.graph.iter_shortest_paths(vertex1, match.forward[0]))
+            paths = list(graph.iter_shortest_paths(vertex1, match.forward[0]))
             if len(paths) != 1:
                 #print "RingPattern.check_next_match: not strong 1"
                 return False
@@ -1459,11 +1454,11 @@ class RingPattern(Pattern):
         #print "RingPattern.check_next_match: no remarks"
         return True
 
-    def complete(self, match):
+    def complete(self, match, graph):
         """Check the completeness of a ring match"""
         size = len(match)
         # check whether we have an odd strong ring
-        if match.forward[size-1] in self.graph.neighbors[match.forward[size-2]]:
+        if match.forward[size-1] in graph.neighbors[match.forward[size-2]]:
             # we have an odd closed cycle. check if this is a strong ring
             order = range(0, size, 2) + range(1, size-1, 2)[::-1]
             ok = True
@@ -1471,14 +1466,14 @@ class RingPattern(Pattern):
                 # Count the number of paths between two opposite points in the
                 # ring. Since the ring has an odd number of vertices, each
                 # vertex has two semi-opposite vertices.
-                count = len(list(self.graph.iter_shortest_paths(
+                count = len(list(graph.iter_shortest_paths(
                     match.forward[order[i]],
                     match.forward[order[(i+size/2)%size]]
                 )))
                 if count > 1:
                     ok = False
                     break
-                count = len(list(self.graph.iter_shortest_paths(
+                count = len(list(graph.iter_shortest_paths(
                     match.forward[order[i]],
                     match.forward[order[(i+size/2+1)%size]]
                 )))
@@ -1491,7 +1486,7 @@ class RingPattern(Pattern):
                 return True
             #print "RingPattern.complete: no odd ring"
         # check whether we have an even strong ring
-        paths = list(self.graph.iter_shortest_paths(
+        paths = list(graph.iter_shortest_paths(
             match.forward[size-1],
             match.forward[size-2]
         ))
@@ -1507,7 +1502,7 @@ class RingPattern(Pattern):
             order = range(0, size, 2) + range(size-1, 0, -2)
             ok = True
             for i in xrange(len(order)/2):
-                count = len(list(self.graph.iter_shortest_paths(
+                count = len(list(graph.iter_shortest_paths(
                     match.forward[order[i]],
                     match.forward[order[(i+size/2)%size]]
                 )))
@@ -1556,19 +1551,19 @@ class GraphSearch(object):
                one_match --  If True, only one match will be returned. This
                              allows certain optimizations.
         """
-        self.pattern.init_graph(graph, one_match)
         # Matches are grown iteratively.
-        for vertex0, vertex1 in self.pattern.iter_initial_relations():
+        for vertex0, vertex1 in self.pattern.iter_initial_relations(graph):
             init_match = self.pattern.MatchClass.from_first_relation(vertex0, vertex1)
             # init_match cotains only one source -> dest relation. starting from
             # this initial match, the function iter_matches extends the match
             # in all possible ways and yields the completed matches
-            for canonical_match in self._iter_matches(init_match, graph):
+            for canonical_match in self._iter_matches(init_match, graph, one_match):
                 # Some patterns my exclude symmetrically equivalent matches as
                 # to aviod dupplicates. with such a 'canonical' solution,
                 # the pattern is allowed to generate just those symmatrical
                 # duplicates of interest.
-                for final_match in self.pattern.iter_final_matches(canonical_match):
+                ifm = self.pattern.iter_final_matches(canonical_match, graph, one_match)
+                for final_match in ifm:
                     self.print_debug("final_match: %s" % final_match)
                     yield final_match
                     if one_match: return
@@ -1633,7 +1628,7 @@ class GraphSearch(object):
             l = []
             for end_vertex0 in end_vertices0:
                 for end_vertex1 in end_vertices1:
-                    if self.pattern.compare(end_vertex0, end_vertex1):
+                    if self.pattern.compare(end_vertex0, end_vertex1, graph):
                         l.append((end_vertex0, end_vertex1))
             # len(end_vertices0) = the total number of relations that must be
             # made in this group
@@ -1681,7 +1676,7 @@ class GraphSearch(object):
                 continue
             yield forward
 
-    def _iter_matches(self, input_match, graph, level=0):
+    def _iter_matches(self, input_match, graph, one_match, level=0):
         """Given an onset for a match, iterate over all completions of that match
 
            This iterator works recursively. At each level the match is extended
@@ -1719,12 +1714,12 @@ class GraphSearch(object):
         for new_relations in inr:
             # for each set of new_relations, construct a next_match and recurse
             next_match = input_match.copy_with_new_relations(new_relations)
-            if not self.pattern.check_next_match(next_match, new_relations):
+            if not self.pattern.check_next_match(next_match, new_relations, graph, one_match):
                 continue
-            if self.pattern.complete(next_match):
+            if self.pattern.complete(next_match, graph):
                 yield next_match
             else:
-                for match in self._iter_matches(next_match, graph, level+1):
+                for match in self._iter_matches(next_match, graph, one_match, level+1):
                     yield match
         self.print_debug("LEAVING_ITER_MATCHES", -1)
 

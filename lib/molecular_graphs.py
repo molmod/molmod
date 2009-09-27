@@ -470,15 +470,15 @@ class NRingPattern(SubgraphPattern):
         subgraph = Graph([(i, (i+1)%size) for i in xrange(size)])
         SubgraphPattern.__init__(self, subgraph, criteria_sets, vertex_tags)
 
-    def check_next_match(self, match, new_relations):
+    def check_next_match(self, match, new_relations, graph, one_match):
         """Check if the (onset for a) match can be a valid (part of a) ring"""
-        if not SubgraphPattern.check_next_match(self, match, new_relations):
+        if not SubgraphPattern.check_next_match(self, match, new_relations, graph, one_match):
             return False
         if self.strong:
             # can this ever become a strong ring?
             vertex1_start = match.forward[self.subgraph.central_vertex]
             for vertex1 in new_relations.itervalues():
-                paths = list(self.graph.iter_shortest_paths(vertex1, vertex1_start))
+                paths = list(graph.iter_shortest_paths(vertex1, vertex1_start))
                 if self.size % 2 == 0 and len(match) == self.size:
                     if len(paths) != 2:
                         #print "NRingPattern.check_next_match: not strong a.1"
@@ -497,9 +497,9 @@ class NRingPattern(SubgraphPattern):
             #print "RingPattern.check_next_match: no remarks"
         return True
 
-    def complete(self, match):
+    def complete(self, match, graph):
         """Check the completeness of the ring match"""
-        if not SubgraphPattern.complete(self, match):
+        if not SubgraphPattern.complete(self, match, graph):
             return False
         if self.strong:
             # If the ring is not strong, return False
@@ -508,7 +508,7 @@ class NRingPattern(SubgraphPattern):
                 for i in xrange(self.size/2):
                     vertex1_start = match.forward[i]
                     vertex1_stop = match.forward[i+self.size/2]
-                    paths = list(self.graph.iter_shortest_paths(vertex1_start, vertex1_stop))
+                    paths = list(graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) != 2:
                         #print "Even ring must have two paths between opposite vertices"
                         return False
@@ -521,13 +521,13 @@ class NRingPattern(SubgraphPattern):
                 for i in xrange(self.size/2+1):
                     vertex1_start = match.forward[i]
                     vertex1_stop = match.forward[i+self.size/2]
-                    paths = list(self.graph.iter_shortest_paths(vertex1_start, vertex1_stop))
+                    paths = list(graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) > 1:
                         return False
                     if len(paths[0]) != self.size/2+1:
                         return False
                     vertex1_stop = match.forward[i+self.size/2+1]
-                    paths = list(self.graph.iter_shortest_paths(vertex1_start, vertex1_stop))
+                    paths = list(graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) > 1:
                         return False
                     if len(paths[0]) != self.size/2+1:
