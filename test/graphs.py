@@ -28,9 +28,9 @@ __all__ = ["GraphTestCase"]
 
 
 class Case(object):
-    def __init__(self, name, pairs, sc=None, rings=None):
+    def __init__(self, name, edges, sc=None, rings=None):
         self.name = name
-        self.graph = Graph(pairs)
+        self.graph = Graph(edges)
         if sc is None:
             self.symmetry_cycles = None
         else:
@@ -293,8 +293,8 @@ class GraphTestCase(unittest.TestCase):
             for central, neighbors in g.neighbors.iteritems():
                 for neighbor in neighbors:
                     counter += 1
-                    self.assert_(frozenset([central,neighbor]) in g.pairs)
-            self.assertEqual(counter, len(g.pairs)*2)
+                    self.assert_(frozenset([central,neighbor]) in g.edges)
+            self.assertEqual(counter, len(g.edges)*2)
 
     def test_central_nodes(self):
         for case in self.iter_cases():
@@ -307,16 +307,16 @@ class GraphTestCase(unittest.TestCase):
             self.assert_(g.central_node in g.central_nodes)
 
     def test_independent_nodes(self):
-        pairs = [(0,1), (0,2), (0,3), (1,4), (1,5), (6,7), (6,8), (6,9), (7,10), (7,11)]
-        g = Graph(pairs)
+        edges = [(0,1), (0,2), (0,3), (1,4), (1,5), (6,7), (6,8), (6,9), (7,10), (7,11)]
+        g = Graph(edges)
         self.assertEqual(g.independent_nodes, [[0, 1, 2, 3, 4, 5], [6, 7, 8, 9, 10, 11]])
 
     def test_fingerprints(self):
         for case in self.iter_cases():
             g0 = case.graph
             permutation = numpy.random.permutation(g0.num_nodes)
-            new_pairs = tuple((permutation[i], permutation[j]) for i,j in g0.pairs)
-            g1 = Graph(new_pairs, g0.num_nodes)
+            new_edges = tuple((permutation[i], permutation[j]) for i,j in g0.edges)
+            g1 = Graph(new_edges, g0.num_nodes)
             self.assert_((g0.fingerprint==g1.fingerprint).all())
             for i in xrange(g0.num_nodes):
                 self.assert_((g0.node_fingerprints[i]==g1.node_fingerprints[permutation[i]]).all())
@@ -407,28 +407,28 @@ class GraphTestCase(unittest.TestCase):
                 visited[n] = 1
             self.assert_((visited==1).all())
 
-    def test_iter_breadth_first_pairs(self):
+    def test_iter_breadth_first_edges(self):
         cases = self.iter_cases()
         for case in cases:
             g = case.graph
             start = numpy.random.randint(g.num_nodes)
-            result = list(g.iter_breadth_first_pairs(start))
+            result = list(g.iter_breadth_first_edges(start))
             if len(case.graph.independent_nodes) != 1:
                 continue
-            self.assertEqual(len(result), g.num_pairs)
+            self.assertEqual(len(result), g.num_edges)
             distance_last = 0
-            visited = numpy.zeros(g.num_pairs, int)
-            pair_index = dict((pair,i) for i,pair in enumerate(g.pairs))
-            for pair,distance,flag in result:
+            visited = numpy.zeros(g.num_edges, int)
+            edge_index = dict((edge,i) for i,edge in enumerate(g.edges))
+            for edge,distance,flag in result:
                 if distance < distance_last:
-                    self.fail_("Distances in iter_breadth_first_pair must be monotomically increasing.")
-                self.assertEqual(distance, g.distances[pair[0],start])
+                    self.fail_("Distances in iter_breadth_first_edge must be monotomically increasing.")
+                self.assertEqual(distance, g.distances[edge[0],start])
                 if flag:
-                    self.assertEqual(distance, g.distances[pair[1],start])
+                    self.assertEqual(distance, g.distances[edge[1],start])
                 else:
-                    self.assertEqual(distance+1, g.distances[pair[1],start])
+                    self.assertEqual(distance+1, g.distances[edge[1],start])
                 distance_last = distance
-                visited[pair_index[frozenset(pair)]] = 1
+                visited[edge_index[frozenset(edge)]] = 1
             self.assert_((visited==1).all())
 
     def test_iter_shortest_paths(self):
@@ -452,7 +452,7 @@ class GraphTestCase(unittest.TestCase):
             ),
         ]
         for graph, begin, end, length, expected_paths in cases:
-            #print graph.pairs
+            #print graph.edges
             for path in graph.iter_shortest_paths(begin,end):
                 self.assertEqual(len(path), length)
                 self.assert_(path in expected_paths)
@@ -465,7 +465,7 @@ class GraphTestCase(unittest.TestCase):
             #print case.name
             graph = case.graph
             # non-normalized case
-            if graph.num_pairs<3:
+            if graph.num_edges<3:
                 continue
             while True:
                 subnodes = numpy.random.permutation(graph.num_nodes)
@@ -476,27 +476,27 @@ class GraphTestCase(unittest.TestCase):
                 except GraphError:
                     pass
             self.assertEqual(graph.num_nodes, subgraph.num_nodes)
-            for i,j in subgraph.pairs:
+            for i,j in subgraph.edges:
                 self.assert_(i in subnodes)
                 self.assert_(j in subnodes)
-            for i_new, i_old in enumerate(subgraph._old_pair_indexes):
-                self.assertEqual(subgraph.pairs[i_new], graph.pairs[i_old])
+            for i_new, i_old in enumerate(subgraph._old_edge_indexes):
+                self.assertEqual(subgraph.edges[i_new], graph.edges[i_old])
 
             # normalized case
             subgraph = graph.get_subgraph(subnodes, normalize=True)
             self.assert_(subgraph.num_nodes <= len(subnodes))
-            for p0,p1 in enumerate(subgraph._old_pair_indexes):
-                i0,j0 = subgraph.pairs[p0]
-                #i1,j1 = subgraph.pairs[p1]
-                pair_old = frozenset([subgraph._old_node_indexes[i0],subgraph._old_node_indexes[j0]])
-                self.assertEqual(pair_old, graph.pairs[p1])
+            for p0,p1 in enumerate(subgraph._old_edge_indexes):
+                i0,j0 = subgraph.edges[p0]
+                #i1,j1 = subgraph.edges[p1]
+                edge_old = frozenset([subgraph._old_node_indexes[i0],subgraph._old_node_indexes[j0]])
+                self.assertEqual(edge_old, graph.edges[p1])
 
     def test_halfs(self):
         # Tests both get_halfs and get_halfs_double
-        pairs1 = [(0,1), (1,2), (2,3), (3,4), (4,0), (2,5), (3,6), (3,7)]
-        graph1 = Graph(pairs1)
-        pairs2 = [(0,1), (1,2), (2,3), (1,4), (1,5), (5,6), (3,7), (7,8), (8,9), (9,3)]
-        graph2 = Graph(pairs2)
+        edges1 = [(0,1), (1,2), (2,3), (3,4), (4,0), (2,5), (3,6), (3,7)]
+        graph1 = Graph(edges1)
+        edges2 = [(0,1), (1,2), (2,3), (1,4), (1,5), (5,6), (3,7), (7,8), (8,9), (9,3)]
+        graph2 = Graph(edges2)
 
         try:
             graph1.get_halfs(2,3)
@@ -556,11 +556,11 @@ class GraphTestCase(unittest.TestCase):
         except GraphError:
             pass
 
-        pairs3 = [
+        edges3 = [
             (9,4),(8,1),(3,12),(2,6),(1,4),(3,4),(2,3),
             (1,7),(2,5),(11,3),(10,4),(0,2),(0,1)
         ]
-        graph3 = Graph(pairs3)
+        graph3 = Graph(edges3)
 
         part1, part2, hinges = graph3.get_halfs_double(1,4,2,3)
         self.assertEqual(part1, set([0,1,2,5,6,7,8]))

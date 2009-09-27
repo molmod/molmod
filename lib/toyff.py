@@ -143,17 +143,17 @@ class ToyFF(object):
         self.vdw_radii = numpy.array([periodic[number].vdw_radius for number in graph.numbers], dtype=float)
         self.covalent_radii = numpy.array([periodic[number].covalent_radius for number in graph.numbers], dtype=float)
 
-        bond_pairs = []
+        bond_edges = []
         bond_lengths = []
-        for i, j in graph.pairs:
-            bond_pairs.append((i, j))
+        for i, j in graph.edges:
+            bond_edges.append((i, j))
             bond_lengths.append(bonds.get_length(graph.numbers[i], graph.numbers[j]))
-        self.bond_pairs = numpy.array(bond_pairs, numpy.int32)
+        self.bond_edges = numpy.array(bond_edges, numpy.int32)
         self.bond_lengths = numpy.array(bond_lengths, float)
 
         special_angles = SpecialAngles()
 
-        span_pairs = []
+        span_edges = []
         span_lengths = []
         for i, neighbors in graph.neighbors.iteritems():
             number_i = graph.numbers[i]
@@ -178,7 +178,7 @@ class ToyFF(object):
             for j in neighbors:
                 number_j = graph.numbers[j]
                 for k in neighbors:
-                    if j < k and not frozenset([j, k]) in graph.pairs:
+                    if j < k and not frozenset([j, k]) in graph.edges:
                         number_k = graph.numbers[k]
 
                         triplet = (
@@ -194,9 +194,9 @@ class ToyFF(object):
                         dj = bonds.get_length(number_i, number_j)
                         dk = bonds.get_length(number_i, number_k)
                         d = numpy.sqrt(dj**2+dk**2-2*dj*dk*numpy.cos(angle))
-                        span_pairs.append((j, k))
+                        span_edges.append((j, k))
                         span_lengths.append(d)
-        self.span_pairs = numpy.array(span_pairs, numpy.int32)
+        self.span_edges = numpy.array(span_edges, numpy.int32)
         self.span_lengths = numpy.array(span_lengths, float)
 
         self.dm_quad = 0.0
@@ -222,11 +222,11 @@ class ToyFF(object):
         if self.dm_reci:
             result += ff_dm_reci(1.0*self.vdw_radii, x, self.dm, self.dm_reci, gradient)
         if self.bond_quad:
-            result += ff_bond_quad(x, self.bond_pairs, self.bond_lengths, self.bond_quad, gradient)
+            result += ff_bond_quad(x, self.bond_edges, self.bond_lengths, self.bond_quad, gradient)
         if self.span_quad:
-            result += ff_bond_quad(x, self.span_pairs, self.span_lengths, self.span_quad, gradient)
+            result += ff_bond_quad(x, self.span_edges, self.span_lengths, self.span_quad, gradient)
         if self.bond_hyper:
-            result += ff_bond_hyper(x, self.bond_pairs, self.bond_lengths, 5.0, self.bond_hyper, gradient)
+            result += ff_bond_hyper(x, self.bond_edges, self.bond_lengths, 5.0, self.bond_hyper, gradient)
 
         if do_gradient:
             return result, gradient.ravel()

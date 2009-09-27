@@ -22,13 +22,10 @@
 
 """Graph data structure, analysis and pattern matching
 
-   This module contains tools for creating and analyzing graphs. For some
-   historic reasons, vertices are called nodes and edges are called pairs.
-
    Some distinctive features include:
    * Iterating over all shortest paths between two nodes (Dijkstra)
        http://en.wikipedia.org/wiki/Dijkstra's_algorithm
-   * Iterating over nodes or pairs using the Breadth First convention
+   * Iterating over nodes or edges using the Breadth First convention
        http://en.wikipedia.org/wiki/Breadth-first_search
    * The all pairs shortest path matrix (Floyd-Warshall)
        http://en.wikipedia.org/wiki/Floyd-Warshall_algorithm
@@ -70,78 +67,78 @@ class GraphError(Exception):
 
 
 class Graph(ReadOnly):
-    """The Graph class implements an undirected graph. All pairs have equal weight.
+    """An undirected graph, where edges have equal weight
 
-       The pairs attribute is the most elementary and is always available. All
+       The edges attribute is the most elementary and is always available. All
        other attributes are optional and can be generated with their respective
        init_* methods.
 
        Graphs are meant to be immutable objects. Once created they are not
        supposed to be modified. If you want an adapted graph, create a new
        object. The main reason is that all graph analysis work is cached in this
-       object. When the pairs change, the cache becomes invalid and should be
+       object. When the edges change, the cache becomes invalid and should be
        erased. The latter is not supported as it is easier to create just a new
-       graph object with the modified pairs.
+       graph object with the modified edges.
 
-       If you want to associate data with nodes or pairs, add custom dictionary
+       If you want to associate data with nodes or edges, add custom dictionary
        or list attributes to the graph object. This is the way to work
-       attributes that are not applicable to all nodes or pairs:
+       attributes that are not applicable to all nodes or edges:
 
        node_property = {node1: blablabla, node2: blablabla, ...}
-       pair_property = {frozenset([node1, node2]): blablabla, ..}
+       edge_property = {frozenset([node1, node2]): blablabla, ..}
 
-       If a certain property applies to all nodes or pairs, it is sometimes more
+       If a certain property applies to all nodes or edges, it is sometimes more
        practical to work with lists are numpy arrays that have the same ordering
-       as the nodes or the pairs:
+       as the nodes or the edges:
 
        node_property = numpy.array([6, 6, 1, 1, 1, 1], int) # atom numbers for ethene
-       pair_property = numpy.array([2, 1, 1, 1, 1], int)    # bond orders for ethene
+       edge_property = numpy.array([2, 1, 1, 1, 1], int)    # bond orders for ethene
     """
 
-    def __init__(self, pairs, num_nodes=None):
+    def __init__(self, edges, num_nodes=None):
         """Initialize a Graph object.
 
            Arguments:
-             pairs -- tuple(frozenset([node1, node2]), ...)
+             edges -- tuple(frozenset([node1, node2]), ...)
              num_nodes -- number of nodes
 
            node1 to nodeN must be integers from 0 to N-1. If nodes above the
-           highest node value are not connected by pairs, use the num_nodes
+           highest node value are not connected by edges, use the num_nodes
            argument to tell what the total number of nodes is.
 
-           If the pairs argument does not have the correct format, it will be
+           If the edges argument does not have the correct format, it will be
            converted.
         """
 
         ReadOnly.__init__(self)
         tmp = []
-        for pair in pairs:
-            if len(pair) != 2:
-                raise TypeError("The pairs must be a iterable with 2 elements")
-            i, j = pair
+        for edge in edges:
+            if len(edge) != 2:
+                raise TypeError("The edges must be a iterable with 2 elements")
+            i, j = edge
             if i == j:
-                raise ValueError("A pair must contain two different values.")
+                raise ValueError("A edge must contain two different values.")
             if not (isinstance(i, int) and isinstance(j, int)):
-                raise TypeError("The pairs must contain integers.")
+                raise TypeError("The edges must contain integers.")
             if i < 0 or j < 0:
-                raise TypeError("The pairs must contain positive integers.")
+                raise TypeError("The edges must contain positive integers.")
             tmp.append(frozenset([i, j]))
-        pairs = tuple(tmp)
+        edges = tuple(tmp)
 
-        if len(pairs) == 0:
+        if len(edges) == 0:
             real_num_nodes = 0
         else:
-            real_num_nodes = max(max(a, b) for a, b in pairs)+1
+            real_num_nodes = max(max(a, b) for a, b in edges)+1
         if num_nodes is not None:
             if not isinstance(num_nodes, int):
                 raise TypeError("The optional argument num_nodes must be an integer when given.")
             if num_nodes < real_num_nodes:
-                raise ValueError("num_nodes must be equal or larger to the number of nodes deduced from the pair list.")
+                raise ValueError("num_nodes must be equal or larger to the number of nodes deduced from the edge list.")
             real_num_nodes = num_nodes
 
-        self._init_attributes({"pairs": pairs, "num_nodes": real_num_nodes}, {})
+        self._init_attributes({"edges": edges, "num_nodes": real_num_nodes}, {})
 
-    num_pairs = property(lambda self: len(self.pairs))
+    num_edges = property(lambda self: len(self.edges))
 
     def __mul__(self, repeat):
         """Construct a graph that repeats this graph a number of times
@@ -151,16 +148,16 @@ class Graph(ReadOnly):
         """
         if not isinstance(repeat, int):
             raise TypeError("Can only multiply a graph with an integer")
-        new_pairs = []
+        new_edges = []
         for i in xrange(repeat):
-            for node1, node2 in self.pairs:
-                new_pairs.append(frozenset([node1+i*self.num_nodes, node2+i*self.num_nodes]))
-        return Graph(new_pairs, self.num_nodes*repeat)
+            for node1, node2 in self.edges:
+                new_edges.append(frozenset([node1+i*self.num_nodes, node2+i*self.num_nodes]))
+        return Graph(new_edges, self.num_nodes*repeat)
 
     __rmul__ = __mul__
 
     def __str__(self):
-        return " ".join("%i-%i" % tuple(sorted([i, j])) for i, j in self.pairs)
+        return " ".join("%i-%i" % tuple(sorted([i, j])) for i, j in self.edges)
 
     # functions that should be implemented by derived classes
 
@@ -171,19 +168,19 @@ class Graph(ReadOnly):
         """
         return ""
 
-    def get_pair_string(self, i):
-        """Returns a string that fully characterizes the nature of a pair
+    def get_edge_string(self, i):
+        """Returns a string that fully characterizes the nature of a edge
 
-           In case of an ordinary graph, all pairs are the same.
+           In case of an ordinary graph, all edges are the same.
         """
         return ""
 
     # cached attributes:
 
     @cached
-    def pair_index(self):
-        """Construct a map to look up the index of a pair"""
-        return dict((pair, index) for index, pair in enumerate(self.pairs))
+    def edge_index(self):
+        """Construct a map to look up the index of a edge"""
+        return dict((edge, index) for index, edge in enumerate(self.edges))
 
     @cached
     def neighbors(self):
@@ -191,12 +188,12 @@ class Graph(ReadOnly):
 
            The dictionary will have the following form:
              {nodeX: (nodeY1, nodeY2, ...), ...}
-           This means that nodeX and nodeY1 have a pair etc. This also implies
+           This means that nodeX and nodeY1 are connected etc. This also implies
            that the following elements are part of the dictionary:
              {nodeY1: (nodeX, ...), nodeY2: (nodeX, ...), ...}
         """
         neighbors = dict((node, set([])) for node in xrange(self.num_nodes))
-        for a, b in self.pairs:
+        for a, b in self.edges:
             neighbors[a].add(b)
             neighbors[b].add(a)
         return neighbors
@@ -208,7 +205,7 @@ class Graph(ReadOnly):
         distances = numpy.zeros((self.num_nodes, self.num_nodes), numpy.int32)
         #distances[:] = -1 # set all -1, which is just a very big integer
         #distances.ravel()[::len(distances)+1] = 0 # set diagonal to zero
-        for i, j in self.pairs: # set pairs to one
+        for i, j in self.edges: # set edges to one
             distances[i, j] = 1
             distances[j, i] = 1
         graphs_floyd_warshall(distances)
@@ -282,7 +279,7 @@ class Graph(ReadOnly):
         """
         return self.get_node_fingerprints(
             [self.get_node_string(i) for i in xrange(self.num_nodes)],
-            [self.get_pair_string(i) for i in xrange(self.num_pairs)],
+            [self.get_edge_string(i) for i in xrange(self.num_edges)],
         )
 
     @cached
@@ -332,7 +329,7 @@ class Graph(ReadOnly):
            depend on the initial order, but only depends on the connectivity and
            the return values of the function self.get_node_string.
 
-           Only the nodes that are involved in pairs will be included. The
+           Only the nodes that are involved in edges will be included. The
            result can be given as first argument to self.get_subgraph, with
            reduce=True as second argument. This will return a complete canonical
            graph.
@@ -469,18 +466,18 @@ class Graph(ReadOnly):
                 max_len = length
                 yield path
 
-    def iter_breadth_first_pairs(self, start=None):
-        """Iterate over the pairs with the breadth first convention.
+    def iter_breadth_first_edges(self, start=None):
+        """Iterate over the edges with the breadth first convention.
 
            We need this for the pattern matching algorithms, but a quick look at
            Wikipedia did not result in a known and named algorithm.
 
-           The pairs are yield one by one, together with the distance of the
-           pair from the starting node and a flag that indicates whether the
-           yielded pair connects two nodes that are at the same distance from
+           The edges are yielded one by one, together with the distance of the
+           edge from the starting node and a flag that indicates whether the
+           yielded edge connects two nodes that are at the same distance from
            the starting node. If that flag is False, the distance from the
-           starting node to pair[0] is equal to the distance variable and the
-           distance from pair[1] to the starting node is equal to distance+1.
+           starting node to edge[0] is equal to the distance variable and the
+           distance from edge[1] to the starting node is equal to distance+1.
            One item has the following format: ((i, j), distance, flag)
         """
         if start is None:
@@ -517,22 +514,22 @@ class Graph(ReadOnly):
            Arguments:
              subnodes -- The nodes that should be retained.
              normalize -- Whether or not the nodes should renumbered and reduced
-                to the given set of subnodes. When True, also the pairs are
-                sorted. It the end, this means that new order of the pairs does
+                to the given set of subnodes. When True, also the edges are
+                sorted. It the end, this means that new order of the edges does
                 not depend on the original order, but only on the order of the
                 argument subnodes.
-                This option is False by default. When False, only pairs will be
+                This option is False by default. When False, only edges will be
                 discarded, but the retained data remain unchanged. Also the
                 parameter num_nodes is not affected.
 
-           The returned graph will have an attribute old_pair_indexes that
-           relates the positions of the new and the old pairs as follows:
+           The returned graph will have an attribute old_edge_indexes that
+           relates the positions of the new and the old edges as follows:
 
-             self.pairs[result._old_pair_indexes[i]] = result.pairs[i]
+             self.edges[result._old_edge_indexes[i]] = result.edges[i]
 
            In derived classes, the following should be supported:
 
-             self.pair_property[result._old_pair_indexes[i]] = result.pair_property[i]
+             self.edge_property[result._old_edge_indexes[i]] = result.edge_property[i]
 
            When normaliz e== True, also the nodes are affected and the derived
            classes should make sure that the following works:
@@ -544,37 +541,41 @@ class Graph(ReadOnly):
         """
         if normalize:
             revorder = dict((j, i) for i, j in enumerate(subnodes))
-            new_pairs = []
-            old_pair_indexes = []
-            for counter, (i, j) in enumerate(self.pairs):
+            new_edges = []
+            old_edge_indexes = []
+            for counter, (i, j) in enumerate(self.edges):
                 new_i = revorder.get(i)
                 if new_i is None:
                     continue
                 new_j = revorder.get(j)
                 if new_j is None:
                     continue
-                new_pairs.append((new_i, new_j))
-                old_pair_indexes.append(counter)
-            # sort the pairs
-            order = range(len(new_pairs))
-            order.sort( key=(lambda i: tuple(sorted(new_pairs[i]))) ) # argsort in pure python
-            new_pairs = [new_pairs[i] for i in order]
-            old_pair_indexes = [old_pair_indexes[i] for i in order]
+                new_edges.append((new_i, new_j))
+                old_edge_indexes.append(counter)
+            # sort the edges
+            order = range(len(new_edges))
+            # argsort in pure python
+            order.sort( key=(lambda i: tuple(sorted(new_edges[i]))) )
+            new_edges = [new_edges[i] for i in order]
+            old_edge_indexes = [old_edge_indexes[i] for i in order]
 
-            result = Graph(new_pairs, num_nodes=len(subnodes))
+            result = Graph(new_edges, num_nodes=len(subnodes))
             result._old_node_indexes = numpy.array(subnodes, dtype=int)
             #result.new_node_indexes = revorder
-            result._old_pair_indexes = numpy.array(old_pair_indexes, dtype=int)
+            result._old_edge_indexes = numpy.array(old_edge_indexes, dtype=int)
         else:
             subnodes = set(subnodes)
-            old_pair_indexes = numpy.array([i for i, pair in enumerate(self.pairs) if pair.issubset(subnodes)], dtype=int)
-            new_pairs = tuple(self.pairs[i] for i in old_pair_indexes)
-            result = Graph(new_pairs, self.num_nodes)
-            result._old_pair_indexes = old_pair_indexes
+            old_edge_indexes = numpy.array([
+                i for i, edge in enumerate(self.edges)
+                if edge.issubset(subnodes)
+            ], dtype=int)
+            new_edges = tuple(self.edges[i] for i in old_edge_indexes)
+            result = Graph(new_edges, self.num_nodes)
+            result._old_edge_indexes = old_edge_indexes
             # no need for old and new node_indexes because they remain the same.
         return result
 
-    def get_node_fingerprints(self, node_strings, pair_strings, num_iter=None):
+    def get_node_fingerprints(self, node_strings, edge_strings, num_iter=None):
         """Return an array with fingerprints for each vertex"""
         import hashlib
         def str2array(x):
@@ -588,9 +589,9 @@ class Graph(ReadOnly):
         result = numpy.zeros((self.num_nodes, 20), numpy.ubyte)
         for i in xrange(self.num_nodes):
             result[i] = hashrow(str2array(node_strings[i]))
-        for i in xrange(self.num_pairs):
-            a, b = self.pairs[i]
-            tmp = hashrow(str2array(pair_strings[i]))
+        for i in xrange(self.num_edges):
+            a, b = self.edges[i]
+            tmp = hashrow(str2array(edge_strings[i]))
             result[a] += tmp
             result[b] += tmp
         work = result.copy()
@@ -598,7 +599,7 @@ class Graph(ReadOnly):
         if num_iter is None:
             num_iter = self.max_distance
         for i in xrange(num_iter):
-            for a, b in self.pairs:
+            for a, b in self.edges:
                 work[a] += result[b]
                 work[b] += result[a]
             #for a in xrange(self.num_nodes):
@@ -609,7 +610,7 @@ class Graph(ReadOnly):
         return result
 
     def get_halfs(self, node1, node2):
-        """Compute the two parts of the graph separated by the pair (node1, node2)
+        """Compute the two parts of the graph separated by the edge (node1, node2)
 
            If this is not possible (due to loops connecting both ends), a
            GraphError is raised.
@@ -656,8 +657,8 @@ class Graph(ReadOnly):
         """Compute the two parts separated by (node_a1, node_b1) and (node_a2, node_b2)
 
            Raise a GraphError when (node_a1, node_b1) and (node_a2, node_b2) do
-           not separate the graph in two disconnected parts. The pairs must be
-           neigbors. If not a GraphError is raised. The for nodes must not
+           not separate the graph in two disconnected parts. The edges must be
+           neighbors. If not a GraphError is raised. The for nodes must not
            coincide or a GraphError is raised.
 
            Returns the nodes of the two halfs and the four 'hinge' nodes in the
@@ -739,7 +740,7 @@ class Graph(ReadOnly):
         """Find the mapping between node indexes in self and other.
 
            This also works on disconnected graphs. Derived classes should just
-           implement get_node_string and get_pair_string to make this method
+           implement get_node_string and get_edge_string to make this method
            aware of the different nature of certain nodes. In case molecules,
            this would make the algorithm sensitive to atom numbers etc.
         """
@@ -759,8 +760,8 @@ class Graph(ReadOnly):
                 local_matches = list(GraphSearch(pattern)(graph1, one_match=True))
                 if len(local_matches) == 1:
                     match = local_matches[0]
-                    # we need to restore the relation between the normalize graph0
-                    # and its original indexes
+                    # we need to restore the relation between the normalized
+                    # graph0 and its original indexes
                     old_to_new = OneToOne(((j, i) for i, j in enumerate(graph0._old_node_indexes)))
                     matches.append(match * old_to_new)
                     del graphs1[i]
@@ -859,16 +860,21 @@ class OneToOne(object):
 class Match(OneToOne):
     """A match between a pattern and a graph"""
     @classmethod
-    def from_first_pair(cls, node0, node1):
+    def from_first_relation(cls, node0, node1):
         """Intialize a fresh match based on the first relation"""
         result = cls([(node0, node1)])
         result.previous_ends1 = set([node1])
         return result
 
-    def get_new_pairs(self, graph):
-        """Get new pairs to use in the graph search algorithm."""
+    def get_new_edges(self, graph):
+        """Get new edges from the subject graph for the graph search algorithm
+
+           The Graph search algorithm extends the matches iteratively by adding
+           matching nodes that are one edge further from the starting vertex
+           at each iteration.
+        """
         result = []
-        #print "Match.get_new_pairs self.previous_ends1", self.previous_ends1
+        #print "Match.get_new_edges self.previous_ends1", self.previous_ends1
         for node in self.previous_ends1:
             for neighbor in graph.neighbors[node]:
                 if neighbor not in self.reverse:
@@ -905,7 +911,7 @@ class Pattern(object):
         self.one_match = one_match
 
     def iter_initial_relations(self):
-        """Yields the initial relations (source, destination) to start with.
+        """Iterate over all initial relations to start a Graph Search
 
            The function iterates of single relations between a pattern node and
            a subject node. In practice it is sufficient to select one node in
@@ -914,8 +920,12 @@ class Pattern(object):
         """
         raise NotImplementedError
 
-    def get_new_pairs(self, level):
-        """Iterate over all valid initial relations for a match"""
+    def get_new_edges(self, level):
+        """Get new edges from the subject graph for the graph search algorithm
+
+           The level argument denotes the distance of the new edges from the
+           starting node in the pattern graph.
+        """
         raise NotImplementedError
 
     def check_symmetry(self, new_relations, current_match, next_match):
@@ -935,7 +945,7 @@ class Pattern(object):
 
            Return False if some symmetry or other considerations are not
            satisfied. The checks in this function are typically only possible by
-           considering the whole instead of looking just at a few nodes/pairs/
+           considering the whole instead of looking just at a few nodes/edges/
            relations.
         """
         return True
@@ -956,41 +966,41 @@ class Pattern(object):
 class CriteriaSet(object):
     """A set of criteria that can be associated with a subgraph pattern."""
 
-    def __init__(self, thing_criteria=None, relation_criteria=None, **kwargs):
+    def __init__(self, vertex_criteria=None, edge_criteria=None, **kwargs):
         """Initialize a CriteriaSet object
 
            Arguments:
-             thing_criteria  --  a dictionary with criteria for the vertices
+             vertex_criteria  --  a dictionary with criteria for the vertices
                                  key=vertex index, value=criterion object
-             relation_criteria  --  a dictionary with criteria for the edges
+             edge_criteria  --  a dictionary with criteria for the edges
                                  key=edge index, value=criterion object
 
            Any other keyword argument will be assigned as attribute to matches
            that fulfill the criteria of this set.
         """
-        if thing_criteria is None:
-            self.thing_criteria = {}
+        if vertex_criteria is None:
+            self.vertex_criteria = {}
         else:
-            self.thing_criteria = thing_criteria
-        if relation_criteria is None:
-            self.relation_criteria = {}
+            self.vertex_criteria = vertex_criteria
+        if edge_criteria is None:
+            self.edge_criteria = {}
         else:
-            self.relation_criteria = relation_criteria
+            self.edge_criteria = edge_criteria
         self.info = kwargs
 
     def test_match(self, match, subgraph, graph):
         """Test if a match satisfies the criteria"""
-        for node0, c in self.thing_criteria.iteritems():
+        for node0, c in self.vertex_criteria.iteritems():
             node1 = match.forward[node0]
             if not c(node1, graph):
                 return False
-        for pair0_index, c in self.relation_criteria.iteritems():
-            node0a, node0b = subgraph.pairs[pair0_index]
-            pair1_index = graph.pair_index[frozenset([
+        for edge0_index, c in self.edge_criteria.iteritems():
+            node0a, node0b = subgraph.edges[edge0_index]
+            edge1_index = graph.edge_index[frozenset([
                 match.forward[node0a],
                 match.forward[node0b],
             ])]
-            if not c(pair1_index, graph):
+            if not c(edge1_index, graph):
                 return False
         return True
 
@@ -1111,7 +1121,7 @@ class SubgraphPattern(Pattern):
     """A pattern based on a given subgraph
 
        The subgraph can be complemented with additional criteria for the nodes
-       and pairs. Additionally the effective symmetry of the subgraph can be
+       and edges. Additionally the effective symmetry of the subgraph can be
        reduced by tagging the nodes in the subgraph with different labels.
     """
     def __init__(self, subgraph, criteria_sets=None, node_tags=None):
@@ -1120,9 +1130,9 @@ class SubgraphPattern(Pattern):
         Arguments:
           subgraph -- the pattern that has to be found in the subject graph.
           criteria_sets -- Criteria sets associate additional conditions with
-              nodes and pairs, and can also introduce global match conditions.
+              nodes and edges, and can also introduce global match conditions.
           node_tags -- Node tags can reduce the symmetry of the subgraph
-              pattern. An example case where this is usefull: Consider atoms
+              pattern. An example case where this is useful: Consider atoms
               0, 1, 2 that are bonded in this order. We want to compute the
               distance from atom 2 to the line (0, 1). In this case the
               matches (0->a, 1->b, 2->c) and (0->c, 1->b, 2->a) correspond to
@@ -1145,7 +1155,7 @@ class SubgraphPattern(Pattern):
     def _set_subgraph(self, subgraph):
         """Initialize the subgraph"""
         self.subgraph = subgraph
-        self.level_pairs = {}
+        self.level_edges = {}
         self.level_constraints = {}
         self.duplicate_checks = set([])
         if subgraph is None:
@@ -1153,13 +1163,13 @@ class SubgraphPattern(Pattern):
         if len(subgraph.independent_nodes) != 1:
             raise ValueError("A subgraph pattern must not be a disconnected graph.")
         # A) the levels for the incremental pattern matching
-        for pair, distance, constraint in self.subgraph.iter_breadth_first_pairs():
+        for edge, distance, constraint in self.subgraph.iter_breadth_first_edges():
             if constraint:
                 l = self.level_constraints.setdefault(distance-1, [])
             else:
-                l = self.level_pairs.setdefault(distance, [])
-            l.append(pair)
-        #print "level_pairs", self.level_pairs
+                l = self.level_edges.setdefault(distance, [])
+            l.append(edge)
+        #print "level_edges", self.level_edges
         #print "level_constraints", self.level_constraints
         # B) The comparisons the should me checked when one wants to avoid
         # symmetrically duplicate pattern matches
@@ -1176,9 +1186,13 @@ class SubgraphPattern(Pattern):
             if self.compare(node0, node1):
                 yield node0, node1
 
-    def get_new_pairs(self, level):
-        """Get the next pairs from the pattern"""
-        return self.level_pairs.get(level, []), self.level_constraints.get(level, [])
+    def get_new_edges(self, level):
+        """Get new edges from the subject graph for the graph search algorithm
+
+           The level argument denotes the distance of the new edges from the
+           starting node in the pattern graph.
+        """
+        return self.level_edges.get(level, []), self.level_constraints.get(level, [])
 
     def check_next_match(self, match, new_relations):
         """Check if the (onset for a) match can be a valid"""
@@ -1214,7 +1228,7 @@ class SubgraphPattern(Pattern):
                     # and certainly not easy to find. if node_a > node_b, it
                     # means that there is a symmetry operation that leads to
                     # an equivalent match where node_b < node_a. The latter
-                    # match is prefered for as much pairs (node_a, node_b) as
+                    # match is preferred for as much pairs (node_a, node_b) as
                     # possible without rejecting all possible matches. The real
                     # difficulty is to construct a proper list of
                     # (node_a, node_b) pairs that will reject all but one matches.
@@ -1268,7 +1282,7 @@ class EqualPattern(SubgraphPattern):
 
     def iter_initial_relations(self):
         """Iterate over all valid initial relations for a match"""
-        if self.subgraph.num_pairs != self.graph.num_pairs:
+        if self.subgraph.num_edges != self.graph.num_edges:
             return # don't even try
         node0 = self.subgraph.central_node
         for node1 in self.graph.central_nodes:
@@ -1372,16 +1386,20 @@ class RingPattern(Pattern):
         for node1 in xrange(self.graph.num_nodes):
             yield node0, node1
 
-    def get_new_pairs(self, level):
-        """Get the next pairs from the pattern"""
+    def get_new_edges(self, level):
+        """Get new edges from the subject graph for the graph search algorithm
+
+           The level argument denotes the distance of the new edges from the
+           starting node in the pattern graph.
+        """
         if level == 0:
-            pairs0 = [(0, 1), (0, 2)]
+            edges0 = [(0, 1), (0, 2)]
         elif level >= (self.max_size-1)/2:
-            pairs0 = []
+            edges0 = []
         else:
             l2 = level*2
-            pairs0 = [(l2-1, l2+1), (l2, l2+2)]
-        return pairs0, []
+            edges0 = [(l2-1, l2+1), (l2, l2+2)]
+        return edges0, []
 
     def check_next_match(self, match, new_relations):
         """Check if the (onset for a) match can be a valid (part of a) ring"""
@@ -1489,7 +1507,7 @@ class GraphSearch(object):
         self.pattern.init_graph(graph, one_match)
         # Matches are grown iteratively.
         for node0, node1 in self.pattern.iter_initial_relations():
-            init_match = self.pattern.MatchClass.from_first_pair(node0, node1)
+            init_match = self.pattern.MatchClass.from_first_relation(node0, node1)
             # init_match cotains only one source -> dest relation. starting from
             # this initial match, the function iter_matches extends the match
             # in all possible ways and yields the completed matches
@@ -1512,15 +1530,15 @@ class GraphSearch(object):
             if indent <= 0:
                 print " "*self.debug, text
 
-    def _iter_candidate_groups(self, init_match, pairs0, pairs1):
-        """Divide the pairs into groups"""
+    def _iter_candidate_groups(self, init_match, edges0, edges1):
+        """Divide the edges into groups"""
         # collect all end nodes0 and end nodes1 that belong to the same group.
         sources = {}
-        for start_node0, end_node0 in pairs0:
+        for start_node0, end_node0 in edges0:
             l = sources.setdefault(start_node0, [])
             l.append(end_node0)
         dests = {}
-        for start_node1, end_node1 in pairs1:
+        for start_node1, end_node1 in edges1:
             start_node0 = init_match.reverse[start_node1]
             l = dests.setdefault(start_node0, [])
             l.append(end_node1)
@@ -1529,11 +1547,11 @@ class GraphSearch(object):
             yield end_nodes0, end_nodes1
 
 
-    def _iter_new_relations(self, init_match, graph, pairs0, constraints0, pairs1):
+    def _iter_new_relations(self, init_match, graph, edges0, constraints0, edges1):
         """Given an onset for a match, iterate over all possible new key-value pairs"""
-        # Count the number of unique pairs0[i][1] values. This is also be
+        # Count the number of unique edges0[i][1] values. This is also
         # the number of new relations.
-        num_new_relations = len(set(j for i, j in pairs0))
+        num_new_relations = len(set(j for i, j in edges0))
 
         def combine_small(relations, num):
             """iterate over all compatible combinations within one set of relations"""
@@ -1552,7 +1570,7 @@ class GraphSearch(object):
 
         # generate candidate relations
         candidate_relations = []
-        for end_nodes0, end_nodes1 in self._iter_candidate_groups(init_match, pairs0, pairs1):
+        for end_nodes0, end_nodes1 in self._iter_candidate_groups(init_match, edges0, edges1):
             if len(end_nodes0) > len(end_nodes1):
                 return # this can never work, the subject graph is 'too small'
             elif not self.pattern.sub and len(end_nodes0) != len(end_nodes1):
@@ -1611,29 +1629,35 @@ class GraphSearch(object):
         """Given an onset for a match, iterate over all completions of that match
 
            This iterator works recursively. At each level the match is extended
-           with one key-value pair.
+           with a new set of relations based on nodes in the pattern graph that
+           are at a distances 'level' from the starting node
         """
         self.print_debug("ENTERING _ITER_MATCHES", 1)
         self.print_debug("input_match: %s" % input_match)
-        # A) collect the new pairs to extend the match.
-        # Note that the pairs are ordered. pair[0] is always in the match.
-        # pair[1] is never in the match. The constraints contain information
-        # about the end points of pairs0. It is a list of two-tupples where
-        # (a, b) means that a and b must be bonded.
-        pairs0, constraints0 = self.pattern.get_new_pairs(level)
-        pairs1 = input_match.get_new_pairs(graph)
-        self.print_debug("pairs0: %s" % pairs0)
+        # A) collect the new edges in the pattern graph and the subject graph
+        # to extend the match.
+        #
+        # Note that the edges are ordered. edge[0] is always in the match.
+        # edge[1] is never in the match. The constraints contain information
+        # about the end points of edges0. It is a list of two-tuples where
+        # (a, b) means that a and b must be connected.
+        #
+        # Second note: suffix 0 indicates the pattern graph and suffix 1
+        # is used for the subject graph.
+        edges0, constraints0 = self.pattern.get_new_edges(level)
+        edges1 = input_match.get_new_edges(graph)
+        self.print_debug("edges0: %s" % edges0)
         self.print_debug("constraints0: %s" % constraints0)
-        self.print_debug("pairs1: %s" % pairs1)
+        self.print_debug("edges1: %s" % edges1)
 
         # B) iterate over the sets of new relations: [(node0[i], node1[j]), ...]
-        # that contain all endpoints of pairs0, that satisfy the constraints0
+        # that contain all endpoints of edges0, that satisfy the constraints0
         # and where (node0[i], node1[j]) only occurs if these are end points
-        # of a pair0 and pair1 whose starting points are already in init_match.
-        # These conditions are implemented in an iterator as to separate concerns.
-        # This iterator also calls the routines that check whether node1[j] also
-        # satisfies additional conditions inherent node node0[i].
-        for new_relations in self._iter_new_relations(input_match, graph, pairs0, constraints0, pairs1):
+        # of a edge0 and edge1 whose starting points are already in init_match.
+        # These conditions are implemented in an iterator as to separate
+        # concerns. This iterator also calls the routines that check whether
+        # node1[j] also satisfies additional conditions inherent node node0[i].
+        for new_relations in self._iter_new_relations(input_match, graph, edges0, constraints0, edges1):
             # for each set of new_relations, construct a next_match and recurse
             next_match = input_match.copy_with_new_relations(new_relations)
             if not self.pattern.check_next_match(next_match, new_relations):
@@ -1643,6 +1667,6 @@ class GraphSearch(object):
             else:
                 for match in self._iter_matches(next_match, graph, level+1):
                     yield match
-        self.print_debug("LEAVING _ITER_MATCHES", -1)
+        self.print_debug("LEAVING_ITER_MATCHES", -1)
 
 

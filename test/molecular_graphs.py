@@ -94,7 +94,7 @@ class MolecularGraphTestCase(unittest.TestCase):
             CriteriaSet(atom_criteria(6, 7), tag="CN"),
             CriteriaSet(atom_criteria(6, HasNumNeighbors(4)), tag="C-sp3"),
             CriteriaSet(atom_criteria(6, CritOr(HasAtomNumber(6), HasAtomNumber(7))), tag="C-[CN]"),
-            CriteriaSet(relation_criteria={0: BondLongerThan(1.3*angstrom)}, tag="long"),
+            CriteriaSet(edge_criteria={0: BondLongerThan(1.3*angstrom)}, tag="long"),
             CriteriaSet(atom_criteria(6, HasNeighbors(*atom_criteria(1,1,6,7).values())), tag="C-C(-NHH)"),
         ])
         expected_results = {
@@ -272,7 +272,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         pattern = DihedralAnglePattern([CriteriaSet(tag="all")])
         # construct all dihedral angles:
         all_dihedrals = set([])
-        for b, c in molecule.graph.pairs:
+        for b, c in molecule.graph.edges:
             for a in molecule.graph.neighbors[b]:
                 if a != c:
                     for d in molecule.graph.neighbors[c]:
@@ -344,22 +344,22 @@ class MolecularGraphTestCase(unittest.TestCase):
 
     def test_multiply(self):
         # sulfate:
-        pairs = [(0,1), (0,2), (0,3), (0,4)]
+        edges = [(0,1), (0,2), (0,3), (0,4)]
         numbers = numpy.array([16, 8, 8, 8, 8])
         orders = numpy.array([1, 1, 2, 2])
-        mgraph = MolecularGraph(pairs, numbers, orders)
+        mgraph = MolecularGraph(edges, numbers, orders)
 
-        check_pairs = [
+        check_edges = [
             (0,1), (0,2), (0,3), (0,4),
             (5, 6), (5, 7), (5, 8), (5, 9),
             (10, 11), (10, 12), (10, 13), (10, 14)
         ]
-        check_pairs = tuple(frozenset(pair) for pair in check_pairs)
+        check_edges = tuple(frozenset(edge) for edge in check_edges)
         check_orders = numpy.concatenate([orders, orders, orders])
         check_numbers = numpy.concatenate([numbers, numbers, numbers])
         for check in [mgraph*3, 3*mgraph]:
-            self.assertEqual(len(check.pairs), len(check_pairs))
-            self.assertEqual(check.pairs, check_pairs)
+            self.assertEqual(len(check.edges), len(check_edges))
+            self.assertEqual(check.edges, check_edges)
             self.assertEqual(check.numbers.shape,check_numbers.shape)
             self.assert_((check.numbers==check_numbers).all())
             self.assertEqual(check.orders.shape,check_orders.shape)
@@ -396,13 +396,13 @@ class MolecularGraphTestCase(unittest.TestCase):
             # normalize=False
             g1 = g0.get_subgraph(permutation)
             self.assert_((g0.numbers==g1.numbers).all())
-            self.assertEqual(g0.num_pairs, g1.num_pairs)
-            self.assertEqual(g0.pairs, g1.pairs)
+            self.assertEqual(g0.num_edges, g1.num_edges)
+            self.assertEqual(g0.edges, g1.edges)
             self.assert_((g0.orders==g1.orders).all())
             # normalize=True
             g1 = g0.get_subgraph(permutation, normalize=True)
             self.assert_((g0.numbers[permutation]==g1.numbers).all())
-            self.assertEqual(g0.num_pairs, g1.num_pairs)
+            self.assertEqual(g0.num_edges, g1.num_edges)
 
     def test_subgraph_big(self):
         mol = self.load_molecule("thf.xyz")
@@ -473,7 +473,7 @@ class MolecularGraphTestCase(unittest.TestCase):
             blob = molecule.graph.blob
             graph = MolecularGraph.from_blob(blob)
             self.assert_((graph.numbers==molecule.graph.numbers).all(), "Atom numbers do not match.")
-            self.assert_(graph.pairs==molecule.graph.pairs, "Pairs do not match.")
+            self.assert_(graph.edges==molecule.graph.edges, "edges do not match.")
 
     def test_halfs_double_thf(self):
         molecule = self.load_molecule("thf_single.xyz")
@@ -514,7 +514,7 @@ class MolecularGraphTestCase(unittest.TestCase):
 
         for before, formal_charges, after in cases:
             after_check = before.add_hydrogens(formal_charges)
-            self.assertEqual(after.pairs, after_check.pairs)
+            self.assertEqual(after.edges, after_check.edges)
             self.assert_((after.numbers==after_check.numbers).all())
             self.assert_((after.orders==after_check.orders).all())
 

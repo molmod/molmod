@@ -62,7 +62,7 @@ class MolecularGraph(Graph):
 
         orders = []
         lengths = []
-        pairs = []
+        edges = []
 
         for i0, i1, delta, distance in pair_search:
             bond_order = bonds.bonded(molecule.numbers[i0], molecule.numbers[i1], distance)
@@ -70,12 +70,12 @@ class MolecularGraph(Graph):
                 if do_orders:
                     orders.append(bond_order)
                 lengths.append(distance)
-                pairs.append((i0,i1))
+                edges.append((i0,i1))
 
         if do_orders:
-            result = cls(pairs, molecule.numbers, orders)
+            result = cls(edges, molecule.numbers, orders)
         else:
-            result = cls(pairs, molecule.numbers)
+            result = cls(edges, molecule.numbers)
         result.bond_lengths = numpy.array(lengths)
 
         return result
@@ -83,21 +83,21 @@ class MolecularGraph(Graph):
     @classmethod
     def from_blob(cls, s):
         """Construct a molecular graph from the blob representation"""
-        atom_str, pair_str = s.split()
+        atom_str, edge_str = s.split()
         numbers = numpy.array([int(s) for s in atom_str.split(",")])
-        pairs = []
+        edges = []
         orders = []
-        for s in pair_str.split(","):
+        for s in edge_str.split(","):
             i, j, o = (int(w) for w in s.split("_"))
-            pairs.append((i, j))
+            edges.append((i, j))
             orders.append(o)
-        return cls(pairs, numbers, numpy.array(orders))
+        return cls(edges, numbers, numpy.array(orders))
 
-    def __init__(self, pairs, numbers, orders=None):
+    def __init__(self, edges, numbers, orders=None):
         """Initialize a molecular graph
 
            Arguments:
-             pairs -- See base class (Graph) documentation
+             edges -- See base class (Graph) documentation
              numbers -- consecutive atom numbers
              orders -- bond orders
 
@@ -111,10 +111,10 @@ class MolecularGraph(Graph):
            hybrid bond is -1.
         """
         if orders is None:
-            orders = numpy.ones(len(pairs), int)
-        elif len(orders) != len(pairs):
-            raise ValueError("The number of (bond) orders must be equal to the number of pairs")
-        Graph.__init__(self, pairs, len(numbers))
+            orders = numpy.ones(len(edges), int)
+        elif len(orders) != len(edges):
+            raise ValueError("The number of (bond) orders must be equal to the number of edges")
+        Graph.__init__(self, edges, len(numbers))
         self._init_attributes({"numbers": numbers, "orders": orders}, {})
 
     def __mul__(self, repeat):
@@ -125,11 +125,11 @@ class MolecularGraph(Graph):
         """
         if not isinstance(repeat, int):
             raise TypeError("Can only multiply a graph with an integer")
-        # copy pairs
-        new_pairs = []
+        # copy edges
+        new_edges = []
         for i in xrange(repeat):
-            for node1, node2 in self.pairs:
-                new_pairs.append(frozenset([node1+i*self.num_nodes, node2+i*self.num_nodes]))
+            for node1, node2 in self.edges:
+                new_edges.append(frozenset([node1+i*self.num_nodes, node2+i*self.num_nodes]))
         # copy numbers
         new_numbers = numpy.zeros((repeat, len(self.numbers)), int)
         new_numbers[:] = self.numbers
@@ -138,7 +138,7 @@ class MolecularGraph(Graph):
         new_orders = numpy.zeros((repeat, len(self.orders)), int)
         new_orders[:] = self.orders
         new_orders = new_orders.ravel()
-        return MolecularGraph(new_pairs, new_numbers, new_orders)
+        return MolecularGraph(new_edges, new_numbers, new_orders)
 
     __rmul__ = __mul__
 
@@ -146,8 +146,8 @@ class MolecularGraph(Graph):
     def blob(self):
         """Create a compact text representation of the graph"""
         atom_str = ",".join(str(number) for number in self.numbers)
-        pair_str = ",".join("%i_%i_%i" % (i, j, o) for (i, j), o in zip(self.pairs, self.orders))
-        return "%s %s" % (atom_str, pair_str)
+        edge_str = ",".join("%i_%i_%i" % (i, j, o) for (i, j), o in zip(self.edges, self.orders))
+        return "%s %s" % (atom_str, edge_str)
 
     def get_node_string(self, i):
         """Return a string based on the atom number"""
@@ -158,11 +158,11 @@ class MolecularGraph(Graph):
             # pad with zeros to make sure that string sort is identical to number sort
             return "%03i" % number
 
-    def get_pair_string(self, i):
+    def get_edge_string(self, i):
         """Return a string based on the bond order"""
         order = self.orders[i]
         if order == 0:
-            return Graph.get_pair_string(self, i)
+            return Graph.get_edge_string(self, i)
         else:
             # pad with zeros to make sure that string sort is identical to number sort
             return "%03i" % order
@@ -177,11 +177,11 @@ class MolecularGraph(Graph):
             new_numbers = self.numbers[graph._old_node_indexes] # nodes do change
         else:
             new_numbers = self.numbers # nodes don't change!
-        new_orders = self.orders[graph._old_pair_indexes]
-        result = MolecularGraph(graph.pairs, new_numbers, new_orders)
+        new_orders = self.orders[graph._old_edge_indexes]
+        result = MolecularGraph(graph.edges, new_numbers, new_orders)
         if normalize:
             result._old_node_indexes = graph._old_node_indexes
-        result._old_pair_indexes = graph._old_pair_indexes
+        result._old_edge_indexes = graph._old_edge_indexes
         return result
 
     def add_hydrogens(self, formal_charges=None):
@@ -196,7 +196,7 @@ class MolecularGraph(Graph):
            the periodic system: B, C, N, O, F, Al, Si, P, S, Cl, Br.
         """
 
-        new_pairs = list(self.pairs)
+        new_edges = list(self.edges)
         counter = self.num_nodes
         for i in xrange(self.num_nodes):
             num_elec = self.numbers[i]
@@ -213,20 +213,20 @@ class MolecularGraph(Graph):
             if num_hydrogen > 4:
                 num_hydrogen = 8-num_hydrogen
             for n in self.neighbors[i]:
-                bo = self.orders[self.pair_index[frozenset([i, n])]]
+                bo = self.orders[self.edge_index[frozenset([i, n])]]
                 if bo <= 0:
                     bo = 1
                 num_hydrogen -= bo
             for j in xrange(num_hydrogen):
-                new_pairs.append((i, counter))
+                new_edges.append((i, counter))
                 counter += 1
         new_numbers = numpy.zeros(counter, int)
         new_numbers[:self.num_nodes] = self.numbers
         new_numbers[self.num_nodes:] = 1
-        new_orders = numpy.zeros(len(new_pairs), int)
-        new_orders[:self.num_pairs] = self.orders
-        new_orders[self.num_pairs:] = 1
-        result = MolecularGraph(new_pairs, new_numbers, new_orders)
+        new_orders = numpy.zeros(len(new_edges), int)
+        new_orders[:self.num_edges] = self.orders
+        new_orders[self.num_edges:] = 1
+        result = MolecularGraph(new_edges, new_numbers, new_orders)
         return result
 
 

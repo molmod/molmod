@@ -106,14 +106,14 @@ class SDFReader(object):
                 numbers[i] = atom.number
             coordinates *= angstrom
 
-            pairs = []
+            edges = []
             orders = numpy.zeros(num_bonds, int)
             for i in xrange(num_bonds):
                 words = self.f.next().split()
                 if len(words) < 3:
                     raise FileFormatError("Expecting at least three numbers on a bond line.")
                 try:
-                    pairs.append((int(words[0])-1, int(words[1])-1))
+                    edges.append((int(words[0])-1, int(words[1])-1))
                     orders[i] = int(words[2])
                 except ValueError:
                     raise FileFormatError("Expecting at least three numbers on a bond line.")
@@ -141,6 +141,6 @@ class SDFReader(object):
             molecule = Molecule(numbers, coordinates, title)
             molecule.formal_charges = formal_charges
             molecule.formal_charges.setflags(write=False)
-            molecule.graph = MolecularGraph(pairs, numbers, orders)
+            molecule.graph = MolecularGraph(edges, numbers, orders)
             return molecule
 

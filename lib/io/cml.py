@@ -115,22 +115,22 @@ class CMLMoleculeLoader(ContentHandler):
                 for counter, name in enumerate(self.current_atom_names):
                     name_to_index[name] = counter
 
-                pairs = set()
+                edges = set()
                 current_bonds_extra = {}
                 for name1, name2, extra in self.current_bonds:
                     i1 = name_to_index.get(name1)
                     i2 = name_to_index.get(name2)
                     if i1 is not None and i2 is not None:
-                        pair = frozenset([i1, i2])
+                        edge = frozenset([i1, i2])
                         if len(extra) > 0:
-                            current_bonds_extra[pair] = extra
-                        pairs.add(pair)
+                            current_bonds_extra[edge] = extra
+                        edges.add(edge)
 
                 molecule.bonds_extra = current_bonds_extra
-                if len(pairs) == 0:
+                if len(edges) == 0:
                     molecule.graph = None
                 else:
-                    molecule.graph = MolecularGraph(pairs, self.current_numbers)
+                    molecule.graph = MolecularGraph(edges, self.current_numbers)
                 del self.current_atom_names
                 del self.current_bonds
 
@@ -178,10 +178,10 @@ def _dump_cml_molecule(f, molecule):
     if molecule.graph is not None:
         bonds_extra = getattr(molecule, "bonds_extra", {})
         f.write("  <bondArray>\n")
-        for pair in molecule.graph.pairs:
-            bond_extra = bonds_extra.get(pair, {})
+        for edge in molecule.graph.edges:
+            bond_extra = bonds_extra.get(edge, {})
             attr_str = " ".join("%s='%s'" % (key, value) for key, value in bond_extra.iteritems())
-            i1, i2 = pair
+            i1, i2 = edge
             f.write("   <bond atomRefs2='a%i a%i' %s />\n" % (i1, i2, attr_str))
         f.write("  </bondArray>\n")
     f.write(" </molecule>\n")
