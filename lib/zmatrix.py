@@ -51,7 +51,7 @@ class ZMatrixGenerator(object):
              graph  --  an inseparable molecular graph
         """
         # Check that the graph is inseparable.
-        if len(graph.independent_nodes) > 1:
+        if len(graph.independent_vertices) > 1:
             raise ValueError("The graph must be inseparable.")
         self.graph = graph
         # First step is to reorder the atoms so that the zmatrix is somewhat
@@ -61,7 +61,7 @@ class ZMatrixGenerator(object):
         new_order = [0]
         # We will try to take the original order as long as it satisfies the
         # constraint.
-        for i in xrange(1, graph.num_nodes):
+        for i in xrange(1, graph.num_vertices):
             if (graph.distances[i][new_order] == 1).any():
                 new_order.append(i)
             else:
@@ -69,7 +69,7 @@ class ZMatrixGenerator(object):
         # If not all atoms are listed in new_order, we continue adding the
         # remaining atoms in an order that satisfies the constraint. This will
         # break the original order.
-        remaining = range(len(new_order), graph.num_nodes)
+        remaining = range(len(new_order), graph.num_vertices)
         while len(remaining) > 0:
             pivot = remaining.pop()
             if (graph.distances[pivot][new_order] == 1).any():

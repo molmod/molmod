@@ -296,30 +296,30 @@ class GraphTestCase(unittest.TestCase):
                     self.assert_(frozenset([central,neighbor]) in g.edges)
             self.assertEqual(counter, len(g.edges)*2)
 
-    def test_central_nodes(self):
+    def test_central_vertices(self):
         for case in self.iter_cases():
             g = case.graph
             max_distances = g.distances.max(axis=1)
             max_distances_min = max_distances[max_distances>0].min()
-            self.assert_(len(g.central_nodes>0))
-            for c in g.central_nodes:
+            self.assert_(len(g.central_vertices>0))
+            for c in g.central_vertices:
                 self.assert_(g.distances[c].max() == max_distances_min)
-            self.assert_(g.central_node in g.central_nodes)
+            self.assert_(g.central_vertex in g.central_vertices)
 
-    def test_independent_nodes(self):
+    def test_independent_vertices(self):
         edges = [(0,1), (0,2), (0,3), (1,4), (1,5), (6,7), (6,8), (6,9), (7,10), (7,11)]
         g = Graph(edges)
-        self.assertEqual(g.independent_nodes, [[0, 1, 2, 3, 4, 5], [6, 7, 8, 9, 10, 11]])
+        self.assertEqual(g.independent_vertices, [[0, 1, 2, 3, 4, 5], [6, 7, 8, 9, 10, 11]])
 
     def test_fingerprints(self):
         for case in self.iter_cases():
             g0 = case.graph
-            permutation = numpy.random.permutation(g0.num_nodes)
+            permutation = numpy.random.permutation(g0.num_vertices)
             new_edges = tuple((permutation[i], permutation[j]) for i,j in g0.edges)
-            g1 = Graph(new_edges, g0.num_nodes)
+            g1 = Graph(new_edges, g0.num_vertices)
             self.assert_((g0.fingerprint==g1.fingerprint).all())
-            for i in xrange(g0.num_nodes):
-                self.assert_((g0.node_fingerprints[i]==g1.node_fingerprints[permutation[i]]).all())
+            for i in xrange(g0.num_vertices):
+                self.assert_((g0.vertex_fingerprints[i]==g1.vertex_fingerprints[permutation[i]]).all())
 
     def test_symmetries(self):
         cases = self.iter_cases()
@@ -327,10 +327,10 @@ class GraphTestCase(unittest.TestCase):
             try:
                 foo = case.graph.symmetry_cycles
                 del foo
-                if len(case.graph.independent_nodes) != 1:
+                if len(case.graph.independent_vertices) != 1:
                     self.fail("Sould have raised an error for disconnected graphs.")
             except SubgraphPatternError:
-                if len(case.graph.independent_nodes) == 1:
+                if len(case.graph.independent_vertices) == 1:
                     raise
                 continue
             # generic tests:
@@ -372,19 +372,19 @@ class GraphTestCase(unittest.TestCase):
             self.assert_(len(unexpected) == 0, message())
             self.assert_(len(unsatisfied) == 0, message())
 
-    def test_equivalent_nodes(self):
+    def test_equivalent_vertices(self):
         for case in self.iter_cases(disconnected=False):
             g = case.graph
             cycles = g.symmetry_cycles
-            equivalent_nodes = {}
+            equivalent_vertices = {}
             for cycle in cycles:
                 for sub in cycle:
-                    for node in sub:
-                        s = equivalent_nodes.setdefault(node, set([]))
+                    for vertex in sub:
+                        s = equivalent_vertices.setdefault(vertex, set([]))
                         s.update(sub)
-            for node in xrange(g.num_nodes):
-                equivalent_nodes.setdefault(node, set([node]))
-            self.assertEqual(equivalent_nodes, g.equivalent_nodes)
+            for vertex in xrange(g.num_vertices):
+                equivalent_vertices.setdefault(vertex, set([vertex]))
+            self.assertEqual(equivalent_vertices, g.equivalent_vertices)
 
     # auxiliary graph routines
 
@@ -392,13 +392,13 @@ class GraphTestCase(unittest.TestCase):
         cases = self.iter_cases()
         for case in cases:
             g = case.graph
-            start = numpy.random.randint(g.num_nodes)
+            start = numpy.random.randint(g.num_vertices)
             result = list(g.iter_breadth_first(start))
-            if len(case.graph.independent_nodes) != 1:
+            if len(case.graph.independent_vertices) != 1:
                 continue
-            self.assertEqual(len(result), g.num_nodes)
+            self.assertEqual(len(result), g.num_vertices)
             l_last = 0
-            visited = numpy.zeros(g.num_nodes, int)
+            visited = numpy.zeros(g.num_vertices, int)
             for n,l in result:
                 if l < l_last:
                     self.fail_("Distances in iter_breadth_first must be monotomically increasing.")
@@ -411,9 +411,9 @@ class GraphTestCase(unittest.TestCase):
         cases = self.iter_cases()
         for case in cases:
             g = case.graph
-            start = numpy.random.randint(g.num_nodes)
+            start = numpy.random.randint(g.num_vertices)
             result = list(g.iter_breadth_first_edges(start))
-            if len(case.graph.independent_nodes) != 1:
+            if len(case.graph.independent_vertices) != 1:
                 continue
             self.assertEqual(len(result), g.num_edges)
             distance_last = 0
@@ -468,27 +468,27 @@ class GraphTestCase(unittest.TestCase):
             if graph.num_edges<3:
                 continue
             while True:
-                subnodes = numpy.random.permutation(graph.num_nodes)
-                subnodes = subnodes[:graph.num_nodes-1]
+                subvertices = numpy.random.permutation(graph.num_vertices)
+                subvertices = subvertices[:graph.num_vertices-1]
                 try:
-                    subgraph = graph.get_subgraph(subnodes)
+                    subgraph = graph.get_subgraph(subvertices)
                     break
                 except GraphError:
                     pass
-            self.assertEqual(graph.num_nodes, subgraph.num_nodes)
+            self.assertEqual(graph.num_vertices, subgraph.num_vertices)
             for i,j in subgraph.edges:
-                self.assert_(i in subnodes)
-                self.assert_(j in subnodes)
+                self.assert_(i in subvertices)
+                self.assert_(j in subvertices)
             for i_new, i_old in enumerate(subgraph._old_edge_indexes):
                 self.assertEqual(subgraph.edges[i_new], graph.edges[i_old])
 
             # normalized case
-            subgraph = graph.get_subgraph(subnodes, normalize=True)
-            self.assert_(subgraph.num_nodes <= len(subnodes))
+            subgraph = graph.get_subgraph(subvertices, normalize=True)
+            self.assert_(subgraph.num_vertices <= len(subvertices))
             for p0,p1 in enumerate(subgraph._old_edge_indexes):
                 i0,j0 = subgraph.edges[p0]
                 #i1,j1 = subgraph.edges[p1]
-                edge_old = frozenset([subgraph._old_node_indexes[i0],subgraph._old_node_indexes[j0]])
+                edge_old = frozenset([subgraph._old_vertex_indexes[i0],subgraph._old_vertex_indexes[j0]])
                 self.assertEqual(edge_old, graph.edges[p1])
 
     def test_halfs(self):
@@ -588,7 +588,7 @@ class GraphTestCase(unittest.TestCase):
                 if callback is not None:
                     callback(case, matches)
             except SubgraphPatternError:
-                if len(case.graph.independent_nodes) == 1 or not isinstance(pattern, EgoPattern):
+                if len(case.graph.independent_vertices) == 1 or not isinstance(pattern, EgoPattern):
                     raise
 
 
@@ -603,7 +603,7 @@ class GraphTestCase(unittest.TestCase):
                 return
             self.assertEqual(len(case.rings), len(matches))
             for match in matches:
-                self.assert_(match.ring_nodes in case.rings)
+                self.assert_(match.ring_vertices in case.rings)
         self.do_match_generator_test(RingPattern(10), callback=callback)
 
     def test_subgraph_pattern(self):
@@ -611,10 +611,10 @@ class GraphTestCase(unittest.TestCase):
         for case in self.iter_cases():
             try:
                 match_generator = GraphSearch(SubgraphPattern(case.graph))
-                if len(case.graph.independent_nodes) != 1:
+                if len(case.graph.independent_vertices) != 1:
                     self.fail("Sould have raised an error for disconnected graphs.")
             except SubgraphPatternError:
-                if len(case.graph.independent_nodes) == 1:
+                if len(case.graph.independent_vertices) == 1:
                     raise
 
             match_generator(case.graph).next()

@@ -128,8 +128,8 @@ class MolecularGraph(Graph):
         # copy edges
         new_edges = []
         for i in xrange(repeat):
-            for node1, node2 in self.edges:
-                new_edges.append(frozenset([node1+i*self.num_nodes, node2+i*self.num_nodes]))
+            for vertex1, vertex2 in self.edges:
+                new_edges.append(frozenset([vertex1+i*self.num_vertices, vertex2+i*self.num_vertices]))
         # copy numbers
         new_numbers = numpy.zeros((repeat, len(self.numbers)), int)
         new_numbers[:] = self.numbers
@@ -149,11 +149,11 @@ class MolecularGraph(Graph):
         edge_str = ",".join("%i_%i_%i" % (i, j, o) for (i, j), o in zip(self.edges, self.orders))
         return "%s %s" % (atom_str, edge_str)
 
-    def get_node_string(self, i):
+    def get_vertex_string(self, i):
         """Return a string based on the atom number"""
         number = self.numbers[i]
         if number == 0:
-            return Graph.get_node_string(self, i)
+            return Graph.get_vertex_string(self, i)
         else:
             # pad with zeros to make sure that string sort is identical to number sort
             return "%03i" % number
@@ -167,20 +167,20 @@ class MolecularGraph(Graph):
             # pad with zeros to make sure that string sort is identical to number sort
             return "%03i" % order
 
-    def get_subgraph(self, subnodes, normalize=False):
+    def get_subgraph(self, subvertices, normalize=False):
         """Creates a subgraph of the current graph
 
            See help(Graph.get_subgraph) for more information.
         """
-        graph = Graph.get_subgraph(self, subnodes, normalize)
+        graph = Graph.get_subgraph(self, subvertices, normalize)
         if normalize:
-            new_numbers = self.numbers[graph._old_node_indexes] # nodes do change
+            new_numbers = self.numbers[graph._old_vertex_indexes] # vertices do change
         else:
-            new_numbers = self.numbers # nodes don't change!
+            new_numbers = self.numbers # vertices don't change!
         new_orders = self.orders[graph._old_edge_indexes]
         result = MolecularGraph(graph.edges, new_numbers, new_orders)
         if normalize:
-            result._old_node_indexes = graph._old_node_indexes
+            result._old_vertex_indexes = graph._old_vertex_indexes
         result._old_edge_indexes = graph._old_edge_indexes
         return result
 
@@ -197,8 +197,8 @@ class MolecularGraph(Graph):
         """
 
         new_edges = list(self.edges)
-        counter = self.num_nodes
-        for i in xrange(self.num_nodes):
+        counter = self.num_vertices
+        for i in xrange(self.num_vertices):
             num_elec = self.numbers[i]
             if formal_charges is not None:
                 num_elec -= formal_charges[i]
@@ -221,8 +221,8 @@ class MolecularGraph(Graph):
                 new_edges.append((i, counter))
                 counter += 1
         new_numbers = numpy.zeros(counter, int)
-        new_numbers[:self.num_nodes] = self.numbers
-        new_numbers[self.num_nodes:] = 1
+        new_numbers[:self.num_vertices] = self.numbers
+        new_numbers[self.num_vertices:] = 1
         new_orders = numpy.zeros(len(new_edges), int)
         new_orders[:self.num_edges] = self.orders
         new_orders[self.num_edges:] = 1
@@ -391,84 +391,84 @@ def atom_criteria(*params):
 
 class BondPattern(SubgraphPattern):
     """Pattern for two consecutive vertices"""
-    def __init__(self, criteria_sets=None, node_tags=None):
+    def __init__(self, criteria_sets=None, vertex_tags=None):
         """Initialize a BondPattern object
 
            Arguments: see SubgraphPattern.__init__
         """
-        if node_tags is None:
-            node_tags = {}
+        if vertex_tags is None:
+            vertex_tags = {}
         subgraph = Graph([(0, 1)])
-        SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
+        SubgraphPattern.__init__(self, subgraph, criteria_sets, vertex_tags)
 
 
 class BendingAnglePattern(SubgraphPattern):
     """Pattern for three consecutive vertices"""
-    def __init__(self, criteria_sets=None, node_tags=None):
+    def __init__(self, criteria_sets=None, vertex_tags=None):
         """Initialize a BendingAnglePattern object
 
            Arguments: see SubgraphPattern.__init__
         """
-        if node_tags is None:
-            node_tags = {}
+        if vertex_tags is None:
+            vertex_tags = {}
         subgraph = Graph([(0, 1), (1, 2)])
-        SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
+        SubgraphPattern.__init__(self, subgraph, criteria_sets, vertex_tags)
 
 
 class DihedralAnglePattern(SubgraphPattern):
     """Pattern for four consecutive vertices"""
-    def __init__(self, criteria_sets=None, node_tags=None):
+    def __init__(self, criteria_sets=None, vertex_tags=None):
         """Initialize a DihedralAnglePattern object
 
            Arguments: see SubgraphPattern.__init__
         """
-        if node_tags is None:
-            node_tags = {}
+        if vertex_tags is None:
+            vertex_tags = {}
         subgraph = Graph([(0, 1), (1, 2), (2, 3)])
-        SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
+        SubgraphPattern.__init__(self, subgraph, criteria_sets, vertex_tags)
 
 
 class OutOfPlanePattern(SubgraphPattern):
     """Pattern for a central vertex connected to three other vertices"""
-    def __init__(self, criteria_sets=None, node_tags=None):
+    def __init__(self, criteria_sets=None, vertex_tags=None):
         """Initialize a TetraPattern object
 
            Arguments: see SubgraphPattern.__init__
         """
-        if node_tags is None:
-            node_tags = {}
+        if vertex_tags is None:
+            vertex_tags = {}
         subgraph = Graph([(0, 1), (0, 2), (0, 3)])
-        SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
+        SubgraphPattern.__init__(self, subgraph, criteria_sets, vertex_tags)
 
 
 class TetraPattern(SubgraphPattern):
     """Pattern for a central vertex connected to four other vertices"""
-    def __init__(self, criteria_sets=None, node_tags=None):
+    def __init__(self, criteria_sets=None, vertex_tags=None):
         """Initialize a TetraPattern object
 
            Arguments: see SubgraphPattern.__init__
         """
-        if node_tags is None:
-            node_tags = {}
+        if vertex_tags is None:
+            vertex_tags = {}
         subgraph = Graph([(0, 1), (0, 2), (0, 3), (0, 4)])
-        SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
+        SubgraphPattern.__init__(self, subgraph, criteria_sets, vertex_tags)
 
 
 class NRingPattern(SubgraphPattern):
     """Pattern for strong rings with a fixed size"""
 
-    def __init__(self, size, criteria_sets=None, node_tags=None, strong=False):
+    def __init__(self, size, criteria_sets=None, vertex_tags=None, strong=False):
         """Initialize a NRingPattern object
 
            Argument:
              size  --  the size of the ring
         """
-        if node_tags is None:
-            node_tags = {}
+        if vertex_tags is None:
+            vertex_tags = {}
         self.size = size
         self.strong = strong
         subgraph = Graph([(i, (i+1)%size) for i in xrange(size)])
-        SubgraphPattern.__init__(self, subgraph, criteria_sets, node_tags)
+        SubgraphPattern.__init__(self, subgraph, criteria_sets, vertex_tags)
 
     def check_next_match(self, match, new_relations):
         """Check if the (onset for a) match can be a valid (part of a) ring"""
@@ -476,9 +476,9 @@ class NRingPattern(SubgraphPattern):
             return False
         if self.strong:
             # can this ever become a strong ring?
-            node1_start = match.forward[self.subgraph.central_node]
-            for node1 in new_relations.itervalues():
-                paths = list(self.graph.iter_shortest_paths(node1, node1_start))
+            vertex1_start = match.forward[self.subgraph.central_vertex]
+            for vertex1 in new_relations.itervalues():
+                paths = list(self.graph.iter_shortest_paths(vertex1, vertex1_start))
                 if self.size % 2 == 0 and len(match) == self.size:
                     if len(paths) != 2:
                         #print "NRingPattern.check_next_match: not strong a.1"
@@ -506,28 +506,28 @@ class NRingPattern(SubgraphPattern):
             if self.size % 2 == 0:
                 # even ring
                 for i in xrange(self.size/2):
-                    node1_start = match.forward[i]
-                    node1_stop = match.forward[i+self.size/2]
-                    paths = list(self.graph.iter_shortest_paths(node1_start, node1_stop))
+                    vertex1_start = match.forward[i]
+                    vertex1_stop = match.forward[i+self.size/2]
+                    paths = list(self.graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) != 2:
-                        #print "Even ring must have two paths between opposite nodes"
+                        #print "Even ring must have two paths between opposite vertices"
                         return False
                     for path in paths:
                         if len(path) != self.size/2+1:
-                            #print "Paths between opposite nodes must half the size of the ring+1"
+                            #print "Paths between opposite vertices must half the size of the ring+1"
                             return False
             else:
                 # odd ring
                 for i in xrange(self.size/2+1):
-                    node1_start = match.forward[i]
-                    node1_stop = match.forward[i+self.size/2]
-                    paths = list(self.graph.iter_shortest_paths(node1_start, node1_stop))
+                    vertex1_start = match.forward[i]
+                    vertex1_stop = match.forward[i+self.size/2]
+                    paths = list(self.graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) > 1:
                         return False
                     if len(paths[0]) != self.size/2+1:
                         return False
-                    node1_stop = match.forward[i+self.size/2+1]
-                    paths = list(self.graph.iter_shortest_paths(node1_start, node1_stop))
+                    vertex1_stop = match.forward[i+self.size/2+1]
+                    paths = list(self.graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) > 1:
                         return False
                     if len(paths[0]) != self.size/2+1:

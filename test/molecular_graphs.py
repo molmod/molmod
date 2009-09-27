@@ -47,7 +47,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         ]
         for xyz_fn in xyz_fns:
             molecule = self.load_molecule(xyz_fn)
-            if allow_multi or len(molecule.graph.independent_nodes) == 1:
+            if allow_multi or len(molecule.graph.independent_vertices) == 1:
                 yield molecule
         sdf_fns = [
             "example.sdf", "CID_22898828.sdf", "SID_55127927.sdf",
@@ -57,7 +57,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         ]
         for sdf_fn in sdf_fns:
             for i, molecule in enumerate(SDFReader(os.path.join("input", sdf_fn))):
-                if allow_multi or len(molecule.graph.independent_nodes) == 1:
+                if allow_multi or len(molecule.graph.independent_vertices) == 1:
                     yield molecule
 
     # graph search tests
@@ -238,7 +238,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         molecule = self.load_molecule("tpa.xyz")
         pattern = TetraPattern([
             CriteriaSet(atom_criteria(6, 1, 6, 6, 1), tag="C-(HCCH)")
-        ], node_tags={0: 1, 1: 1}) # node tags are just a silly example
+        ], vertex_tags={0: 1, 1: 1}) # vertex tags are just a silly example
         expected_results = {
             'C-(HCCH)': set([
                 ( 8, 29,  9,  7, 30), ( 8, 30,  9,  7, 29), ( 2,  1, 15, 16,  3), ( 2,  3, 15, 16,  1),
@@ -319,8 +319,8 @@ class MolecularGraphTestCase(unittest.TestCase):
         all_rings = {}
         graph_search = GraphSearch(pattern, debug=False)
         for match in graph_search(molecule.graph):
-            l = all_rings.setdefault(len(match.ring_nodes), set([]))
-            l.add(match.ring_nodes)
+            l = all_rings.setdefault(len(match.ring_vertices), set([]))
+            l.add(match.ring_vertices)
 
         for size, solutions in all_rings.iteritems():
             tag = '%i-ring' % size
@@ -368,10 +368,10 @@ class MolecularGraphTestCase(unittest.TestCase):
     def test_fingerprints(self):
         for mol in self.iter_molecules():
             g0 = mol.graph
-            permutation = numpy.random.permutation(g0.num_nodes)
+            permutation = numpy.random.permutation(g0.num_vertices)
             g1 = g0.get_subgraph(permutation, normalize=True)
-            for i in xrange(g0.num_nodes):
-                self.assert_((g0.node_fingerprints[permutation[i]]==g1.node_fingerprints[i]).all())
+            for i in xrange(g0.num_vertices):
+                self.assert_((g0.vertex_fingerprints[permutation[i]]==g1.vertex_fingerprints[i]).all())
             self.assert_((g0.fingerprint==g1.fingerprint).all())
 
     def test_fingerprint_collisions(self):
@@ -392,7 +392,7 @@ class MolecularGraphTestCase(unittest.TestCase):
     def test_subgraph(self):
         for mol in self.iter_molecules():
             g0 = mol.graph
-            permutation = numpy.random.permutation(g0.num_nodes)
+            permutation = numpy.random.permutation(g0.num_vertices)
             # normalize=False
             g1 = g0.get_subgraph(permutation)
             self.assert_((g0.numbers==g1.numbers).all())
@@ -407,9 +407,9 @@ class MolecularGraphTestCase(unittest.TestCase):
     def test_subgraph_big(self):
         mol = self.load_molecule("thf.xyz")
         g0 = mol.graph
-        for group in g0.independent_nodes:
+        for group in g0.independent_vertices:
             g1 = g0.get_subgraph(group, normalize=True)
-            self.assertEqual(g1.num_nodes, len(group))
+            self.assertEqual(g1.num_vertices, len(group))
             self.assert_((g0.numbers[group]==g1.numbers).all())
 
     def test_iter_shortest_paths(self):
@@ -441,7 +441,7 @@ class MolecularGraphTestCase(unittest.TestCase):
             g = molecule.graph
             match = g.full_match(g)
             self.assertNotEqual(match, None)
-            self.assertEqual(len(match), g.num_nodes)
+            self.assertEqual(len(match), g.num_vertices)
 
     def test_canonical_order(self):
         # TODO: analogous tests voor pure graphs + fixen
@@ -451,7 +451,7 @@ class MolecularGraphTestCase(unittest.TestCase):
                 order0 = g0.canonical_order
                 g0_bis = g0.get_subgraph(order0, normalize=True)
 
-                permutation = numpy.random.permutation(g0.num_nodes)
+                permutation = numpy.random.permutation(g0.num_vertices)
                 g1 = g0.get_subgraph(permutation, normalize=True)
                 order1 = g1.canonical_order
                 g1_bis = g1.get_subgraph(order1, normalize=True)

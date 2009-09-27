@@ -43,7 +43,7 @@ class CMLTestCase(unittest.TestCase):
             self.assertEqual(m1.title, m2.title)
             self.assert_((m1.numbers==m2.numbers).all())
             self.assert_((m1.coordinates==m2.coordinates).all())
-            self.assertEqual(m1.graph.num_nodes, m2.graph.num_nodes)
+            self.assertEqual(m1.graph.num_vertices, m2.graph.num_vertices)
             self.assertEqual(set(m1.graph.edges), set(m2.graph.edges))
 
     def test_load(self):

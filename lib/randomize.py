@@ -210,7 +210,7 @@ def iter_halfs_bond(graph):
 
 def iter_halfs_bend(graph):
     """Select randomly two consecutive bonds that divide the molecule in two"""
-    for atom2 in xrange(graph.num_nodes):
+    for atom2 in xrange(graph.num_vertices):
         neighbors = list(graph.neighbors[atom2])
         for index1, atom1 in enumerate(neighbors):
             for atom3 in neighbors[index1+1:]:
@@ -336,7 +336,7 @@ def check_nonbond(molecule, graph, thresholds):
     """
 
     # check that no atoms overlap
-    for atom1 in xrange(graph.num_nodes):
+    for atom1 in xrange(graph.num_vertices):
         for atom2 in xrange(atom1):
             if graph.distances[atom1, atom2] > 2:
                 distance = numpy.linalg.norm(molecule.coordinates[atom1] - molecule.coordinates[atom2])
