@@ -22,19 +22,26 @@
 #include <math.h>
 #include <stdlib.h>
 
-inline void add_grad(int i, int j, double s, double *cor, double *gradient) {
-  gradient[i*3  ] += s*(cor[i*3  ]-cor[j*3  ]);
-  gradient[j*3  ] -= s*(cor[i*3  ]-cor[j*3  ]);
-  gradient[i*3+1] += s*(cor[i*3+1]-cor[j*3+1]);
-  gradient[j*3+1] -= s*(cor[i*3+1]-cor[j*3+1]);
-  gradient[i*3+2] += s*(cor[i*3+2]-cor[j*3+2]);
-  gradient[j*3+2] -= s*(cor[i*3+2]-cor[j*3+2]);
+inline double calc_delta_d(int i, int j, double *cor, double *delta) {
+  delta[0] = cor[i*3  ]-cor[j*3  ];
+  delta[1] = cor[i*3+1]-cor[j*3+1];
+  delta[2] = cor[i*3+2]-cor[j*3+2];
+  return sqrt(delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2]);
+}
+
+inline void add_grad(int i, int j, double s, double *cor, double *delta, double *gradient) {
+  gradient[i*3  ] += s*delta[0];
+  gradient[j*3  ] -= s*delta[0];
+  gradient[i*3+1] += s*delta[1];
+  gradient[j*3+1] -= s*delta[1];
+  gradient[i*3+2] += s*delta[2];
+  gradient[j*3+2] -= s*delta[2];
 
 }
 
 double ff_dm_quad(int n, double *cor, double *dm0, double *dmk, double amp, double *gradient) {
   int i,j;
-  double d, d0, k, tmp, result;
+  double delta[3], d, d0, k, tmp, result;
 
   result = 0.0;
   //printf("n=%i\n", n);
@@ -44,23 +51,13 @@ double ff_dm_quad(int n, double *cor, double *dm0, double *dmk, double amp, doub
       k = dmk[i*n+j];
       //printf("i=%i  j=%i  d0=%i\n", i,j,d0);
       if (d0>0) {
-        tmp = cor[i*3  ]-cor[j*3  ];
-        d = tmp*tmp;
-        tmp = cor[i*3+1]-cor[j*3+1];
-        d += tmp*tmp;
-        tmp = cor[i*3+2]-cor[j*3+2];
-        d += tmp*tmp;
-        d = sqrt(d);
-
-        //printf("d=%f    d0=%f\n", d, d0);
-        //tmp = (d-d0*(radii[i]+radii[j]));
-        //result += amp*tmp*tmp*radii[i]*radii[j]/d0;
+        d = calc_delta_d(i, j, cor, delta);
         tmp = (d-d0);
         result += amp*k*tmp*tmp;
         if (gradient!=NULL) {
           //tmp = 2*amp*tmp/d0*radii[i]*radii[j]/d;
           tmp = 2*amp*k*tmp/d;
-          add_grad(i, j, tmp, cor, gradient);
+          add_grad(i, j, tmp, cor, delta, gradient);
         }
         //result += tmp*tmp;
       }
@@ -72,28 +69,22 @@ double ff_dm_quad(int n, double *cor, double *dm0, double *dmk, double amp, doub
 
 
 double ff_dm_reci(int n, double *radii, double *cor, int *dm0, double amp, double *gradient) {
-  int i,j,d0,r0;
-  double d, tmp, result;
+  int i, j, d0, r0;
+  double delta[3], d, tmp, result;
 
   result = 0.0;
   for (i=0; i<n; i++) {
     for (j=0; j<i; j++) {
       d0 = dm0[i*n+j];
       if (d0>1) {
-        tmp = cor[i*3  ]-cor[j*3  ];
-        d = tmp*tmp;
-        tmp = cor[i*3+1]-cor[j*3+1];
-        d += tmp*tmp;
-        tmp = cor[i*3+2]-cor[j*3+2];
-        d += tmp*tmp;
-        d = sqrt(d);
+        d = calc_delta_d(i, j, cor, delta);
         r0 = radii[i]+radii[j];
         if (d < r0) {
             d /= r0;
             result += amp*(d-1)*(d-1)/d/d0;
             if (gradient!=NULL) {
               tmp = amp*(1-1/d/d)/r0/d/d0;
-              add_grad(i, j, tmp, cor, gradient);
+              add_grad(i, j, tmp, cor, delta, gradient);
             }
         }
       }
@@ -105,26 +96,20 @@ double ff_dm_reci(int n, double *radii, double *cor, int *dm0, double amp, doubl
 
 double ff_bond_quad(int m, int n, double *cor, int *pairs, double *lengths, double amp, double *gradient) {
   int b, i, j;
-  double result, d, tmp;
+  double delta[3], result, d, tmp;
 
   result = 0.0;
   //printf("m=%i\n", m);
   for (b=0; b<m; b++) {
     i = pairs[2*b  ];
     j = pairs[2*b+1];
-    tmp = cor[i*3  ]-cor[j*3  ];
-    d = tmp*tmp;
-    tmp = cor[i*3+1]-cor[j*3+1];
-    d += tmp*tmp;
-    tmp = cor[i*3+2]-cor[j*3+2];
-    d += tmp*tmp;
-    d = sqrt(d);
+    d = calc_delta_d(i, j, cor, delta);
 
     tmp = d-lengths[b];
     result += amp*tmp*tmp;
     if (gradient!=NULL) {
       tmp = 2*amp*tmp/d;
-      add_grad(i, j, tmp, cor, gradient);
+      add_grad(i, j, tmp, cor, delta, gradient);
     }
     //printf("result=%f\n", result);
   }
@@ -133,25 +118,19 @@ double ff_bond_quad(int m, int n, double *cor, int *pairs, double *lengths, doub
 
 double ff_bond_hyper(int m, int n, double *cor, int *pairs, double *lengths, double scale, double amp, double *gradient) {
   int b, i, j;
-  double result, d, tmp;
+  double delta[3], result, d, tmp;
 
   result = 0.0;
   for (b=0; b<m; b++) {
     i = pairs[2*b  ];
     j = pairs[2*b+1];
-    tmp = cor[i*3  ]-cor[j*3  ];
-    d = tmp*tmp;
-    tmp = cor[i*3+1]-cor[j*3+1];
-    d += tmp*tmp;
-    tmp = cor[i*3+2]-cor[j*3+2];
-    d += tmp*tmp;
-    d = sqrt(d);
+    d = calc_delta_d(i, j, cor, delta);
 
     tmp = d-lengths[b];
     result += amp*(cosh(scale*tmp)-1);
     if (gradient!=NULL) {
       tmp = amp*scale*sinh(scale*tmp)/d;
-      add_grad(i, j, tmp, cor, gradient);
+      add_grad(i, j, tmp, cor, delta, gradient);
     }
   }
   return result;
