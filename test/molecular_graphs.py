@@ -21,12 +21,12 @@
 from molmod.units import angstrom
 from molmod.molecular_graphs import *
 from molmod.graphs import GraphError, GraphSearch, CriteriaSet, CritOr, RingPattern
-from molmod.toyff import guess_geometry
 from molmod.bonds import BOND_SINGLE
 from molmod.io.sdf import SDFReader
 from molmod.io.xyz import XYZFile
 
-import unittest, copy, numpy, os
+import unittest, numpy, os
+
 
 __all__ = ["MolecularGraphTestCase"]
 
@@ -461,12 +461,6 @@ class MolecularGraphTestCase(unittest.TestCase):
                 self.assert_((g0_bis.orders==g1_bis.orders).all())
             except NotImplementedError:
                 pass
-
-    def test_guess_geometry(self):
-        for input_mol in self.iter_molecules(allow_multi=False):
-            output_mol = guess_geometry(input_mol.graph)
-            output_mol.title = input_mol.title
-            output_mol.write_to_file("output/guess_%s.xyz" % input_mol.title)
 
     def test_blob(self):
         for molecule in self.iter_molecules(allow_multi=True):

@@ -54,6 +54,7 @@ from molecular_graphs import *
 from quaternions import *
 from randomize import *
 from similarity import *
+from toyff import *
 from transformations import *
 from unit_cells import *
 from vectors import *
