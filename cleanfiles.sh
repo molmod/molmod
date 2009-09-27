@@ -7,3 +7,5 @@ rm -v test/molmod
 rm -v MANIFEST
 rm -vr dist
 rm -vr build
+
+(cd ext; ./cleanfiles.sh)
