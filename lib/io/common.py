@@ -89,21 +89,6 @@ class SlicedReader(object):
         return self
 
     def next(self):
-        """Read the next frame from the XYZ trajectory file
-
-           This method is part of the iterator protocol
-        """
-        if self._first is not None:
-            tmp = self._first
-            self._first = None
-            result = tmp
-        else:
-            result = self._read()[1:]
-        if result is None:
-            raise StopIteration
-        return result
-
-    def next(self):
         """Get the next frame from the file, taking into account the slice
 
            This method is part of the iterator protocol.
