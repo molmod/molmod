@@ -56,8 +56,7 @@ from molmod.utils import cached, ReadOnly
 __all__ = [
     "GraphError", "Graph", "OneToOne", "Match", "Pattern",
     "CriteriaSet", "Anything", "CritOr", "CritAnd", "CritXor", "CritNot",
-    "SubgraphPattern", "EqualPattern", "EgoMatch",
-    "EgoPattern", "RingPattern", "GraphSearch",
+    "SubgraphPattern", "EqualPattern", "RingPattern", "GraphSearch",
 ]
 
 
@@ -70,8 +69,7 @@ class Graph(ReadOnly):
     """An undirected graph, where edges have equal weight
 
        The edges attribute is the most elementary and is always available. All
-       other attributes are optional and can be generated with their respective
-       init_* methods.
+       other attributes are optional.
 
        Graphs are meant to be immutable objects. Once created they are not
        supposed to be modified. If you want an adapted graph, create a new
@@ -323,9 +321,10 @@ class Graph(ReadOnly):
 
         symmetry_cycles = set([])
         symmetries = set([])
-        for match in GraphSearch(EgoPattern())(self):
+        for match in GraphSearch(EqualPattern(self))(self):
             match.cycles = match.get_closed_cycles()
-            assert match.cycles not in symmetry_cycles, "Duplicates in EgoMatch"
+            if match.cycles in symmetry_cycles:
+                raise RuntimeError("Duplicates in EqualMatch")
             symmetry_cycles.add(match.cycles)
             symmetries.add(match)
         return symmetries
@@ -1327,35 +1326,8 @@ class SubgraphPattern(Pattern):
                             satisfied_match_tags.add(match_tags)
 
 
-class EqualPattern(SubgraphPattern):
-    """Like SubgraphPattern, but the pattern has the same size as the graph"""
-    sub = False
-
-    def __init__(self, subgraph):
-        """Initialize a EqualPattern"""
-        # Don't allow criteria sets and vertex_tags. This limitation is due to
-        # the compare method below. TODO: Is this a good idea?
-        SubgraphPattern.__init__(self, subgraph)
-
-    def iter_initial_relations(self):
-        """Iterate over all valid initial relations for a match"""
-        if self.subgraph.num_edges != self.graph.num_edges:
-            return # don't even try
-        vertex0 = self.subgraph.central_vertex
-        for vertex1 in self.graph.central_vertices:
-            if self.compare(vertex0, vertex1):
-                yield vertex0, vertex1
-
-    def compare(self, vertex0, vertex1):
-        """Returns true when the two vertices are of the same kind"""
-        return (
-            self.subgraph.vertex_fingerprints[vertex0] ==
-            self.graph.vertex_fingerprints[vertex1]
-        ).all()
-
-
-class EgoMatch(Match):
-    """A Match object with specialized functions for the EgoPattern"""
+class EqualMatch(Match):
+    """A Match object with specialized functions for the EqualPattern"""
     def get_closed_cycles(self):
         """Return the closed cycles corresponding to this permutation
 
@@ -1365,17 +1337,13 @@ class EgoMatch(Match):
              cycles will be sorted by the lowest index they contain.
           2) Each cycle starts with its lowest index. (unique starting point)
           3) Singletons are discarded. (because they are boring)
-
-        The following normalization step is commented out. It does NOT apply.
-          4) The second element in a cycle is lower than the last element in a
-             cycle. (unique direction). This manipulation is only caried out
-             in the end when all cycles are known. It is applied on the first
-             cycle and all subsequent cycles undergo the same transformation so
-             that the interpretation of the cycle notation is not altered.
         """
         # A) construct all the cycles
         closed_cycles = []
         todo = set(self.forward.keys())
+        if todo != set(self.forward.values()):
+            raise GraphError("The subject and pattern graph must have the same "
+                             "numbering.")
         current_vertex = None
         while len(todo) > 0:
             if current_vertex == None:
@@ -1404,18 +1372,32 @@ class EgoMatch(Match):
         return closed_cycles
 
 
+class EqualPattern(SubgraphPattern):
+    """Like SubgraphPattern, but the pattern has the same size as the graph"""
+    sub = False
+    MatchClass = EqualMatch
 
-class EgoPattern(EqualPattern):
-    """A pattern that finds the isometries of a graph onto itself"""
-    MatchClass = EgoMatch
+    def __init__(self, subgraph):
+        """Initialize a EqualPattern"""
+        # Don't allow criteria sets and vertex_tags. This limitation is due to
+        # the compare method below. TODO: Is this a good idea?
+        SubgraphPattern.__init__(self, subgraph)
 
-    def __init__(self):
-        """Initialize an EgoPattern"""
-        EqualPattern.__init__(self, None)
+    def iter_initial_relations(self):
+        """Iterate over all valid initial relations for a match"""
+        if self.subgraph.num_edges != self.graph.num_edges:
+            return # don't even try
+        vertex0 = self.subgraph.central_vertex
+        for vertex1 in self.graph.central_vertices:
+            if self.compare(vertex0, vertex1):
+                yield vertex0, vertex1
 
-    def init_graph(self, graph, one_match):
-        self._set_subgraph(graph)
-        EqualPattern.init_graph(self, graph, one_match)
+    def compare(self, vertex0, vertex1):
+        """Returns true when the two vertices are of the same kind"""
+        return (
+            self.subgraph.vertex_fingerprints[vertex0] ==
+            self.graph.vertex_fingerprints[vertex1]
+        ).all()
 
 
 class RingPattern(Pattern):
@@ -1431,9 +1413,6 @@ class RingPattern(Pattern):
             raise ValueError("Ring sizes must be at least 3.")
         self.max_size = max_size
         Pattern.__init__(self)
-
-    def init_graph(self, graph, one_match):
-        Pattern.init_graph(self, graph, one_match)
 
     def iter_initial_relations(self):
         """Iterate over all valid initial relations for a match"""

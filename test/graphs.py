@@ -329,7 +329,7 @@ class GraphTestCase(unittest.TestCase):
                 del foo
                 if len(case.graph.independent_vertices) != 1:
                     self.fail("Sould have raised an error for disconnected graphs.")
-            except SubgraphPatternError:
+            except ValueError:
                 if len(case.graph.independent_vertices) == 1:
                     raise
                 continue
@@ -590,12 +590,6 @@ class GraphTestCase(unittest.TestCase):
             except SubgraphPatternError:
                 if len(case.graph.independent_vertices) == 1 or not isinstance(pattern, EgoPattern):
                     raise
-
-
-    def test_ego_pattern(self):
-        def callback(case, matches):
-            self.assert_(len(matches) > 0, "Expected at least one match (graph=%s), got %i." % (case.name, len(matches)))
-        self.do_match_generator_test(EgoPattern(), callback=callback)
 
     def test_ring_pattern(self):
         def callback(case, matches):
