@@ -68,22 +68,21 @@ double ff_dm_quad(int n, double *cor, double *dm0, double *dmk, double amp, doub
 }
 
 
-double ff_dm_reci(int n, double *radii, double *cor, int *dm0, double amp, double *gradient) {
-  int i, j, d0, r0;
-  double delta[3], d, tmp, result;
+double ff_dm_reci(int n, double *cor, double *radii, int *dm0, double amp, double *gradient) {
+  int i, j;
+  double delta[3], d, r0, tmp, result;
 
   result = 0.0;
   for (i=0; i<n; i++) {
     for (j=0; j<i; j++) {
-      d0 = dm0[i*n+j];
-      if (d0>1) {
+      if (dm0[i*n+j]>1) {
         d = calc_delta_d(i, j, cor, delta);
         r0 = radii[i]+radii[j];
         if (d < r0) {
             d /= r0;
-            result += amp*(d-1)*(d-1)/d/d0;
+            result += amp*(d-1)*(d-1)/d;
             if (gradient!=NULL) {
-              tmp = amp*(1-1/d/d)/r0/d/d0;
+              tmp = amp*(1-1/d/d)/r0/d/r0;
               add_grad(i, j, tmp, cor, delta, gradient);
             }
         }

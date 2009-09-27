@@ -19,7 +19,7 @@
 # --
 
 
-from molmod.toyff import guess_geometry
+from molmod.toyff import guess_geometry, ToyFF
 from molmod.io.xyz import XYZFile
 from molmod.io.sdf import SDFReader
 from molmod.molecular_graphs import MolecularGraph
@@ -62,4 +62,77 @@ class ToyFFTestCase(unittest.TestCase):
             output_mol = guess_geometry(input_mol.graph)
             output_mol.title = input_mol.title
             output_mol.write_to_file("output/guess_%s.xyz" % input_mol.title)
+
+    def get_random_ff(self):
+        N = 6
+        edges = set([])
+        while len(edges) < 2*N:
+            v1 = numpy.random.randint(N)
+            while True:
+                v2 = numpy.random.randint(N)
+                if v2 != v1:
+                    break
+            edges.add(frozenset([v1,v2]))
+        edges = tuple(edges)
+        numbers = numpy.random.randint(6, 10, N)
+        graph = MolecularGraph(edges, numbers)
+        ff = ToyFF(graph)
+
+        from molmod.ext import molecules_distance_matrix
+        while True:
+            coordinates = numpy.random.uniform(0,3,(N,3))
+            dm = molecules_distance_matrix(coordinates)
+            if dm.max() > 1.0:
+                break
+
+        mask = numpy.zeros(dm.shape, bool)
+        for i in xrange(N):
+            for j in xrange(i):
+                mask[i,j] = True
+
+        return ff, coordinates, dm, mask
+
+    def check_toyff_gradient(self, ff, coordinates):
+        energy0, gradient0 = ff(coordinates, True)
+        eps = numpy.random.uniform(-1e-6, 1e-6, coordinates.shape)
+        energy1, gradient1 = ff(coordinates+eps, True)
+        self.assertAlmostEqual(
+            energy1 - energy0,
+            0.5*numpy.dot(gradient0 + gradient1, eps.ravel())
+        )
+
+    def test_dm_quad_energy(self):
+        for i in xrange(10):
+            ff, coordinates, dm, mask = self.get_random_ff()
+            ff.dm_quad = 1.0
+            energy = ff(coordinates, False)
+            my_terms = (dm - ff.dm0)**2*ff.dmk
+            my_terms[ff.dm0==0] = 0.0
+            my_terms[mask] = 0.0
+            self.assertAlmostEqual(energy, my_terms.sum())
+
+    def test_dm_quad_gradient(self):
+        for i in xrange(10):
+            ff, coordinates, dm, mask = self.get_random_ff()
+            ff.dm_quad = 1.0
+            self.check_toyff_gradient(ff, coordinates)
+
+    def test_dm_reci_energy(self):
+        for i in xrange(10):
+            ff, coordinates, dm, mask = self.get_random_ff()
+            ff.dm_reci = 1.0
+            energy = ff(coordinates, False)
+            r0 = numpy.add.outer(ff.vdw_radii, ff.vdw_radii)
+            d = dm/r0
+            my_terms = (d-1)*(d-1)/d
+            my_terms[ff.dm<=1] = 0.0
+            my_terms[d>=1] = 0.0
+            my_terms[mask] = 0.0
+            self.assertAlmostEqual(energy, my_terms.sum())
+
+    def test_dm_reci_gradient(self):
+        for i in xrange(10):
+            ff, coordinates, dm, mask = self.get_random_ff()
+            ff.dm_reci = 1.0
+            self.check_toyff_gradient(ff, coordinates)
 
