@@ -26,51 +26,63 @@ interface
 !!  ff.c
 !!
 
-  double precision function ff_dm_quad(n,cor,dm0,dmk,amp,gradient)
+  double precision function ff_dm_quad(n,periodic,cor,dm0,dmk,amp,gradient,matrix,reciprocal)
     intent(c) ff_dm_quad
     intent(c)
     integer intent(hide), depend(cor) :: n=len(cor)
+    integer intent(hide), depend(matrix) :: periodic=(matrix_capi-Py_None)
     double precision intent(in) :: cor(n,3)
     double precision intent(in) :: dm0(n,n)
     double precision intent(in) :: dmk(n,n)
     double precision intent(in) :: amp
     double precision intent(inout) :: gradient(n,3)
+    double precision, intent(in), optional :: matrix(3,3)=0
+    double precision, intent(in), optional :: reciprocal(3,3)=0
   end function ff_dm_quad
 
-  double precision function ff_dm_reci(n,cor,radii,dm0,amp,gradient)
+  double precision function ff_dm_reci(n,periodic,cor,radii,dm0,amp,gradient,matrix,reciprocal)
     intent(c) ff_dm_reci
     intent(c)
     integer intent(hide), depend(cor) :: n=len(cor)
+    integer intent(hide), depend(matrix) :: periodic=(matrix_capi-Py_None)
     double precision intent(in) :: cor(n,3)
     double precision intent(in) :: radii(n)
     integer intent(in) :: dm0(n,n)
     double precision intent(in) :: amp
     double precision intent(inout) :: gradient(n,3)
+    double precision, intent(in), optional :: matrix(3,3)=0
+    double precision, intent(in), optional :: reciprocal(3,3)=0
   end function ff_dm_reci
 
-  double precision function ff_bond_quad(m,n,cor,pairs,lengths,amp,gradient)
+  double precision function ff_bond_quad(m,n,periodic,cor,pairs,lengths,amp,gradient,matrix,reciprocal)
     intent(c) ff_bond_quad
     intent(c)
     integer intent(hide), depend(pairs) :: m=len(pairs)
     integer intent(hide), depend(cor) :: n=len(cor)
+    integer intent(hide), depend(matrix) :: periodic=(matrix_capi-Py_None)
     double precision intent(in) :: cor(n,3)
     integer intent(in) :: pairs(m,2)
     double precision intent(in) :: lengths(m)
     double precision intent(in) :: amp
     double precision intent(inout) :: gradient(n,3)
+    double precision, intent(in), optional :: matrix(3,3)=0
+    double precision, intent(in), optional :: reciprocal(3,3)=0
   end function ff_bond_quad
 
-  double precision function ff_bond_hyper(m,n,cor,pairs,lengths,scale,amp,gradient)
+  double precision function ff_bond_hyper(m,n,periodic,cor,pairs,lengths,scale,amp,gradient,matrix,reciprocal)
     intent(c) ff_bond_hyper
     intent(c)
     integer intent(hide), depend(pairs) :: m=len(pairs)
     integer intent(hide), depend(cor) :: n=len(cor)
+    integer intent(hide), depend(matrix) :: periodic=(matrix_capi-Py_None)
     double precision intent(in) :: cor(n,3)
     integer intent(in) :: pairs(m,2)
     double precision intent(in) :: lengths(m)
     double precision intent(in) :: scale
     double precision intent(in) :: amp
     double precision intent(inout) :: gradient(n,3)
+    double precision, intent(in), optional :: matrix(3,3)=0
+    double precision, intent(in), optional :: reciprocal(3,3)=0
   end function ff_bond_hyper
 
 !!
@@ -88,12 +100,15 @@ interface
 !! molecules.c
 !!
 
-  subroutine molecules_distance_matrix(n,cor,dm)
+  subroutine molecules_distance_matrix(n,cor,periodic,matrix,reciprocal,dm)
     intent(c) molecules_distance_matrix
     intent(c)
     integer intent(hide), depend(cor) :: n=len(cor)
-    double precision intent(in) :: cor(n,3)
-    double precision intent(out) :: dm(n,n)
+    integer intent(hide), depend(matrix) :: periodic=(matrix_capi-Py_None)
+    double precision, intent(in) :: cor(n,3)
+    double precision, intent(in), optional :: matrix(3,3)=0
+    double precision, intent(in), optional :: reciprocal(3,3)=0
+    double precision, intent(out) :: dm(n,n)
   end subroutine molecules_distance_matrix
 
 !!

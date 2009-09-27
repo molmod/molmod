@@ -21,25 +21,24 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include "common.h"
 
-inline double calc_delta_d(int i, int j, double *cor, double *delta) {
-  delta[0] = cor[i*3  ]-cor[j*3  ];
-  delta[1] = cor[i*3+1]-cor[j*3+1];
-  delta[2] = cor[i*3+2]-cor[j*3+2];
-  return sqrt(delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2]);
-}
-
-inline void add_grad(int i, int j, double s, double *cor, double *delta, double *gradient) {
+inline void add_grad(
+  int i, int j, double s, double *cor, double *delta,
+  double *gradient
+) {
   gradient[i*3  ] += s*delta[0];
   gradient[j*3  ] -= s*delta[0];
   gradient[i*3+1] += s*delta[1];
   gradient[j*3+1] -= s*delta[1];
   gradient[i*3+2] += s*delta[2];
   gradient[j*3+2] -= s*delta[2];
-
 }
 
-double ff_dm_quad(int n, double *cor, double *dm0, double *dmk, double amp, double *gradient) {
+double ff_dm_quad(
+  int n, int periodic, double *cor, double *dm0, double *dmk,
+  double amp, double *gradient, double *matrix, double *reciprocal
+) {
   int i,j;
   double delta[3], d, d0, k, tmp, result;
 
@@ -51,7 +50,11 @@ double ff_dm_quad(int n, double *cor, double *dm0, double *dmk, double amp, doub
       k = dmk[i*n+j];
       //printf("i=%i  j=%i  d0=%i\n", i,j,d0);
       if (d0>0) {
-        d = calc_delta_d(i, j, cor, delta);
+        if (periodic) {
+          d = distance_delta_periodic(cor + 3*i, cor + 3*j, delta, matrix, reciprocal);
+        } else {
+          d = distance_delta(cor + 3*i, cor + 3*j, delta);
+        }
         tmp = (d-d0);
         result += amp*k*tmp*tmp;
         if (gradient!=NULL) {
@@ -68,7 +71,10 @@ double ff_dm_quad(int n, double *cor, double *dm0, double *dmk, double amp, doub
 }
 
 
-double ff_dm_reci(int n, double *cor, double *radii, int *dm0, double amp, double *gradient) {
+double ff_dm_reci(
+  int n, int periodic, double *cor, double *radii, int *dm0,
+  double amp, double *gradient, double *matrix, double *reciprocal
+) {
   int i, j;
   double delta[3], d, r0, tmp, result;
 
@@ -76,7 +82,11 @@ double ff_dm_reci(int n, double *cor, double *radii, int *dm0, double amp, doubl
   for (i=0; i<n; i++) {
     for (j=0; j<i; j++) {
       if (dm0[i*n+j]>1) {
-        d = calc_delta_d(i, j, cor, delta);
+        if (periodic) {
+          d = distance_delta_periodic(cor + 3*i, cor + 3*j, delta, matrix, reciprocal);
+        } else {
+          d = distance_delta(cor + 3*i, cor + 3*j, delta);
+        }
         r0 = radii[i]+radii[j];
         if (d < r0) {
             d /= r0;
@@ -93,16 +103,22 @@ double ff_dm_reci(int n, double *cor, double *radii, int *dm0, double amp, doubl
 }
 
 
-double ff_bond_quad(int m, int n, double *cor, int *pairs, double *lengths, double amp, double *gradient) {
+double ff_bond_quad(
+  int m, int n, int periodic, double *cor, int *pairs, double *lengths,
+  double amp, double *gradient, double *matrix, double *reciprocal
+) {
   int b, i, j;
   double delta[3], result, d, tmp;
 
   result = 0.0;
-  //printf("m=%i\n", m);
   for (b=0; b<m; b++) {
     i = pairs[2*b  ];
     j = pairs[2*b+1];
-    d = calc_delta_d(i, j, cor, delta);
+    if (periodic) {
+      d = distance_delta_periodic(cor + 3*i, cor + 3*j, delta, matrix, reciprocal);
+    } else {
+      d = distance_delta(cor + 3*i, cor + 3*j, delta);
+    }
 
     tmp = d-lengths[b];
     result += amp*tmp*tmp;
@@ -115,7 +131,10 @@ double ff_bond_quad(int m, int n, double *cor, int *pairs, double *lengths, doub
   return result;
 }
 
-double ff_bond_hyper(int m, int n, double *cor, int *pairs, double *lengths, double scale, double amp, double *gradient) {
+double ff_bond_hyper(
+  int m, int n, int periodic, double *cor, int *pairs, double *lengths,
+  double scale, double amp, double *gradient, double *matrix, double *reciprocal
+) {
   int b, i, j;
   double delta[3], result, d, tmp;
 
@@ -123,7 +142,11 @@ double ff_bond_hyper(int m, int n, double *cor, int *pairs, double *lengths, dou
   for (b=0; b<m; b++) {
     i = pairs[2*b  ];
     j = pairs[2*b+1];
-    d = calc_delta_d(i, j, cor, delta);
+    if (periodic) {
+      d = distance_delta_periodic(cor + 3*i, cor + 3*j, delta, matrix, reciprocal);
+    } else {
+      d = distance_delta(cor + 3*i, cor + 3*j, delta);
+    }
 
     tmp = d-lengths[b];
     result += amp*(cosh(scale*tmp)-1);

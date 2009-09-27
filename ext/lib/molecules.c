@@ -20,19 +20,18 @@
 
 
 #include <math.h>
+#include "common.h"
 
-void molecules_distance_matrix(int n, double *cor, double* dm) {
-  int i,j;
-  double d,tmp;
+void molecules_distance_matrix(int n, double *cor, int periodic, double *matrix, double *reciprocal, double *dm) {
+  int i, j;
+  double d;
   for (i=0; i<n; i++) {
     for (j=0; j<i; j++) {
-      tmp = cor[3*i  ] - cor[3*j  ];
-      d = tmp*tmp;
-      tmp = cor[3*i+1] - cor[3*j+1];
-      d += tmp*tmp;
-      tmp = cor[3*i+2] - cor[3*j+2];
-      d += tmp*tmp;
-      d = sqrt(d);
+      if (periodic) {
+        d = distance_periodic(cor + 3*i, cor + 3*j, matrix, reciprocal);
+      } else {
+        d = distance(cor + 3*i, cor + 3*j);
+      }
       dm[i*n+j] = d;
       dm[j*n+i] = d;
     }

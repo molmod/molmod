@@ -23,6 +23,7 @@ from molmod.toyff import guess_geometry, ToyFF
 from molmod.io.xyz import XYZFile
 from molmod.io.sdf import SDFReader
 from molmod.molecular_graphs import MolecularGraph
+from molmod.unit_cells import UnitCell
 
 import unittest, numpy, os
 
@@ -65,6 +66,29 @@ class ToyFFTestCase(unittest.TestCase):
 
     def get_random_ff(self):
         N = 6
+
+        mask = numpy.zeros((N,N), bool)
+        for i in xrange(N):
+            for j in xrange(i):
+                mask[i,j] = True
+
+        from molmod.ext import molecules_distance_matrix
+        while True:
+            unit_cell = UnitCell(
+                numpy.random.uniform(0,3,(3,3)),
+                numpy.random.randint(0,2,3).astype(bool),
+            )
+            fractional = numpy.random.uniform(0,1,(N,3))
+            coordinates = unit_cell.to_cartesian(fractional)
+            if numpy.random.randint(0,2):
+                unit_cell = None
+                dm = molecules_distance_matrix(coordinates)
+            else:
+                dm = molecules_distance_matrix(coordinates, unit_cell.matrix, unit_cell.reciprocal_zero)
+            if dm[mask].min() > 1.0:
+                break
+
+
         edges = set([])
         while len(edges) < 2*N:
             v1 = numpy.random.randint(N)
@@ -76,34 +100,26 @@ class ToyFFTestCase(unittest.TestCase):
         edges = tuple(edges)
         numbers = numpy.random.randint(6, 10, N)
         graph = MolecularGraph(edges, numbers)
-        ff = ToyFF(graph)
+        ff = ToyFF(graph, unit_cell)
 
-        from molmod.ext import molecules_distance_matrix
-        while True:
-            coordinates = numpy.random.uniform(0,3,(N,3))
-            dm = molecules_distance_matrix(coordinates)
-            if dm.max() > 1.0:
-                break
-
-        mask = numpy.zeros(dm.shape, bool)
-        for i in xrange(N):
-            for j in xrange(i):
-                mask[i,j] = True
-
-        return ff, coordinates, dm, mask
+        return ff, coordinates, dm, mask, unit_cell
 
     def check_toyff_gradient(self, ff, coordinates):
         energy0, gradient0 = ff(coordinates, True)
         eps = numpy.random.uniform(-1e-6, 1e-6, coordinates.shape)
         energy1, gradient1 = ff(coordinates+eps, True)
-        self.assertAlmostEqual(
-            energy1 - energy0,
-            0.5*numpy.dot(gradient0 + gradient1, eps.ravel())
-        )
+
+        delta_energy = energy1 - energy0
+        approx_delta_energy = 0.5*numpy.dot(gradient0 + gradient1, eps.ravel())
+
+        error = abs(delta_energy - approx_delta_energy)
+        oom = abs(delta_energy)
+
+        self.assert_(error < oom*1e-5)
 
     def test_dm_quad_energy(self):
         for i in xrange(10):
-            ff, coordinates, dm, mask = self.get_random_ff()
+            ff, coordinates, dm, mask, unit_cell = self.get_random_ff()
             ff.dm_quad = 1.0
             energy = ff(coordinates, False)
             my_terms = (dm - ff.dm0)**2*ff.dmk
@@ -113,13 +129,13 @@ class ToyFFTestCase(unittest.TestCase):
 
     def test_dm_quad_gradient(self):
         for i in xrange(10):
-            ff, coordinates, dm, mask = self.get_random_ff()
+            ff, coordinates, dm, mask, unit_cell = self.get_random_ff()
             ff.dm_quad = 1.0
             self.check_toyff_gradient(ff, coordinates)
 
     def test_dm_reci_energy(self):
         for i in xrange(10):
-            ff, coordinates, dm, mask = self.get_random_ff()
+            ff, coordinates, dm, mask, unit_cell = self.get_random_ff()
             ff.dm_reci = 1.0
             energy = ff(coordinates, False)
             r0 = numpy.add.outer(ff.vdw_radii, ff.vdw_radii)
@@ -132,37 +148,37 @@ class ToyFFTestCase(unittest.TestCase):
 
     def test_dm_reci_gradient(self):
         for i in xrange(10):
-            ff, coordinates, dm, mask = self.get_random_ff()
+            ff, coordinates, dm, mask, unit_cell = self.get_random_ff()
             ff.dm_reci = 1.0
             self.check_toyff_gradient(ff, coordinates)
 
     def test_bond_quad_energy(self):
         for i in xrange(10):
-            ff, coordinates, dm, mask = self.get_random_ff()
+            ff, coordinates, dm, mask, unit_cell = self.get_random_ff()
             ff.bond_quad = 1.0
             energy = ff(coordinates, False)
-            lengths = numpy.sqrt(((coordinates[ff.bond_edges[:,0]] - coordinates[ff.bond_edges[:,1]])**2).sum(axis=1))
+            lengths = numpy.array([dm[i,j] for i,j in ff.bond_edges])
             my_terms = (lengths - ff.bond_lengths)**2
             self.assertAlmostEqual(energy, my_terms.sum())
 
     def test_bond_quad_gradient(self):
         for i in xrange(10):
-            ff, coordinates, dm, mask = self.get_random_ff()
+            ff, coordinates, dm, mask, unit_cell = self.get_random_ff()
             ff.bond_quad = 1.0
             self.check_toyff_gradient(ff, coordinates)
 
     def test_bond_hyper_energy(self):
         for i in xrange(10):
-            ff, coordinates, dm, mask = self.get_random_ff()
+            ff, coordinates, dm, mask, unit_cell = self.get_random_ff()
             ff.bond_hyper = 1.0
             energy = ff(coordinates, False)
-            lengths = numpy.sqrt(((coordinates[ff.bond_edges[:,0]] - coordinates[ff.bond_edges[:,1]])**2).sum(axis=1))
+            lengths = numpy.array([dm[i,j] for i,j in ff.bond_edges])
             my_terms = numpy.cosh((lengths - ff.bond_lengths)*ff.bond_hyper_scale)-1
             self.assertAlmostEqual(energy, my_terms.sum())
 
     def test_bond_hyper_gradient(self):
         for i in xrange(10):
-            ff, coordinates, dm, mask = self.get_random_ff()
+            ff, coordinates, dm, mask, unit_cell = self.get_random_ff()
             ff.bond_hyper = 1.0
             self.check_toyff_gradient(ff, coordinates)
 

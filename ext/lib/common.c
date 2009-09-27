@@ -58,6 +58,38 @@ double distance(double *a, double *b) {
   return sqrt(dsq);
 }
 
+double distance_periodic(double *a, double *b, double *matrix, double *reciprocal) {
+  double delta[3];
+  return distance_delta_periodic(a, b, delta, matrix, reciprocal);
+}
+
+double distance_delta(double *a, double *b, double *delta) {
+  delta[0] = a[0] - b[0];
+  delta[1] = a[1] - b[1];
+  delta[2] = a[2] - b[2];
+  return sqrt(delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2]);
+}
+
+double distance_delta_periodic(double *a, double *b, double *delta, double *matrix, double *reciprocal) {
+  double fractional[3];
+  delta[0] = a[0] - b[0];
+  delta[1] = a[1] - b[1];
+  delta[2] = a[2] - b[2];
+  dot_matrixT_vector_ddd(reciprocal, delta, fractional);
+  //printf("delta[0]=%f  delta[1]=%f  delta[2]=%f\n", delta[0], delta[1], delta[2]);
+  //printf("fractional[0]=%f  fractional[1]=%f  fractional[2]=%f\n", fractional[0], fractional[1], fractional[2]);
+  fractional[0] -= round(fractional[0]);
+  fractional[1] -= round(fractional[1]);
+  fractional[2] -= round(fractional[2]);
+  if (fractional[0] == 0.5) fractional[0] = -0.5;
+  if (fractional[1] == 0.5) fractional[1] = -0.5;
+  if (fractional[2] == 0.5) fractional[2] = -0.5;
+  dot_matrix_vector_ddd(matrix, fractional, delta);
+  //printf("delta[0]=%f  delta[1]=%f  delta[2]=%f\n", delta[0], delta[1], delta[2]);
+  //printf("fractional[0]=%f  fractional[1]=%f  fractional[2]=%f\n\n", fractional[0], fractional[1], fractional[2]);
+  return sqrt(delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2]);
+}
+
 double norm(double *a) {
   return sqrt(a[0]*a[0] + a[1]*a[1] + a[2]*a[2]);
 }

@@ -20,7 +20,7 @@
 
 
 from molmod.molecules import *
-
+from molmod.unit_cells import UnitCell
 from molmod.io.xyz import XYZFile
 
 import unittest, numpy
@@ -38,6 +38,25 @@ class MoleculesTestCase(unittest.TestCase):
         dm = numpy.sqrt(dm)
         self.assert_((abs(molecule.distance_matrix - dm) < 1e-5).all(), "Wrong distance matrix")
 
+    def test_distance_matrix_periodic(self):
+        for i in xrange(10):
+            N = 6
+            unit_cell = UnitCell(
+                numpy.random.uniform(0,1,(3,3)),
+                numpy.random.randint(0,2,3).astype(bool),
+            )
+            fractional = numpy.random.uniform(0,1,(N,3))
+            coordinates = unit_cell.to_cartesian(fractional)
+            from molmod.ext import molecules_distance_matrix
+            dm = molecules_distance_matrix(coordinates, unit_cell.matrix,
+                                           unit_cell.reciprocal_zero)
+            for i in xrange(N):
+                for j in xrange(i,N):
+                    delta = coordinates[j]-coordinates[i]
+                    delta = unit_cell.shortest_vector(delta)
+                    distance = numpy.linalg.norm(delta)
+                    self.assertAlmostEqual(dm[i,j], distance)
+
     def test_read_only(self):
         numbers = [8, 1]
         coordinates = [
@@ -47,7 +66,7 @@ class MoleculesTestCase(unittest.TestCase):
         mol = Molecule(numbers, coordinates)
         try:
             mol.coordinates[0,1] = 5.0
-            self.fail("Should have raise an error")
+            self.fail("Should have raised an error")
         except RuntimeError:
             pass
         self.assert_(isinstance(mol.coordinates[0,0], float))

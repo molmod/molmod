@@ -158,6 +158,11 @@ class UnitCell(ReadOnly):
         return numpy.dot(U*Sinv, Vt)
 
     @cached
+    def reciprocal_zero(self):
+        """The reciprocal of the unit cell with inactive columns set to zero"""
+        return self.reciprocal*self.active
+
+    @cached
     def parameters(self):
         """The cell parameters (lengths and angles)"""
         length_a = numpy.linalg.norm(self.matrix[:, 0])
@@ -222,7 +227,7 @@ class UnitCell(ReadOnly):
            The return value has the same shape as the argument. This function is
            the inverse of to_cartesian.
         """
-        return numpy.dot(cartesian, self.reciprocal)*self.active
+        return numpy.dot(cartesian, self.reciprocal_zero)
 
     def to_cartesian(self, fractional):
         """Converts fractional to Cartesian coordinates

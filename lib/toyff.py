@@ -127,7 +127,7 @@ class ToyFF(object):
        See guess_geomtry and tune_geomtry for two practical use cases.
     """
 
-    def __init__(self, graph):
+    def __init__(self, graph, unit_cell=None):
         """Initialize a Toy Force field
 
            Argument:
@@ -135,6 +135,13 @@ class ToyFF(object):
                         are extracted.
         """
         from molmod.bonds import bonds
+
+        if unit_cell is None:
+            self.matrix = None
+            self.reciprocal = None
+        else:
+            self.matrix = unit_cell.matrix
+            self.reciprocal = unit_cell.reciprocal_zero
 
         self.dm = graph.distances.astype(numpy.int32)
         dm = self.dm.astype(float)
@@ -219,20 +226,23 @@ class ToyFF(object):
 
         gradient = numpy.zeros(x.shape, float)
         if self.dm_quad > 0.0:
-            result += ff_dm_quad(x, self.dm0, self.dmk, self.dm_quad, gradient)
+            result += ff_dm_quad(x, self.dm0, self.dmk, self.dm_quad,
+                                 gradient, self.matrix, self.reciprocal)
         if self.dm_reci:
             result += ff_dm_reci(x, self.vdw_radii, self.dm, self.dm_reci,
-                                 gradient)
+                                 gradient, self.matrix, self.reciprocal)
         if self.bond_quad:
             result += ff_bond_quad(x, self.bond_edges, self.bond_lengths,
-                                   self.bond_quad, gradient)
+                                   self.bond_quad, gradient, self.matrix,
+                                   self.reciprocal)
         if self.span_quad:
             result += ff_bond_quad(x, self.span_edges, self.span_lengths,
-                                   self.span_quad, gradient)
+                                   self.span_quad, gradient, self.matrix,
+                                   self.reciprocal)
         if self.bond_hyper:
             result += ff_bond_hyper(x, self.bond_edges, self.bond_lengths,
                                     self.bond_hyper_scale, self.bond_hyper,
-                                    gradient)
+                                    gradient, self.matrix, self.reciprocal)
 
         if do_gradient:
             return result, gradient.ravel()
