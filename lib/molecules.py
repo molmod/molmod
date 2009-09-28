@@ -76,6 +76,45 @@ class Molecule(ReadOnly):
         from molmod.ext import molecules_distance_matrix
         return molecules_distance_matrix(self.coordinates)
 
+    @cached
+    def mass(self):
+        """The total mass of the molecule"""
+        return self.masses.sum()
+
+    @cached
+    def com(self):
+        """The center of mass of the molecule"""
+        return (self.coordinates*self.masses.reshape((-1,1))).sum(axis=0)/self.mass
+
+    @cached
+    def inertia_tensor(self):
+        """The intertia tensor of the molecule"""
+        result = numpy.zeros((3,3), float)
+        for i in xrange(self.size):
+            r = self.coordinates[i] - self.com
+            # the diagonal term
+            result.ravel()[::4] += self.masses[i]*(r**2).sum()
+            # the outer product term
+            result -= self.masses[i]*numpy.outer(r,r)
+        return result
+
+    @cached
+    def chemical_formula(self):
+        """The chemical formula of the molecule"""
+        counts = {}
+        for number in self.numbers:
+            counts[number] = counts.get(number, 0)+1
+        items = []
+        for number, count in sorted(counts.iteritems(), reverse=True):
+            if count == 1:
+                items.append(periodic[number].symbol)
+            else:
+                items.append("%s%i" % (periodic[number].symbol, count))
+        return "".join(items)
+
+    def set_default_masses(self):
+        self.masses = numpy.array([periodic[n].mass for n in self.numbers])
+
     def dump_atoms(self, f):
         """Dump the Cartesian coordinates of the atoms to a file
 

@@ -19,6 +19,8 @@
 # --
 
 
+from common import BaseTestCase
+
 from molmod.molecules import *
 from molmod.unit_cells import UnitCell
 from molmod.io.xyz import XYZFile
@@ -29,7 +31,7 @@ import unittest, numpy
 __all__ = ["MoleculesTestCase"]
 
 
-class MoleculesTestCase(unittest.TestCase):
+class MoleculesTestCase(BaseTestCase):
     def test_distance_matrix(self):
         molecule = XYZFile("input/tpa.xyz").get_molecule()
         dm = 0
@@ -75,3 +77,31 @@ class MoleculesTestCase(unittest.TestCase):
         mol = Molecule(numbers, coordinates)
         coordinates[0,1] = 5.0
         self.assertAlmostEqual(mol.coordinates[0,1], 1.0)
+
+    def test_mass(self):
+        molecule = XYZFile("input/water.xyz").get_molecule()
+        molecule.set_default_masses()
+        self.assertAlmostEqual(molecule.mass, 32839.849030585152)
+
+    def test_com(self):
+        molecule = XYZFile("input/water.xyz").get_molecule()
+        molecule.set_default_masses()
+        expected_com = 0
+        for i in xrange(3):
+            expected_com += molecule.masses[i]*molecule.coordinates[i]
+        expected_com /= molecule.mass
+        self.assertArraysAlmostEqual(molecule.com, expected_com)
+
+    def test_inertia_tensor(self):
+        molecule = XYZFile("input/water.xyz").get_molecule()
+        molecule.set_default_masses()
+        expected_result = sum(
+            m*(numpy.identity(3)*(r**2).sum()-numpy.outer(r,r))
+            for m, r in zip(molecule.masses, (molecule.coordinates-molecule.com))
+        )
+        self.assertArraysAlmostEqual(molecule.inertia_tensor, expected_result)
+
+    def test_chemical_formula(self):
+        molecule = XYZFile("input/water.xyz").get_molecule()
+        self.assertEqual(molecule.chemical_formula, "OH2")
+
