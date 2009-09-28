@@ -95,8 +95,8 @@ class SlicedReader(object):
         """
         # skip frames as requested
         while not slice_match(self._sub, self._counter):
-            self._counter += 1
             self._skip_frame()
+            self._counter += 1
 
         result = self._read_frame()
         self._counter += 1

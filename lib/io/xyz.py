@@ -99,7 +99,6 @@ class XYZReader(SlicedReader):
             except ValueError:
                 raise StopIteration
         coordinates *= self.file_unit
-        self._counter += 1
         return title, coordinates
 
     def _skip_frame(self):
@@ -116,12 +115,9 @@ class XYZReader(SlicedReader):
            This can be useful to configure your program before handeling the
            actual trajectory.
         """
-        if self._first is None:
-            raise RuntimeError("get_first_molecule must be called before the first iteration.")
-        else:
-            title, coordinates = self._first
-            molecule = Molecule(self.numbers, coordinates, title)
-            return molecule
+        title, coordinates = self._first
+        molecule = Molecule(self.numbers, coordinates, title)
+        return molecule
 
 
 class XYZWriter(object):
