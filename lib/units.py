@@ -41,6 +41,7 @@
    written to the output.
 """
 
+
 from molmod.constants import avogadro
 
 
@@ -48,6 +49,7 @@ def parse_unit(expression):
     """Evaluate a python expression string containing constants"""
     try:
         g = globals()
+        g.update(shorthands)
         return float(eval(str(expression), g))
     except:
         raise ValueError("Could not interpret '%s' as a unit or a measure." % expression)
@@ -133,4 +135,31 @@ debye = 0.39343031369146675 # = 1e-21*coulomb*meter**2/second/lightspeed
 
 
 
+# Shorthands for the parse functions
+
+shorthands = {
+    "C": coulomb,
+    "kg": kilogram,
+    "g": gram,
+    "mg": miligram,
+    "u": unified,
+    "m": meter,
+    "cm": centimeter,
+    "mm": milimeter,
+    "um": micrometer,
+    "nm": nanometer,
+    "A": angstrom,
+    "pm": picometer,
+    "l": liter,
+    "J": joule,
+    "cal": calorie,
+    "eV": electronvolt,
+    "N": newton,
+    "s": second,
+    "ns": nanosecond,
+    "fs": femtosecond,
+    "ps": picosecond,
+    "Pa": pascal,
+    "K": kelvin,
+}
 
