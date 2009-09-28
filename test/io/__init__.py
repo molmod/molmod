@@ -21,6 +21,7 @@
 from atrj import *
 from cml import *
 from cp2k import *
+from cpmd import *
 from cube import *
 from dlpoly import *
 from fchk import *
