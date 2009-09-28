@@ -42,43 +42,8 @@
    by default to avoid namespace flooding.
 """
 
-import sys, os
 
-
-__all__ = ["context"]
-
-
-class Context(object):
-    """Global variable to find and use share directory"""
-    def __init__(self):
-        """Initialize the Context object
-
-           This is done once when importing a molmod module. There is no need
-           to do this externally a second time.
-        """
-        # find the data files
-        fn_datadir = os.path.join(os.path.dirname(__file__), "datadir.txt")
-        if os.path.isfile(fn_datadir):
-            f = file(fn_datadir)
-            datadir = f.readline().strip()
-            f.close()
-            self.share_dir = os.path.join(datadir, "share", "molmod")
-        else:
-            # When running from the build directory for the tests.
-            self.share_dir = "../share"
-        if not os.path.isdir(self.share_dir):
-            raise RuntimeError("Share dir '%s' does not exist." % self.share_dir)
-
-    def get_share_filename(self, filename):
-        """Retrieve the full path for a given filename in the share folder"""
-        result = os.path.join(self.share_dir, filename)
-        if not os.path.isfile(result):
-            raise ValueError("Data file '%s' not found." % result)
-        return result
-
-
-context = Context()
-
+from molmod.context import *
 
 from molmod.binning import *
 from molmod.clusters import *
