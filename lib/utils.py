@@ -112,7 +112,7 @@ class ReadOnly(object):
                     value.setflags(write=False)
                 hidden[name] = value
             else:
-                raise AttributeError("Attribute '%s' is read-only.")
+                raise AttributeError("Attribute '%s' is read-only." % name)
         else:
             object.__setattr__(self, name, value)
 
