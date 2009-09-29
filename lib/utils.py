@@ -64,6 +64,12 @@ class ReadOnly(object):
         """Initialize a read-only object"""
         object.__setattr__(self, "__hidden", {})
 
+    def __copy__(self):
+        return self
+
+    def __deepcopy__(self, memo):
+        return self
+
     def _init_attributes(self, mandatory, optional):
         """Prepare read-only attributes
 

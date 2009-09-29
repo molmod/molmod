@@ -105,3 +105,11 @@ class MoleculesTestCase(BaseTestCase):
         molecule = XYZFile("input/water.xyz").get_molecule()
         self.assertEqual(molecule.chemical_formula, "OH2")
 
+    def test_copy(self):
+        molecule = XYZFile("input/water.xyz").get_molecule()
+        import copy
+        tmp = copy.copy(molecule)
+        self.assertEqual(id(tmp), id(molecule))
+        tmp = copy.deepcopy(molecule)
+        self.assertEqual(id(tmp), id(molecule))
+
