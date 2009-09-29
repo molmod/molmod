@@ -19,7 +19,7 @@
 # --
 
 
-from molmod.clusters import ClusterFactory
+from molmod.clusters import *
 
 import numpy, unittest
 
@@ -40,13 +40,25 @@ class ClusterTestCase(unittest.TestCase):
         clusters = cf.get_clusters()
         complete = set([])
         for cluster in clusters:
-            tmp = numpy.array(cluster) % 2
+            tmp = numpy.array(list(cluster.items)) % 2
             self.assert_((tmp == 0).all() or (tmp == 1).all())
-            counter += len(cluster)
-            complete |= set(cluster)
+            counter += len(cluster.items)
+            complete |= cluster.items
         self.assertEqual(counter, len(complete))
 
-
-
+    def test_rule_cluster(self):
+        cf = ClusterFactory(RuleCluster)
+        cf.add_related(RuleCluster(["x", "y"], ["x+y=1"]))
+        cf.add_related(RuleCluster(["x", "z"], ["x*z=2"]))
+        cf.add_related(RuleCluster(["u", "v"], ["u=v"]))
+        clusters = list(cf.get_clusters())
+        self.assertEqual(len(clusters), 2)
+        clusters.sort(lambda x,y: cmp(len(x.items),len(y.items)))
+        for cluster in clusters:
+            cluster.rules.sort()
+        self.assertEqual(clusters[0].items, set(["u", "v"]))
+        self.assertEqual(clusters[0].rules, ["u=v"])
+        self.assertEqual(clusters[1].items, set(["x", "y", "z"]))
+        self.assertEqual(clusters[1].rules, ["x*z=2", "x+y=1"])
 
 
