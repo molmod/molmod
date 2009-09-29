@@ -21,7 +21,7 @@
 
 
 from molmod.graphs import cached, Graph, SubgraphPattern
-from molmod.binning import PairSearch
+from molmod.binning import PairSearchIntra
 
 import numpy
 
@@ -54,7 +54,7 @@ class MolecularGraph(Graph):
         """
         from molmod.bonds import bonds
 
-        pair_search = PairSearch(
+        pair_search = PairSearchIntra(
             molecule.coordinates,
             bonds.max_length*bonds.bond_tolerance,
             unit_cell

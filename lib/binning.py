@@ -33,10 +33,118 @@ from molmod.unit_cells import UnitCell
 import numpy
 
 
-__all__ = ["PairSearch"]
+__all__ = ["PairSearchIntra"]
 
 
-class PairSearch(object):
+class Binning(object):
+    """Division of coordinates in regular bins"""
+    def __init__(self, coordinates, cutoff, grid_cell, integer_cell=None):
+        """Initialize a Binning object
+
+           Arguments:
+             coordinates  --  a Nx3 numpy array with coordinates to be triaged
+                              into bins
+             cutoff  --  The maximum distance between coordinates pairs. This
+                         affects the variable self.neighbor_bins, which is a
+                         set of relative integer bin coordinates that lie within
+                         the cuttof of the central bin.
+             grid_cell  --  A unit cell  object specifying the size and shape
+                            of the bins
+
+           Optional argument:
+             integer_cell  --  the periodicity of the system in terms if integer
+                               grid cells.
+        """
+        self.grid_cell = grid_cell
+        self.integer_cell = integer_cell
+
+        # setup the bins
+        self._bins = {}
+
+        fractional = grid_cell.to_fractional(coordinates)
+        for i in xrange(len(coordinates)):
+            key = tuple(fractional[i].astype(int))
+            if integer_cell is not None:
+                key = self.wrap_key(key)
+            bin = self._bins.get(key)
+            if bin is None:
+                bin = []
+                self._bins[key] = bin
+            bin.append((i, coordinates[i]))
+
+        # compute the neigbouring bins within the cutoff
+        if self.integer_cell is None:
+            self.neighbor_indexes = grid_cell.get_radius_indexes(cutoff)
+        else:
+            max_ranges = numpy.diag(self.integer_cell.matrix).astype(int)
+            max_ranges[True^self.integer_cell.active] = -1
+            self.neighbor_indexes = grid_cell.get_radius_indexes(cutoff, max_ranges)
+
+    def __iter__(self):
+        """Iterate over (key,bin) pairs"""
+        return self._bins.iteritems()
+
+    def iter_surrounding(self, center_key):
+        """Iterate over all bins surrounding the given bin"""
+        for shift in self.neighbor_indexes:
+            key = tuple(numpy.add(center_key, shift).astype(int))
+            if self.integer_cell is not None:
+                key = self.wrap_key(key)
+            bin = self._bins.get(key)
+            if bin is not None:
+                yield key, bin
+
+    def wrap_key(self, key):
+        """Translate the key into the central cell
+
+           This method is only applicable in case of a periodic system.
+        """
+        return tuple(numpy.round(
+            self.integer_cell.shortest_vector(key)
+        ).astype(int))
+
+
+class PairSearchBase(object):
+    """Base class for PairSearchIntra"""
+    def _setup_grid(self, cutoff, unit_cell, grid):
+        """Choose a proper grid for the binning process"""
+        if grid is None:
+            # automatically choose a decent grid
+            if unit_cell is None:
+                grid = cutoff/2.9
+            else:
+                # The following would be faster, but it is not reliable
+                # enough yet.
+                #grid = unit_cell.get_optimal_subcell(cutoff/2.0)
+                divisions = numpy.ceil(unit_cell.spacings/cutoff)
+                grid = unit_cell/divisions
+
+        if isinstance(grid, float):
+            grid_cell = UnitCell(numpy.array([
+                [grid, 0, 0],
+                [0, grid, 0],
+                [0, 0, grid]
+            ]))
+        elif isinstance(grid, UnitCell):
+            grid_cell = grid
+        else:
+            raise TypeError("Grid must be None, a float or a UnitCell instance.")
+
+        if unit_cell is not None:
+            # The columns of integer_matrix are the unit cell vectors in
+            # fractional coordinates of the grid cell.
+            integer_matrix = grid_cell.to_fractional(unit_cell.matrix.transpose()).transpose()
+            if abs((integer_matrix - numpy.round(integer_matrix))*self.unit_cell.active).max() > 1e-6:
+                raise ValueError("The unit cell vectors are not an integer linear combination of grid cell vectors.")
+            integer_matrix = integer_matrix.round()
+            integer_cell = UnitCell(integer_matrix, unit_cell.active)
+        else:
+            integer_cell = None
+
+        return grid_cell, integer_cell
+
+
+class PairSearchIntra(PairSearchBase):
     """Iterator over all pairs of coordinates with a distance below a cutoff.
 
        Example usage:
@@ -72,78 +180,16 @@ class PairSearch(object):
              2) When a unit cell is given, the grid cell is as close to cubic
                 as possible, with spacings below cutoff/2 that are integer
                 divisions of the unit cell spacings
-
-
         """
         self.cutoff = cutoff
         self.unit_cell = unit_cell
-
-        if grid is None:
-            # automatically choose a decent grid
-            if unit_cell is None:
-                grid = cutoff/2.9
-            else:
-                # The following would be faster, but it is not reliable
-                # enough yet.
-                #grid = unit_cell.get_optimal_subcell(cutoff/2.0)
-                divisions = numpy.ceil(unit_cell.spacings/cutoff)
-                grid = unit_cell/divisions
-
-        if isinstance(grid, float):
-            self.grid_cell = UnitCell(numpy.array([
-                [grid, 0, 0],
-                [0, grid, 0],
-                [0, 0, grid]
-            ]))
-        elif isinstance(grid, UnitCell):
-            self.grid_cell = grid
-        else:
-            raise TypeError("Grid must be None, a float or a UnitCell instance.")
-
-        if unit_cell is not None:
-            # The columns of integer_matrix are the unit cell vectors in
-            # fractional coordinates of the grid cell.
-            integer_matrix = self.grid_cell.to_fractional(unit_cell.matrix.transpose()).transpose()
-            if abs((integer_matrix - numpy.round(integer_matrix))*self.unit_cell.active).max() > 1e-6:
-                raise ValueError("The unit cell vectors are not an integer linear combination of grid cell vectors.")
-            integer_matrix = integer_matrix.round()
-            self.integer_cell = UnitCell(integer_matrix, unit_cell.active)
-
-        # setup the bins
-        self.bins = {}
-
-        fractional = self.grid_cell.to_fractional(coordinates)
-        for i in xrange(len(coordinates)):
-            key = tuple(fractional[i].astype(int))
-            if unit_cell is not None:
-                key = self.wrap_key(key)
-            bin = self.bins.get(key)
-            if bin is None:
-                bin = []
-                self.bins[key] = bin
-            bin.append((i, coordinates[i]))
-
-        # compute the neigbouring bins within the cutoff
-        if self.unit_cell is None:
-            self.neighbor_indexes = self.grid_cell.get_radius_indexes(cutoff)
-        else:
-            max_ranges = numpy.diag(self.integer_cell.matrix).astype(int)
-            max_ranges[True^self.unit_cell.active] = -1
-            self.neighbor_indexes = self.grid_cell.get_radius_indexes(cutoff, max_ranges)
-
-    def wrap_key(self, key):
-        """Translate the key into the central cell
-
-           This method is only applicable in case of a periodic system.
-        """
-        return tuple(numpy.round(
-            self.integer_cell.shortest_vector(key)
-        ).astype(int))
+        grid_cell, integer_cell = self._setup_grid(cutoff, unit_cell, grid)
+        self.bins = Binning(coordinates, cutoff, grid_cell, integer_cell)
 
     def __iter__(self):
         """Iterate over all pairs with a distance below the cutoff"""
-        for key0, bin0 in self.bins.iteritems():
-            for key1, bin1 in self.iter_surrounding(key0):
+        for key0, bin0 in self.bins:
+            for key1, bin1 in self.bins.iter_surrounding(key0):
                 for i0, c0 in bin0:
                     for i1, c1 in bin1:
                         if i1 >= i0:
@@ -154,16 +200,5 @@ class PairSearch(object):
                         distance = numpy.linalg.norm(delta)
                         if distance <= self.cutoff:
                             yield i0, i1, delta, distance
-
-
-    def iter_surrounding(self, center_key):
-        """Iterate over all bins that surround the given bin"""
-        for shift in self.neighbor_indexes:
-            key = tuple(numpy.add(center_key, shift).astype(int))
-            if self.unit_cell is not None:
-                key = self.wrap_key(key)
-            bin = self.bins.get(key)
-            if bin is not None:
-                yield key, bin
 
 

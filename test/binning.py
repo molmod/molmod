@@ -33,7 +33,7 @@ __all__ = ["BinningTestCase"]
 
 
 class BinningTestCase(unittest.TestCase):
-    def verify_distances(self, coordinates, cutoff, distances, unit_cell=None):
+    def verify_distances(self, coordinates, iter_pairs, cutoff, distances, unit_cell=None):
         # a few sanity checks first
         for key, value in distances:
             self.assertEqual(len(key), 2, "Singletons encountered: %s" % (key))
@@ -46,11 +46,6 @@ class BinningTestCase(unittest.TestCase):
         wrong_distances = []
         num_total = 0
         num_correct = 0
-
-        def iter_pairs():
-            for index1, coord1 in enumerate(coordinates):
-                for index2, coord2 in enumerate(coordinates[:index1]):
-                    yield (index1, coord1), (index2, coord2)
 
         for (id1, coord1), (id2, coord2) in iter_pairs():
             delta = coord2 - coord1
@@ -88,30 +83,36 @@ class BinningTestCase(unittest.TestCase):
         self.assertEqual(len(wrong_distances), 0, message)
         self.assertEqual(len(distances), 0, message)
 
-    def verify_internals_periodic(self, pair_search):
-        neighbor_set = set([tuple(index) for index in pair_search.neighbor_indexes])
-        self.assertEqual(len(neighbor_set), len(pair_search.neighbor_indexes))
+    def verify_bins_periodic(self, bins):
+        neighbor_set = set([tuple(index) for index in bins.neighbor_indexes])
+        self.assertEqual(len(neighbor_set), len(bins.neighbor_indexes))
 
-        for key0, bin0 in pair_search.bins.iteritems():
+        for key0, bin0 in bins:
             encountered = set([])
-            for key1, bin1 in pair_search.iter_surrounding(key0):
-                frac_key1 = pair_search.integer_cell.to_fractional(key1)
+            for key1, bin1 in bins.iter_surrounding(key0):
+                frac_key1 = bins.integer_cell.to_fractional(key1)
                 self.assert_(frac_key1.max() < 0.5, str(key1) + str(frac_key1))
                 self.assert_(key1 not in encountered, str(key0) + str(key1))
                 encountered.add(key1)
 
+    def verify_distances_intra(self, coordinates, cutoff, distances, unit_cell=None):
+        def iter_pairs():
+            for index1, coord1 in enumerate(coordinates):
+                for index2, coord2 in enumerate(coordinates[:index1]):
+                    yield (index1, coord1), (index2, coord2)
+        self.verify_distances(coordinates, iter_pairs, cutoff, distances, unit_cell)
 
-    def test_distances_lau(self):
+    def test_distances_intra_lau(self):
         coordinates = XYZFile("input/lau.xyz").geometries[0]
         cutoff = periodic.max_radius*2
         distances = [
             (frozenset([i0, i1]), distance)
             for i0, i1, delta, distance
-            in PairSearch(coordinates, cutoff)
+            in PairSearchIntra(coordinates, cutoff)
         ]
-        self.verify_distances(coordinates, cutoff, distances)
+        self.verify_distances_intra(coordinates, cutoff, distances)
 
-    def test_distances_lau_periodic(self):
+    def test_distances_intra_lau_periodic(self):
         coordinates = XYZFile("input/lau.xyz").geometries[0]
         cutoff = periodic.max_radius*2
         unit_cell = UnitCell.from_parameters3(
@@ -119,8 +120,8 @@ class BinningTestCase(unittest.TestCase):
             numpy.array([ 90.0, 111.0, 90.0])*deg,
         )
 
-        pair_search = PairSearch(coordinates, cutoff, unit_cell)
-        self.verify_internals_periodic(pair_search)
+        pair_search = PairSearchIntra(coordinates, cutoff, unit_cell)
+        self.verify_bins_periodic(pair_search.bins)
 
         distances = [
             (frozenset([i0, i1]), distance)
@@ -128,20 +129,20 @@ class BinningTestCase(unittest.TestCase):
             in pair_search
         ]
 
-        self.verify_distances(coordinates, cutoff, distances, unit_cell)
+        self.verify_distances_intra(coordinates, cutoff, distances, unit_cell)
 
-    def test_distances_random(self):
+    def test_distances_intra_random(self):
         for i in xrange(10):
             coordinates = numpy.random.uniform(0,5,(20,3))
             cutoff = numpy.random.uniform(1, 6)
             distances = [
                 (frozenset([i0, i1]), distance)
                 for i0, i1, delta, distance
-                in PairSearch(coordinates, cutoff)
+                in PairSearchIntra(coordinates, cutoff)
             ]
-            self.verify_distances(coordinates, cutoff, distances)
+            self.verify_distances_intra(coordinates, cutoff, distances)
 
-    def test_distances_random_periodic(self):
+    def test_distances_intra_random_periodic(self):
         for i in xrange(10):
             coordinates = numpy.random.uniform(0,1,(20,3))
             while True:
@@ -154,14 +155,14 @@ class BinningTestCase(unittest.TestCase):
             coordinates = unit_cell.to_cartesian(coordinates)*3-unit_cell.matrix.sum(axis=1)
             cutoff = numpy.random.uniform(1, 6)
 
-            pair_search = PairSearch(coordinates, cutoff, unit_cell)
-            self.verify_internals_periodic(pair_search)
+            pair_search = PairSearchIntra(coordinates, cutoff, unit_cell)
+            self.verify_bins_periodic(pair_search.bins)
 
             distances = [
                 (frozenset([i0, i1]), distance)
                 for i0, i1, delta, distance
                 in pair_search
             ]
-            self.verify_distances(coordinates, cutoff, distances, unit_cell)
+            self.verify_distances_intra(coordinates, cutoff, distances, unit_cell)
 
 
