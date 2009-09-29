@@ -33,7 +33,7 @@ from molmod.unit_cells import UnitCell
 import numpy
 
 
-__all__ = ["PairSearchIntra"]
+__all__ = ["PairSearchIntra", "PairSearchInter"]
 
 
 class Binning(object):
@@ -149,14 +149,14 @@ class PairSearchIntra(PairSearchBase):
 
        Example usage:
        >>> coordinates = numpy.random.uniform(0,10,(10,3))
-       >>> for i, j, distance, delta in  PairSearch(coordinates, 2.5):
+       >>> for i, j, distance, delta in  PairSearchIntra(coordinates, 2.5):
        ...     print i, j, distance
 
        Note that for periodic systems the minimum image convention is applied.
     """
 
     def __init__(self, coordinates, cutoff, unit_cell=None, grid=None):
-        """Initialize a PairSearch object
+        """Initialize a PairSearchIntra object
 
            Argument:
              coordinates  --  A Nx3 numpy array with Cartesian coordinates
@@ -194,6 +194,64 @@ class PairSearchIntra(PairSearchBase):
                     for i1, c1 in bin1:
                         if i1 >= i0:
                             continue
+                        delta = c1 - c0
+                        if self.unit_cell is not None:
+                            delta = self.unit_cell.shortest_vector(delta)
+                        distance = numpy.linalg.norm(delta)
+                        if distance <= self.cutoff:
+                            yield i0, i1, delta, distance
+
+class PairSearchInter(PairSearchBase):
+    """Iterator over all pairs of coordinates with a distance below a cutoff.
+
+       Example usage:
+       >>> coordinates0 = numpy.random.uniform(0,10,(10,3))
+       >>> coordinates1 = numpy.random.uniform(0,10,(10,3))
+       >>> for i, j, distance, delta in  PairSearchInter(coordinates0, coordinates1, 2.5):
+       ...     print i, j, distance
+
+       Note that for periodic systems the minimum image convention is applied.
+    """
+
+    def __init__(self, coordinates0, coordinates1, cutoff, unit_cell=None, grid=None):
+        """Initialize a PairSearchInter object
+
+           Argument:
+             coordinates0  --  A Nx3 numpy array with Cartesian coordinates
+             coordinates1  --  A Nx3 numpy array with Cartesian coordinates
+             radius  --  The cutoff radius for the pair distances. Distances
+                         larger than the cutoff will be neglected in the
+                         pair search.
+
+           Optional argument:
+             unit_cell  --  Specifies the periodic boundary conditions
+             grid  --  Specification of the grid, can be a floating point number
+                       which will result in cubic bins with edge length equal to
+                       the given number. Otherwise a UnitCell object can be
+                       specified to construct non-cubic bins. In the latter case
+                       and when a unit_cell is given, the unit cell vectors must
+                       be integer linear combinations of the grid cell vectors
+                       (for those directions that are active in the unit cell).
+                       If this is not the case, a ValueError is raised.
+
+           The default value of grid depends on other parameters:
+             1) When no unit cell is given, it is equal to cutoff/2.9.
+             2) When a unit cell is given, the grid cell is as close to cubic
+                as possible, with spacings below cutoff/2 that are integer
+                divisions of the unit cell spacings
+        """
+        self.cutoff = cutoff
+        self.unit_cell = unit_cell
+        grid_cell, integer_cell = self._setup_grid(cutoff, unit_cell, grid)
+        self.bins0 = Binning(coordinates0, cutoff, grid_cell, integer_cell)
+        self.bins1 = Binning(coordinates1, cutoff, grid_cell, integer_cell)
+
+    def __iter__(self):
+        """Iterate over all pairs with a distance below the cutoff"""
+        for key0, bin0 in self.bins0:
+            for key1, bin1 in self.bins1.iter_surrounding(key0):
+                for i0, c0 in bin0:
+                    for i1, c1 in bin1:
                         delta = c1 - c0
                         if self.unit_cell is not None:
                             delta = self.unit_cell.shortest_vector(delta)
