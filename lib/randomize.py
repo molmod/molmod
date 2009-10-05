@@ -243,7 +243,7 @@ def iter_halfs_double(graph):
 
 
 def generate_manipulations(
-    graph, molecule, bond_stretch_factor=0.15, torsion_amplitude=numpy.pi,
+    molecule, bond_stretch_factor=0.15, torsion_amplitude=numpy.pi,
     bending_amplitude=0.30
 ):
     """Generate a (complete) set of manipulations
@@ -252,8 +252,8 @@ def generate_manipulations(
        and 'single_random_manipulation'
 
        Arguments:
-         graph  --  a molecular graph
-         molecule  --  a reference geometry of the molecule
+         molecule  --  a reference geometry of the molecule, with graph
+                       attribute
          bond_stretch_factor  --  the maximum relative change in bond length by
                                   one bond stretch manipulatio
          torsion_amplitude  --  the maximum change a dihdral angle
@@ -271,7 +271,7 @@ def generate_manipulations(
     results = []
     # A) all manipulations that require one bond that cuts the molecule in half
     if do_stretch or do_torsion:
-        for affected_atoms1, affected_atoms2, hinge_atoms in iter_halfs_bond(graph):
+        for affected_atoms1, affected_atoms2, hinge_atoms in iter_halfs_bond(molecule.graph):
             if do_stretch:
                 length = numpy.linalg.norm(
                     molecule.coordinates[hinge_atoms[0]] -
@@ -287,13 +287,13 @@ def generate_manipulations(
     # B) all manipulations that require a bending angle that cuts the molecule
     #    in two parts
     if do_bend:
-        for affected_atoms, hinge_atoms in iter_halfs_bend(graph):
+        for affected_atoms, hinge_atoms in iter_halfs_bend(molecule.graph):
             results.append(RandomBend(
                 affected_atoms, bending_amplitude, hinge_atoms
             ))
     # C) all manipulations that require two bonds that separate two halfs
     if do_double_stretch or do_double_bend:
-        for affected_atoms1, affected_atoms2, hinge_atoms in iter_halfs_double(graph):
+        for affected_atoms1, affected_atoms2, hinge_atoms in iter_halfs_double(molecule.graph):
             if do_double_stretch:
                 length1 = numpy.linalg.norm(
                     molecule.coordinates[hinge_atoms[0]] -
@@ -319,7 +319,7 @@ def generate_manipulations(
     return results
 
 
-def check_nonbond(molecule, graph, thresholds):
+def check_nonbond(molecule, thresholds):
     """Check whether all nonbonded atoms are well separated.
 
        If a nonbond atom pair is found that has an interatomic distance below
@@ -336,16 +336,16 @@ def check_nonbond(molecule, graph, thresholds):
     """
 
     # check that no atoms overlap
-    for atom1 in xrange(graph.num_vertices):
+    for atom1 in xrange(molecule.graph.num_vertices):
         for atom2 in xrange(atom1):
-            if graph.distances[atom1, atom2] > 2:
+            if molecule.graph.distances[atom1, atom2] > 2:
                 distance = numpy.linalg.norm(molecule.coordinates[atom1] - molecule.coordinates[atom2])
                 if distance < thresholds[frozenset([molecule.numbers[atom1], molecule.numbers[atom2]])]:
                     return False
     return True
 
 
-def randomize_molecule(molecule, graph, manipulations, nonbond_thresholds, max_tries=1000):
+def randomize_molecule(molecule, manipulations, nonbond_thresholds, max_tries=1000):
     """Return a randomized copy of the molecule.
 
        If no randomized molecule can be generated that survives the nonbond
@@ -355,7 +355,7 @@ def randomize_molecule(molecule, graph, manipulations, nonbond_thresholds, max_t
     """
     for m in xrange(max_tries):
         random_molecule = randomize_molecule_low(molecule, manipulations)
-        if check_nonbond(random_molecule, graph, nonbond_thresholds):
+        if check_nonbond(random_molecule, nonbond_thresholds):
             return random_molecule
 
 
@@ -367,10 +367,10 @@ def randomize_molecule_low(molecule, manipulations):
     coordinates = molecule.coordinates.copy()
     for manipulation in manipulations:
         manipulation.apply(coordinates)
-    return Molecule(molecule.numbers, coordinates)
+    return Molecule(molecule.numbers, coordinates, graph=molecule.graph)
 
 
-def single_random_manipulation(molecule, graph, manipulations, nonbond_thresholds, max_tries=1000):
+def single_random_manipulation(molecule, manipulations, nonbond_thresholds, max_tries=1000):
     """Apply a single random manipulation.
 
        If no randomized molecule can be generated that survives the nonbond
@@ -380,7 +380,7 @@ def single_random_manipulation(molecule, graph, manipulations, nonbond_threshold
     """
     for m in xrange(max_tries):
         random_molecule, transformation = single_random_manipulation_low(molecule, manipulations)
-        if check_nonbond(random_molecule, graph, nonbond_thresholds):
+        if check_nonbond(random_molecule, nonbond_thresholds):
             return random_molecule, transformation
     return None
 
@@ -391,7 +391,7 @@ def single_random_manipulation_low(molecule, manipulations):
     manipulation = sample(manipulations, 1)[0]
     coordinates = molecule.coordinates.copy()
     transformation = manipulation.apply(coordinates)
-    return Molecule(molecule.numbers, coordinates), transformation
+    return Molecule(molecule.numbers, coordinates, graph=molecule.graph), transformation
 
 
 def random_dimer(molecule0, molecule1, thresholds, shoot_max):

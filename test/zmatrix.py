@@ -23,7 +23,6 @@ from common import BaseTestCase
 
 from molmod.zmatrix import *
 from molmod.molecules import Molecule
-from molmod.molecular_graphs import MolecularGraph
 from molmod.units import deg, angstrom
 
 import unittest, numpy, os
@@ -36,8 +35,8 @@ class ZMatrixTestCase(BaseTestCase):
     def test_constency(self):
         def test_one(xyz_fn, checks, reorder=False):
             mol = Molecule.from_file(xyz_fn)
-            graph = MolecularGraph.from_geometry(mol)
-            zmat_gen = ZMatrixGenerator(graph)
+            mol.set_default_graph()
+            zmat_gen = ZMatrixGenerator(mol.graph)
             if reorder is False:
                 self.assertArraysEqual(zmat_gen.new_index, numpy.arange(mol.size))
                 self.assertArraysEqual(zmat_gen.old_index, numpy.arange(mol.size))
@@ -49,8 +48,8 @@ class ZMatrixTestCase(BaseTestCase):
             numbers0, coordinates0 = zmat_to_cart(zmat0)
             mol0 = Molecule(numbers0, coordinates0)
             mol0.write_to_file("output/zmat_%s" % os.path.basename(xyz_fn))
-            graph0 = MolecularGraph.from_geometry(mol0)
-            zmat_gen0 = ZMatrixGenerator(graph0)
+            mol0.set_default_graph()
+            zmat_gen0 = ZMatrixGenerator(mol0.graph)
             self.assertArraysEqual(zmat_gen0.new_index, numpy.arange(mol.size))
             self.assertArraysEqual(zmat_gen0.old_index, numpy.arange(mol.size))
 

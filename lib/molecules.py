@@ -153,6 +153,7 @@ class Molecule(ReadOnly):
         self.masses = numpy.array([periodic[n].mass for n in self.numbers])
 
     def set_default_graph(self):
+        """Set self.graph to the default graph, see MolecularGraph.from_geometry"""
         self.graph = MolecularGraph.from_geometry(self)
 
     def write_to_file(self, filename):

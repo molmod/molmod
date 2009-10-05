@@ -22,7 +22,6 @@ from common import BaseTestCase
 
 from molmod.randomize import *
 from molmod.molecules import Molecule
-from molmod.molecular_graphs import MolecularGraph
 from molmod.units import angstrom
 from molmod.transformations import Translation, Rotation
 
@@ -51,8 +50,8 @@ class RandomizeTestCase(BaseTestCase):
         for filename in ["tpa.xyz", "water.xyz", "thf_single.xyz"]:
             molecule = Molecule.from_file(os.path.join("input", filename))
             molecule.filename = filename
-            graph = MolecularGraph.from_geometry(molecule)
-            yield molecule, graph
+            molecule.set_default_graph()
+            yield molecule
 
     def test_randomize_count(self):
         all_counts = {
@@ -60,9 +59,9 @@ class RandomizeTestCase(BaseTestCase):
             "water.xyz": (2,0,1,0), # Stretch, Torsion, Bend, DoubleStretch
             "thf_single.xyz": (8, 14, 5*4, 10),
         }
-        for molecule, graph in self.iter_test_molecules():
-            manipulations = generate_manipulations(graph, molecule)
-            randomized_molecule = randomize_molecule(molecule, graph, manipulations, nonbond_thresholds)
+        for molecule in self.iter_test_molecules():
+            manipulations = generate_manipulations(molecule)
+            randomized_molecule = randomize_molecule(molecule, manipulations, nonbond_thresholds)
             randomized_molecule.write_to_file(os.path.join("output", molecule.filename))
             counts = all_counts.get(molecule.filename)
             if counts is not None:
@@ -71,18 +70,18 @@ class RandomizeTestCase(BaseTestCase):
                     self.assertEqual(got, count, "%s count problem, should be %i, got %i" % (str(cls), count, got))
 
     def test_random_dimer(self):
-        for molecule1, graph1 in self.iter_test_molecules():
-            for molecule2, graph2 in self.iter_test_molecules():
+        for molecule1 in self.iter_test_molecules():
+            for molecule2 in self.iter_test_molecules():
                 dimer = random_dimer(molecule1, molecule2, nonbond_thresholds, 0.5*angstrom)
                 self.assertEqual(dimer.coordinates.shape, (molecule1.coordinates.shape[0] + molecule2.coordinates.shape[0], 3))
                 self.assertEqual(dimer.numbers.shape, (molecule1.numbers.shape[0] + molecule2.numbers.shape[0],))
                 dimer.write_to_file(os.path.join("output", "%s_%s" % (molecule1.filename, molecule2.filename)))
 
     def test_single_manipulation(self):
-        for molecule, graph in self.iter_test_molecules():
-            manipulations = generate_manipulations(graph, molecule)
+        for molecule in self.iter_test_molecules():
+            manipulations = generate_manipulations(molecule)
             for i in xrange(100):
-                randomized_molecule, mol_transformation = single_random_manipulation(molecule, graph, manipulations, nonbond_thresholds)
+                randomized_molecule, mol_transformation = single_random_manipulation(molecule, manipulations, nonbond_thresholds)
                 randomized_molecule.write_to_file(os.path.join("output", molecule.filename))
                 mol_transformation.write_to_file(os.path.join("output", "tmp"))
                 check_transformation = MolecularDistortion.read_from_file(os.path.join("output", "tmp"))
