@@ -27,10 +27,10 @@ from molmod.unit_cells import UnitCell
 import unittest, numpy
 
 
-__all__ = ["MoleculesTestCase"]
+__all__ = ["MoleculeTestCase"]
 
 
-class MoleculesTestCase(BaseTestCase):
+class MoleculeTestCase(BaseTestCase):
     def test_distance_matrix(self):
         molecule = Molecule.from_file("input/tpa.xyz")
         dm = 0
