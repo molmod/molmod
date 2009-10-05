@@ -367,7 +367,7 @@ def randomize_molecule_low(molecule, manipulations):
     coordinates = molecule.coordinates.copy()
     for manipulation in manipulations:
         manipulation.apply(coordinates)
-    return Molecule(molecule.numbers, coordinates, graph=molecule.graph)
+    return molecule.copy_with(coordinates=coordinates)
 
 
 def single_random_manipulation(molecule, manipulations, nonbond_thresholds, max_tries=1000):
@@ -391,7 +391,7 @@ def single_random_manipulation_low(molecule, manipulations):
     manipulation = sample(manipulations, 1)[0]
     coordinates = molecule.coordinates.copy()
     transformation = manipulation.apply(coordinates)
-    return Molecule(molecule.numbers, coordinates, graph=molecule.graph), transformation
+    return molecule.copy_with(coordinates=coordinates), transformation
 
 
 def random_dimer(molecule0, molecule1, thresholds, shoot_max):

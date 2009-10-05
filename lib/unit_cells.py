@@ -61,10 +61,10 @@ class UnitCell(ReadOnly):
             raise ValueError("The ridges of the unit cell are (nearly) linearly dependent vectors.")
 
     def __mul__(self, x):
-        return UnitCell(self.matrix*x, self.active)
+        return self.copy_with(matrix=self.matrix*x)
 
     def __div__(self, x):
-        return UnitCell(self.matrix/x, self.active)
+        return self.copy_with(matrix=self.matrix/x)
 
     @classmethod
     def from_parameters3(cls, lengths, angles):
@@ -376,7 +376,7 @@ class UnitCell(ReadOnly):
             Sinv[abs(S) < self.eps] = 0.0#/(10.0*angstrom)
             subcell_matrix = numpy.dot(U*Sinv, Vt)
             try:
-                result = UnitCell(subcell_matrix, self.active)
+                result = self.copy_with(matrix=subcell_matrix)
             except ValueError:
                 return None
             return result
