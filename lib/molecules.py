@@ -23,6 +23,7 @@
 from molmod.periodic import periodic
 from molmod.units import angstrom
 from molmod.utils import cached, ReadOnly
+from molmod.molecular_graphs import MolecularGraph
 
 from StringIO import StringIO
 
@@ -114,6 +115,9 @@ class Molecule(ReadOnly):
 
     def set_default_masses(self):
         self.masses = numpy.array([periodic[n].mass for n in self.numbers])
+
+    def set_default_graph(self):
+        self.graph = MolecularGraph.from_geometry(self)
 
     def dump_atoms(self, f):
         """Dump the Cartesian coordinates of the atoms to a file

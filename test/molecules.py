@@ -113,3 +113,8 @@ class MoleculesTestCase(BaseTestCase):
         tmp = copy.deepcopy(molecule)
         self.assertEqual(id(tmp), id(molecule))
 
+    def test_default_graph(self):
+        molecule = XYZFile("input/water.xyz").get_molecule()
+        molecule.set_default_graph()
+        self.assertEqual(molecule.graph.num_edges, 2)
+
