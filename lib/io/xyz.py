@@ -116,7 +116,7 @@ class XYZReader(SlicedReader):
            actual trajectory.
         """
         title, coordinates = self._first
-        molecule = Molecule(self.numbers, coordinates, title)
+        molecule = Molecule(self.numbers, coordinates, title, symbols=self.symbols)
         return molecule
 
 
@@ -223,7 +223,7 @@ class XYZFile(object):
            Argument:
              index  --  The frame index (default=0)
         """
-        return Molecule(self.numbers, self.geometries[index], self.titles[index])
+        return Molecule(self.numbers, self.geometries[index], self.titles[index], symbols=self.symbols)
 
     def write_to_file(self, f, file_unit=angstrom):
         """Write the trajectory to a file

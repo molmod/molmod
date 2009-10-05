@@ -137,6 +137,7 @@ class MoleculesTestCase(BaseTestCase):
     def test_from_file_xyz(self):
         molecule = Molecule.from_file("input/water.xyz")
         self.assertEqual(molecule.size, 3)
+        self.assertEqual(molecule.symbols, ["O", "H", "H"])
 
     def test_to_cml(self):
         mol0 = Molecule.from_file("input/caplayer.cml")
@@ -162,4 +163,9 @@ class MoleculesTestCase(BaseTestCase):
         self.assertArraysEqual(mol1.numbers, numpy.array([3,4,5]))
         self.assertArraysAlmostEqual(mol0.coordinates, mol1.coordinates)
 
+    def test_default_symbols(self):
+        mol0 = Molecule.from_file("input/water.xyz")
+        mol1 = mol0.copy_with(symbols=None)
+        mol1.set_default_symbols()
+        self.assertEqual(mol1.symbols, ["O", "H", "H"])
 

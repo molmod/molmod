@@ -43,7 +43,7 @@ class Molecule(ReadOnly):
        a signifacant computational overhead.
     """
 
-    def __init__(self, numbers, coordinates=None, title=None, masses=None, graph=None):
+    def __init__(self, numbers, coordinates=None, title=None, masses=None, graph=None, symbols=None):
         """Initialize a Molecule object
 
            Mandatory arguments:
@@ -54,6 +54,7 @@ class Molecule(ReadOnly):
              title  --  a string with the name of the molecule
              massess  --  a numpy array with atomic masses in atomic units
              graph  --  a MolecularGraph instance
+             symbols  --  atom symbols or force-field atom-types
         """
         ReadOnly.__init__(self)
         mandatory = {"numbers": numpy.array(numbers, int)}
@@ -66,6 +67,7 @@ class Molecule(ReadOnly):
             "title": title,
             "masses": masses,
             "graph": graph,
+            "symbols": symbols,
         }
         self._init_attributes(mandatory, optional)
 
@@ -100,7 +102,7 @@ class Molecule(ReadOnly):
             from molmod.io import XYZReader
             xyz_reader = XYZReader(filename)
             title, coordinates = xyz_reader.next()
-            return Molecule(xyz_reader.numbers, coordinates, title)
+            return Molecule(xyz_reader.numbers, coordinates, title, symbols=xyz_reader.symbols)
         else:
             raise ValueError("Could not determine file format for %s." % filename)
 
@@ -155,6 +157,10 @@ class Molecule(ReadOnly):
     def set_default_graph(self):
         """Set self.graph to the default graph, see MolecularGraph.from_geometry"""
         self.graph = MolecularGraph.from_geometry(self)
+
+    def set_default_symbols(self):
+        """Set the symbols based on self.numbers"""
+        self.symbols = [periodic[n].symbol for n in self.numbers]
 
     def write_to_file(self, filename):
         """Write the molecule geometry to a file
