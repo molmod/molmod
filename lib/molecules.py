@@ -150,6 +150,7 @@ class Molecule(ReadOnly):
         return "".join(items)
 
     def set_default_masses(self):
+        """Set self.masses based on self.numbers"""
         self.masses = numpy.array([periodic[n].mass for n in self.numbers])
 
     def set_default_graph(self):
