@@ -569,9 +569,9 @@ class GraphTestCase(unittest.TestCase):
 
     # match generator related tests
 
-    def do_match_generator_test(self, pattern, verbose=False, debug=False, callback=None):
+    def do_graph_search_test(self, pattern, verbose=False, debug=False, callback=None):
         if verbose: print
-        match_generator = GraphSearch(
+        graph_search = GraphSearch(
             pattern,
             debug=debug
         )
@@ -582,7 +582,7 @@ class GraphTestCase(unittest.TestCase):
             if verbose: print "GRAPH %s" % case.name
             matches = []
             try:
-                for match in match_generator(case.graph):
+                for match in graph_search(case.graph):
                     matches.append(match)
                     if verbose: print "_ _ _ _ _", match, "_ _ _ _ _"
                 if callback is not None:
@@ -598,20 +598,20 @@ class GraphTestCase(unittest.TestCase):
             self.assertEqual(len(case.rings), len(matches))
             for match in matches:
                 self.assert_(match.ring_vertices in case.rings)
-        self.do_match_generator_test(RingPattern(10), callback=callback)
+        self.do_graph_search_test(RingPattern(10), callback=callback)
 
     def test_subgraph_pattern(self):
         # just run through the code
         for case in self.iter_cases():
             try:
-                match_generator = GraphSearch(SubgraphPattern(case.graph))
+                graph_search = GraphSearch(SubgraphPattern(case.graph))
                 if len(case.graph.independent_vertices) != 1:
                     self.fail("Sould have raised an error for disconnected graphs.")
             except SubgraphPatternError:
                 if len(case.graph.independent_vertices) == 1:
                     raise
 
-            match_generator(case.graph).next()
+            graph_search(case.graph).next()
 
     def test_start_vertex(self):
         subject_graph = Graph([(0,1),(1,2),(1,3),(2,4)])
