@@ -155,4 +155,11 @@ class MoleculesTestCase(BaseTestCase):
         self.assertArraysEqual(mol0.numbers, mol1.numbers)
         self.assertArraysAlmostEqual(mol0.coordinates, mol1.coordinates)
 
+    def test_copy_with(self):
+        mol0 = Molecule.from_file("input/water.xyz")
+        mol1 = mol0.copy_with(numbers=[3,4,5])
+        self.assertArraysEqual(mol0.numbers, numpy.array([8,1,1]))
+        self.assertArraysEqual(mol1.numbers, numpy.array([3,4,5]))
+        self.assertArraysAlmostEqual(mol0.coordinates, mol1.coordinates)
+
 

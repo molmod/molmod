@@ -104,7 +104,6 @@ class Molecule(ReadOnly):
         else:
             raise ValueError("Could not determine file format for %s." % filename)
 
-
     size = property(lambda self: self.numbers.shape[0])
 
     @cached

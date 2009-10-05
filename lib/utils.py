@@ -122,6 +122,16 @@ class ReadOnly(object):
         else:
             object.__setattr__(self, name, value)
 
+    def copy_with(self, **kwargs):
+        """Return a copy with (a few) changed attributes"""
+        attrs = getattr(self, "__hidden").copy()
+        for key in kwargs:
+            if key not in attrs:
+                raise TypeError("Unknown attribute: %s" % key)
+        attrs.update(kwargs)
+        return self.__class__(**attrs)
+
+
 
 def rmsd(a, b):
     """Compute the root-mean-square deviation between two arrays
