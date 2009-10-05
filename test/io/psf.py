@@ -20,7 +20,7 @@
 
 
 from molmod.io.psf import PSFFile
-from molmod.io.xyz import XYZFile
+from molmod.molecules import Molecule
 
 import numpy, unittest
 
@@ -44,13 +44,13 @@ class PSFTestCase(unittest.TestCase):
         g = psf.get_graph()
 
     def test_dump(self):
-        m = XYZFile("input/thf.xyz").get_molecule()
+        m = Molecule.from_file("input/thf.xyz")
         psf = PSFFile()
         psf.add_molecule(m)
         psf.write_to_file("output/thf.psf")
 
     def test_tetra(self):
-        molecule = XYZFile("input/tetra.xyz").get_molecule()
+        molecule = Molecule.from_file("input/tetra.xyz")
         psf = PSFFile()
         psf.add_molecule(molecule)
         self.assert_(psf.bonds.shape[0] == 4)
@@ -59,10 +59,10 @@ class PSFTestCase(unittest.TestCase):
 
     def test_many_separate(self):
         psf = PSFFile()
-        molecule = XYZFile("input/ethene.xyz").get_molecule()
+        molecule = Molecule.from_file("input/ethene.xyz")
         psf.add_molecule(molecule)
         psf.add_molecule(molecule)
-        molecule = XYZFile("input/tea.xyz").get_molecule()
+        molecule = Molecule.from_file("input/tea.xyz")
         psf.add_molecule(molecule)
         psf.write_to_file("output/many_separate.psf")
 

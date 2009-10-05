@@ -20,8 +20,7 @@
 
 
 from molmod.toyff import guess_geometry, tune_geometry, ToyFF
-from molmod.io.xyz import XYZFile
-from molmod.io.sdf import SDFReader
+from molmod.molecules import Molecule
 from molmod.molecular_graphs import MolecularGraph
 from molmod.unit_cells import UnitCell
 from molmod.units import angstrom
@@ -33,31 +32,26 @@ __all__ = ["ToyFFTestCase"]
 
 
 class ToyFFTestCase(unittest.TestCase):
-    def load_molecule(self, xyz_fn):
-        molecule = XYZFile(os.path.join("input", xyz_fn)).get_molecule()
-        molecule.graph = MolecularGraph.from_geometry(molecule)
+    def load_molecule(self, fn):
+        molecule = Molecule.from_file(os.path.join("input", fn))
+        if not hasattr(molecule, "graph"):
+            molecule.set_default_graph()
         return molecule
 
     def iter_molecules(self, allow_multi=False):
-        xyz_fns = [
+        fns = [
           "water.xyz", "cyclopentane.xyz", "ethene.xyz", "funny.xyz",
           "tea.xyz", "tpa.xyz", "thf_single.xyz", "precursor.xyz",
-          "butane.xyz", "octane.xyz",
+          "butane.xyz", "octane.xyz","example.sdf", "CID_22898828.sdf",
+          "SID_55127927.sdf", "SID_56274343.sdf", "SID_40363570.sdf",
+          "SID_40363571.sdf", "SID_31646548.sdf", "SID_31646545.sdf",
+          "SID_41893278.sdf", "SID_41893280.sdf", "SID_54258192.sdf",
+          "SID_55488598.sdf",
         ]
-        for xyz_fn in xyz_fns:
-            molecule = self.load_molecule(xyz_fn)
+        for fn in fns:
+            molecule = self.load_molecule(fn)
             if allow_multi or len(molecule.graph.independent_vertices) == 1:
                 yield molecule
-        sdf_fns = [
-            "example.sdf", "CID_22898828.sdf", "SID_55127927.sdf",
-            "SID_56274343.sdf", "SID_40363570.sdf", "SID_40363571.sdf",
-            "SID_31646548.sdf", "SID_31646545.sdf", "SID_41893278.sdf",
-            "SID_41893280.sdf", "SID_54258192.sdf", "SID_55488598.sdf",
-        ]
-        for sdf_fn in sdf_fns:
-            for i, molecule in enumerate(SDFReader(os.path.join("input", sdf_fn))):
-                if allow_multi or len(molecule.graph.independent_vertices) == 1:
-                    yield molecule
 
     def test_guess_geometry(self):
         for input_mol in self.iter_molecules(allow_multi=False):
@@ -190,8 +184,7 @@ class ToyFFTestCase(unittest.TestCase):
             self.check_toyff_gradient(ff, coordinates)
 
     def test_example_periodic(self):
-        from molmod.io.cml import load_cml
-        mol = load_cml("input/caplayer.cml")[0]
+        mol = Molecule.from_file("input/caplayer.cml")
         unit_cell = UnitCell(
             numpy.array([
                 [14.218,  7.109,  0.0],

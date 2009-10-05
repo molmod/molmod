@@ -20,7 +20,7 @@
 
 
 from molmod.io.cml import *
-from molmod.io.xyz import XYZFile
+from molmod.molecules import Molecule
 from molmod.molecular_graphs import MolecularGraph
 
 import numpy, unittest
@@ -32,11 +32,11 @@ __all__ = ["CMLTestCase"]
 class CMLTestCase(unittest.TestCase):
     def test_consistency(self):
         molecules = [
-            XYZFile("input/cyclopentane.xyz").get_molecule(),
-            XYZFile("input/funny.xyz").get_molecule(),
+            Molecule.from_file("input/cyclopentane.xyz"),
+            Molecule.from_file("input/funny.xyz"),
         ]
         for m in molecules:
-            m.graph = MolecularGraph.from_geometry(m)
+            m.set_default_graph()
         dump_cml("output/tmp.cml", molecules)
         check = load_cml("output/tmp.cml")
         for m1, m2 in zip(molecules, check):

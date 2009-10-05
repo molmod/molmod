@@ -20,8 +20,8 @@
 
 
 from molmod.volume import *
+from molmod.molecules import Molecule
 from molmod.units import angstrom
-from molmod.io.xyz import XYZFile
 from molmod.transformations import rotation_about_axis
 from molmod.periodic import periodic
 
@@ -34,7 +34,7 @@ __all__ = ["VolumeTestCase"]
 
 class VolumeTestCase(unittest.TestCase):
     def test_volume_tpa(self):
-        mol = XYZFile("input/tpa.xyz").get_molecule()
+        mol = Molecule.from_file("input/tpa.xyz")
         vdw_volume, sas_volume, ses_volume, error = estimate_volumes(mol)
         self.assert_(ses_volume > vdw_volume)
         self.assert_(sas_volume > ses_volume)
@@ -45,19 +45,19 @@ class VolumeTestCase(unittest.TestCase):
         #print "error [A**3] = %.3f" % (error/unit)
 
     def test_volume_water(self):
-        mol = XYZFile("input/water.xyz").get_molecule()
+        mol = Molecule.from_file("input/water.xyz")
         vdw_volume, sas_volume, ses_volume, error = estimate_volumes(mol, 1.0)
         self.assert_(ses_volume > vdw_volume)
         self.assert_(sas_volume > ses_volume)
 
     def test_volume_argon(self):
-        mol = XYZFile("input/argon.xyz").get_molecule()
+        mol = Molecule.from_file("input/argon.xyz")
         vdw_volume, sas_volume, ses_volume, error = estimate_volumes(mol)
         self.assertEqual(vdw_volume, ses_volume)
         self.assert_(sas_volume > vdw_volume)
 
     def test_volume_dinitrogen(self):
-        mol = XYZFile("input/dinitrogen.xyz").get_molecule()
+        mol = Molecule.from_file("input/dinitrogen.xyz")
         vdw_volume, sas_volume, ses_volume, error = estimate_volumes(mol)
         self.assert_(ses_volume > vdw_volume)
         self.assert_(sas_volume > ses_volume)
@@ -193,11 +193,11 @@ class VolumeTestCase(unittest.TestCase):
                 self.assert_(numpy.linalg.norm(center - probe) < numpy.linalg.norm(new_center - probe))
 
     def test_radius_water(self):
-        mol = XYZFile("input/water.xyz").get_molecule()
+        mol = Molecule.from_file("input/water.xyz")
         radius, error = estimate_radius(mol)
 
     def test_volume_error_water(self):
-        mol = XYZFile("input/water.xyz").get_molecule()
+        mol = Molecule.from_file("input/water.xyz")
         vdw_volumes = []
         sas_volumes = []
         ses_volumes = []
@@ -224,11 +224,11 @@ class VolumeTestCase(unittest.TestCase):
         self.assert_(ses_volume1 < ses_volume2)
 
     def test_volume_order_water(self):
-        mol = XYZFile("input/water.xyz").get_molecule()
+        mol = Molecule.from_file("input/water.xyz")
         self.check_volume_order(mol)
 
     def test_volume_order_dinitrogen(self):
-        mol = XYZFile("input/dinitrogen.xyz").get_molecule()
+        mol = Molecule.from_file("input/dinitrogen.xyz")
         self.check_volume_order(mol)
 
     def check_bigbox(self, mol):
@@ -239,19 +239,19 @@ class VolumeTestCase(unittest.TestCase):
         self.assert_(abs(ses_volume1 - ses_volume2) < error1+error2)
 
     def test_bigbox_water(self):
-        mol = XYZFile("input/water.xyz").get_molecule()
+        mol = Molecule.from_file("input/water.xyz")
         self.check_bigbox(mol)
 
     def test_bigbox_dinitrogen(self):
-        mol = XYZFile("input/dinitrogen.xyz").get_molecule()
+        mol = Molecule.from_file("input/dinitrogen.xyz")
         self.check_bigbox(mol)
 
     def test_bigbox_argon(self):
-        mol = XYZFile("input/argon.xyz").get_molecule()
+        mol = Molecule.from_file("input/argon.xyz")
         self.check_bigbox(mol)
 
     def test_bigbox_tpa(self):
-        mol = XYZFile("input/tpa.xyz").get_molecule()
+        mol = Molecule.from_file("input/tpa.xyz")
         self.check_bigbox(mol)
 
 

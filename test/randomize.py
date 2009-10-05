@@ -21,11 +21,10 @@
 from common import BaseTestCase
 
 from molmod.randomize import *
+from molmod.molecules import Molecule
 from molmod.molecular_graphs import MolecularGraph
 from molmod.units import angstrom
 from molmod.transformations import Translation, Rotation
-
-from molmod.io.xyz import XYZFile
 
 import unittest, numpy, os
 
@@ -50,7 +49,7 @@ nonbond_thresholds = {
 class RandomizeTestCase(BaseTestCase):
     def iter_test_molecules(self):
         for filename in ["tpa.xyz", "water.xyz", "thf_single.xyz"]:
-            molecule = XYZFile(os.path.join("input", filename)).get_molecule()
+            molecule = Molecule.from_file(os.path.join("input", filename))
             molecule.filename = filename
             graph = MolecularGraph.from_geometry(molecule)
             yield molecule, graph

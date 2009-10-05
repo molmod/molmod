@@ -20,10 +20,9 @@
 
 from molmod.units import angstrom
 from molmod.molecular_graphs import *
+from molmod.molecules import Molecule
 from molmod.graphs import GraphError, GraphSearch, CriteriaSet, CritOr, RingPattern
 from molmod.bonds import BOND_SINGLE
-from molmod.io.sdf import SDFReader
-from molmod.io.xyz import XYZFile
 
 import unittest, numpy, os
 
@@ -34,31 +33,26 @@ __all__ = ["MolecularGraphTestCase"]
 class MolecularGraphTestCase(unittest.TestCase):
     # auxiliary routines
 
-    def load_molecule(self, xyz_fn):
-        molecule = XYZFile(os.path.join("input", xyz_fn)).get_molecule()
-        molecule.graph = MolecularGraph.from_geometry(molecule)
+    def load_molecule(self, fn):
+        molecule = Molecule.from_file(os.path.join("input", fn))
+        if not hasattr(molecule, "graph"):
+            molecule.set_default_graph()
         return molecule
 
     def iter_molecules(self, allow_multi=False):
-        xyz_fns = [
+        fns = [
           "water.xyz", "cyclopentane.xyz", "ethene.xyz", "funny.xyz",
           "tea.xyz", "tpa.xyz", "thf_single.xyz", "precursor.xyz",
-          "butane.xyz", "octane.xyz",
+          "butane.xyz", "octane.xyz","example.sdf", "CID_22898828.sdf",
+          "SID_55127927.sdf", "SID_56274343.sdf", "SID_40363570.sdf",
+          "SID_40363571.sdf", "SID_31646548.sdf", "SID_31646545.sdf",
+          "SID_41893278.sdf", "SID_41893280.sdf", "SID_54258192.sdf",
+          "SID_55488598.sdf",
         ]
-        for xyz_fn in xyz_fns:
-            molecule = self.load_molecule(xyz_fn)
+        for fn in fns:
+            molecule = self.load_molecule(fn)
             if allow_multi or len(molecule.graph.independent_vertices) == 1:
                 yield molecule
-        sdf_fns = [
-            "example.sdf", "CID_22898828.sdf", "SID_55127927.sdf",
-            "SID_56274343.sdf", "SID_40363570.sdf", "SID_40363571.sdf",
-            "SID_31646548.sdf", "SID_31646545.sdf", "SID_41893278.sdf",
-            "SID_41893280.sdf", "SID_54258192.sdf", "SID_55488598.sdf",
-        ]
-        for sdf_fn in sdf_fns:
-            for i, molecule in enumerate(SDFReader(os.path.join("input", sdf_fn))):
-                if allow_multi or len(molecule.graph.independent_vertices) == 1:
-                    yield molecule
 
     # graph search tests
 
@@ -385,8 +379,8 @@ class MolecularGraphTestCase(unittest.TestCase):
             ('SID_31646548.sdf', 'SID_31646545.sdf')
         ]
         for fn0, fn1 in cases:
-            g0 = SDFReader(os.path.join("input", fn0)).next().graph
-            g1 = SDFReader(os.path.join("input", fn1)).next().graph
+            g0 = Molecule.from_file(os.path.join("input", fn0)).graph
+            g1 = Molecule.from_file(os.path.join("input", fn1)).graph
             self.assertNotEqual(str(g0.fingerprint.data), str(g1.fingerprint.data))
 
     def test_subgraph(self):

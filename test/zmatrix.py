@@ -22,7 +22,6 @@
 from common import BaseTestCase
 
 from molmod.zmatrix import *
-from molmod.io.xyz import XYZFile
 from molmod.molecules import Molecule
 from molmod.molecular_graphs import MolecularGraph
 from molmod.units import deg, angstrom
@@ -36,7 +35,7 @@ __all__ = ["ZMatrixTestCase"]
 class ZMatrixTestCase(BaseTestCase):
     def test_constency(self):
         def test_one(xyz_fn, checks, reorder=False):
-            mol = XYZFile(xyz_fn).get_molecule()
+            mol = Molecule.from_file(xyz_fn)
             graph = MolecularGraph.from_geometry(mol)
             zmat_gen = ZMatrixGenerator(graph)
             if reorder is False:

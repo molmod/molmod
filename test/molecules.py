@@ -23,7 +23,6 @@ from common import BaseTestCase
 
 from molmod.molecules import *
 from molmod.unit_cells import UnitCell
-from molmod.io.xyz import XYZFile
 
 import unittest, numpy
 
@@ -33,7 +32,7 @@ __all__ = ["MoleculesTestCase"]
 
 class MoleculesTestCase(BaseTestCase):
     def test_distance_matrix(self):
-        molecule = XYZFile("input/tpa.xyz").get_molecule()
+        molecule = Molecule.from_file("input/tpa.xyz")
         dm = 0
         for i in 0,1,2:
             dm += numpy.subtract.outer(molecule.coordinates[:,i],molecule.coordinates[:,i])**2
@@ -79,12 +78,12 @@ class MoleculesTestCase(BaseTestCase):
         self.assertAlmostEqual(mol.coordinates[0,1], 1.0)
 
     def test_mass(self):
-        molecule = XYZFile("input/water.xyz").get_molecule()
+        molecule = Molecule.from_file("input/water.xyz")
         molecule.set_default_masses()
         self.assertAlmostEqual(molecule.mass, 32839.849030585152)
 
     def test_com(self):
-        molecule = XYZFile("input/water.xyz").get_molecule()
+        molecule = Molecule.from_file("input/water.xyz")
         molecule.set_default_masses()
         expected_com = 0
         for i in xrange(3):
@@ -93,7 +92,7 @@ class MoleculesTestCase(BaseTestCase):
         self.assertArraysAlmostEqual(molecule.com, expected_com)
 
     def test_inertia_tensor(self):
-        molecule = XYZFile("input/water.xyz").get_molecule()
+        molecule = Molecule.from_file("input/water.xyz")
         molecule.set_default_masses()
         expected_result = sum(
             m*(numpy.identity(3)*(r**2).sum()-numpy.outer(r,r))
@@ -102,11 +101,11 @@ class MoleculesTestCase(BaseTestCase):
         self.assertArraysAlmostEqual(molecule.inertia_tensor, expected_result)
 
     def test_chemical_formula(self):
-        molecule = XYZFile("input/water.xyz").get_molecule()
+        molecule = Molecule.from_file("input/water.xyz")
         self.assertEqual(molecule.chemical_formula, "OH2")
 
     def test_copy(self):
-        molecule = XYZFile("input/water.xyz").get_molecule()
+        molecule = Molecule.from_file("input/water.xyz")
         import copy
         tmp = copy.copy(molecule)
         self.assertEqual(id(tmp), id(molecule))
@@ -114,7 +113,7 @@ class MoleculesTestCase(BaseTestCase):
         self.assertEqual(id(tmp), id(molecule))
 
     def test_default_graph(self):
-        molecule = XYZFile("input/water.xyz").get_molecule()
+        molecule = Molecule.from_file("input/water.xyz")
         molecule.set_default_graph()
         self.assertEqual(molecule.graph.num_edges, 2)
 

@@ -26,7 +26,6 @@ from molmod.molecular_graphs import MolecularGraph, atom_criteria
 from molmod.molecules import Molecule
 from molmod.graphs import CriteriaSet
 from molmod.units import angstrom, deg
-from molmod.io.xyz import XYZFile
 
 import unittest, numpy, sys
 
@@ -219,7 +218,7 @@ class ICTestCase(BaseTestCase):
 
 
     def test_dihedral_ethene(self):
-        mol = XYZFile("input/ethene.xyz").get_molecule()
+        mol = Molecule.from_file("input/ethene.xyz")
         c = mol.coordinates.copy()
         self.assertAlmostEqual(ic.dihed_cos(c[2], c[0], c[3], c[5])[0], 1.0)
         self.assertAlmostEqual(ic.dihed_angle(c[2], c[0], c[3], c[5])[0], 0.0)

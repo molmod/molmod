@@ -19,11 +19,10 @@
 # --
 
 
+from molmod.molecules import Molecule
 from molmod.molecular_graphs import MolecularGraph
 from molmod.units import angstrom
 from molmod.similarity import *
-
-from molmod.io.xyz import XYZFile
 
 import unittest, numpy
 
@@ -33,10 +32,10 @@ __all__ = ["SimilarityTestCase"]
 
 class SimilarityTestCase(unittest.TestCase):
     def get_molecules(self):
-        tpa = XYZFile("input/tpa.xyz").get_molecule()
-        tea = XYZFile("input/tea.xyz").get_molecule()
-        water = XYZFile("input/water.xyz").get_molecule()
-        cyclopentane = XYZFile("input/cyclopentane.xyz").get_molecule()
+        tpa = Molecule.from_file("input/tpa.xyz")
+        tea = Molecule.from_file("input/tea.xyz")
+        water = Molecule.from_file("input/water.xyz")
+        cyclopentane = Molecule.from_file("input/cyclopentane.xyz")
 
         return [tpa, tea, water, cyclopentane]
         #return [water, cyclopentane]
