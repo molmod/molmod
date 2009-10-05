@@ -20,7 +20,7 @@
 """Extension of the graphs module with molecular features"""
 
 
-from molmod.graphs import cached, Graph, SubgraphPattern
+from molmod.graphs import cached, Graph, CustomPattern
 from molmod.binning import PairSearchIntra
 
 import numpy
@@ -28,8 +28,9 @@ import numpy
 
 __all__ = [
     "MolecularGraph",
-    "HasAtomNumber", "HasNumNeighbors", "HasNeighborNumbers", "HasNeighbors", "BondLongerThan",
-    "atom_criteria", "BondPattern", "BendingAnglePattern", "DihedralAnglePattern",
+    "HasAtomNumber", "HasNumNeighbors", "HasNeighborNumbers", "HasNeighbors",
+    "BondLongerThan", "atom_criteria",
+    "BondPattern", "BendingAnglePattern", "DihedralAnglePattern",
     "OutOfPlanePattern", "TetraPattern", "NRingPattern",
 ]
 
@@ -389,72 +390,72 @@ def atom_criteria(*params):
 # common patterns for molecular structures
 
 
-class BondPattern(SubgraphPattern):
+class BondPattern(CustomPattern):
     """Pattern for two consecutive vertices"""
     def __init__(self, criteria_sets=None, vertex_tags=None):
         """Initialize a BondPattern object
 
-           Arguments: see SubgraphPattern.__init__
+           Arguments: see CustomPattern.__init__
         """
         if vertex_tags is None:
             vertex_tags = {}
-        subgraph = Graph([(0, 1)])
-        SubgraphPattern.__init__(self, subgraph, criteria_sets, vertex_tags)
+        pattern_graph = Graph([(0, 1)])
+        CustomPattern.__init__(self, pattern_graph, criteria_sets, vertex_tags)
 
 
-class BendingAnglePattern(SubgraphPattern):
+class BendingAnglePattern(CustomPattern):
     """Pattern for three consecutive vertices"""
     def __init__(self, criteria_sets=None, vertex_tags=None):
         """Initialize a BendingAnglePattern object
 
-           Arguments: see SubgraphPattern.__init__
+           Arguments: see CustomPattern.__init__
         """
         if vertex_tags is None:
             vertex_tags = {}
-        subgraph = Graph([(0, 1), (1, 2)])
-        SubgraphPattern.__init__(self, subgraph, criteria_sets, vertex_tags)
+        pattern_graph = Graph([(0, 1), (1, 2)])
+        CustomPattern.__init__(self, pattern_graph, criteria_sets, vertex_tags)
 
 
-class DihedralAnglePattern(SubgraphPattern):
+class DihedralAnglePattern(CustomPattern):
     """Pattern for four consecutive vertices"""
     def __init__(self, criteria_sets=None, vertex_tags=None):
         """Initialize a DihedralAnglePattern object
 
-           Arguments: see SubgraphPattern.__init__
+           Arguments: see CustomPattern.__init__
         """
         if vertex_tags is None:
             vertex_tags = {}
-        subgraph = Graph([(0, 1), (1, 2), (2, 3)])
-        SubgraphPattern.__init__(self, subgraph, criteria_sets, vertex_tags)
+        pattern_graph = Graph([(0, 1), (1, 2), (2, 3)])
+        CustomPattern.__init__(self, pattern_graph, criteria_sets, vertex_tags)
 
 
-class OutOfPlanePattern(SubgraphPattern):
+class OutOfPlanePattern(CustomPattern):
     """Pattern for a central vertex connected to three other vertices"""
     def __init__(self, criteria_sets=None, vertex_tags=None):
         """Initialize a TetraPattern object
 
-           Arguments: see SubgraphPattern.__init__
+           Arguments: see CustomPattern.__init__
         """
         if vertex_tags is None:
             vertex_tags = {}
-        subgraph = Graph([(0, 1), (0, 2), (0, 3)])
-        SubgraphPattern.__init__(self, subgraph, criteria_sets, vertex_tags)
+        pattern_graph = Graph([(0, 1), (0, 2), (0, 3)])
+        CustomPattern.__init__(self, pattern_graph, criteria_sets, vertex_tags)
 
 
-class TetraPattern(SubgraphPattern):
+class TetraPattern(CustomPattern):
     """Pattern for a central vertex connected to four other vertices"""
     def __init__(self, criteria_sets=None, vertex_tags=None):
         """Initialize a TetraPattern object
 
-           Arguments: see SubgraphPattern.__init__
+           Arguments: see CustomPattern.__init__
         """
         if vertex_tags is None:
             vertex_tags = {}
-        subgraph = Graph([(0, 1), (0, 2), (0, 3), (0, 4)])
-        SubgraphPattern.__init__(self, subgraph, criteria_sets, vertex_tags)
+        pattern_graph = Graph([(0, 1), (0, 2), (0, 3), (0, 4)])
+        CustomPattern.__init__(self, pattern_graph, criteria_sets, vertex_tags)
 
 
-class NRingPattern(SubgraphPattern):
+class NRingPattern(CustomPattern):
     """Pattern for strong rings with a fixed size"""
 
     def __init__(self, size, criteria_sets=None, vertex_tags=None, strong=False):
@@ -467,18 +468,18 @@ class NRingPattern(SubgraphPattern):
             vertex_tags = {}
         self.size = size
         self.strong = strong
-        subgraph = Graph([(i, (i+1)%size) for i in xrange(size)])
-        SubgraphPattern.__init__(self, subgraph, criteria_sets, vertex_tags)
+        pattern_graph = Graph([(i, (i+1)%size) for i in xrange(size)])
+        CustomPattern.__init__(self, pattern_graph, criteria_sets, vertex_tags)
 
-    def check_next_match(self, match, new_relations, graph, one_match):
+    def check_next_match(self, match, new_relations, subject_graph, one_match):
         """Check if the (onset for a) match can be a valid (part of a) ring"""
-        if not SubgraphPattern.check_next_match(self, match, new_relations, graph, one_match):
+        if not CustomPattern.check_next_match(self, match, new_relations, subject_graph, one_match):
             return False
         if self.strong:
             # can this ever become a strong ring?
-            vertex1_start = match.forward[self.subgraph.central_vertex]
+            vertex1_start = match.forward[self.pattern_graph.central_vertex]
             for vertex1 in new_relations.itervalues():
-                paths = list(graph.iter_shortest_paths(vertex1, vertex1_start))
+                paths = list(subject_graph.iter_shortest_paths(vertex1, vertex1_start))
                 if self.size % 2 == 0 and len(match) == self.size:
                     if len(paths) != 2:
                         #print "NRingPattern.check_next_match: not strong a.1"
@@ -497,9 +498,9 @@ class NRingPattern(SubgraphPattern):
             #print "RingPattern.check_next_match: no remarks"
         return True
 
-    def complete(self, match, graph):
+    def complete(self, match, subject_graph):
         """Check the completeness of the ring match"""
-        if not SubgraphPattern.complete(self, match, graph):
+        if not CustomPattern.complete(self, match, subject_graph):
             return False
         if self.strong:
             # If the ring is not strong, return False
@@ -508,7 +509,7 @@ class NRingPattern(SubgraphPattern):
                 for i in xrange(self.size/2):
                     vertex1_start = match.forward[i]
                     vertex1_stop = match.forward[i+self.size/2]
-                    paths = list(graph.iter_shortest_paths(vertex1_start, vertex1_stop))
+                    paths = list(subject_graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) != 2:
                         #print "Even ring must have two paths between opposite vertices"
                         return False
@@ -521,13 +522,13 @@ class NRingPattern(SubgraphPattern):
                 for i in xrange(self.size/2+1):
                     vertex1_start = match.forward[i]
                     vertex1_stop = match.forward[i+self.size/2]
-                    paths = list(graph.iter_shortest_paths(vertex1_start, vertex1_stop))
+                    paths = list(subject_graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) > 1:
                         return False
                     if len(paths[0]) != self.size/2+1:
                         return False
                     vertex1_stop = match.forward[i+self.size/2+1]
-                    paths = list(graph.iter_shortest_paths(vertex1_start, vertex1_stop))
+                    paths = list(subject_graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) > 1:
                         return False
                     if len(paths[0]) != self.size/2+1:

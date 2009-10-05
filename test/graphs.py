@@ -600,11 +600,11 @@ class GraphTestCase(unittest.TestCase):
                 self.assert_(match.ring_vertices in case.rings)
         self.do_graph_search_test(RingPattern(10), callback=callback)
 
-    def test_subgraph_pattern(self):
+    def test_custom_pattern(self):
         # just run through the code
         for case in self.iter_cases():
             try:
-                graph_search = GraphSearch(SubgraphPattern(case.graph))
+                graph_search = GraphSearch(CustomPattern(case.graph))
                 if len(case.graph.independent_vertices) != 1:
                     self.fail("Sould have raised an error for disconnected graphs.")
             except SubgraphPatternError:
@@ -616,9 +616,9 @@ class GraphTestCase(unittest.TestCase):
     def test_start_vertex(self):
         subject_graph = Graph([(0,1),(1,2),(1,3),(2,4)])
         pattern_graph = Graph([(0,1),(1,2)])
-        pattern0 = SubgraphPattern(pattern_graph)
+        pattern0 = CustomPattern(pattern_graph)
         matches0 = list(GraphSearch(pattern0)(subject_graph))
-        pattern1 = SubgraphPattern(pattern_graph, start_vertex=0)
+        pattern1 = CustomPattern(pattern_graph, start_vertex=0)
         matches1 = list(GraphSearch(pattern1)(subject_graph))
         self.assertEqual(len(matches0), len(matches1))
         # compare all matches

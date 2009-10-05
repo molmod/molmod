@@ -36,8 +36,8 @@
        http://en.wikipedia.org/wiki/Graph_automorphism
    * Scanning a graph for patterns
        The GraphSearch is a generic class that can scan a graph for certain
-       patterns, e.g. given subgraphs, strong rings, isomorphisms,
-       automorphisms, ... The subgraph patter can deal with (multiple sets of)
+       patterns, e.g. given pattern_graphs, strong rings, isomorphisms,
+       automorphisms, ... The pattern_graph can deal with (multiple sets of)
        additional conditions that must be satisfied, such as "give me all
        dihedral angles where the central atoms are carbons" without duplicates.
 
@@ -56,7 +56,7 @@ from molmod.utils import cached, ReadOnly
 __all__ = [
     "GraphError", "Graph", "OneToOne", "Match", "Pattern",
     "CriteriaSet", "Anything", "CritOr", "CritAnd", "CritXor", "CritNot",
-    "SubgraphPattern", "EqualPattern", "RingPattern", "GraphSearch",
+    "CustomPattern", "EqualPattern", "RingPattern", "GraphSearch",
 ]
 
 
@@ -912,7 +912,7 @@ class Match(OneToOne):
         result.previous_ends1 = set([vertex1])
         return result
 
-    def get_new_edges(self, graph):
+    def get_new_edges(self, subject_graph):
         """Get new edges from the subject graph for the graph search algorithm
 
            The Graph search algorithm extends the matches iteratively by adding
@@ -922,7 +922,7 @@ class Match(OneToOne):
         result = []
         #print "Match.get_new_edges self.previous_ends1", self.previous_ends1
         for vertex in self.previous_ends1:
-            for neighbor in graph.neighbors[vertex]:
+            for neighbor in subject_graph.neighbors[vertex]:
                 if neighbor not in self.reverse:
                     result.append((vertex, neighbor))
         return result
@@ -952,7 +952,7 @@ class Pattern(object):
     sub = True
     MatchClass = Match
 
-    def iter_initial_relations(self, graph):
+    def iter_initial_relations(self, subject_graph):
         """Iterate over all initial relations to start a Graph Search
 
            The function iterates of single relations between a pattern vertex
@@ -963,7 +963,7 @@ class Pattern(object):
         raise NotImplementedError
 
     def get_new_edges(self, level):
-        """Get new edges from the subject graph for the graph search algorithm
+        """Get new edges from the pattern graph for the graph search algorithm
 
            The level argument denotes the distance of the new edges from the
            starting vertex in the pattern graph.
@@ -974,7 +974,7 @@ class Pattern(object):
         """Off all symmetric new_relations, only allow one"""
         return True
 
-    def compare(self, vertex0, vertex1, graph):
+    def compare(self, vertex0, vertex1, subject_graph):
         """Test if vertex0 and vertex1 can be equal
 
            False positives are allowed, but the less false positives, the more
@@ -982,7 +982,7 @@ class Pattern(object):
         """
         return True
 
-    def check_next_match(self, match, new_relations, graph, one_match):
+    def check_next_match(self, match, new_relations, subject_graph, one_match):
         """Does this match object make sense for the current pattern
 
            Return False if some symmetry or other considerations are not
@@ -992,11 +992,11 @@ class Pattern(object):
         """
         return True
 
-    def complete(self, match, graph):
+    def complete(self, match, subject_graph):
         """Returns True if no more additional relations are required"""
         return True
 
-    def iter_final_matches(self, match, graph, one_match):
+    def iter_final_matches(self, match, subject_graph, one_match):
         """Just return the original match
 
            Derived classes can specialize here to make efficient use of
@@ -1006,7 +1006,7 @@ class Pattern(object):
 
 
 class CriteriaSet(object):
-    """A set of criteria that can be associated with a subgraph pattern."""
+    """A set of criteria that can be associated with a custum pattern."""
 
     def __init__(self, vertex_criteria=None, edge_criteria=None, **kwargs):
         """Initialize a CriteriaSet object
@@ -1030,19 +1030,19 @@ class CriteriaSet(object):
             self.edge_criteria = edge_criteria
         self.info = kwargs
 
-    def test_match(self, match, subgraph, graph):
+    def test_match(self, match, pattern_graph, subject_graph):
         """Test if a match satisfies the criteria"""
         for vertex0, c in self.vertex_criteria.iteritems():
             vertex1 = match.forward[vertex0]
-            if not c(vertex1, graph):
+            if not c(vertex1, subject_graph):
                 return False
         for edge0_index, c in self.edge_criteria.iteritems():
-            vertex0a, vertex0b = subgraph.edges[edge0_index]
-            edge1_index = graph.edge_index[frozenset([
+            vertex0a, vertex0b = pattern_graph.edges[edge0_index]
+            edge1_index = subject_graph.edge_index[frozenset([
                 match.forward[vertex0a],
                 match.forward[vertex0b],
             ])]
-            if not c(edge1_index, graph):
+            if not c(edge1_index, subject_graph):
                 return False
         return True
 
@@ -1050,7 +1050,7 @@ class CriteriaSet(object):
 
 class Anything(object):
     """A criterion that always returns True"""
-    def __call__(self, index, graph):
+    def __call__(self, index, subject_graph):
         """Always returns True"""
         return True
 
@@ -1159,23 +1159,23 @@ class CritNot(object):
 # pattern and match stuff
 
 
-class SubgraphPattern(Pattern):
-    """A pattern based on a given subgraph
+class CustomPattern(Pattern):
+    """A pattern based on a given pattern graph
 
-       The subgraph can be complemented with additional criteria for the
-       vertices and edges. Additionally the effective symmetry of the subgraph
-       can be reduced by tagging the vertices in the subgraph with different
-       labels.
+       The pattern graph can be complemented with additional criteria for the
+       vertices and edges. Additionally the effective symmetry of the pattern
+       graph can be reduced by tagging the vertices in the pattern graph with
+       different labels.
     """
-    def __init__(self, subgraph, criteria_sets=None, vertex_tags=None, start_vertex=None):
-        """Initialise a subgraph pattern.
+    def __init__(self, pattern_graph, criteria_sets=None, vertex_tags=None, start_vertex=None):
+        """Initialise a custom pattern.
 
         Arguments:
-          subgraph -- the pattern that has to be found in the subject graph.
+          pattern_graph -- the pattern that has to be found in the subject graph.
           criteria_sets -- Criteria sets associate additional conditions with
               vertices and edges, and can also introduce global match
               conditions.
-          vertex_tags -- vertex tags can reduce the symmetry of the subgraph
+          vertex_tags -- vertex tags can reduce the symmetry of the pattern_graph
               pattern. An example case where this is useful: Consider atoms
               0, 1, 2 that are bonded in this order. We want to compute the
               distance from atom 2 to the line (0, 1). In this case the
@@ -1185,7 +1185,7 @@ class SubgraphPattern(Pattern):
               2:1}. This means that vertex 0 and 1 are equivalent, but that
               vertex 2 has a different nature. In the case of a bending angle,
               only one match like (0->a, 1->b, 2->c) is sufficient and we do not
-              want to reduce the symmetry of the subgraph. In this case, one
+              want to reduce the symmetry of the pattern_graph. In this case, one
               should not use vertex_tags at all.
           start_vertex  --  The first vertex in the pattern graph that is linked
               with a vertex in the subject graph. A wise choice can improve the
@@ -1196,27 +1196,27 @@ class SubgraphPattern(Pattern):
         if vertex_tags is None:
             vertex_tags = {}
         self.vertex_tags = vertex_tags
-        # get the essential information from the subgraph:
+        # get the essential information from the pattern_graph:
         if start_vertex is None:
-            self.start_vertex = subgraph.central_vertex
+            self.start_vertex = pattern_graph.central_vertex
         else:
             self.start_vertex = start_vertex
-        self._set_subgraph(subgraph)
+        self._set_pattern_graph(pattern_graph)
         Pattern.__init__(self)
 
-    def _set_subgraph(self, subgraph):
-        """Initialize the subgraph"""
-        self.subgraph = subgraph
+    def _set_pattern_graph(self, pattern_graph):
+        """Initialize the pattern_graph"""
+        self.pattern_graph = pattern_graph
         self.level_edges = {}
         self.level_constraints = {}
         self.duplicate_checks = set([])
-        if subgraph is None:
+        if pattern_graph is None:
             return
-        if len(subgraph.independent_vertices) != 1:
-            raise ValueError("A subgraph pattern must not be a disconnected "
+        if len(pattern_graph.independent_vertices) != 1:
+            raise ValueError("A pattern_graph must not be a disconnected "
                              "graph.")
         # A) the levels for the incremental pattern matching
-        ibfe = self.subgraph.iter_breadth_first_edges(self.start_vertex)
+        ibfe = self.pattern_graph.iter_breadth_first_edges(self.start_vertex)
         for edge, distance, constraint in ibfe:
             if constraint:
                 l = self.level_constraints.setdefault(distance-1, [])
@@ -1228,20 +1228,20 @@ class SubgraphPattern(Pattern):
         # B) The comparisons the should be checked when one wants to avoid
         # symmetrically duplicate pattern matches
         if self.criteria_sets is not None:
-            for cycles in subgraph.symmetry_cycles:
+            for cycles in pattern_graph.symmetry_cycles:
                 if len(cycles) > 0:
                     self.duplicate_checks.add((cycles[0][0], cycles[0][1]))
 
 
-    def iter_initial_relations(self, graph):
+    def iter_initial_relations(self, subject_graph):
         """Iterate over all valid initial relations for a match"""
         vertex0 = self.start_vertex
-        for vertex1 in xrange(graph.num_vertices):
-            if self.compare(vertex0, vertex1, graph):
+        for vertex1 in xrange(subject_graph.num_vertices):
+            if self.compare(vertex0, vertex1, subject_graph):
                 yield vertex0, vertex1
 
     def get_new_edges(self, level):
-        """Get new edges from the subject graph for the graph search algorithm
+        """Get new edges from the pattern graph for the graph search algorithm
 
            The level argument denotes the distance of the new edges from the
            starting vertex in the pattern graph.
@@ -1251,7 +1251,7 @@ class SubgraphPattern(Pattern):
             self.level_constraints.get(level, [])
         )
 
-    def check_next_match(self, match, new_relations, graph, one_match):
+    def check_next_match(self, match, new_relations, subject_graph, one_match):
         """Check if the (onset for a) match can be a valid"""
         # only returns true for ecaxtly one set of new_relations from all the
         # ones that are symmetrically equivalent
@@ -1293,16 +1293,16 @@ class SubgraphPattern(Pattern):
                     # (vertex_a, vertex_b) pairs that will reject all but one
                     # matches. I conjecture that this list contains all the
                     # first two vertices from each normalized symmetry cycle of
-                    # the sub graph. We need a math guy to do the proof. -- Toon
+                    # the pattern graph. We need a math guy to do the proof. -- Toon
                     return False
             return True
         return True
 
-    def complete(self, match, graph):
+    def complete(self, match, subject_graph):
         """Return True of the match is complete"""
-        return len(match) == self.subgraph.num_vertices
+        return len(match) == self.pattern_graph.num_vertices
 
-    def iter_final_matches(self, canonical_match, graph, one_match):
+    def iter_final_matches(self, canonical_match, subject_graph, one_match):
         """Given a match, iterate over all related equivalent matches
 
            When criteria sets are defined, the iterator runs over all symmetric
@@ -1314,14 +1314,14 @@ class SubgraphPattern(Pattern):
         else:
             for criteria_set in self.criteria_sets:
                 satisfied_match_tags = set([])
-                for symmetry in self.subgraph.symmetries:
+                for symmetry in self.pattern_graph.symmetries:
                     final_match = canonical_match * symmetry
                     #print final_match
-                    if criteria_set.test_match(final_match, self.subgraph, graph):
+                    if criteria_set.test_match(final_match, self.pattern_graph, subject_graph):
                         match_tags = tuple(
                             self.vertex_tags.get(symmetry.forward[vertex0])
                             for vertex0
-                            in xrange(self.subgraph.num_vertices)
+                            in xrange(self.pattern_graph.num_vertices)
                         )
                         if match_tags not in satisfied_match_tags:
                             final_match.__dict__.update(criteria_set.info)
@@ -1375,31 +1375,29 @@ class EqualMatch(Match):
         return closed_cycles
 
 
-class EqualPattern(SubgraphPattern):
-    """Like SubgraphPattern, but the pattern has the same size as the graph"""
+class EqualPattern(CustomPattern):
+    """Like CustomPattern, but the pattern has the same size as the subject graph"""
     sub = False
     MatchClass = EqualMatch
 
-    def __init__(self, subgraph):
+    def __init__(self, pattern_graph):
         """Initialize a EqualPattern"""
         # Don't allow criteria sets and vertex_tags. This limitation is due to
         # the compare method below. TODO: Is this a good idea?
-        SubgraphPattern.__init__(self, subgraph)
+        CustomPattern.__init__(self, pattern_graph)
 
-    def iter_initial_relations(self, graph):
+    def iter_initial_relations(self, subject_graph):
         """Iterate over all valid initial relations for a match"""
-        if self.subgraph.num_edges != graph.num_edges:
+        if self.pattern_graph.num_edges != subject_graph.num_edges:
             return # don't even try
-        vertex0 = self.subgraph.central_vertex
-        for vertex1 in graph.central_vertices:
-            if self.compare(vertex0, vertex1, graph):
-                yield vertex0, vertex1
+        for pair in CustomPattern.iter_initial_relations(self, subject_graph):
+            yield pair
 
-    def compare(self, vertex0, vertex1, graph):
+    def compare(self, vertex0, vertex1, subject_graph):
         """Returns true when the two vertices are of the same kind"""
         return (
-            self.subgraph.vertex_fingerprints[vertex0] ==
-            graph.vertex_fingerprints[vertex1]
+            self.pattern_graph.vertex_fingerprints[vertex0] ==
+            subject_graph.vertex_fingerprints[vertex1]
         ).all()
 
 
@@ -1417,14 +1415,14 @@ class RingPattern(Pattern):
         self.max_size = max_size
         Pattern.__init__(self)
 
-    def iter_initial_relations(self, graph):
+    def iter_initial_relations(self, subject_graph):
         """Iterate over all valid initial relations for a match"""
         vertex0 = 0
-        for vertex1 in xrange(graph.num_vertices):
+        for vertex1 in xrange(subject_graph.num_vertices):
             yield vertex0, vertex1
 
     def get_new_edges(self, level):
-        """Get new edges from the subject graph for the graph search algorithm
+        """Get new edges from the pattern graph for the graph search algorithm
 
            The level argument denotes the distance of the new edges from the
            starting vertex in the pattern graph.
@@ -1438,7 +1436,7 @@ class RingPattern(Pattern):
             edges0 = [(l2-1, l2+1), (l2, l2+2)]
         return edges0, []
 
-    def check_next_match(self, match, new_relations, graph, one_match):
+    def check_next_match(self, match, new_relations, subject_graph, one_match):
         """Check if the (onset for a) match can be a valid (part of a) ring"""
         # avoid duplicate rings (order of traversal)
         if len(match) == 3:
@@ -1452,7 +1450,7 @@ class RingPattern(Pattern):
                 return False
         # can this ever become a strong ring?
         for vertex1 in new_relations.itervalues():
-            paths = list(graph.iter_shortest_paths(vertex1, match.forward[0]))
+            paths = list(subject_graph.iter_shortest_paths(vertex1, match.forward[0]))
             if len(paths) != 1:
                 #print "RingPattern.check_next_match: not strong 1"
                 return False
@@ -1462,11 +1460,11 @@ class RingPattern(Pattern):
         #print "RingPattern.check_next_match: no remarks"
         return True
 
-    def complete(self, match, graph):
+    def complete(self, match, subject_graph):
         """Check the completeness of a ring match"""
         size = len(match)
         # check whether we have an odd strong ring
-        if match.forward[size-1] in graph.neighbors[match.forward[size-2]]:
+        if match.forward[size-1] in subject_graph.neighbors[match.forward[size-2]]:
             # we have an odd closed cycle. check if this is a strong ring
             order = range(0, size, 2) + range(1, size-1, 2)[::-1]
             ok = True
@@ -1474,14 +1472,14 @@ class RingPattern(Pattern):
                 # Count the number of paths between two opposite points in the
                 # ring. Since the ring has an odd number of vertices, each
                 # vertex has two semi-opposite vertices.
-                count = len(list(graph.iter_shortest_paths(
+                count = len(list(subject_graph.iter_shortest_paths(
                     match.forward[order[i]],
                     match.forward[order[(i+size/2)%size]]
                 )))
                 if count > 1:
                     ok = False
                     break
-                count = len(list(graph.iter_shortest_paths(
+                count = len(list(subject_graph.iter_shortest_paths(
                     match.forward[order[i]],
                     match.forward[order[(i+size/2+1)%size]]
                 )))
@@ -1494,7 +1492,7 @@ class RingPattern(Pattern):
                 return True
             #print "RingPattern.complete: no odd ring"
         # check whether we have an even strong ring
-        paths = list(graph.iter_shortest_paths(
+        paths = list(subject_graph.iter_shortest_paths(
             match.forward[size-1],
             match.forward[size-2]
         ))
@@ -1510,7 +1508,7 @@ class RingPattern(Pattern):
             order = range(0, size, 2) + range(size-1, 0, -2)
             ok = True
             for i in xrange(len(order)/2):
-                count = len(list(graph.iter_shortest_paths(
+                count = len(list(subject_graph.iter_shortest_paths(
                     match.forward[order[i]],
                     match.forward[order[(i+size/2)%size]]
                 )))
@@ -1550,27 +1548,27 @@ class GraphSearch(object):
         self.pattern = pattern
         self.debug = debug
 
-    def __call__(self, graph, one_match=False):
+    def __call__(self, subject_graph, one_match=False):
         """Iterator over all matches of self.pattern in the given graph.
 
            Arguments:
-               graph  --  The graph in which the matches according to
-                          self.matchdefinition have to be found.
+               subject_graph  --  The subject_graph in which the matches
+                                   according to self.pattern have to be found.
                one_match --  If True, only one match will be returned. This
                              allows certain optimizations.
         """
         # Matches are grown iteratively.
-        for vertex0, vertex1 in self.pattern.iter_initial_relations(graph):
+        for vertex0, vertex1 in self.pattern.iter_initial_relations(subject_graph):
             init_match = self.pattern.MatchClass.from_first_relation(vertex0, vertex1)
             # init_match cotains only one source -> dest relation. starting from
             # this initial match, the function iter_matches extends the match
             # in all possible ways and yields the completed matches
-            for canonical_match in self._iter_matches(init_match, graph, one_match):
+            for canonical_match in self._iter_matches(init_match, subject_graph, one_match):
                 # Some patterns my exclude symmetrically equivalent matches as
                 # to aviod dupplicates. with such a 'canonical' solution,
                 # the pattern is allowed to generate just those symmatrical
                 # duplicates of interest.
-                ifm = self.pattern.iter_final_matches(canonical_match, graph, one_match)
+                ifm = self.pattern.iter_final_matches(canonical_match, subject_graph, one_match)
                 for final_match in ifm:
                     self.print_debug("final_match: %s" % final_match)
                     yield final_match
@@ -1603,7 +1601,7 @@ class GraphSearch(object):
             yield end_vertices0, end_vertices1
 
 
-    def _iter_new_relations(self, init_match, graph, edges0, constraints0, edges1):
+    def _iter_new_relations(self, init_match, subject_graph, edges0, constraints0, edges1):
         """Given an onset for a match, iterate over all possible new key-value pairs"""
         # Count the number of unique edges0[i][1] values. This is also
         # the number of new relations.
@@ -1636,7 +1634,7 @@ class GraphSearch(object):
             l = []
             for end_vertex0 in end_vertices0:
                 for end_vertex1 in end_vertices1:
-                    if self.pattern.compare(end_vertex0, end_vertex1, graph):
+                    if self.pattern.compare(end_vertex0, end_vertex1, subject_graph):
                         l.append((end_vertex0, end_vertex1))
             # len(end_vertices0) = the total number of relations that must be
             # made in this group
@@ -1677,14 +1675,14 @@ class GraphSearch(object):
                 continue
             # check the constraints
             for a0, b0 in constraints0:
-                if forward[a0] not in graph.neighbors[forward[b0]]:
+                if forward[a0] not in subject_graph.neighbors[forward[b0]]:
                     forward = None
                     break
             if forward is None:
                 continue
             yield forward
 
-    def _iter_matches(self, input_match, graph, one_match, level=0):
+    def _iter_matches(self, input_match, subject_graph, one_match, level=0):
         """Given an onset for a match, iterate over all completions of that match
 
            This iterator works recursively. At each level the match is extended
@@ -1704,7 +1702,7 @@ class GraphSearch(object):
         # Second note: suffix 0 indicates the pattern graph and suffix 1
         # is used for the subject graph.
         edges0, constraints0 = self.pattern.get_new_edges(level)
-        edges1 = input_match.get_new_edges(graph)
+        edges1 = input_match.get_new_edges(subject_graph)
         self.print_debug("edges0: %s" % edges0)
         self.print_debug("constraints0: %s" % constraints0)
         self.print_debug("edges1: %s" % edges1)
@@ -1717,17 +1715,17 @@ class GraphSearch(object):
         # separate concerns. This iterator also calls the routines that check
         # whether vertex1[j] also satisfies additional conditions inherent
         # vertex0[i].
-        inr = self._iter_new_relations(input_match, graph, edges0, constraints0,
-                                       edges1)
+        inr = self._iter_new_relations(input_match, subject_graph, edges0,
+                                       constraints0, edges1)
         for new_relations in inr:
             # for each set of new_relations, construct a next_match and recurse
             next_match = input_match.copy_with_new_relations(new_relations)
-            if not self.pattern.check_next_match(next_match, new_relations, graph, one_match):
+            if not self.pattern.check_next_match(next_match, new_relations, subject_graph, one_match):
                 continue
-            if self.pattern.complete(next_match, graph):
+            if self.pattern.complete(next_match, subject_graph):
                 yield next_match
             else:
-                for match in self._iter_matches(next_match, graph, one_match, level+1):
+                for match in self._iter_matches(next_match, subject_graph, one_match, level+1):
                     yield match
         self.print_debug("LEAVING_ITER_MATCHES", -1)
 
