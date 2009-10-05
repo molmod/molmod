@@ -24,9 +24,9 @@ from common import BaseTestCase
 from molmod.units import *
 
 
-__all__ = ["UnitsTestCase"]
+__all__ = ["UnitTestCase"]
 
 
-class UnitsTestCase(BaseTestCase):
+class UnitTestCase(BaseTestCase):
     def test_shortands(self):
         self.assertEqual(parse_unit("m/s"), meter/second)

@@ -27,10 +27,10 @@ import numpy, copy
 import unittest
 
 
-__all__ = ["VectorsTestCase"]
+__all__ = ["VectorTestCase"]
 
 
-class VectorsTestCase(BaseTestCase):
+class VectorTestCase(BaseTestCase):
     def test_cosine(self):
         for i in xrange(100):
             a = numpy.random.normal(0,1,3)
