@@ -613,4 +613,22 @@ class GraphTestCase(unittest.TestCase):
 
             match_generator(case.graph).next()
 
+    def test_start_vertex(self):
+        subject_graph = Graph([(0,1),(1,2),(1,3),(2,4)])
+        pattern_graph = Graph([(0,1),(1,2)])
+        pattern0 = SubgraphPattern(pattern_graph)
+        matches0 = list(GraphSearch(pattern0)(subject_graph))
+        pattern1 = SubgraphPattern(pattern_graph, start_vertex=0)
+        matches1 = list(GraphSearch(pattern1)(subject_graph))
+        self.assertEqual(len(matches0), len(matches1))
+        # compare all matches
+        for match0 in matches0:
+            found = False
+            for match1 in matches1:
+                if match0.forward == match1.forward:
+                    found = True
+                    break
+            self.assert_(found)
+
+
 

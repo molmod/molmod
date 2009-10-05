@@ -1167,7 +1167,7 @@ class SubgraphPattern(Pattern):
        can be reduced by tagging the vertices in the subgraph with different
        labels.
     """
-    def __init__(self, subgraph, criteria_sets=None, vertex_tags=None):
+    def __init__(self, subgraph, criteria_sets=None, vertex_tags=None, start_vertex=None):
         """Initialise a subgraph pattern.
 
         Arguments:
@@ -1187,12 +1187,20 @@ class SubgraphPattern(Pattern):
               only one match like (0->a, 1->b, 2->c) is sufficient and we do not
               want to reduce the symmetry of the subgraph. In this case, one
               should not use vertex_tags at all.
+          start_vertex  --  The first vertex in the pattern graph that is linked
+              with a vertex in the subject graph. A wise choice can improve the
+              performance of a graph search. If not given, the central vertex
+              is take as start_vertex
         """
         self.criteria_sets = criteria_sets
         if vertex_tags is None:
             vertex_tags = {}
         self.vertex_tags = vertex_tags
         # get the essential information from the subgraph:
+        if start_vertex is None:
+            self.start_vertex = subgraph.central_vertex
+        else:
+            self.start_vertex = start_vertex
         self._set_subgraph(subgraph)
         Pattern.__init__(self)
 
@@ -1208,7 +1216,7 @@ class SubgraphPattern(Pattern):
             raise ValueError("A subgraph pattern must not be a disconnected "
                              "graph.")
         # A) the levels for the incremental pattern matching
-        ibfe = self.subgraph.iter_breadth_first_edges()
+        ibfe = self.subgraph.iter_breadth_first_edges(self.start_vertex)
         for edge, distance, constraint in ibfe:
             if constraint:
                 l = self.level_constraints.setdefault(distance-1, [])
@@ -1217,7 +1225,7 @@ class SubgraphPattern(Pattern):
             l.append(edge)
         #print "level_edges", self.level_edges
         #print "level_constraints", self.level_constraints
-        # B) The comparisons the should me checked when one wants to avoid
+        # B) The comparisons the should be checked when one wants to avoid
         # symmetrically duplicate pattern matches
         if self.criteria_sets is not None:
             for cycles in subgraph.symmetry_cycles:
@@ -1227,7 +1235,7 @@ class SubgraphPattern(Pattern):
 
     def iter_initial_relations(self, graph):
         """Iterate over all valid initial relations for a match"""
-        vertex0 = self.subgraph.central_vertex
+        vertex0 = self.start_vertex
         for vertex1 in xrange(graph.num_vertices):
             if self.compare(vertex0, vertex1, graph):
                 yield vertex0, vertex1
