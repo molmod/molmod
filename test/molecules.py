@@ -118,3 +118,42 @@ class MoleculesTestCase(BaseTestCase):
         molecule.set_default_graph()
         self.assertEqual(molecule.graph.num_edges, 2)
 
+    def test_from_file_cml(self):
+        molecule = Molecule.from_file("input/caplayer.cml")
+        self.assertEqual(molecule.size, 81)
+        self.assertEqual(molecule.graph.num_edges, 90)
+
+    def test_from_file_fchk(self):
+        molecule = Molecule.from_file("input/1TOH.b3lyp.fchk")
+        self.assertEqual(molecule.size, 9)
+
+    def test_from_file_pdb(self):
+        molecule = Molecule.from_file("input/il2.pdb")
+        self.assertEqual(molecule.size, 2084)
+
+    def test_from_file_sdf(self):
+        molecule = Molecule.from_file("input/CID_22898828.sdf")
+        self.assertEqual(molecule.size, 14)
+
+    def test_from_file_xyz(self):
+        molecule = Molecule.from_file("input/water.xyz")
+        self.assertEqual(molecule.size, 3)
+
+    def test_to_cml(self):
+        mol0 = Molecule.from_file("input/caplayer.cml")
+        mol0.write_to_file("output/caplayer.cml")
+        mol1 = Molecule.from_file("output/caplayer.cml")
+        self.assertEqual(mol0.title, mol1.title)
+        self.assertArraysEqual(mol0.numbers, mol1.numbers)
+        self.assertArraysAlmostEqual(mol0.coordinates, mol1.coordinates)
+        self.assertEqual(mol0.graph.num_edges, mol1.graph.num_edges)
+
+    def test_to_xyz(self):
+        mol0 = Molecule.from_file("input/water.xyz")
+        mol0.write_to_file("output/water.xyz")
+        mol1 = Molecule.from_file("output/water.xyz")
+        self.assertEqual(mol0.title, mol1.title)
+        self.assertArraysEqual(mol0.numbers, mol1.numbers)
+        self.assertArraysAlmostEqual(mol0.coordinates, mol1.coordinates)
+
+

@@ -69,6 +69,42 @@ class Molecule(ReadOnly):
         }
         self._init_attributes(mandatory, optional)
 
+    @staticmethod
+    def from_file(filename):
+        """Construct a molecule object based read from the given file
+
+           The file format is inferred from the extensions. Currently supported
+           formats are: *.cml, *.fchk, *.pdb, *.sdf, *.xyz
+
+           If a file contains more than one molecule, only the first one is
+           read.
+
+           Argument:
+             filename  --  the name of the file containing the molecule
+        """
+        # TODO: many different API's to load files. brrr...
+        if filename.endswith(".cml"):
+            from molmod.io import load_cml
+            return load_cml(filename)[0]
+        elif filename.endswith(".fchk"):
+            from molmod.io import FCHKFile
+            fchk = FCHKFile(filename, field_labels=[])
+            return fchk.molecule
+        elif filename.endswith(".pdb"):
+            from molmod.io import load_pdb
+            return load_pdb(filename)
+        elif filename.endswith(".sdf"):
+            from molmod.io import SDFReader
+            return SDFReader(filename).next()
+        elif filename.endswith(".xyz"):
+            from molmod.io import XYZReader
+            xyz_reader = XYZReader(filename)
+            title, coordinates = xyz_reader.next()
+            return Molecule(xyz_reader.numbers, coordinates, title)
+        else:
+            raise ValueError("Could not determine file format for %s." % filename)
+
+
     size = property(lambda self: self.numbers.shape[0])
 
     @cached
@@ -119,58 +155,29 @@ class Molecule(ReadOnly):
     def set_default_graph(self):
         self.graph = MolecularGraph.from_geometry(self)
 
-    def dump_atoms(self, f):
-        """Dump the Cartesian coordinates of the atoms to a file
-
-           The format is the XYZ format without title and header line.
-           Argument:
-             f  --  a file-like object
-        """
-        for number, coordinate in zip(self.numbers, self.coordinates/angstrom):
-            atom_info = periodic[number]
-            if atom_info is None:
-                symbol = "X"
-            else:
-                symbol = atom_info.symbol
-            print >> f, "% 2s % 12.6f % 12.6f % 12.6f" % (
-                symbol,
-                coordinate[0],
-                coordinate[1],
-                coordinate[2]
-            )
-
-    def dumps_atoms(self):
-        """Returns the Cartesian coordinates of the atoms as a string
-
-           The format is the XYZ format without title and header line.
-        """
-        sio = StringIO()
-        self.dump_atoms(sio)
-        result = sio.getvalue()
-        sio.close()
-        return result
-
-    def dump(self, f):
-        """Dump the molecular geometry to an XYZ file
-
-           Argument:
-             f  --  a file-like object
-        """
-        print >> f, "%5i" % len(self.numbers)
-        if hasattr(self, "title"):
-            print >> f, str(self.title)
-        else:
-            print >> f
-        self.dump_atoms(f)
-
     def write_to_file(self, filename):
-        """Write the molecular geometry to an XYZ file
+        """Write the molecule geometry to a file
+
+           The file format is inferred from the extensions. Currently supported
+           formats are: *.xyz, *.cml
 
            Argument:
              filename  --  a filename
         """
-        f = file(filename, 'w')
-        self.dump(f)
-        f.close()
+        # TODO: give all file format writers the same API
+        if filename.endswith('.cml'):
+            from molmod.io import dump_cml
+            dump_cml(filename, [self])
+        elif filename.endswith('.xyz'):
+            from molmod.io import XYZWriter
+            xyz_writer = XYZWriter(filename, [periodic[n].symbol for n in self.numbers])
+            if hasattr(self, "title"):
+                title = self.title
+            else:
+                title = "Sorry, no titles today..."
+            xyz_writer.dump(title, self.coordinates)
+            del xyz_writer
+        else:
+            raise ValueError("Could not determine file format for %s." % filename)
 
 
