@@ -85,7 +85,7 @@ class ToyFFTestCase(unittest.TestCase):
                 unit_cell = None
                 dm = molecules_distance_matrix(coordinates)
             else:
-                dm = molecules_distance_matrix(coordinates, unit_cell.matrix, unit_cell.reciprocal_zero)
+                dm = molecules_distance_matrix(coordinates, unit_cell.matrix, unit_cell.reciprocal)
             if dm[mask].min() > 1.0:
                 break
 

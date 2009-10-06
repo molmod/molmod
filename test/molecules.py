@@ -40,7 +40,7 @@ class MoleculeTestCase(BaseTestCase):
         self.assert_((abs(molecule.distance_matrix - dm) < 1e-5).all(), "Wrong distance matrix")
 
     def test_distance_matrix_periodic(self):
-        for i in xrange(10):
+        for i in xrange(1000):
             N = 6
             unit_cell = UnitCell(
                 numpy.random.uniform(0,1,(3,3)),
@@ -50,7 +50,7 @@ class MoleculeTestCase(BaseTestCase):
             coordinates = unit_cell.to_cartesian(fractional)
             from molmod.ext import molecules_distance_matrix
             dm = molecules_distance_matrix(coordinates, unit_cell.matrix,
-                                           unit_cell.reciprocal_zero)
+                                           unit_cell.reciprocal)
             for i in xrange(N):
                 for j in xrange(i,N):
                     delta = coordinates[j]-coordinates[i]

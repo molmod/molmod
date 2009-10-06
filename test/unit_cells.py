@@ -39,6 +39,8 @@ class UnitCellTestCase(BaseTestCase):
         while True:
             result = UnitCell(numpy.random.uniform(-r, r, (3, 3)), active)
             if result.spacings.min() > 1.0e-1:
+                #result = result.ordered
+                #result = result.alignment_a*result
                 return result
 
     def test_parameters(self):
@@ -55,16 +57,43 @@ class UnitCellTestCase(BaseTestCase):
 
     def test_reciprocal(self):
         for counter in xrange(100):
-            uc = UnitCell(numpy.random.uniform(-1, 1, (3, 3)))
-            self.assertAlmostEqual(numpy.dot(uc.matrix[:,0], uc.reciprocal[:,0]), 1.0)
-            self.assertAlmostEqual(numpy.dot(uc.matrix[:,0], uc.reciprocal[:,1]), 0.0)
-            self.assertAlmostEqual(numpy.dot(uc.matrix[:,0], uc.reciprocal[:,2]), 0.0)
-            self.assertAlmostEqual(numpy.dot(uc.matrix[:,1], uc.reciprocal[:,0]), 0.0)
-            self.assertAlmostEqual(numpy.dot(uc.matrix[:,1], uc.reciprocal[:,1]), 1.0)
-            self.assertAlmostEqual(numpy.dot(uc.matrix[:,1], uc.reciprocal[:,2]), 0.0)
-            self.assertAlmostEqual(numpy.dot(uc.matrix[:,2], uc.reciprocal[:,0]), 0.0)
-            self.assertAlmostEqual(numpy.dot(uc.matrix[:,2], uc.reciprocal[:,1]), 0.0)
-            self.assertAlmostEqual(numpy.dot(uc.matrix[:,2], uc.reciprocal[:,2]), 1.0)
+            uc = self.get_random_uc(full=False)
+            if uc.active[0]:
+                self.assertAlmostEqual(numpy.dot(uc.matrix[:,0], uc.reciprocal[:,0]), 1.0)
+                self.assertAlmostEqual(numpy.dot(uc.matrix[:,0], uc.reciprocal[:,1]), 0.0)
+                self.assertAlmostEqual(numpy.dot(uc.matrix[:,0], uc.reciprocal[:,2]), 0.0)
+            if uc.active[1]:
+                self.assertAlmostEqual(numpy.dot(uc.matrix[:,1], uc.reciprocal[:,0]), 0.0)
+                self.assertAlmostEqual(numpy.dot(uc.matrix[:,1], uc.reciprocal[:,1]), 1.0)
+                self.assertAlmostEqual(numpy.dot(uc.matrix[:,1], uc.reciprocal[:,2]), 0.0)
+            if uc.active[2]:
+                self.assertAlmostEqual(numpy.dot(uc.matrix[:,2], uc.reciprocal[:,0]), 0.0)
+                self.assertAlmostEqual(numpy.dot(uc.matrix[:,2], uc.reciprocal[:,1]), 0.0)
+                self.assertAlmostEqual(numpy.dot(uc.matrix[:,2], uc.reciprocal[:,2]), 1.0)
+
+    def test_reciprocal_bis(self):
+        for i in xrange(100):
+            uc = self.get_random_uc(full=False)
+            active, inactive = uc.active_inactive
+            for i in inactive:
+                self.assertEqual(abs(uc.reciprocal[:,i]).max(), 0.0)
+            if len(active) == 1:
+                unit = uc.reciprocal[:,active[0]].copy()
+                r = numpy.linalg.norm(unit)
+                unit /= r
+                cell_vector = unit/r
+                self.assertArraysAlmostEqual(cell_vector, uc.matrix[:,active[0]])
+            elif len(active) == 2:
+                # construct an auxiliary normal vector
+                normal = numpy.cross(uc.reciprocal[:,active[0]], uc.reciprocal[:,active[1]])
+                norm = numpy.linalg.norm(normal)
+                # reconstruct the cell vectors
+                cell_vector0 = numpy.cross(uc.reciprocal[:,active[1]], normal)/norm**2
+                cell_vector1 = -numpy.cross(uc.reciprocal[:,active[0]], normal)/norm**2
+                self.assertArraysAlmostEqual(cell_vector0, uc.matrix[:,active[0]])
+                self.assertArraysAlmostEqual(cell_vector1, uc.matrix[:,active[1]])
+            elif len(active) == 3:
+                self.assertArraysEqual(uc.reciprocal, uc.reciprocal)
 
     def test_to_fractional(self):
         for i in xrange(100):
@@ -112,7 +141,7 @@ class UnitCellTestCase(BaseTestCase):
 
     def test_add_periodicities(self):
         for counter in xrange(100):
-            uc0 = UnitCell(active=numpy.zeros(3,bool))
+            uc0 = UnitCell(numpy.identity(3, float), numpy.zeros(3,bool))
             uc1 = uc0.add_cell_vector(numpy.random.uniform(-2,2,3))
             uc2 = uc1.add_cell_vector(numpy.random.uniform(-2,2,3))
             uc3 = uc2.add_cell_vector(numpy.random.uniform(-2,2,3))
@@ -125,13 +154,19 @@ class UnitCellTestCase(BaseTestCase):
         self.assertArraysAlmostEqual(uc.shortest_vector([-2, 0, 1]), numpy.array([1, 0, 1]))
         self.assertArraysAlmostEqual(uc.shortest_vector([-1.6, 1, 1]), numpy.array([1.4, 1, 1]))
         self.assertArraysAlmostEqual(uc.shortest_vector([-1.4, 1, 1]), numpy.array([-1.4, 1, 1]))
+        # simple cases
+        uc = UnitCell(numpy.identity(3,float)*3, numpy.array([True, False, False]))
+        self.assertArraysAlmostEqual(uc.shortest_vector([3, 0, 1]), numpy.array([0, 0, 1]))
+        self.assertArraysAlmostEqual(uc.shortest_vector([3, 0, 3]), numpy.array([0, 0, 3]))
         # random tests
-        for uc_counter in xrange(10):
+        for uc_counter in xrange(1000):
             uc = self.get_random_uc(full=False)
             for r_counter in xrange(10):
                 r0 = numpy.random.normal(0, 10, 3)
                 r1 = uc.shortest_vector(r0)
-                self.assert_(numpy.linalg.norm(r0) >= numpy.linalg.norm(r1))
+                change = r1 - r0
+                self.assert_(numpy.dot(change, r0) <= 0)
+                #self.assert_(numpy.linalg.norm(r0) >= numpy.linalg.norm(r1))
                 index = uc.to_fractional(r0-r1)
                 self.assertArraysAlmostEqual(index, numpy.round(index), doabs=True)
                 index = uc.to_fractional(r1)
@@ -430,56 +465,21 @@ class UnitCellTestCase(BaseTestCase):
         ])
         self.assertArraysAlmostEqual(uc.matrix, expected_matrix)
 
-    def test_reciprocal(self):
-        def check_identity(active, mat):
-            for i in xrange(3):
-                if active[i]:
-                    self.assertAlmostEqual(mat[i,i], 1.0)
-                else:
-                    self.assertAlmostEqual(mat[i,i]*(1-mat[i,i]), 0.0)
-                self.assertAlmostEqual(mat[i,(i+1)%3], 0.0)
+    def test_shortest_vector_aperiodic(self):
+        unit_cell = UnitCell(numpy.identity(3, float), numpy.zeros(3, bool))
+        shortest = unit_cell.shortest_vector(numpy.ones(3, float))
+        expected = numpy.ones(3, float)
+        self.assertArraysAlmostEqual(shortest, expected)
 
-        for i in xrange(20):
-            uc = self.get_random_uc(full=False)
-            mat = numpy.dot(uc.matrix.transpose(), uc.reciprocal)
-            check_identity(uc.active, mat)
-            mat = numpy.dot(uc.reciprocal.transpose(), uc.matrix)
-            check_identity(uc.active, mat)
-            mat = numpy.dot(uc.reciprocal, uc.matrix.transpose())
-            check_identity(uc.active, mat)
-            mat = numpy.dot(uc.matrix, uc.reciprocal.transpose())
-            check_identity(uc.active, mat)
-
-    def test_optimal_subcell1(self):
-        uc = UnitCell(
-            numpy.array([
-                [4.0, 4.1, 0.0],
-                [0.0, 4.0, 0.0],
-                [0.0, 0.0, 0.0],
-            ], dtype=float),
-            numpy.array([True, True, False]),
-        )
-        sub = uc.get_optimal_subcell(2.1)
-        self.assert_((sub.active==uc.active).all())
-        expected_matrix = numpy.array([
-            [2.0, 0.05, 0.0],
-            [0.0, 2.0,  0.0],
-            [0.0, 0.0,  0.0],
-        ])
-        self.assertArraysAlmostEqual(sub.matrix, expected_matrix)
-
-    def test_optimal_subcell2(self):
-        numpy.random.seed(0)
-        for i in xrange(200):
-            uc = self.get_random_uc(full=False)
-            cutoff = uc.spacings.min()/2.1
-            sub = uc.get_optimal_subcell(cutoff)
-            self.assertArraysEqual(sub.active, uc.active)
-            integer_matrix = sub.to_fractional(uc.matrix.transpose()).transpose()
-            self.assertArraysAlmostEqual(integer_matrix, integer_matrix.round(), doabs=True)
-            ratio_uc = abs(uc.generalized_volume)/numpy.product(uc.parameters[0][uc.active])
-            ratio_sub = abs(sub.generalized_volume)/numpy.product(sub.parameters[0][uc.active])
-            # assert that sub cell is (most of the time) more cubic
-            self.assert_(ratio_uc/ratio_sub < 1.2)
-
+    def test_ordered(self):
+        for i in xrange(10):
+            uc0 = self.get_random_uc(full=False)
+            uc1 = uc0.ordered
+            self.assertAlmostEqual(uc0.generalized_volume, uc1.generalized_volume)
+            self.assertEqual(uc0.active.sum(), uc1.active.sum())
+            self.assert_(uc1.active[0] >= uc1.active[1])
+            self.assert_(uc1.active[1] >= uc1.active[2])
+            for i1, i0 in enumerate(uc0.active_inactive[0]):
+                self.assertArraysAlmostEqual(uc0.matrix[:,i0], uc1.matrix[:,i1])
+                self.assertEqual(uc0.active[i0], uc1.active[i1])
 

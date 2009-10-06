@@ -152,7 +152,7 @@ class ToyFF(object):
             self.reciprocal = None
         else:
             self.matrix = unit_cell.matrix
-            self.reciprocal = unit_cell.reciprocal_zero
+            self.reciprocal = unit_cell.reciprocal
 
         self.dm = graph.distances.astype(numpy.int32)
         dm = self.dm.astype(float)
