@@ -37,7 +37,8 @@ from molmod.periodic import periodic
 from molmod.units import unified
 from molmod.graphs import CriteriaSet, GraphSearch
 from molmod.molecular_graphs import MolecularGraph, BondPattern, \
-    BendingAnglePattern, DihedralAnglePattern
+    BendingAnglePattern, DihedralAnglePattern, OutOfPlanePattern, \
+    HasNumNeighbors
 from molmod.graphs import Graph
 from molmod.io.common import FileFormatError
 
@@ -71,6 +72,7 @@ class PSFFile(object):
         self.bonds = numpy.zeros((0, 2), int)
         self.bends = numpy.zeros((0, 3), int)
         self.dihedrals = numpy.zeros((0, 4), int)
+        self.impropers = numpy.zeros((0, 4), int)
 
         self.name_cache = {}
 
@@ -134,6 +136,11 @@ class PSFFile(object):
         for line in sections['PHI']:
             tmp.extend(int(word) for word in line.split())
         self.dihedrals = numpy.reshape(numpy.array(tmp), (-1, 4))-1
+        # C.6) The improper section
+        tmp = []
+        for line in sections['IMPHI']:
+            tmp.extend(int(word) for word in line.split())
+        self.impropers = numpy.reshape(numpy.array(tmp), (-1, 4))-1
 
     def _get_name(self, graph, group=None):
         """Convert a molecular graph into a unique name
@@ -222,9 +229,20 @@ class PSFFile(object):
                 print >> f, " " + (" ".join("% 6i" % v for v in tmp))
         print >> f
 
-        # not implemented fields
-        print >> f, "      0 !NIMPHI"
+        # impropers
+        print >> f, "% 7i !NIMPHI" % len(self.impropers)
+        if len(self.impropers) > 0:
+            tmp = []
+            for improper in self.impropers:
+                tmp.extend(improper+1)
+                if len(tmp) >= 8:
+                    print >> f, " " + (" ".join("% 6i" % v for v in tmp[:8]))
+                    tmp = tmp[8:]
+            if len(tmp) > 0:
+                print >> f, " " + (" ".join("% 6i" % v for v in tmp))
         print >> f
+
+        # not implemented fields
         print >> f, "      0 !NDON"
         print >> f
         print >> f, "      0 !NNB"
@@ -338,6 +356,24 @@ class PSFFile(object):
             self.dihedrals.resize((prev + len(tmp), 4))
             self.dihedrals[-len(tmp):] = tmp
             self.dihedrals[-len(tmp):] += offset
+
+        # add improper dihedrals, only when center has three bonds
+        match_generator = GraphSearch(OutOfPlanePattern([CriteriaSet(
+            vertex_criteria={0: HasNumNeighbors(3)},
+        )], vertex_tags={0:0,1:1}))
+        tmp = [(
+            match.get_destination(1),
+            match.get_destination(0),
+            match.get_destination(2),
+            match.get_destination(3),
+        ) for match in match_generator(molecular_graph)]
+        tmp.sort()
+        new = len(tmp)
+        if new > 0:
+            prev = len(self.impropers)
+            self.impropers.resize((prev + len(tmp), 4))
+            self.impropers[-len(tmp):] = tmp
+            self.impropers[-len(tmp):] += offset
 
     def get_graph(self):
         """Return the bond graph represented by the data structure"""

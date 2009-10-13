@@ -19,16 +19,18 @@
 # --
 
 
+from common import BaseTestCase
+
 from molmod.io.psf import PSFFile
 from molmod.molecules import Molecule
 
-import numpy, unittest
+import numpy
 
 
 __all__ = ["PSFTestCase"]
 
 
-class PSFTestCase(unittest.TestCase):
+class PSFTestCase(BaseTestCase):
     def test_load(self):
         psf = PSFFile("input/thf.psf")
         self.assert_(psf.bonds.shape[0] == 832)
@@ -66,4 +68,12 @@ class PSFTestCase(unittest.TestCase):
         psf.add_molecule(molecule)
         psf.write_to_file("output/many_separate.psf")
 
+    def test_improper(self):
+        molecule = Molecule.from_file("input/formol.xyz")
+        psf = PSFFile()
+        psf.add_molecule(molecule)
+        self.assertEqual(psf.impropers.shape, (3,4))
+        psf.write_to_file("output/tmp_impropers.psf")
+        psf2 = PSFFile("output/tmp_impropers.psf")
+        self.assertArraysEqual(psf.impropers, psf2.impropers)
 
