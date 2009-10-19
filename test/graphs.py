@@ -630,5 +630,19 @@ class GraphTestCase(unittest.TestCase):
                     break
             self.assert_(found)
 
-
+    def test_pattern_lower_symmetry(self):
+        subject_graph = Graph([
+            (0,1),(1,2),(2,3),(3,4),(4,5),(5,0),
+            (0,6),(1,7),(2,8),(3,9),(4,10),(5,11),
+        ])
+        pattern_graph = Graph([(0,1),(0,2),(0,3)])
+        pattern = CustomPattern(pattern_graph, vertex_tags={1:1})
+        collection = {}
+        for match in GraphSearch(pattern)(subject_graph):
+            a = match.forward[0]
+            b = match.forward[1]
+            s = collection.setdefault(a, set([]))
+            s.add(b)
+        for bs in collection.itervalues():
+            self.assertEqual(len(bs), 3)
 

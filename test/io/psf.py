@@ -73,7 +73,10 @@ class PSFTestCase(BaseTestCase):
         psf = PSFFile()
         psf.add_molecule(molecule)
         self.assertEqual(psf.impropers.shape, (3,4))
+        test_block = set([(row[0], row[1]) for row in psf.impropers])
+        self.assert_((0,1) in test_block)
+        self.assert_((0,2) in test_block)
+        self.assert_((0,3) in test_block)
         psf.write_to_file("output/tmp_impropers.psf")
         psf2 = PSFFile("output/tmp_impropers.psf")
         self.assertArraysEqual(psf.impropers, psf2.impropers)
-

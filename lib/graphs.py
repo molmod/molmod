@@ -1319,7 +1319,7 @@ class CustomPattern(Pattern):
                     #print final_match
                     if criteria_set.test_match(final_match, self.pattern_graph, subject_graph):
                         match_tags = tuple(
-                            self.vertex_tags.get(symmetry.forward[vertex0])
+                            self.vertex_tags.get(symmetry.reverse[vertex0])
                             for vertex0
                             in xrange(self.pattern_graph.num_vertices)
                         )

@@ -360,7 +360,7 @@ class PSFFile(object):
         # add improper dihedrals, only when center has three bonds
         match_generator = GraphSearch(OutOfPlanePattern([CriteriaSet(
             vertex_criteria={0: HasNumNeighbors(3)},
-        )], vertex_tags={0:0,1:1}))
+        )], vertex_tags={1:1}))
         tmp = [(
             match.get_destination(0),
             match.get_destination(1),
