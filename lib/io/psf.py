@@ -362,8 +362,8 @@ class PSFFile(object):
             vertex_criteria={0: HasNumNeighbors(3)},
         )], vertex_tags={0:0,1:1}))
         tmp = [(
-            match.get_destination(1),
             match.get_destination(0),
+            match.get_destination(1),
             match.get_destination(2),
             match.get_destination(3),
         ) for match in match_generator(molecular_graph)]
