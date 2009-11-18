@@ -301,7 +301,7 @@ class HasNeighborNumbers(object):
         """
         neighbors = graph.neighbors[index]
         if not len(neighbors) == len(self.numbers):
-            return
+            return False
         neighbor_numbers = [graph.numbers[neighbor] for neighbor in neighbors]
         neighbor_numbers.sort()
         return neighbor_numbers == self.numbers
