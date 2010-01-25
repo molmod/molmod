@@ -353,5 +353,18 @@ class TransformationsTestCase(BaseTestCase):
                 higher_rmsd = rmsd(ref_points, transf_bis*tr_points)
                 self.assert_(lowest_rmsd < higher_rmsd)
 
+    def test_copy(self):
+        import copy
+        t = Translation([0.8, 3, -0.1])
+        self.assert_(t.t is copy.copy(t).t)
+        self.assert_(t.t is copy.deepcopy(t).t)
+        r = Rotation.from_properties(0.1, [3.0, 0.0, 1.0], False)
+        self.assert_(r.r is copy.copy(r).r)
+        self.assert_(r.r is copy.deepcopy(r).r)
+        c = Complete.from_properties(0.1, [3.0, 0.0, 1.0], False, [0.8, 3, -0.1])
+        self.assert_(c.r is copy.copy(c).r)
+        self.assert_(c.r is copy.deepcopy(c).r)
+        self.assert_(c.t is copy.copy(c).t)
+        self.assert_(c.t is copy.deepcopy(c).t)
 
 
