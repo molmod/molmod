@@ -24,7 +24,7 @@ from random import shuffle, sample
 
 from molmod.molecules import Molecule
 from molmod.graphs import GraphError
-from molmod.transformations import rotation_about_axis, Translation, Complete
+from molmod.transformations import Translation, Complete
 from molmod.vectors import random_orthonormal, random_unit
 
 import numpy, copy
@@ -156,7 +156,7 @@ class RandomTorsion(RandomManipulation):
         axis = coordinates[atom1] - coordinates[atom2]
         axis /= numpy.linalg.norm(axis)
         angle = numpy.random.uniform(-self.max_amplitude, self.max_amplitude)
-        return rotation_about_axis(center, angle, axis)
+        return Complete.about_axis(center, angle, axis)
 
 
 class RandomBend(RandomManipulation):
@@ -177,7 +177,7 @@ class RandomBend(RandomManipulation):
         else:
             axis /= numpy.linalg.norm(axis)
         angle = numpy.random.uniform(-self.max_amplitude, self.max_amplitude)
-        return rotation_about_axis(center, angle, axis)
+        return Complete.about_axis(center, angle, axis)
 
 
 class RandomDoubleStretch(RandomManipulation):
@@ -411,7 +411,7 @@ def random_dimer(molecule0, molecule1, thresholds, shoot_max):
     center = numpy.zeros(3, float)
     angle = numpy.random.uniform(0, 2*numpy.pi)
     axis = random_unit(3)
-    rotation = rotation_about_axis(center, angle, axis)
+    rotation = Complete.about_axis(center, angle, axis)
     cor1 = numpy.dot(molecule1.coordinates, rotation.r)
 
     # select a random atom in each molecule

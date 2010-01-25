@@ -31,7 +31,7 @@ import numpy
 
 
 __all__ = [
-    "Translation", "Rotation", "Complete", "rotation_about_axis", "superpose",
+    "Translation", "Rotation", "Complete", "superpose",
 ]
 
 
@@ -337,6 +337,21 @@ class Complete(Translation, Rotation):
         elif isinstance(c, Rotation):
             return Complete(c.r, numpy.zeros(3, float))
 
+    @classmethod
+    def about_axis(cls, center, angle, axis, invert=False):
+        """Create transformation that represents a rotation about an axis
+
+           Arguments:
+             center  --  Point on the axis
+             angle  --  Rotation angle
+             axis  --  Rotation axis
+             invert  --  When True, an inversion rotation is constructed
+                         [default=False]
+        """
+        return Translation(center) * \
+               Rotation.from_properties(angle, axis, invert) * \
+               Translation(-center)
+
     @cached
     def matrix(self):
         """The 4x4 matrix representation of this transformation"""
@@ -405,19 +420,6 @@ class Complete(Translation, Rotation):
            identical.
         """
         return rmsd(self.t, other.t) < t_threshold and rmsd(self.r, other.r) < r_threshold
-
-
-def rotation_about_axis(center, angle, axis, invert=False):
-    """Compute the transformation object that represents a rotation about an axis
-
-       Arguments:
-         center  --  Point on the axis
-         angle  --  Rotation angle
-         axis  --  Rotation axis
-         invert  --  When True, an inversion rotation is constructed
-                     [default=False]
-    """
-    return Translation(center)*Rotation.from_properties(angle, axis, invert)*Translation(-center)
 
 
 def superpose(ras, rbs, weights=None):

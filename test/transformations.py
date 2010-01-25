@@ -300,7 +300,7 @@ class TransformationsTestCase(BaseTestCase):
 
     def test_rotation_about_axis(self):
         x = numpy.array([2,0,0])
-        c = rotation_about_axis(numpy.array([1,0,0]), numpy.pi, numpy.array([1,1,0]), False)
+        c = Complete.about_axis(numpy.array([1,0,0]), numpy.pi, numpy.array([1,1,0]), False)
         self.assertArraysAlmostEqual(c*x, numpy.array([1,1,0]))
 
     def test_superpose(self):
