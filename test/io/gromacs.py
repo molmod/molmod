@@ -1,5 +1,7 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
+# reserved unless otherwise stated.
 #
 # This file is part of MolMod.
 #
@@ -40,4 +42,5 @@ class GromacsTestCase(BaseTestCase):
             self.assertAlmostEqual(vel[3,2]/nanometer*picosecond, -0.1734)
             self.assertAlmostEqual(cell[0,0]/nanometer, 1.82060)
             break
+
 

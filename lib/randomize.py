@@ -1,5 +1,7 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
+# reserved unless otherwise stated.
 #
 # This file is part of MolMod.
 #
@@ -461,9 +463,5 @@ def random_dimer(molecule0, molecule1, thresholds, shoot_max):
     dimer.atom0 = atom0
     dimer.atom1 = atom1
     return dimer
-
-
-
-
 
 

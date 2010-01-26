@@ -1,14 +1,16 @@
-# MolModExt implements a few number crunching routines for the molmod package in C.
-# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# MolMod is a collection of molecular modelling tools for python.
+# Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
+# reserved unless otherwise stated.
 #
-# This file is part of MolModExt.
+# This file is part of MolMod.
 #
-# MolModExt is free software; you can redistribute it and/or
+# MolMod is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 3
 # of the License, or (at your option) any later version.
 #
-# MolModExt is distributed in the hope that it will be useful,
+# MolMod is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -25,8 +27,8 @@ from numpy.distutils.extension import Extension
 
 setup(
     name='MolModExt',
-    version='0.001',
-    description='MolModExt implements a few number crunching routines for the molmod package in C.',
+    version='0.004',
+    description='MolModExt implements a few number crunching routines for the MolMod package in C.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
     url='http://molmod.ugent.be/code/',
@@ -48,4 +50,5 @@ setup(
         'Topic :: Science/Engineering :: Molecular Science'
     ],
 )
+
 

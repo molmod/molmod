@@ -1,5 +1,7 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
+# reserved unless otherwise stated.
 #
 # This file is part of MolMod.
 #
@@ -168,4 +170,5 @@ class MoleculeTestCase(BaseTestCase):
         mol1 = mol0.copy_with(symbols=None)
         mol1.set_default_symbols()
         self.assertEqual(mol1.symbols, ["O", "H", "H"])
+
 

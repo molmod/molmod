@@ -1,5 +1,7 @@
 // MolModExt implements a few number crunching routines for the molmod package in C.
-// Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+// Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+// for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
+// reserved unless otherwise stated.
 //
 // This file is part of MolModExt.
 //

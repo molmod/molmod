@@ -1,5 +1,7 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
+# reserved unless otherwise stated.
 #
 # This file is part of MolMod.
 #
@@ -67,4 +69,5 @@ class SDFTestCase(unittest.TestCase):
         self.assertAlmostEqual(mol.coordinates[13,0]/angstrom, 12.6002)
         self.assert_((mol.formal_charges[:12]==-1).all())
         self.assert_((mol.formal_charges[12:]==0).all())
+
 

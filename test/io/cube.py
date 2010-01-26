@@ -1,5 +1,7 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
+# reserved unless otherwise stated.
 #
 # This file is part of MolMod.
 #
@@ -44,6 +46,5 @@ class CubeTestCase(BaseTestCase):
         vector, value = cr.next()
         self.assertAlmostEqual(value, 2.77030E-13)
         self.assertArraysAlmostEqual(vector, numpy.array([-9.375592, -8.571340, -4.994197]))
-
 
 

@@ -1,4 +1,4 @@
-MolMod 0.003 README
+MolMod 0.004 README
 ===================
 
 Contents of this README File:
@@ -39,7 +39,6 @@ The following software has to be installed on your system before you can use
 MolMod:
  1) Python (>=2.4, <3.0): see http://www.python.org/
  2) Numpy (>=1.0.1): see http://www.scipy.org/
- 3) Scipy (>=0.5.2): see http://www.scipy.org/
 
 
 How to install

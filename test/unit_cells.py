@@ -1,5 +1,7 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
+# reserved unless otherwise stated.
 #
 # This file is part of MolMod.
 #
@@ -482,4 +484,5 @@ class UnitCellTestCase(BaseTestCase):
             for i1, i0 in enumerate(uc0.active_inactive[0]):
                 self.assertArraysAlmostEqual(uc0.matrix[:,i0], uc1.matrix[:,i1])
                 self.assertEqual(uc0.active[i0], uc1.active[i1])
+
 

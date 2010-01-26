@@ -1,5 +1,7 @@
 // MolModExt implements a few number crunching routines for the molmod package in C.
-// Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+// Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+// for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
+// reserved unless otherwise stated.
 //
 // This file is part of MolModExt.
 //
@@ -93,4 +95,5 @@ double distance_delta_periodic(double *a, double *b, double *delta, double *matr
 double norm(double *a) {
   return sqrt(a[0]*a[0] + a[1]*a[1] + a[2]*a[2]);
 }
+
 

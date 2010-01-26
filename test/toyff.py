@@ -1,5 +1,7 @@
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
+# reserved unless otherwise stated.
 #
 # This file is part of MolMod.
 #
@@ -197,4 +199,5 @@ class ToyFFTestCase(unittest.TestCase):
         dm = dm + dm.max()*numpy.identity(len(dm))
         mol = tune_geometry(mol.graph, mol, unit_cell)
         mol.write_to_file("output/caplayer.xyz")
+
 
