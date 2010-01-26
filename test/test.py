@@ -53,6 +53,7 @@ from io import *
 from minimizer import *
 from molecules import *
 from molecular_graphs import *
+from pairff import *
 from quaternions import *
 from randomize import *
 from similarity import *
