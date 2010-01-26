@@ -50,6 +50,7 @@ class FCHKFile(object):
                                of time.)
         """
         self.filename = filename
+        self.ignore_errors = ignore_errors
         try:
             if field_labels is not None:
                 field_labels = set(field_labels)
@@ -90,11 +91,15 @@ class FCHKFile(object):
                         field_labels.discard(label)
                 line = line[43:]
                 words = line.split()
+                if len(words) == 0:
+                    return True
 
                 if words[0] == 'I':
                     datatype = int
+                    unreadable = 0
                 elif words[0] == 'R':
                     datatype = float
+                    unreadable = numpy.nan
 
             if len(words) == 2:
                 try:
@@ -113,7 +118,13 @@ class FCHKFile(object):
                         if line == "":
                             raise FileFormatError("Unexpected end of formatted checkpoint file %s" % filename)
                         for word in line.split():
-                            value[counter] = datatype(word)
+                            try:
+                                value[counter] = datatype(word)
+                            except ValueError:
+                                if self.ignore_errors:
+                                    value[counter] = unreadable
+                                else:
+                                    raise
                             counter += 1
                 except ValueError:
                     return True
