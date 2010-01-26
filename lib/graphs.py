@@ -642,8 +642,6 @@ class Graph(ReadOnly):
            Returns the vertices in both halfs.
         """
         vertex1_new = set(self.neighbors[vertex1])
-        if vertex2 not in vertex1_new:
-            raise GraphError("vertex1 and vertex2 must be connected.")
         vertex1_new.discard(vertex2)
         vertex1_part = set([vertex1])
 
