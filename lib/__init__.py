@@ -49,6 +49,7 @@ from molmod.context import *
 
 from molmod.binning import *
 from molmod.clusters import *
+from molmod.constants import *
 from molmod.graphs import *
 from molmod.ic import *
 from molmod.minimizer import *
