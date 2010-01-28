@@ -44,7 +44,8 @@ import numpy
 
 
 __all__ = [
-    "GoldenLineSearch", "NewtonLineSearch", "NewtonGLineSearch", "Minimizer"
+    "GoldenLineSearch", "NewtonLineSearch", "NewtonGLineSearch",
+    "StopCondition", "Minimizer"
 ]
 
 
@@ -54,23 +55,23 @@ phi = 0.5*(1+numpy.sqrt(5))
 class LineSearch(object):
     """Abstract base class for a line search implementation"""
 
-    def __init__(self, qtol, max_step, max_iter):
+    def __init__(self, qtol, qmax, max_iter):
         """Initialize a line search
 
            Arguments:
              qtol  --  The threshold for displacements along the line. (When
                        displacements become smaller than qtol, we assume
                        convergence)
-             max_step  --  The maximum step size of a line search
+             qmax  --  The maximum step size of a line search
              max_iter  --  the maximum number of iteration for the line search
         """
         self.qtol = qtol
-        self.max_step = max_step
+        self.qmax = qmax
         self.max_iter = max_iter
 
     def limit_step(self, step):
         """Clip the a step within the maximum allowed range"""
-        return numpy.clip(step, -self.max_step, self.max_step)
+        return numpy.clip(step, -self.qmax, self.qmax)
 
     def get_extra_log_dtypes(self):
         """Get a description of the extra fields from the line search for the log
@@ -99,17 +100,17 @@ class LineSearch(object):
 class GoldenLineSearch(LineSearch):
     """An implementation of the golden section line search algorithm"""
 
-    def __init__(self, qtol, max_step, max_iter):
+    def __init__(self, qtol, qmax, max_iter):
         """Initialize the golden section line search
 
            Arguments:
              qtol  --  The threshold for displacements along the line. (When
                        displacements become smaller than qtol, we assume
                        convergence)
-             max_step  --  The maximum step size of a line search
+             qmax  --  The maximum step size of a line search
              max_iter  --  the maximum number of iteration for the line search
         """
-        LineSearch.__init__(self, qtol, max_step, max_iter)
+        LineSearch.__init__(self, qtol, qmax, max_iter)
         self.num_bracket = 0
         self.num_golden = 0
 
@@ -209,17 +210,17 @@ class GoldenLineSearch(LineSearch):
 class NewtonLineSearch(LineSearch):
     """An implementation of the Newton line search algorithm with numerical gradients"""
 
-    def __init__(self, qtol, max_step, max_iter):
+    def __init__(self, qtol, qmax, max_iter):
         """Initialize the Newton line search (numerical gradients)
 
            Arguments:
              qtol  --  The threshold for displacements along the line. (When
                        displacements become smaller than qtol, we assume
                        convergence)
-             max_step  --  The maximum step size of a line search
+             qmax  --  The maximum step size of a line search
              max_iter  --  the maximum number of iteration for the line search
         """
-        LineSearch.__init__(self, qtol, max_step, max_iter)
+        LineSearch.__init__(self, qtol, qmax, max_iter)
         self.num_reduce = 0
 
     def get_extra_log_dtypes(self):
@@ -273,17 +274,17 @@ class NewtonLineSearch(LineSearch):
 class NewtonGLineSearch(LineSearch):
     """An implementation of the Newton line search algorithm with analytical gradients"""
 
-    def __init__(self, qtol, max_step, max_iter):
+    def __init__(self, qtol, qmax, max_iter):
         """Initialize the Newton line search (analytical gradients)
 
            Arguments:
              qtol  --  The threshold for displacements along the line. (When
                        displacements become smaller than qtol, we assume
                        convergence)
-             max_step  --  The maximum step size of a line search
+             qmax  --  The maximum step size of a line search
              max_iter  --  the maximum number of iteration for the line search
         """
-        LineSearch.__init__(self, qtol, max_step, max_iter)
+        LineSearch.__init__(self, qtol, qmax, max_iter)
         self.num_reduce = 0
 
     def get_extra_log_dtypes(self):
@@ -334,109 +335,176 @@ class NewtonGLineSearch(LineSearch):
         return True, qopt, fopt
 
 
+class StopCondition(object):
+    def __init__(self, step_rms=None, step_max=None, grad_rms=None, grad_max=None, max_iter=None):
+        self.step_rms = step_rms
+        self.step_max = step_max
+        self.grad_rms = grad_rms
+        self.grad_max = grad_max
+        self.max_iter = max_iter
+
+    def get_header(self):
+        result = " "
+        if self.step_rms is not None:
+            result += "    Step RMS"
+        if self.step_max is not None:
+            result += "    Step MAX"
+        if self.grad_rms is not None:
+            result += "    Grad RMS"
+        if self.grad_max is not None:
+            result += "    Grad MAX"
+        return result
+
+    def __call__(self, grad, step, counter):
+        """Determine if the minimizer has converged"""
+        stop = True
+        status = ""
+        red = "\033[0;31m"
+        green = "\033[0;32m"
+        reset = "\033[m"
+
+        def check_threshold(measure, threshold, stop, status):
+            if threshold is not None:
+                #measure = abs(grad).max()
+                if measure > threshold:
+                    color = red
+                    stop = False
+                else:
+                    color = green
+                status += "%s% 9.3e  %s" % (color, measure, reset)
+            return stop, status
+
+        stop, status = check_threshold(numpy.sqrt((step**2).mean()), self.step_rms, stop, status)
+        stop, status = check_threshold(abs(step).max(), self.step_max, stop, status)
+        stop, status = check_threshold(numpy.sqrt((grad**2).mean()), self.grad_rms, stop, status)
+        stop, status = check_threshold(abs(grad).max(), self.grad_max, stop, status)
+
+        if counter >= self.max_iter:
+            stop = True
+        return stop, status
+
+
 class Minimizer(object):
     """A flexible conjugate gradient optimizer with configurable line search
 
        The minimizer searches in principle for the 'nearest' local minimum.
     """
 
-    def __init__(
-        self, x_init, fun, LineSearchCls, ftol, xtol, max_step_rms, max_iter, max_line_iter,
-        do_gradient=False, epsilon_init=1e-6, absftol=False, verbose=True, callback=None,
-        min_iter=0, extra_log_dtypes=None
-    ):
+    def __init__(self, x_init, fun, line_search, stop_condition, anagrad=False,
+                 epsilon_init=1e-6, verbose=True, callback=None,
+                 extra_log_dtypes=[]):
         """Initialize the minimizer
 
            Arguments:
              x_init  --  the initial guess for the minimum
              fun  --  function to be minimized (see below)
-             LineSearchCls  --  The class of the line search implementation
-             ftol  --  when changes in the function value drop below this
-                       threshold, the algorithm stops
-             xtol  --  when the norm of the changes in the unknowns drops below
-                       this threshold, the algorithm stops
-             max_step_rms  --  the maximum step size of one line search
-             max_iter  --  the maximum number of CG iterations
-             max_line_iter  --  the maximum number of iterations in the line
-                                search
-             do_gradient  --  use analytical gradients (default=False)
+             line_search  --  a LineSearch object
+             stop_condition  --  a StopCondition object
+
+          Optional arguments
+             anagrad  --  when set to True, analytical gradients are used
              epsilon_init  --  a small value compared to expected changes in the
-                               unknowns (default=1e-6)
-             absftol  --  consider the ftol threshold as an absolute change
-                          instead of a relative change (default=False)
+                               unknowns (default=1e-6). it is used to compute
+                               finite differences. epsilon will be reduced when
+                               the steps in the iterative procedure become
+                               smaller
              verbose  --  print progress information on screen (default=True)
              callback  --  optional callback routine after each CG iteration.
                            the callback routine gets the current unknowns as
                            first and only argument. The callback routine must
-                           return a (empty) list of additional log data.
-                           (default=None)
-             min_iter  --  the minimum number of CG iterations (default=0)
+                           return a list of additional log data. (default=None)
              extra_log_dtypes  --  dtype descriptions of the extra log fields
                                    returned by the callback routine
-                                   (default=None)
+                                   (default=[])
         """
         if len(x_init.shape)!=1:
             raise ValueError("The unknowns must be stored in a plain row vector.")
-        max_step = max_step_rms*numpy.sqrt(len(x_init))
         self.x = x_init.copy()
         self.fun = fun
-        self.line_search = LineSearchCls(xtol, max_step, max_line_iter)
-        self.ftol = ftol
-        self.xtol = xtol
-        self.max_step = max_step
-        self.do_gradient = do_gradient
+        self.line_search = line_search
+        self.stop_condition = stop_condition
+        self.anagrad = anagrad
         self.callback = callback
         self.epsilon = epsilon_init
         self.epsilon_max = epsilon_init
-        self.absftol = absftol
         self.verbose = verbose
-        self.min_iter = min_iter
 
         self.extra_log_dtypes = self.line_search.get_extra_log_dtypes()
-        if extra_log_dtypes is not None:
-            self.extra_log_dtypes.extend(extra_log_dtypes)
+        self.extra_log_dtypes.extend(extra_log_dtypes)
 
         self.log = []
         self.step_size = 1.0
         self.step_rms = 1.0/numpy.sqrt(len(x_init))
-        self.direction_cg = numpy.zeros(self.x.shape, float)
+        # minus the (conjugate) gradient
+        self.direction = numpy.zeros(self.x.shape, float)
+        # minus the gradient
         self.direction_sd = numpy.zeros(self.x.shape, float)
+        # previous value of minus the gradient
         self.direction_sd_old = numpy.zeros(self.x.shape, float)
 
-        self._iterate(max_iter)
+        self._iterate()
 
-    def _iterate(self, max_iter):
+    def _iterate(self):
         """Run the conjugate gradient algorithm"""
         self.f = self.fun(self.x)
-
-        self.beta = 0
-        self._update_direction_sd()
-        self.direction_cg[:] = self.direction_sd
+        self._update_sd()
         last_reset = True
-        self.lower = False # do have one iteration were the function lowered?
         # the cg loop
-        for self.counter in xrange(max_iter):
-            self._screen("Iter % 5i of % 5i" % (self.counter, max_iter), False)
+        self.counter = 0
+        while True:
+            if self.counter % 20 == 0:
+                self._print_header()
+            self._screen("% 5i  " % self.counter)
             if last_reset:
-                lower = self._line_opt("SD")
+                self._line_opt("SD")
             else:
-                lower = self._line_opt("CG")
+                self._line_opt("CG")
             self._append_log()
-            if lower is True:
+            # decide what to do in the next loop
+            if self.decrease > 0:
+                # check stop condition
+                stop, status = self.stop_condition(-self.direction_sd, self.step, self.counter)
+                self._screen(status, newline=True)
+                if stop:
+                    # Stopping because the stop condition was reached
+                    break
                 self._update_cg()
                 last_reset = False
-                self.lower = True
             else:
-                if last_reset and (self.counter > self.min_iter or lower is None):
+                self._screen("", newline=True)
+                if last_reset or self.direction_norm == 0:
+                    # Stopping because the conjugate gradient in combination
+                    # with the line search is not finding a better solution,
+                    # even after a plain steepest descent step. Most of the time
+                    # this due to:
+                    #  (i) ill-defined cost functions
+                    #  (ii) errors in the gradient inherent to finite
+                    #       differences
+                    #  (iii) errors in the implementation of the analytical
+                    #        gradient provided by the user
+                    #  (iv) convergence criteria that go beyond double precision
+                    # Note that the last issue should be seen in the relative
+                    # sense. If the function value itself is about 10e10, it is
+                    # not possible to see the function decrease with amounts
+                    # smaller than 10e-5.
                     break
                 self._update_sd()
                 last_reset = True
+            # update epsilon for finite differences
             if self.step_rms > 0:
                 self.epsilon = min(self.step_rms*1e-2, self.epsilon_max)
+            self.counter += 1
 
-        self._screen("Done")
+        self._screen("Done", True)
 
-    def _screen(self, s, newline=True):
+    def _print_header(self):
+        header = " Iter  Dir     Decrease    Function"
+        header += self.stop_condition.get_header()
+        self._screen("-"*(len(header)+2), True)
+        self._screen(header, True)
+        self._screen("-"*(len(header)+2), True)
+
+    def _screen(self, s, newline=False):
         """Print something on screen when self.verbose == True"""
         if self.verbose:
             if newline:
@@ -444,94 +512,89 @@ class Minimizer(object):
             else:
                 print s,
 
-    def _update_direction_sd(self):
+    def _compute_direction_sd(self):
         """Update the gradient"""
-        if self.do_gradient:
+        if self.anagrad:
             self.f, tmp = self.fun(self.x, do_gradient=True)
             self.direction_sd[:] = -tmp
-            #print self.direction_sd
         else:
-        #if True:
             tmp = self.x.copy()
             for j in xrange(len(self.x)):
                 tmp[j] += self.epsilon
                 self.direction_sd[j] = -(self.fun(tmp) - self.f)/self.epsilon
                 tmp[j] = self.x[j]
             self._reset_state()
-            #print self.direction_sd
-        #sys.exit()
 
     def _line_opt(self, label):
         """Perform a line search along the given direction"""
-        direction = self.direction_cg
-        if numpy.linalg.norm(direction) == 0:
-            self._screen("  'Opt% 3s'              Direction zero" % label)
-            return False
-        direction = direction/numpy.linalg.norm(direction)
+        self._screen("%2s  " % label)
+        self.direction_norm = numpy.linalg.norm(self.direction)
+        if self.direction_norm == 0:
+            self._screen("Direction zero")
+            self.decrease = 0.0
+            return
+        axis = self.direction/self.direction_norm
+
         def fun_aux(q, do_gradient=False):
             """One-dimensional cut of the function along the search direction"""
-            xq = self.x + q*direction
+            xq = self.x + q*axis
             if do_gradient:
                 fq, gq = self.fun(xq, do_gradient=True)
-                return fq, numpy.dot(direction, gq)
+                return fq, numpy.dot(axis, gq)
             else:
                 return self.fun(xq)
 
         success, qopt, fopt = self.line_search(fun_aux, self.f, self.step_size, self.epsilon)
         if success:
-            self._screen("  'Opt% 3s'             " % label, False)
-            return self._handle_new_solution(self.x + qopt*direction, fopt)
+            return self._handle_new_solution(self.x + qopt*axis, fopt)
         else:
             # returning the old x and f, means that the optimization failed
-            self._screen("  'Opt% 3s'              Line search failed" % label)
+            self._screen("Line search failed")
             self._reset_state()
-            return None
+            self.decrease = 0.0
 
     def _handle_new_solution(self, xnew, fnew):
-        """Decide what to do with a new set of unknowns generated by the line search"""
-        self.step_size = numpy.linalg.norm(self.x - xnew)
+        """Analyze the new solution generated by the line search
+
+           Returns True when the function lowered, false otherwise
+        """
+        self.step = self.x - xnew
+        self.step_size = numpy.linalg.norm(self.step)
         self.step_rms = self.step_size/numpy.sqrt(len(self.x))
-        if self.absftol:
-            self.decrease = self.f - fnew
-            self._screen("step_rms=% 9.7e   absdecr=% 9.7e   fnew=% 9.7e" % (self.step_rms, self.decrease, fnew))
-        else:
-            self.decrease = (self.f - fnew)/self.f
-            self._screen("step_rms=% 9.7e   reldecr=% 9.7e   fnew=% 9.7e" % (self.step_rms, self.decrease, fnew))
-        if self.step_rms < self.xtol:
-            result = False
-        if self.decrease < self.ftol:
-            result = False
-        else:
-            result = True
+        self.decrease = self.f - fnew
+        self._screen("% 9.3e  % 9.3e  " % (self.decrease, fnew))
         if self.decrease > 0:
             self.x = xnew
             self.f = fnew
+            return True
         else:
+            self._screen("Function increased")
             self._reset_state()
-        return result
+            return False
 
     def _reset_state(self):
         """Reset of the internal state of the function"""
         self.fun(self.x) # reset the internal state of the function
-        self.decrease = -1.0
 
     def _update_cg(self):
         """Update the conjugate gradient after an iteration"""
         self.direction_sd_old[:] = self.direction_sd
-        self._update_direction_sd()
+        self._compute_direction_sd()
+        # Polak-Ribiere
         self.beta = (
             numpy.dot(self.direction_sd, self.direction_sd - self.direction_sd_old) /
             numpy.dot(self.direction_sd_old, self.direction_sd_old)
         )
+        # Automatic direction reset
         if self.beta < 0:
             self.beta = 0
-        self.direction_cg[:] *= self.beta
-        self.direction_cg[:] += self.direction_sd
+        self.direction[:] *= self.beta
+        self.direction[:] += self.direction_sd
 
     def _update_sd(self):
         """Reset the conjugate gradient to the normal gradient"""
-        self._update_direction_sd()
-        self.direction_cg[:] = self.direction_sd
+        self._compute_direction_sd()
+        self.direction[:] = self.direction_sd
         self.beta = 0
 
     def _append_log(self):
@@ -542,7 +605,7 @@ class Minimizer(object):
         self.log.append((
             self.f, self.step_rms, self.beta,
             numpy.linalg.norm(self.direction_sd),
-            numpy.linalg.norm(self.direction_cg),
+            numpy.linalg.norm(self.direction),
             self.x.copy(),
         ) + extra_fields)
 
