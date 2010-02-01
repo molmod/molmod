@@ -36,7 +36,13 @@
            return value
 
    x_init = numpy.zeros(2, float)
-   minimizer = Minimizer(x_init, fun, NewtonGLineSearch, 1e-5, 1e-5, 1e-1, 1000, 50, do_gradient=True)
+   line_search = NewtonLineSearch(max_reduce=500)
+   convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6)
+   stop_loss = StopLossCondition(max_iter=50)
+   minimizer = Minimizer(
+       x_init, fun, line_search, convergence, stop_loss,
+       anagrad=True, verbose=True,
+   )
    print "optimum", minimizer.x, fun(minimizer.x)
 """
 
