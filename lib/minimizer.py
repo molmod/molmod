@@ -216,15 +216,15 @@ class NewtonLineSearch(LineSearch):
 
     def _compute_derivatives(self, q0, f0, fun, epsilon):
         if self.anagrad:
-            fl = fun(q0-epsilon)
-            fh = fun(q0+epsilon)
-            g0 = (fh-fl)/(2*epsilon)
-            h0 = (fh+fl-2*f0)/epsilon
-        else:
             gl = fun(q0-epsilon, do_gradient=True)[1]
             gh = fun(q0+epsilon, do_gradient=True)[1]
             g0 = 0.5*(gl+gh)
             h0 = (gh-gl)/(2*epsilon)
+        else:
+            fl = fun(q0-epsilon)
+            fh = fun(q0+epsilon)
+            g0 = (fh-fl)/(2*epsilon)
+            h0 = (fh+fl-2*f0)/epsilon**2
         return g0, h0
 
     def __call__(self, fun, f0, last_step_size, epsilon):
