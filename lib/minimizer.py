@@ -44,8 +44,8 @@ import numpy
 
 
 __all__ = [
-    "GoldenLineSearch", "NewtonLineSearch",
-    "ConvergenceCondition", "StopLossCondition", "Minimizer"
+    "GoldenLineSearch", "NewtonLineSearch", "ConvergenceCondition",
+    "StopLossCondition", "Minimizer", "check_anagrad"
 ]
 
 
@@ -403,6 +403,13 @@ class Minimizer(object):
              callback  --  optional callback routine after each CG iteration.
                            the callback routine gets the minimizer as first
                            and only argument. (default=None)
+
+          The function fun takes a madatory argument x and an optional argument
+          do_gradient:
+            x  --  the arguments of the function to be tested
+            do_gradient  --  when False, only the function value is returned.
+                             when True, a 2-tuple with the function value and
+                             the gradient are returned [default=False]
         """
         if len(x_init.shape)!=1:
             raise ValueError("The unknowns must be stored in a plain row vector.")
@@ -558,4 +565,35 @@ class Minimizer(object):
         self.direction[:] = self.direction_sd
         self.beta = 0
         self.direction_label = "SD"
+
+
+def check_anagrad(fun, x0, epsilon, scale=10):
+    """Check the analytical gradient using finite differences
+
+       Arguments:
+         fun  --  the function to be tested, more info below
+         x0  --  the reference point around which the function should be tested
+         epsilon  --  a small scalar used for the finite differences
+
+       Optional argument
+         scale  --  scale*epsilon is the threshold for an error between the
+                    analytical and the numerical gradient
+
+       The function fun takes a madatory argument x and an optional argument
+       do_gradient:
+         x  --  the arguments of the function to be tested
+         do_gradient  --  when False, only the function value is returned. when
+                          True, a 2-tuple with the function value and the
+                          gradient are returned [default=False]
+    """
+    N = len(x0)
+    f0, ana_grad = fun(x0, do_gradient=True)
+    for i in xrange(N):
+        xh = x0.copy()
+        xh[i] += 0.5*epsilon
+        xl = x0.copy()
+        xl[i] -= 0.5*epsilon
+        if abs((fun(xh)-fun(xl))/epsilon - ana_grad[i]) > scale*epsilon:
+            raise ValueError("Error in the analytical gradient")
+
 

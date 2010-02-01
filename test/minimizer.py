@@ -86,4 +86,6 @@ class MinimizerTestCase(unittest.TestCase):
         )
         self.check_min(minimizer.x, 1e-6, 1e-6)
 
-
+    def test_check_anagrad(self):
+        x_init = numpy.zeros(2, float)
+        check_anagrad(fun, x_init, 1e-5)
