@@ -56,30 +56,33 @@ class MinimizerTestCase(unittest.TestCase):
     def test_golden(self):
         x_init = numpy.zeros(2, float)
         line_search = GoldenLineSearch(qtol=1e-10, qmax=1.0, max_iter=500)
-        stop_condition = StopCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6, max_iter=50)
+        convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
+        stop_loss = StopLossCondition(max_iter=50, fn_margin=1e-3, grad_margin=1e-3)
         minimizer = Minimizer(
-            x_init, fun, line_search, stop_condition,
-            anagrad=False, verbose=False,
+            x_init, fun, line_search, convergence, stop_loss,
+            anagrad=False, verbose=True,
         )
         self.check_min(minimizer.x, 1e-6, 1e-6)
 
     def test_newton(self):
         x_init = numpy.zeros(2, float)
         line_search = NewtonLineSearch(qtol=1e-10, qmax=1.0, max_iter=500)
-        stop_condition = StopCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6, max_iter=50)
+        convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
+        stop_loss = StopLossCondition(max_iter=50, fn_margin=1e-3)
         minimizer = Minimizer(
-            x_init, fun, line_search, stop_condition,
-            anagrad=True, verbose=False,
+            x_init, fun, line_search, convergence, stop_loss,
+            anagrad=True, verbose=True,
         )
         self.check_min(minimizer.x, 1e-6, 1e-6)
 
     def test_newtong(self):
         x_init = numpy.zeros(2, float)
-        line_search = NewtonGLineSearch(qtol=1e-10, qmax=1.0, max_iter=500)
-        stop_condition = StopCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6, max_iter=50)
+        line_search = NewtonGLineSearch(qtol=1e-15, qmax=1.0, max_iter=500)
+        convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
+        stop_loss = StopLossCondition(max_iter=50, fn_margin=1e-3, grad_margin=1e-3)
         minimizer = Minimizer(
-            x_init, fun, line_search, stop_condition,
-            anagrad=True, verbose=False,
+            x_init, fun, line_search, convergence, stop_loss,
+            anagrad=True, verbose=True,
         )
         self.check_min(minimizer.x, 1e-6, 1e-6)
 
