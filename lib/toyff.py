@@ -51,20 +51,25 @@ def guess_geometry(graph, unit_cell=None, verbose=False):
     """
 
     N = len(graph.numbers)
-    from molmod.minimizer import Minimizer, NewtonGLineSearch
+    from molmod.minimizer import Minimizer, NewtonLineSearch, \
+        ConvergenceCondition, StopLossCondition
+
+    line_search = NewtonLineSearch(max_reduce=500)
+    convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6)
+    stop_loss = StopLossCondition(max_iter=500, fun_margin=0.1)
 
     ff = ToyFF(graph, unit_cell)
     x_init = numpy.random.normal(0, 1, N*3)
 
     #  level 1 geometry optimization: graph based
     ff.dm_quad = 1.0
-    minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-10, 1e-8, 2*N, 500, 50, do_gradient=True, verbose=verbose)
+    minimizer = Minimizer(x_init, ff, line_search, convergence, stop_loss, anagrad=True, verbose=verbose)
     x_init = minimizer.x
 
     #  level 2 geometry optimization: graph based + pauli repulsion
     ff.dm_quad = 1.0
     ff.dm_reci = 1.0
-    minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-10, 1e-8, 2*N, 500, 50, do_gradient=True, verbose=verbose)
+    minimizer = Minimizer(x_init, ff, line_search, convergence, stop_loss, anagrad=True, verbose=verbose)
     x_init = minimizer.x
 
     # Add a little noise to avoid saddle points
@@ -74,14 +79,14 @@ def guess_geometry(graph, unit_cell=None, verbose=False):
     ff.dm_quad = 0.0
     ff.dm_reci = 0.2
     ff.bond_quad = 1.0
-    minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-3, 1e-3, 2*N, 500, 50, do_gradient=True, verbose=verbose)
+    minimizer = Minimizer(x_init, ff, line_search, convergence, stop_loss, anagrad=True, verbose=verbose)
     x_init = minimizer.x
 
     #  level 4 geometry optimization: bond lengths + bending angles + pauli
     ff.bond_quad = 0.0
     ff.bond_hyper = 1.0
     ff.span_quad = 1.0
-    minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-6, 1e-6, 2*N, 500, 50, do_gradient=True, verbose=verbose)
+    minimizer = Minimizer(x_init, ff, line_search, convergence, stop_loss, anagrad=True, verbose=verbose)
     x_init = minimizer.x
 
     x_opt = x_init
@@ -107,7 +112,12 @@ def tune_geometry(graph, mol, unit_cell=None, verbose=False):
     """
 
     N = len(graph.numbers)
-    from molmod.minimizer import Minimizer, NewtonGLineSearch
+    from molmod.minimizer import Minimizer, NewtonLineSearch, \
+        ConvergenceCondition, StopLossCondition
+
+    line_search = NewtonLineSearch(max_reduce=500)
+    convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6)
+    stop_loss = StopLossCondition(max_iter=500, fun_margin=0.1)
 
     ff = ToyFF(graph, unit_cell)
     x_init = mol.coordinates.ravel()
@@ -115,14 +125,14 @@ def tune_geometry(graph, mol, unit_cell=None, verbose=False):
     #  level 3 geometry optimization: bond lengths + pauli
     ff.dm_reci = 0.2
     ff.bond_quad = 1.0
-    minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-3, 1e-3, 2*N, 500, 50, do_gradient=True, verbose=verbose)
+    minimizer = Minimizer(x_init, ff, line_search, convergence, stop_loss, anagrad=True, verbose=verbose)
     x_init = minimizer.x
 
     #  level 4 geometry optimization: bond lengths + bending angles + pauli
     ff.bond_quad = 0.0
     ff.bond_hyper = 1.0
     ff.span_quad = 1.0
-    minimizer = Minimizer(x_init, ff, NewtonGLineSearch, 1e-6, 1e-6, 2*N, 500, 50, do_gradient=True, verbose=verbose)
+    minimizer = Minimizer(x_init, ff, line_search, convergence, stop_loss, anagrad=True, verbose=verbose)
     x_init = minimizer.x
 
     x_opt = x_init
