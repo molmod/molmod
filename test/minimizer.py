@@ -66,7 +66,7 @@ class MinimizerTestCase(unittest.TestCase):
 
     def test_newton(self):
         x_init = numpy.zeros(2, float)
-        line_search = NewtonLineSearch(qtol=1e-10, qmax=1.0, max_iter=500)
+        line_search = NewtonLineSearch(qmax=1.0, max_reduce=500, anagrad=False)
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
         stop_loss = StopLossCondition(max_iter=50, fn_margin=1e-3)
         minimizer = Minimizer(
@@ -77,9 +77,9 @@ class MinimizerTestCase(unittest.TestCase):
 
     def test_newtong(self):
         x_init = numpy.zeros(2, float)
-        line_search = NewtonGLineSearch(qtol=1e-15, qmax=1.0, max_iter=500)
+        line_search = NewtonLineSearch(qmax=1.0, max_reduce=500, anagrad=True)
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
-        stop_loss = StopLossCondition(max_iter=50, fn_margin=1e-3, grad_margin=1e-3)
+        stop_loss = StopLossCondition(max_iter=50, fn_margin=1e-3)
         minimizer = Minimizer(
             x_init, fun, line_search, convergence, stop_loss,
             anagrad=True, verbose=True,

@@ -44,7 +44,7 @@ import numpy
 
 
 __all__ = [
-    "GoldenLineSearch", "NewtonLineSearch", "NewtonGLineSearch",
+    "GoldenLineSearch", "NewtonLineSearch",
     "ConvergenceCondition", "StopLossCondition", "Minimizer"
 ]
 
@@ -53,25 +53,22 @@ phi = 0.5*(1+numpy.sqrt(5))
 
 
 class LineSearch(object):
-    """Abstract base class for a line search implementation"""
+    """Abstract base class for a line search"""
 
-    def __init__(self, qtol, qmax, max_iter):
+    def __init__(self, qmax=None):
         """Initialize a line search
 
-           Arguments:
-             qtol  --  The threshold for displacements along the line. (When
-                       displacements become smaller than qtol, we assume
-                       convergence)
+           Optional arguments:
              qmax  --  The maximum step size of a line search
-             max_iter  --  the maximum number of iteration for the line search
         """
-        self.qtol = qtol
         self.qmax = qmax
-        self.max_iter = max_iter
 
     def limit_step(self, step):
         """Clip the a step within the maximum allowed range"""
-        return numpy.clip(step, -self.qmax, self.qmax)
+        if self.qmax is None:
+            return step
+        else:
+            return numpy.clip(step, -self.qmax, self.qmax)
 
     def __call__(self, fun, f0, last_step_size, epsilon):
         """Return the value that minimizes the one-dimensional function 'fun'
@@ -86,19 +83,25 @@ class LineSearch(object):
 
 
 class GoldenLineSearch(LineSearch):
-    """An implementation of the golden section line search algorithm"""
+    """The golden section line search algorithm"""
 
-    def __init__(self, qtol, qmax, max_iter):
+    def __init__(self, qtol, qmax=None, max_iter=None):
         """Initialize the golden section line search
 
-           Arguments:
+           Argument:
              qtol  --  The threshold for displacements along the line. (When
                        displacements become smaller than qtol, we assume
                        convergence)
+           Optional arguments
              qmax  --  The maximum step size of a line search
              max_iter  --  the maximum number of iteration for the line search
+                           (only applies to the bracketing part)
         """
-        LineSearch.__init__(self, qtol, qmax, max_iter)
+        if qtol is None:
+            raise ValueError("No stop condition is specified")
+        self.qtol = qtol
+        self.max_iter = max_iter
+        LineSearch.__init__(self, qmax)
         self.num_bracket = 0
         self.num_golden = 0
 
@@ -181,20 +184,48 @@ class GoldenLineSearch(LineSearch):
 
 
 class NewtonLineSearch(LineSearch):
-    """An implementation of the Newton line search algorithm with numerical gradients"""
+    """The Newton line search algorithm with numerical gradients
 
-    def __init__(self, qtol, qmax, max_iter):
+       Only a single Newton or steepest descent step is performed.
+
+       When the curvature is negative, a steepest descent step is tried, using
+       the step size from the previous step multiplied by 1.5. If the new
+       function value is higher, the step size is reduced by a factor two. The
+       latter is repeated at most max_reduce times. If no lower value is found,
+       the line search fails.
+
+       When the curvature is positive, a Newton step is performed. When the
+       gradient at the new point is not lower, the step size is reduced by a
+       factor two. The latter is repeated at most max_reduce times. If not lower
+       gradient is found, the line search fails.
+    """
+
+    def __init__(self, qmax=None, max_reduce=None, anagrad=True):
         """Initialize the Newton line search (numerical gradients)
 
-           Arguments:
-             qtol  --  The threshold for displacements along the line. (When
-                       displacements become smaller than qtol, we assume
-                       convergence)
+           Optional arguments:
              qmax  --  The maximum step size of a line search
-             max_iter  --  the maximum number of iteration for the line search
+             max_reduce  --  the maximum number of attempts to half the step
+                             size in order to get a lower function or gradient
+             anagrad  --  when True, use analytical gradients [default=False]
         """
-        LineSearch.__init__(self, qtol, qmax, max_iter)
+        self.max_reduce = max_reduce
+        self.anagrad = anagrad
+        LineSearch.__init__(self, qmax)
         self.num_reduce = 0
+
+    def _compute_derivatives(self, q0, f0, fun, epsilon):
+        if self.anagrad:
+            fl = fun(q0-epsilon)
+            fh = fun(q0+epsilon)
+            g0 = (fh-fl)/(2*epsilon)
+            h0 = (fh+fl-2*f0)/epsilon
+        else:
+            gl = fun(q0-epsilon, do_gradient=True)[1]
+            gh = fun(q0+epsilon, do_gradient=True)[1]
+            g0 = 0.5*(gl+gh)
+            h0 = (gh-gl)/(2*epsilon)
+        return g0, h0
 
     def __call__(self, fun, f0, last_step_size, epsilon):
         """Return the value that minimizes the one-dimensional function 'fun'
@@ -203,81 +234,33 @@ class NewtonLineSearch(LineSearch):
              fun  --  function to minimize (one-dimensional)
              f0   --  the function value at the starting point q=0"
              last_step_size  --  the norm of step from the previous line search
-             epsilon  --  a value that is small compared to last_step_size
+             epsilon  --  a value that is small compared to last_step_size, used
+                          for finite differences
         """
-        # determine the curvature:
-        fl = fun(-epsilon)
-        fh = fun(+epsilon)
+        g0, h0 = self._compute_derivatives(0.0, f0, fun, epsilon)
 
-        f_d1 = (fh-fl)/(2*epsilon)
-        f_d2 = (fh+fl-2*f0)/epsilon
-        if f_d2 > 0:
-            qopt = -f_d1/f_d2
+        # determine the initial step size
+        if h0 > 0:
+            qopt = -g0/h0
         else:
-            qopt = last_step_size*1.5
+            qopt = numpy.sign(-g0)*last_step_size*1.5
         qopt = self.limit_step(qopt)
         self.num_reduce = 0
         while True:
-            if qopt < self.qtol:
-                return False, 0.0, f0
             fopt = fun(qopt)
-            if fopt < f0:
-                break
+            if h0 > 0:
+                gopt, hopt = self._compute_derivatives(qopt, fopt, fun, epsilon)
+                if abs(gopt) < abs(g0):
+                    return True, qopt, fopt
+            else:
+                fopt = fun(qopt)
+                if fopt < f0:
+                    return True, qopt, fopt
             qopt *= 0.5
             self.num_reduce += 1
-            if self.num_reduce > self.max_iter:
-                raise Exception("Line search did not converge.")
-        return True, qopt, fopt
+            if self.max_reduce is not None and self.num_reduce > self.max_reduce:
+                return False, qopt, fopt
 
-
-class NewtonGLineSearch(LineSearch):
-    """An implementation of the Newton line search algorithm with analytical gradients"""
-
-    def __init__(self, qtol, qmax, max_iter):
-        """Initialize the Newton line search (analytical gradients)
-
-           Arguments:
-             qtol  --  The threshold for displacements along the line. (When
-                       displacements become smaller than qtol, we assume
-                       convergence)
-             qmax  --  The maximum step size of a line search
-             max_iter  --  the maximum number of iteration for the line search
-        """
-        LineSearch.__init__(self, qtol, qmax, max_iter)
-        self.num_reduce = 0
-
-    def __call__(self, fun, f0, last_step_size, epsilon):
-        """Return the value that minimizes the one-dimensional function 'fun'
-
-           Arguments:
-             fun  --  function to minimize (one-dimensional)
-             f0   --  the function value at the starting point q=0"
-             last_step_size  --  the norm of step from the previous line search
-             epsilon  --  a value that is small compared to last_step_size
-        """
-        # determine the curvature:
-        dl = fun(-epsilon, do_gradient=True)[1]
-        dh = fun(+epsilon, do_gradient=True)[1]
-
-        f_d1 = 0.5*(dl+dh)
-        f_d2 = (dh-dl)/(2*epsilon)
-        if f_d2 > 0:
-            qopt = -f_d1/f_d2
-        else:
-            qopt = last_step_size*1.5
-        qopt = self.limit_step(qopt)
-        self.num_reduce = 0
-        while True:
-            if qopt < self.qtol:
-                return False, 0.0, f0
-            fopt = fun(qopt)
-            if fopt < f0:
-                break
-            qopt *= 0.5
-            self.num_reduce += 1
-            if self.num_reduce > self.max_iter:
-                raise Exception("Line search did not converge.")
-        return True, qopt, fopt
 
 
 class ConvergenceCondition(object):
@@ -299,6 +282,8 @@ class ConvergenceCondition(object):
            The present arguments define when the minimization has converged.
            All actual values must go below the given thresholds.
         """
+        if (step_rms is None and step_max is None and grad_rms is None and grad_max is None):
+            raise ValueError("Some convergence criteria must be specified")
         self.step_rms = step_rms
         self.step_max = step_max
         self.grad_rms = grad_rms
