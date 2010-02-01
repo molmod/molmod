@@ -338,14 +338,14 @@ class ConvergenceCondition(object):
 class StopLossCondition(object):
     """Callable object that checks if minimizer has lost track
     """
-    def __init__(self, max_iter=None, fn_margin=None, grad_margin=None):
+    def __init__(self, max_iter=None, fun_margin=None, grad_margin=None):
         """Initialize a StopLossCondition object
 
            Optional arguments:
              max_iter  --  the maximum number of iterations allowed
-             fn_margin  --  if the function to be minimized goes above the
-                            lowest value so far plus this margin, the
-                            minimization is aborted
+             fun_margin  --  if the function to be minimized goes above the
+                             lowest value so far plus this margin, the
+                             minimization is aborted
              grad_margin  --  if the RMS value of the gradient components goes
                               above the lowest value plus this threshold, the
                               minimization is aborted
@@ -353,7 +353,7 @@ class StopLossCondition(object):
            The present arguments define when the minimization has lost track.
         """
         self.max_iter = max_iter
-        self.fn_margin = fn_margin
+        self.fun_margin = fun_margin
         self.grad_margin = grad_margin
 
         self.fn_lowest = None
@@ -364,10 +364,10 @@ class StopLossCondition(object):
         if self.max_iter is not None and counter >= self.max_iter:
             return True
 
-        if self.fn_margin is not None:
+        if self.fun_margin is not None:
             if self.fn_lowest is None or fn < self.fn_lowest:
                 self.fn_lowest = fn
-            elif fn > self.fn_lowest + self.fn_margin:
+            elif fn > self.fn_lowest + self.fun_margin:
                 return True
 
         if self.grad_margin is not None:
