@@ -528,7 +528,7 @@ class Minimizer(object):
                                finite differences. epsilon will be reduced when
                                the steps in the iterative procedure become
                                smaller
-             verbose  --  print progress information on screen (default=True)
+             verbose  --  print progress information on screen [default=True]
              callback  --  optional callback routine after each CG iteration.
                            the callback routine gets the minimizer as first
                            and only argument. (default=None)
@@ -611,9 +611,9 @@ class Minimizer(object):
     def _print_header(self):
         header = " Iter  Dir     Function"
         header += self.convergence_condition.get_header()
-        self._screen("-"*(len(header)+2), True)
-        self._screen(header, True)
-        self._screen("-"*(len(header)+2), True)
+        self._screen("-"*(len(header)+2), newline=True)
+        self._screen(header, newline=True)
+        self._screen("-"*(len(header)+2), newline=True)
 
     def _screen(self, s, newline=False):
         """Print something on screen when self.verbose == True"""
