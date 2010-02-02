@@ -58,39 +58,73 @@ __all__ = [
 
 
 class SearchDirection(object):
+    """Abstract base class for a search direction method"""
     def __init__(self):
+        """Initialize a SearchDirection object"""
         # 2 characters indicating the method used to determine the direction
         self.status = "??"
 
     def update(self, gradient):
-        raise NotImplementedError
-
-    def is_sd(self):
+        """Update the search direction given the latest gradient"""
         raise NotImplementedError
 
     def reset(self):
+        """Reset the internal state of the search direction algorithm
+
+           This implies that the next direction will be steepest descent.
+        """
+        raise NotImplementedError
+
+    def is_sd(self):
+        """Return True if the last direction was steepest descent"""
         raise NotImplementedError
 
 
 class SteepestDescent(SearchDirection):
+    """The steepest descent method.
+
+       This method simply sets the search direction to minus the gradient. This
+       method is the least efficient choice and becomes very inefficient for
+       ill-conditioned problems.
+    """
     def __init__(self):
+        """Initialize a SearchDirection object"""
         # the current conjugate direction
         self.direction = None
         SearchDirection.__init__(self)
 
     def update(self, gradient):
+        """Update the search direction given the latest gradient"""
         self.direction = -gradient
         self.status = "SD"
 
     def reset(self):
+        """Reset the internal state of the search direction algorithm
+
+           Does nothing in this case.
+        """
         pass
 
     def is_sd(self):
+        """Return True if the last direction was steepest descent
+
+           Always returns True in this case.
+        """
         return True
 
 
 class ConjugateGradient(SearchDirection):
+    """The conjugate gradient method
+
+       This method is always superior to the steepest descent method in
+       practical applications. An automatic reset mechanism reverts the search
+       direction to the steepest descent if the conjugate gradient becomes
+       anti-parallel to the gradient.
+
+       This class implements the Polak-Ribiere variant.
+    """
     def __init__(self):
+        """Initialize a SearchDirection object"""
         # the current conjugate direction
         self.direction = None
         # the current gradient
@@ -100,19 +134,21 @@ class ConjugateGradient(SearchDirection):
         SearchDirection.__init__(self)
 
     def update(self, gradient):
-        if self.gradient_old is None:
-            self.gradient_old = self.gradient
-            self.gradient = gradient
+        """Update the search direction given the latest gradient"""
+        do_sd = self.gradient_old is None
+        self.gradient_old = self.gradient
+        self.gradient = gradient
+        if do_sd:
             self._update_sd()
         else:
-            self.gradient_old = self.gradient
-            self.gradient = gradient
             self._update_cg()
 
     def reset(self):
+        """Reset the internal state of the search direction algorithm"""
         self.gradient_old = None
 
     def is_sd(self):
+        """Return True if the last direction was steepest descent"""
         return self.status == "SD"
 
     def _update_cg(self):
