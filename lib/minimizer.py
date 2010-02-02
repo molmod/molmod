@@ -380,6 +380,7 @@ class StopLossCondition(object):
         # all is fine
         return False
 
+
 class Minimizer(object):
     """A flexible conjugate gradient minimizer
 
@@ -387,8 +388,8 @@ class Minimizer(object):
     """
 
     def __init__(self, x_init, fun, line_search, convergence_condition,
-                 stop_loss_condition, anagrad=False, epsilon_init=1e-6,
-                 verbose=True, callback=None):
+                 stop_loss_condition, anagrad=False, epsilon=1e-6, verbose=True,
+                 callback=None):
         """Initialize the minimizer
 
            Arguments:
@@ -426,8 +427,7 @@ class Minimizer(object):
         self.stop_loss_condition = stop_loss_condition
         self.anagrad = anagrad
         self.callback = callback
-        self.epsilon = epsilon_init
-        self.epsilon_max = epsilon_init
+        self.epsilon = epsilon
         self.verbose = verbose
 
         self.step_size = 1.0
@@ -479,9 +479,6 @@ class Minimizer(object):
 
             # compute the new direction
             self._update_cg()
-            # update epsilon for finite differences
-            if self.step_rms > 0:
-                self.epsilon = min(self.step_rms*1e-2, self.epsilon_max)
             self.counter += 1
             # call back
             if self.callback is not None:
@@ -509,11 +506,12 @@ class Minimizer(object):
             self.f, tmp = self.fun(self.x, do_gradient=True)
             self.direction_sd[:] = -tmp
         else:
-            tmp = self.x.copy()
             for j in xrange(len(self.x)):
-                tmp[j] += self.epsilon
-                self.direction_sd[j] = -(self.fun(tmp) - self.f)/self.epsilon
-                tmp[j] = self.x[j]
+                xh = self.x.copy()
+                xh[j] += 0.5*self.epsilon
+                xl = self.x.copy()
+                xl[j] -= 0.5*self.epsilon
+                self.direction_sd[j] = -(self.fun(xh) - self.fun(xl))/self.epsilon
             self._reset_state()
 
     def _line_opt(self):
