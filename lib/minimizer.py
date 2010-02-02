@@ -19,7 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-"""General purpose minimization of continuous or smooth multidimensional functions
+"""General purpose minimization of smooth multidimensional functions
 
    The implementation is mainly concerned with robustness, rather than
    computational efficiency. Example usage:
@@ -222,6 +222,14 @@ class LineSearch(object):
              f0   --  the function value at the starting point q=0"
              last_step_size  --  the norm of step from the previous line search
              epsilon  --  a value that is small compared to last_step_size
+
+           Returns:
+             success  --  a boolean indicating that the line search resulted
+                          in an improved solution
+             wolfe  --  a boolean indicating that the new solution satisfies
+                        wolfe conditions
+             qopt  --  the position of the new solution on the line
+             fopt  --  the corresponding function value
         """
         raise NotImplementedError
 
@@ -257,17 +265,29 @@ class GoldenLineSearch(LineSearch):
              f0   --  the function value at the starting point q=0"
              last_step_size  --  the norm of step from the previous line search
              epsilon  --  a value that is small compared to last_step_size
+
+           Returns:
+             success  --  a boolean indicating that the line search resulted
+                          in an improved solution
+             wolfe  --  a boolean indicating that the new solution satisfies
+                        wolfe conditions
+             qopt  --  the position of the new solution on the line
+             fopt  --  the corresponding function value
+
+           P.S. The wolfe parameter is always True, but this aspect is not
+           guaranteed to be correct. Never use the GoldenLineSearch in
+           combination with a quasi Newton method.
         """
         # bracket the minimum
         f0 = fun(0.0)
         triplet = self._bracket(last_step_size, f0, fun)
         if triplet is None:
-            return False, 0.0, f0
+            return False, False, 0.0, f0
         # do a golden section optimization
         qopt, fopt = self._golden(triplet, fun)
         qopt = self.limit_step(qopt)
         fopt = fun(qopt)
-        return True, qopt, fopt
+        return True, True, qopt, fopt
 
     def _bracket(self, qinit, f0, fun):
         """Find a bracket that does contain the minimum"""
@@ -288,7 +308,7 @@ class GoldenLineSearch(LineSearch):
                     return (0, f0), (qa, fa), (qb, fb)
                 counter += 1
                 if counter > self.max_iter:
-                    raise Exception("Line search did not converge.")
+                    return
         else:
             self.num_bracket += 1
             #print "    bracket grow1"
@@ -308,7 +328,7 @@ class GoldenLineSearch(LineSearch):
                     return (qc, fc), (qb, fb), (qa, fa)
                 counter += 1
                 if counter > self.max_iter:
-                    raise Exception("Line search did not converge.")
+                    return
 
     def _golden(self, triplet, fun):
         """Reduce the size of the bracket until the minimum is found"""
@@ -369,6 +389,14 @@ class NewtonLineSearch(LineSearch):
              last_step_size  --  the norm of step from the previous line search
              epsilon  --  a value that is small compared to last_step_size, used
                           for finite differences
+
+           Returns:
+             success  --  a boolean indicating that the line search resulted
+                          in an improved solution
+             wolfe  --  a boolean indicating that the new solution satisfies
+                        wolfe conditions
+             qopt  --  the position of the new solution on the line
+             fopt  --  the corresponding function value
         """
         f0, g0 = fun(0.0, do_gradient=True)
         gl = fun(-0.5*epsilon, do_gradient=True)[1]
@@ -378,28 +406,27 @@ class NewtonLineSearch(LineSearch):
         if h0 > 0:
             q1, f1, g1, h1 = 0.0, f0, g0, h0
             counter = 0
+            wolfe = False
             while True:
                 q2 = q1-g1/h1
                 f2, g2 = fun(q2, do_gradient=True)
                 if abs(g2) > abs(g1):
-                    # divergence
                     break
                 counter += 1
                 if counter > self.max_iter:
-                    # had enough iterations
                     break
                 q1, f1, g1 = q2, f2, g2
                 del q2
                 del f2
                 del g2
                 if f1 <= f0 - self.c1*abs(g0*q1) and abs(g1) <= abs(g0*self.c2):
-                    # sufficient convergence based on wolfe conditions
+                    wolfe = True
                     break
                 gl = fun(q1-0.5*epsilon, do_gradient=True)[1]
                 gh = fun(q1+0.5*epsilon, do_gradient=True)[1]
                 h1 = (gh-gl)/epsilon
             if counter > 0:
-                return True, q1, f1
+                return True, wolfe, q1, f1
             else:
                 # even the first newton step failed, revert to back tracking
                 pass
@@ -410,12 +437,12 @@ class NewtonLineSearch(LineSearch):
         while True:
             f1 = fun(q1)
             if f1 < f0:
-                return True, q1, f1
+                return True, False, q1, f1
             q1 *= 0.5
             counter += 1
             if counter > self.max_iter:
                 # had enough iterations, line search fails
-                return False, 0.0, f0
+                return False, False, 0.0, f0
 
 
 class ConvergenceCondition(object):
@@ -786,12 +813,14 @@ class Minimizer(object):
             last_step_size = 1.0
         else:
             last_step_size = numpy.linalg.norm(self.step)
-        success, qopt, fopt = self.line_search(self.fun.line, last_step_size, self.epsilon)
+        success, wolfe, qopt, fopt = self.line_search(self.fun.line, last_step_size, self.epsilon)
         if success:
             self.step = qopt*self.fun.axis
             self.x = self.x + self.step
             self.f = fopt
             self._screen("% 9.3e  " % self.f)
+            if not wolfe:
+                self.search_direction.reset()
             return True
         else:
             self._reset_state()
