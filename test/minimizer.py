@@ -43,6 +43,7 @@ def fun(x, do_gradient=False):
 
 class MinimizerTestCase(unittest.TestCase):
     def check_min(self, x_opt, step_rms, grad_rms):
+        # check if it is really the minimum by computing small displacements
         f_opt = fun(x_opt)
         for i in xrange(100):
             delta = numpy.random.normal(0, 1, 2)
@@ -52,6 +53,16 @@ class MinimizerTestCase(unittest.TestCase):
             x_dev = x_opt + delta
             f_dev = fun(x_dev)
             self.assert_(f_opt - f_dev <= grad_rms*step_rms)
+        # check if it is really the minimum by computing the eigen values of the
+        # hessian
+        hessian1 = compute_fd_hessian(fun, x_opt, 1e-4, anagrad=True)
+        self.assert_((numpy.linalg.eigvalsh(hessian1) > 0).all())
+        # check if it is really the minimum by computing the eigen values of the
+        # hessian
+        hessian2 = compute_fd_hessian(fun, x_opt, 1e-4, anagrad=False)
+        self.assert_((numpy.linalg.eigvalsh(hessian2) > 0).all())
+        # also compare the two hessians
+        self.assert_(abs(hessian1 - hessian2).max() < 1e-4)
 
     def test_golden(self):
         x_init = numpy.zeros(2, float)
