@@ -120,13 +120,21 @@ class ConjugateGradient(SearchDirection):
 
        This method is always superior to the steepest descent method in
        practical applications. An automatic reset mechanism reverts the search
-       direction to the steepest descent if the conjugate gradient becomes
-       anti-parallel to the gradient.
-
-       This class implements the Polak-Ribiere variant.
+       direction to the steepest descent when beta becomes negative.
     """
-    def __init__(self):
-        """Initialize a SearchDirection object"""
+    def __init__(self, variant='Polak-Ribiere'):
+        """Initialize a ConjugateGradient object
+
+           Optional argument:
+             variant  --  the variant of the Conjugate Gradient method to use:
+                          'Fletcher-Reeves' or 'Polak-Ribiere' (default)
+        """
+        if variant == 'Polak-Ribiere':
+            self._beta = self._beta_pr
+        elif variant == 'Fletcher-Reeves':
+            self._beta = self._beta_fr
+        else:
+            raise ValueError("Unknown conjugate gradient variant: %s" % variant)
         # the current conjugate direction
         self.direction = None
         # the current gradient
@@ -155,11 +163,7 @@ class ConjugateGradient(SearchDirection):
 
     def _update_cg(self):
         """Update the conjugate gradient"""
-        # Polak-Ribiere
-        beta = (
-            numpy.dot(self.gradient, self.gradient - self.gradient_old) /
-            numpy.dot(self.gradient_old, self.gradient_old)
-        )
+        beta = self._beta()
         # Automatic direction reset
         if beta < 0:
             self.direction = -self.gradient
@@ -167,6 +171,20 @@ class ConjugateGradient(SearchDirection):
         else:
             self.direction = self.direction * beta - self.gradient
             self.status = "CG"
+
+    def _beta_pr(self):
+        # Polak-Ribiere
+        return (
+            numpy.dot(self.gradient, self.gradient - self.gradient_old) /
+            numpy.dot(self.gradient_old, self.gradient_old)
+        )
+
+    def _beta_fr(self):
+        # Fletcher-Reeves
+        return (
+            numpy.dot(self.gradient, self.gradient) /
+            numpy.dot(self.gradient_old, self.gradient_old)
+        )
 
     def _update_sd(self):
         """Reset the conjugate gradient to the normal gradient"""
@@ -401,8 +419,7 @@ class NewtonLineSearch(LineSearch):
 
 
 class ConvergenceCondition(object):
-    """Callable object that tests the convergence of the minimizer
-    """
+    """Callable object that tests the convergence of the minimizer"""
     def __init__(self, step_rms=None, step_max=None, grad_rms=None, grad_max=None):
         """Initialize a ConvergenceCondition object
 

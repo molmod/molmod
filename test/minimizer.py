@@ -112,9 +112,21 @@ class MinimizerTestCase(unittest.TestCase):
         )
         self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
-    def test_cg_newtong(self):
+    def test_cg_pr_newtong(self):
         x_init = numpy.zeros(2, float)
-        search_direction = ConjugateGradient()
+        search_direction = ConjugateGradient('Polak-Ribiere')
+        line_search = NewtonLineSearch()
+        convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
+        stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
+        minimizer = Minimizer(
+            x_init, fun, search_direction, line_search, convergence, stop_loss,
+            anagrad=True, verbose=True,
+        )
+        self.check_min(fun, minimizer.x, 1e-6, 1e-6)
+
+    def test_cg_fr_newtong(self):
+        x_init = numpy.zeros(2, float)
+        search_direction = ConjugateGradient('Fletcher-Reeves')
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
