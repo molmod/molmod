@@ -36,11 +36,12 @@
            return value
 
    x_init = numpy.zeros(2, float)
+   search_direction = ConjugateGradient()
    line_search = NewtonLineSearch(max_reduce=500)
    convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6)
    stop_loss = StopLossCondition(max_iter=50)
    minimizer = Minimizer(
-       x_init, fun, line_search, convergence, stop_loss,
+       x_init, fun, search_direction, line_search, convergence, stop_loss,
        anagrad=True, verbose=True,
    )
    print "optimum", minimizer.x, fun(minimizer.x)
@@ -473,6 +474,9 @@ class StopLossCondition(object):
         self.fun_margin = fun_margin
         self.grad_margin = grad_margin
 
+        self.reset()
+
+    def reset(self):
         self.fn_lowest = None
         self.grad_rms_lowest = None
 
@@ -549,6 +553,10 @@ class Minimizer(object):
         self.callback = callback
         self.epsilon = epsilon
         self.verbose = verbose
+
+        # perform some resets:
+        self.search_direction.reset()
+        self.stop_loss_condition.reset()
 
         # the current function value
         self.f = None
