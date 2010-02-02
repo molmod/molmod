@@ -325,31 +325,23 @@ class NewtonLineSearch(LineSearch):
        gradient is found, the line search fails.
     """
 
-    def __init__(self, qmax=None, max_reduce=None, anagrad=True):
+    def __init__(self, qmax=None, max_reduce=None):
         """Initialize the Newton line search (numerical gradients)
 
            Optional arguments:
              qmax  --  The maximum step size of a line search
              max_reduce  --  the maximum number of attempts to half the step
                              size in order to get a lower function or gradient
-             anagrad  --  when True, use analytical gradients [default=False]
         """
         self.max_reduce = max_reduce
-        self.anagrad = anagrad
         LineSearch.__init__(self, qmax)
         self.num_reduce = 0
 
     def _compute_derivatives(self, q0, f0, fun, epsilon):
-        if self.anagrad:
-            gl = fun(q0-epsilon, do_gradient=True)[1]
-            gh = fun(q0+epsilon, do_gradient=True)[1]
-            g0 = 0.5*(gl+gh)
-            h0 = (gh-gl)/(2*epsilon)
-        else:
-            fl = fun(q0-epsilon)
-            fh = fun(q0+epsilon)
-            g0 = (fh-fl)/(2*epsilon)
-            h0 = (fh+fl-2*f0)/epsilon**2
+        gl = fun(q0-epsilon, do_gradient=True)[1]
+        gh = fun(q0+epsilon, do_gradient=True)[1]
+        g0 = 0.5*(gl+gh)
+        h0 = (gh-gl)/(2*epsilon)
         return g0, h0
 
     def __call__(self, fun, f0, last_step_size, epsilon):
@@ -502,10 +494,119 @@ class StopLossCondition(object):
         return False
 
 
+class AnaGradWrapper(object):
+    """Wrapper of a function that also supports evaluation along a line
+
+       This version assumes that the underlying function implements an
+       analytical gradient.
+    """
+    def __init__(self, fun):
+        """Initialize a AnaGradWrapper object
+
+           Argument:
+             fun  --  a multivariate function that can also compute analytical
+                      derivatives, see below
+
+           The function fun takes a mandatory argument x and an optional argument
+           do_gradient:
+             x  --  the arguments of the function to be tested
+             do_gradient  --  when False, only the function value is returned.
+                              when True, a 2-tuple with the function value and
+                              the gradient are returned [default=False]
+        """
+        self._fun = fun
+        self.axis = None
+        self.x0 = None
+
+    def __call__(self, x, do_gradient=False):
+        """Just call the underlying function with the same arguments"""
+        return self._fun(x, do_gradient=do_gradient)
+
+    def set_line(self, x0, axis):
+        """Configure the 1D function for a line search
+
+           Arguments:
+             x0  --  the reference point (q=0)
+             axis  --  a unit vector in the direction of the line search
+        """
+        self.x0 = x0
+        self.axis = axis
+
+    def line(self, q, do_gradient=False):
+        """Evaluate the function along a predefined line
+
+           The derivative is computed as the dot product of the axis and the
+           analytical gradient.
+        """
+        x = self.x0 + self.axis*q
+        if do_gradient:
+            f, g = self(x, do_gradient=True)
+            return f, numpy.dot(g, self.axis)
+        else:
+            return self(x)
+
+
+class NumGradWrapper(object):
+    def __init__(self, fun, epsilon):
+        """Initialize a NumGradWrapper object
+
+           Argument:
+             fun  --  a multivariate function, no analytical derivatives
+                      required
+             epsilon  --  small scalar used for finite differences
+
+           The function fun only takes a mandatory argument x:
+             x  --  the arguments of the function to be tested
+        """
+        self._fun = fun
+        self.epsilon = epsilon
+        self.axis = None
+        self.x0 = None
+
+    def __call__(self, x, do_gradient=False):
+        """Call the underlying for function evaluates, use finite differences for gradient"""
+        f = self._fun(x)
+        if do_gradient:
+            g = numpy.zeros(x.shape)
+            for j in xrange(len(x)):
+                xh = x.copy()
+                xh[j] += 0.5*self.epsilon
+                xl = x.copy()
+                xl[j] -= 0.5*self.epsilon
+                g[j] = (self._fun(xh) - self._fun(xl))/self.epsilon
+            return f, g
+        else:
+            return f
+
+    def set_line(self, x0, axis):
+        """Configure the 1D function for a line search
+
+           Arguments:
+             x0  --  the reference point (q=0)
+             axis  --  a unit vector in the direction of the line search
+        """
+        self.x0 = x0
+        self.axis = axis
+
+    def line(self, q, do_gradient=False):
+        """Evaluate the function along a predefined line
+
+           The derivative is computed using finite differences
+        """
+        x = self.x0 + self.axis*q
+        f = self._fun(x)
+        if do_gradient:
+            fh = self._fun(x + (0.5*self.epsilon) * self.axis)
+            fl = self._fun(x - (0.5*self.epsilon) * self.axis)
+            return f, (fh - fl)/self.epsilon
+        else:
+            return f
+
+
 class Minimizer(object):
     """A flexible multivariate minimizer
 
-       The minimizer searches in principle for the 'nearest' local minimum.
+       The minimizer searches (in principle) for the 'nearest' local minimum.
     """
 
     def __init__(self, x_init, fun, search_direction, line_search,
@@ -533,23 +634,25 @@ class Minimizer(object):
                            the callback routine gets the minimizer as first
                            and only argument. (default=None)
 
-          The function fun takes a madatory argument x and an optional argument
-          do_gradient:
-            x  --  the arguments of the function to be tested
-            do_gradient  --  when False, only the function value is returned.
-                             when True, a 2-tuple with the function value and
-                             the gradient are returned [default=False]
+           The function fun takes a mandatory argument x and an optional argument
+           do_gradient:
+             x  --  the arguments of the function to be tested
+             do_gradient  --  when False, only the function value is returned.
+                              when True, a 2-tuple with the function value and
+                              the gradient are returned [default=False]
         """
         if len(x_init.shape)!=1:
             raise ValueError("The unknowns must be stored in a plain row vector.")
         # self.x always contains the current parameters
         self.x = x_init.copy()
-        self.fun = fun
+        if anagrad:
+            self.fun = AnaGradWrapper(fun)
+        else:
+            self.fun = NumGradWrapper(fun, epsilon)
         self.search_direction = search_direction
         self.line_search = line_search
         self.convergence_condition = convergence_condition
         self.stop_loss_condition = stop_loss_condition
-        self.anagrad = anagrad
         self.callback = callback
         self.epsilon = epsilon
         self.verbose = verbose
@@ -569,8 +672,7 @@ class Minimizer(object):
 
     def _iterate(self):
         """Run the iterative optimizer"""
-        self.f = self.fun(self.x)
-        self._compute_gradient()
+        self.f, self.gradient = self.fun(self.x, do_gradient=True)
         # the cg loop
         self.counter = 0
         while True:
@@ -591,7 +693,7 @@ class Minimizer(object):
                     self.search_direction.reset()
                     continue
             # compute the gradient at the new point
-            self._compute_gradient()
+            self.f, self.gradient = self.fun(self.x, do_gradient=True)
             # check convergence
             converged, status = self.convergence_condition(self.gradient, self.step)
             self._screen(status, newline=True)
@@ -623,44 +725,21 @@ class Minimizer(object):
             else:
                 print s,
 
-    def _compute_gradient(self):
-        """Compute the gradient at the current coordinates"""
-        if self.anagrad:
-            self.f, self.gradient = self.fun(self.x, do_gradient=True)
-        else:
-            self.gradient = numpy.zeros(self.x.shape)
-            for j in xrange(len(self.x)):
-                xh = self.x.copy()
-                xh[j] += 0.5*self.epsilon
-                xl = self.x.copy()
-                xl[j] -= 0.5*self.epsilon
-                self.gradient[j] = (self.fun(xh) - self.fun(xl))/self.epsilon
-            self._reset_state()
-
     def _line_opt(self):
         """Perform a line search along the current direction"""
         direction = self.search_direction.direction
         direction_norm = numpy.linalg.norm(direction)
         if direction_norm == 0:
             return False
-        axis = direction/direction_norm
-
-        def fun_aux(q, do_gradient=False):
-            """One-dimensional cut of the function along the search direction"""
-            xq = self.x + q*axis
-            if do_gradient:
-                fq, gq = self.fun(xq, do_gradient=True)
-                return fq, numpy.dot(axis, gq)
-            else:
-                return self.fun(xq)
+        self.fun.set_line(self.x, direction/direction_norm)
 
         if self.step is None:
             last_step_size = 1.0
         else:
             last_step_size = numpy.linalg.norm(self.step)
-        success, qopt, fopt = self.line_search(fun_aux, self.f, last_step_size, self.epsilon)
+        success, qopt, fopt = self.line_search(self.fun.line, self.f, last_step_size, self.epsilon)
         if success:
-            self.step = qopt*axis
+            self.step = qopt*self.fun.axis
             self.x = self.x + self.step
             self.f = fopt
             self._screen("% 9.3e  " % self.f)
@@ -686,7 +765,7 @@ def check_anagrad(fun, x0, epsilon, scale=10):
          scale  --  scale*epsilon is the threshold for an error between the
                     analytical and the numerical gradient
 
-       The function fun takes a madatory argument x and an optional argument
+       The function fun takes a mandatory argument x and an optional argument
        do_gradient:
          x  --  the arguments of the function to be tested
          do_gradient  --  when False, only the function value is returned. when
@@ -718,7 +797,7 @@ def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
        Optional argument:
          anagrad  --  when True, analytical gradients are used [default=True]
 
-       The function fun takes a madatory argument x and an optional argument
+       The function fun takes a mandatory argument x and an optional argument
        do_gradient:
          x  --  the arguments of the function to be tested
          do_gradient  --  when False, only the function value is returned. when
