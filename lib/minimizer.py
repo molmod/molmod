@@ -50,10 +50,91 @@ import numpy
 
 
 __all__ = [
+    "SearchDirection", "SteepestDescent", "ConjugateGradient",
     "LineSearch", "GoldenLineSearch", "NewtonLineSearch",
     "ConvergenceCondition", "StopLossCondition", "Minimizer",
     "check_anagrad", "compute_fd_hessian",
 ]
+
+
+class SearchDirection(object):
+    def __init__(self):
+        # 2 characters indicating the method used to determine the direction
+        self.status = "??"
+
+    def update(self, gradient):
+        raise NotImplementedError
+
+    def is_sd(self):
+        raise NotImplementedError
+
+    def reset(self):
+        raise NotImplementedError
+
+
+class SteepestDescent(SearchDirection):
+    def __init__(self):
+        # the current conjugate direction
+        self.direction = None
+        SearchDirection.__init__(self)
+
+    def update(self, gradient):
+        self.direction = -gradient
+        self.status = "SD"
+
+    def reset(self):
+        pass
+
+    def is_sd(self):
+        return True
+
+
+class ConjugateGradient(SearchDirection):
+    def __init__(self):
+        # the current conjugate direction
+        self.direction = None
+        # the current gradient
+        self.gradient = None
+        # the previous gradient
+        self.gradient_old = None
+        SearchDirection.__init__(self)
+
+    def update(self, gradient):
+        if self.gradient_old is None:
+            self.gradient_old = self.gradient
+            self.gradient = gradient
+            self._update_sd()
+        else:
+            self.gradient_old = self.gradient
+            self.gradient = gradient
+            self._update_cg()
+
+    def reset(self):
+        self.gradient_old = None
+
+    def is_sd(self):
+        return self.status == "SD"
+
+    def _update_cg(self):
+        """Update the conjugate gradient"""
+        # Polak-Ribiere
+        beta = (
+            numpy.dot(self.gradient, self.gradient - self.gradient_old) /
+            numpy.dot(self.gradient_old, self.gradient_old)
+        )
+        # Automatic direction reset
+        if beta < 0:
+            self.direction = -self.gradient
+            self.status = "SD"
+        else:
+            self.direction = self.direction * beta - self.gradient
+            self.status = "CG"
+
+    def _update_sd(self):
+        """Reset the conjugate gradient to the normal gradient"""
+        self.direction = -self.gradient
+        self.status = "SD"
+
 
 
 phi = 0.5*(1+numpy.sqrt(5))
@@ -382,19 +463,20 @@ class StopLossCondition(object):
 
 
 class Minimizer(object):
-    """A flexible conjugate gradient minimizer
+    """A flexible multivariate minimizer
 
        The minimizer searches in principle for the 'nearest' local minimum.
     """
 
-    def __init__(self, x_init, fun, line_search, convergence_condition,
-                 stop_loss_condition, anagrad=False, epsilon=1e-6, verbose=True,
-                 callback=None):
+    def __init__(self, x_init, fun, search_direction, line_search,
+                 convergence_condition, stop_loss_condition, anagrad=False,
+                 epsilon=1e-6, verbose=True, callback=None):
         """Initialize the minimizer
 
            Arguments:
              x_init  --  the initial guess for the minimum
              fun  --  function to be minimized (see below)
+             search_direction  --  a SearchDirection object
              line_search  --  a LineSearch object
              convergence_condition  --  a ConvergenceCondition object
              stop_loss_condition  --  a StopLossCondition object
@@ -423,6 +505,7 @@ class Minimizer(object):
         # self.x always contains the current parameters
         self.x = x_init.copy()
         self.fun = fun
+        self.search_direction = search_direction
         self.line_search = line_search
         self.convergence_condition = convergence_condition
         self.stop_loss_condition = stop_loss_condition
@@ -431,63 +514,55 @@ class Minimizer(object):
         self.epsilon = epsilon
         self.verbose = verbose
 
-        # minus the current (conjugate) gradient
-        self.direction = None
-        # minus the current gradient
-        self.direction_sd = None
-        # minus the previous gradient
-        self.direction_sd_old = None
-        # 2 characters indicating the method used to determine the direction
-        self.direction_label = "??"
-
         # the current function value
         self.f = None
+        # the current gradient
+        self.gradient = None
         # the current step size
         self.step = None
 
         self._iterate()
 
     def _iterate(self):
-        """Run the conjugate gradient algorithm"""
+        """Run the iterative optimizer"""
         self.f = self.fun(self.x)
-        self._compute_direction_sd()
-        self._update_sd()
+        self._compute_gradient()
         # the cg loop
         self.counter = 0
         while True:
+            # compute the new direction
+            self.search_direction.update(self.gradient)
+            # print some stuff on screen
             if self.counter % 20 == 0:
                 self._print_header()
-            self._screen("% 5i  " % self.counter)
+            self._screen("% 5i   %2s  " % (self.counter, self.search_direction.status))
             # perform a line search
             line_success = self._line_opt()
             if not line_success:
                 self._screen("Line search failed", newline=True)
-                if self.direction_label == "SD":
+                if self.search_direction.is_sd():
                     self._screen("LINE FAILED", newline=True)
                     return
                 else:
-                    self._update_sd()
+                    self.search_direction.reset()
                     continue
-            # compute the direction (or -gradient) at the new point
-            self._compute_direction_sd()
+            # compute the gradient at the new point
+            self._compute_gradient()
             # check convergence
-            converged, status = self.convergence_condition(-self.direction_sd, self.step)
+            converged, status = self.convergence_condition(self.gradient, self.step)
             self._screen(status, newline=True)
             if converged:
                 self._screen("CONVERGED", newline=True)
                 return
             # check stop loss
-            lost = self.stop_loss_condition(self.counter, self.f, -self.direction_sd)
+            lost = self.stop_loss_condition(self.counter, self.f, self.gradient)
             if lost:
                 self._screen("LOST", newline=True)
                 return
-
-            # compute the new direction
-            self._update_cg()
-            self.counter += 1
             # call back
             if self.callback is not None:
                 self.callback(self)
+            self.counter += 1
 
     def _print_header(self):
         header = " Iter  Dir     Function"
@@ -504,29 +579,27 @@ class Minimizer(object):
             else:
                 print s,
 
-    def _compute_direction_sd(self):
-        """Update the gradient"""
-        self.direction_sd_old = self.direction_sd
+    def _compute_gradient(self):
+        """Compute the gradient at the current coordinates"""
         if self.anagrad:
-            self.f, tmp = self.fun(self.x, do_gradient=True)
-            self.direction_sd = -tmp
+            self.f, self.gradient = self.fun(self.x, do_gradient=True)
         else:
-            self.direction_sd = numpy.zeros(self.x.shape)
+            self.gradient = numpy.zeros(self.x.shape)
             for j in xrange(len(self.x)):
                 xh = self.x.copy()
                 xh[j] += 0.5*self.epsilon
                 xl = self.x.copy()
                 xl[j] -= 0.5*self.epsilon
-                self.direction_sd[j] = -(self.fun(xh) - self.fun(xl))/self.epsilon
+                self.gradient[j] = (self.fun(xh) - self.fun(xl))/self.epsilon
             self._reset_state()
 
     def _line_opt(self):
-        """Perform a line search along the given direction"""
-        self._screen("%2s  " % self.direction_label)
-        self.direction_norm = numpy.linalg.norm(self.direction)
-        if self.direction_norm == 0:
+        """Perform a line search along the current direction"""
+        direction = self.search_direction.direction
+        direction_norm = numpy.linalg.norm(direction)
+        if direction_norm == 0:
             return False
-        axis = self.direction/self.direction_norm
+        axis = direction/direction_norm
 
         def fun_aux(q, do_gradient=False):
             """One-dimensional cut of the function along the search direction"""
@@ -555,27 +628,6 @@ class Minimizer(object):
     def _reset_state(self):
         """Reset of the internal state of the function"""
         self.fun(self.x) # reset the internal state of the function
-
-    def _update_cg(self):
-        """Update the conjugate gradient after an iteration"""
-        # Polak-Ribiere
-        self.beta = (
-            numpy.dot(self.direction_sd, self.direction_sd - self.direction_sd_old) /
-            numpy.dot(self.direction_sd_old, self.direction_sd_old)
-        )
-        # Automatic direction reset
-        if self.beta < 0:
-            self.beta = 0
-            self.direction_label = "SD"
-        else:
-            self.direction_label = "CG"
-        self.direction = self.direction * self.beta + self.direction_sd
-
-    def _update_sd(self):
-        """Reset the conjugate gradient to the normal gradient"""
-        self.direction = self.direction_sd
-        self.beta = 0
-        self.direction_label = "SD"
 
 
 def check_anagrad(fun, x0, epsilon, scale=10):
