@@ -644,6 +644,5 @@ def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
         xl[i] -= 0.5*epsilon
         hessian[i] = (compute_gradient(xh) - compute_gradient(xl))/epsilon
 
-    hessian += numpy.transpose(hessian)
-    hessian *= 0.5
-    return hessian
+    return 0.5*(hessian + hessian.transpose())
+
