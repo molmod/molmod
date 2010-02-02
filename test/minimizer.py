@@ -42,24 +42,24 @@ def fun(x, do_gradient=False):
 
 
 class MinimizerTestCase(unittest.TestCase):
-    def check_min(self, x_opt, step_rms, grad_rms):
+    def check_min(self, my_fun, x_opt, step_rms, grad_rms):
         # check if it is really the minimum by computing small displacements
-        f_opt = fun(x_opt)
+        f_opt = my_fun(x_opt)
         for i in xrange(100):
             delta = numpy.random.normal(0, 1, 2)
             delta /= numpy.linalg.norm(delta)
             delta *= numpy.sqrt(len(delta))
             delta *= step_rms
             x_dev = x_opt + delta
-            f_dev = fun(x_dev)
+            f_dev = my_fun(x_dev)
             self.assert_(f_opt - f_dev <= grad_rms*step_rms)
         # check if it is really the minimum by computing the eigen values of the
         # hessian
-        hessian1 = compute_fd_hessian(fun, x_opt, 1e-4, anagrad=True)
+        hessian1 = compute_fd_hessian(my_fun, x_opt, 1e-4, anagrad=True)
         self.assert_((numpy.linalg.eigvalsh(hessian1) > 0).all())
         # check if it is really the minimum by computing the eigen values of the
         # hessian
-        hessian2 = compute_fd_hessian(fun, x_opt, 1e-4, anagrad=False)
+        hessian2 = compute_fd_hessian(my_fun, x_opt, 1e-4, anagrad=False)
         self.assert_((numpy.linalg.eigvalsh(hessian2) > 0).all())
         # also compare the two hessians
         self.assert_(abs(hessian1 - hessian2).max() < 1e-4)
@@ -73,7 +73,7 @@ class MinimizerTestCase(unittest.TestCase):
             x_init, fun, line_search, convergence, stop_loss,
             anagrad=False, verbose=False,
         )
-        self.check_min(minimizer.x, 1e-6, 1e-6)
+        self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
     def test_newton(self):
         x_init = numpy.zeros(2, float)
@@ -84,7 +84,7 @@ class MinimizerTestCase(unittest.TestCase):
             x_init, fun, line_search, convergence, stop_loss,
             anagrad=False, verbose=False,
         )
-        self.check_min(minimizer.x, 1e-6, 1e-6)
+        self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
     def test_newtong(self):
         x_init = numpy.zeros(2, float)
@@ -95,7 +95,7 @@ class MinimizerTestCase(unittest.TestCase):
             x_init, fun, line_search, convergence, stop_loss,
             anagrad=True, verbose=False,
         )
-        self.check_min(minimizer.x, 1e-6, 1e-6)
+        self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
     def test_check_anagrad(self):
         x_init = numpy.zeros(2, float)

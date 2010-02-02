@@ -50,8 +50,9 @@ import numpy
 
 
 __all__ = [
-    "GoldenLineSearch", "NewtonLineSearch", "ConvergenceCondition",
-    "StopLossCondition", "Minimizer", "check_anagrad", "compute_fd_hessian",
+    "LineSearch", "GoldenLineSearch", "NewtonLineSearch",
+    "ConvergenceCondition", "StopLossCondition", "Minimizer",
+    "check_anagrad", "compute_fd_hessian",
 ]
 
 
@@ -268,7 +269,6 @@ class NewtonLineSearch(LineSearch):
                 return False, qopt, fopt
 
 
-
 class ConvergenceCondition(object):
     """Callable object that tests the convergence of the minimizer
     """
@@ -420,6 +420,7 @@ class Minimizer(object):
         """
         if len(x_init.shape)!=1:
             raise ValueError("The unknowns must be stored in a plain row vector.")
+        # self.x always contains the current parameters
         self.x = x_init.copy()
         self.fun = fun
         self.line_search = line_search
@@ -430,15 +431,19 @@ class Minimizer(object):
         self.epsilon = epsilon
         self.verbose = verbose
 
-        self.step_size = 1.0
-        self.step_rms = 1.0/numpy.sqrt(len(x_init))
-        # minus the (conjugate) gradient
-        self.direction = numpy.zeros(self.x.shape, float)
-        # minus the gradient
-        self.direction_sd = numpy.zeros(self.x.shape, float)
-        # previous value of minus the gradient
-        self.direction_sd_old = numpy.zeros(self.x.shape, float)
+        # minus the current (conjugate) gradient
+        self.direction = None
+        # minus the current gradient
+        self.direction_sd = None
+        # minus the previous gradient
+        self.direction_sd_old = None
+        # 2 characters indicating the method used to determine the direction
         self.direction_label = "??"
+
+        # the current function value
+        self.f = None
+        # the current step size
+        self.step = None
 
         self._iterate()
 
@@ -501,11 +506,12 @@ class Minimizer(object):
 
     def _compute_direction_sd(self):
         """Update the gradient"""
-        self.direction_sd_old[:] = self.direction_sd
+        self.direction_sd_old = self.direction_sd
         if self.anagrad:
             self.f, tmp = self.fun(self.x, do_gradient=True)
-            self.direction_sd[:] = -tmp
+            self.direction_sd = -tmp
         else:
+            self.direction_sd = numpy.zeros(self.x.shape)
             for j in xrange(len(self.x)):
                 xh = self.x.copy()
                 xh[j] += 0.5*self.epsilon
@@ -531,14 +537,16 @@ class Minimizer(object):
             else:
                 return self.fun(xq)
 
-        success, qopt, fopt = self.line_search(fun_aux, self.f, self.step_size, self.epsilon)
+        if self.step is None:
+            last_step_size = 1.0
+        else:
+            last_step_size = numpy.linalg.norm(self.step)
+        success, qopt, fopt = self.line_search(fun_aux, self.f, last_step_size, self.epsilon)
         if success:
             self.step = qopt*axis
             self.x = self.x + self.step
             self.f = fopt
             self._screen("% 9.3e  " % self.f)
-            self.step_size = numpy.linalg.norm(self.step)
-            self.step_rms = self.step_size/numpy.sqrt(len(self.x))
             return True
         else:
             self._reset_state()
@@ -561,12 +569,11 @@ class Minimizer(object):
             self.direction_label = "SD"
         else:
             self.direction_label = "CG"
-        self.direction[:] *= self.beta
-        self.direction[:] += self.direction_sd
+        self.direction = self.direction * self.beta + self.direction_sd
 
     def _update_sd(self):
         """Reset the conjugate gradient to the normal gradient"""
-        self.direction[:] = self.direction_sd
+        self.direction = self.direction_sd
         self.beta = 0
         self.direction_label = "SD"
 
@@ -597,8 +604,9 @@ def check_anagrad(fun, x0, epsilon, scale=10):
         xh[i] += 0.5*epsilon
         xl = x0.copy()
         xl[i] -= 0.5*epsilon
-        if abs((fun(xh)-fun(xl))/epsilon - ana_grad[i]) > scale*epsilon:
-            raise ValueError("Error in the analytical gradient")
+        num_grad_comp = (fun(xh)-fun(xl))/epsilon
+        if abs(num_grad_comp - ana_grad[i]) > scale*epsilon:
+            raise ValueError("Error in the analytical gradient, component %i, got %s, should be about %s" % (i, ana_grad[i], num_grad_comp))
 
 
 def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
