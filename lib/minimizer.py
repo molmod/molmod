@@ -54,7 +54,7 @@ import numpy, time
 __all__ = [
     "SearchDirection", "SteepestDescent", "ConjugateGradient", "QuasiNewton",
     "LineSearch", "GoldenLineSearch", "NewtonLineSearch",
-    "Preconditioner", "DiagonalPreconditioner",
+    "Preconditioner", "DiagonalPreconditioner", "FullPreconditioner",
     "ConvergenceCondition", "StopLossCondition", "Minimizer",
     "check_anagrad", "compute_fd_hessian",
 ]
@@ -501,23 +501,97 @@ class Preconditioner(object):
         self.each = each
         self.grad_rms = grad_rms
 
-    def __call__(self, x_prec, do_gradient=True):
+        self.last_update = 0
+
+    def __call__(self, x_prec, do_gradient=False):
         if do_gradient:
             f, g = self.fun(self.undo(x_prec), do_gradient=True)
             return f, self.undo(g)
+        else:
+            return self.fun(self.undo(x_prec))
 
-    def update(self, x_orig, gradient_orig, step_orig):
-        raise NotImplementedError
+    def update(self, counter, f, x_orig, gradient_orig):
+        if counter - self.last_update > self.each:
+            grad_rms = numpy.sqrt((gradient_orig**2).mean())
+            if grad_rms < self.grad_rms:
+                self.last_update = counter
+                return True
+        return False
 
     def do(self, x_orig):
         raise NotImplementedError
 
-    def undo(self, x_orig):
+    def undo(self, x_prec):
         raise NotImplementedError
 
 
 class DiagonalPreconditioner(Preconditioner):
-    pass
+    def __init__(self, fun, each, grad_rms, epsilon=1e-3):
+        self.epsilon = epsilon
+        Preconditioner.__init__(self, fun, each, grad_rms)
+        self.scales = None
+
+    def update(self, counter, f, x_orig, gradient_orig):
+        if Preconditioner.update(self, counter, f, x_orig, gradient_orig):
+            # determine a new preconditioner
+            N = len(x_orig)
+            if self.scales is None:
+                self.scales = numpy.ones(N, float)
+            for i in xrange(N):
+                epsilon = self.epsilon/self.scales[i]
+                xh = x_orig.copy()
+                xh[i] += 0.5*epsilon
+                fh = self.fun(xh)
+                xl = x_orig.copy()
+                xl[i] -= 0.5*epsilon
+                fl = self.fun(xl)
+                curv = (fh+fl-2*f)/epsilon**2
+                self.scales[i] = numpy.sqrt(curv)
+            self.scales /= self.scales.min()
+            return True
+        return False
+
+    def do(self, x_orig):
+        if self.scales is None:
+            return x_orig
+        else:
+            return x_orig*self.scales
+
+    def undo(self, x_prec):
+        if self.scales is None:
+            return x_prec
+        else:
+            return x_prec/self.scales
+
+
+class FullPreconditioner(Preconditioner):
+    def __init__(self, fun, each, grad_rms, epsilon=1e-3):
+        self.epsilon = epsilon
+        Preconditioner.__init__(self, fun, each, grad_rms)
+        self.scales = None
+        self.rotation = None
+
+    def update(self, counter, f, x_orig, gradient_orig):
+        if Preconditioner.update(self, counter, f, x_orig, gradient_orig):
+            # determine a new preconditioner
+            hessian = compute_fd_hessian(self.fun, x_orig, self.epsilon)
+            evals, evecs = numpy.linalg.eigh(hessian)
+            self.scales = numpy.sqrt(abs(evals))+self.epsilon
+            self.rotation = evecs
+            return True
+        return False
+
+    def do(self, x_orig):
+        if self.scales is None:
+            return x_orig
+        else:
+            return numpy.dot(self.rotation.transpose(), x_orig)*self.scales
+
+    def undo(self, x_prec):
+        if self.scales is None:
+            return x_prec
+        else:
+            return numpy.dot(self.rotation, x_prec/self.scales)
 
 
 class ConvergenceCondition(object):
@@ -814,10 +888,15 @@ class Minimizer(object):
                     continue
             # compute the gradient at the new point
             self.f, self.gradient = self.fun(self.x, do_gradient=True)
-            if self.prec is not None and self.prec.update(self.x, self.gradient, self.step):
-                self.f, self.gradient = self.fun(self.x, do_gradient=True)
-            # check convergence
-            converged, status = self.convergence_condition(self.gradient, self.step)
+            # handle the preconditioner, part 1
+            if self.prec is not None:
+                gradient_orig = self.prec.do(self.gradient)
+                step_orig = self.prec.undo(self.step)
+            else:
+                gradient_orig = self.gradient
+                step_orig = self.step
+            # check convergence on the gradient and step in original basis
+            converged, status = self.convergence_condition(gradient_orig, step_orig)
             self._screen(status)
             # timing
             end = time.clock()
@@ -827,14 +906,22 @@ class Minimizer(object):
             if converged:
                 self._screen("CONVERGED", newline=True)
                 return
-            # check stop loss
-            lost = self.stop_loss_condition(self.counter, self.f, self.gradient)
+            # check stop loss on the gradient in original basis
+            lost = self.stop_loss_condition(self.counter, self.f, gradient_orig)
             if lost:
                 self._screen("LOST", newline=True)
                 return
             # call back
             if self.callback is not None:
                 self.callback(self)
+            # preconditioner, part 2
+            if self.prec is not None:
+               x_orig = self.prec.undo(self.x)
+               if self.prec.update(self.counter, self.f, x_orig, gradient_orig):
+                    self.x = self.prec.do(x_orig)
+                    self.f, self.gradient = self.fun(self.x, do_gradient=True)
+                    self.step = None
+                    self.search_direction.reset()
             self.counter += 1
 
     def _print_header(self):

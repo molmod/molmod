@@ -136,6 +136,34 @@ class MinimizerTestCase(unittest.TestCase):
         )
         self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
+    def test_cg_pr_newtong_diag_prec(self):
+        x_init = numpy.zeros(2, float)
+        search_direction = ConjugateGradient('Polak-Ribiere')
+        line_search = NewtonLineSearch()
+        convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
+        stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
+        prec_fun = DiagonalPreconditioner(fun, 3, 1e-2)
+        minimizer = Minimizer(
+            x_init, prec_fun, search_direction, line_search, convergence, stop_loss,
+            anagrad=True, verbose=True,
+        )
+        self.assert_(prec_fun.scales is not None)
+        self.check_min(prec_fun, minimizer.x, 1e-6, 1e-6)
+
+    def test_cg_pr_newtong_full_prec(self):
+        x_init = numpy.zeros(2, float)
+        search_direction = ConjugateGradient('Polak-Ribiere')
+        line_search = NewtonLineSearch()
+        convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
+        stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
+        prec_fun = FullPreconditioner(fun, 3, 1e-2)
+        minimizer = Minimizer(
+            x_init, prec_fun, search_direction, line_search, convergence, stop_loss,
+            anagrad=True, verbose=True,
+        )
+        self.assert_(prec_fun.scales is not None)
+        self.check_min(prec_fun, minimizer.x, 1e-6, 1e-6)
+
     def test_cg_fr_newtong(self):
         x_init = numpy.zeros(2, float)
         search_direction = ConjugateGradient('Fletcher-Reeves')
@@ -163,4 +191,21 @@ class MinimizerTestCase(unittest.TestCase):
     def test_check_anagrad(self):
         x_init = numpy.zeros(2, float)
         check_anagrad(fun, x_init, 1e-5)
+
+    def test_check_anagrad_diag_prec(self):
+        x_init = numpy.zeros(2, float)
+        prec_fun = DiagonalPreconditioner(fun, 20, 1e-2)
+        prec_fun.scales = numpy.random.uniform(1,2,2)
+        check_anagrad(prec_fun, x_init, 1e-5)
+
+    def test_check_anagrad_full_prec(self):
+        x_init = numpy.zeros(2, float)
+        prec_fun = FullPreconditioner(fun, 20, 1e-2)
+        A = numpy.random.normal(0,1,(2,2))
+        A = 0.5*(A + A.transpose())
+        evals, evecs = numpy.linalg.eigh(A)
+        prec_fun.scales = numpy.sqrt(evals)
+        prec_fun.rotation = evecs
+        check_anagrad(prec_fun, x_init, 1e-5)
+
 
