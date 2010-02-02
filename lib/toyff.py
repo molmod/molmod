@@ -55,7 +55,7 @@ def guess_geometry(graph, unit_cell=None, verbose=False):
         NewtonLineSearch, ConvergenceCondition, StopLossCondition
 
     search_direction = ConjugateGradient()
-    line_search = NewtonLineSearch(max_reduce=500)
+    line_search = NewtonLineSearch()
     convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6)
     stop_loss = StopLossCondition(max_iter=500, fun_margin=0.1)
 
@@ -117,7 +117,7 @@ def tune_geometry(graph, mol, unit_cell=None, verbose=False):
         NewtonLineSearch, ConvergenceCondition, StopLossCondition
 
     search_direction = ConjugateGradient()
-    line_search = NewtonLineSearch(max_reduce=500)
+    line_search = NewtonLineSearch()
     convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6)
     stop_loss = StopLossCondition(max_iter=500, fun_margin=1.0)
 

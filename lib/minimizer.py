@@ -37,7 +37,7 @@
 
    x_init = numpy.zeros(2, float)
    search_direction = ConjugateGradient()
-   line_search = NewtonLineSearch(max_reduce=500)
+   line_search = NewtonLineSearch()
    convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6)
    stop_loss = StopLossCondition(max_iter=50)
    minimizer = Minimizer(
@@ -231,7 +231,7 @@ class GoldenLineSearch(LineSearch):
         self.num_bracket = 0
         self.num_golden = 0
 
-    def __call__(self, fun, f0, last_step_size, epsilon):
+    def __call__(self, fun, last_step_size, epsilon):
         """Return the value that minimizes the one-dimensional function 'fun'
 
            Arguments:
@@ -241,6 +241,7 @@ class GoldenLineSearch(LineSearch):
              epsilon  --  a value that is small compared to last_step_size
         """
         # bracket the minimum
+        f0 = fun(0.0)
         triplet = self._bracket(last_step_size, f0, fun)
         if triplet is None:
             return False, 0.0, f0
@@ -312,33 +313,36 @@ class GoldenLineSearch(LineSearch):
 class NewtonLineSearch(LineSearch):
     """The Newton line search algorithm
 
-       Only a single Newton or steepest descent step is performed.
-
        When the curvature is negative, a steepest descent step is tried, using
        the step size from the previous step multiplied by 1.5. If the new
        function value is higher, the step size is reduced by a factor two. The
-       latter is repeated at most max_reduce times. If no lower value is found,
-       the line search fails.
+       latter is repeated at most max_iter times. If no lower value is found,
+       the line search fails. (This is known is the back tracking algorithm)
 
-       When the curvature is positive, a Newton step is performed. When the
-       gradient at the new point is not lower, the step size is reduced by a
-       factor two. The latter is repeated at most max_reduce times. If not lower
-       gradient is found, the line search fails.
+       When the curvature is positive, Newton step are performed. When the
+       function or the absolute value of the derivative at a new point
+       increases, the procedure is interupted and the last descent point is
+       used. When there is no last descent point, back tracking is used. The
+       Wolfe conditions are used to determine the convergence of the line
+       search. At most max_iter Newton steps are allowed.
     """
-
-    def __init__(self, qmax=None, max_reduce=None):
+    def __init__(self, c1=1e-4, c2=1e-1, max_iter=5):
         """Initialize the Newton line search
 
            Optional arguments:
-             qmax  --  The maximum step size of a line search
-             max_reduce  --  the maximum number of attempts to half the step
-                             size in order to get a lower function or gradient
+             c1  --  The coefficient in the first Wolfe condition (sufficient
+                     decrease of the function) [default=1e-4]
+             c2  --  The coefficient in the second Wolfe condition (sufficient
+                     decrease of the derivative) [default=1e-1]. the default
+                     is optimal for the conjugate gradient method
+             max_iter  --  the maximum number of iterations in the line search.
         """
-        self.max_reduce = max_reduce
-        LineSearch.__init__(self, qmax)
-        self.num_reduce = 0
+        self.c1 = c1
+        self.c2 = c2
+        self.max_iter = max_iter
+        LineSearch.__init__(self)
 
-    def __call__(self, fun, f0, last_step_size, epsilon):
+    def __call__(self, fun, last_step_size, epsilon):
         """Return the value that minimizes the one-dimensional function 'fun'
 
            Arguments:
@@ -348,32 +352,52 @@ class NewtonLineSearch(LineSearch):
              epsilon  --  a value that is small compared to last_step_size, used
                           for finite differences
         """
-        g0 = fun(0.0, do_gradient=True)[1]
+        f0, g0 = fun(0.0, do_gradient=True)
         gl = fun(-0.5*epsilon, do_gradient=True)[1]
         gh = fun(+0.5*epsilon, do_gradient=True)[1]
         h0 = (gh-gl)/epsilon
 
-        # determine the initial step size
         if h0 > 0:
-            qopt = -g0/h0
-        else:
-            qopt = numpy.sign(-g0)*last_step_size*1.5
-        qopt = self.limit_step(qopt)
-        self.num_reduce = 0
-        while True:
-            fopt = fun(qopt)
-            if h0 > 0:
-                gopt = fun(qopt, do_gradient=True)[1]
-                if abs(gopt) < abs(g0):
-                    return True, qopt, fopt
+            q1, f1, g1, h1 = 0.0, f0, g0, h0
+            counter = 0
+            while True:
+                q2 = q1-g1/h1
+                f2, g2 = fun(q2, do_gradient=True)
+                if abs(g2) > abs(g1):
+                    # divergence
+                    break
+                counter += 1
+                if counter > self.max_iter:
+                    # had enough iterations
+                    break
+                q1, f1, g1 = q2, f2, g2
+                del q2
+                del f2
+                del g2
+                if f1 <= f0 - self.c1*abs(g0*q1) and abs(g1) <= abs(g0*self.c2):
+                    # sufficient convergence based on wolfe conditions
+                    break
+                gl = fun(q1-0.5*epsilon, do_gradient=True)[1]
+                gh = fun(q1+0.5*epsilon, do_gradient=True)[1]
+                h1 = (gh-gl)/epsilon
+            if counter > 0:
+                return True, q1, f1
             else:
-                fopt = fun(qopt)
-                if fopt < f0:
-                    return True, qopt, fopt
-            qopt *= 0.5
-            self.num_reduce += 1
-            if self.max_reduce is not None and self.num_reduce > self.max_reduce:
-                return False, qopt, fopt
+                # even the first newton step failed, revert to back tracking
+                pass
+
+        # simple back tracking with tau = 0.5, no wolfe conditions yet
+        q1 = -numpy.sign(g0)*last_step_size*1.5
+        counter = 0.0
+        while True:
+            f1 = fun(q1)
+            if f1 < f0:
+                return True, q1, f1
+            q1 *= 0.5
+            counter += 1
+            if counter > self.max_iter:
+                # had enough iterations, line search fails
+                return False, 0.0, f0
 
 
 class ConvergenceCondition(object):
@@ -489,7 +513,6 @@ class StopLossCondition(object):
 
         # all is fine
         return False
-
 
 
 class FunctionWrapper(object):
@@ -688,7 +711,7 @@ class Minimizer(object):
             # perform a line search
             line_success = self._line_opt()
             if not line_success:
-                self._screen("Line search failed           ")
+                self._screen("Line search failed", newline=True)
                 if self.search_direction.is_sd():
                     self._screen("LINE FAILED", newline=True)
                     return
@@ -746,7 +769,7 @@ class Minimizer(object):
             last_step_size = 1.0
         else:
             last_step_size = numpy.linalg.norm(self.step)
-        success, qopt, fopt = self.line_search(self.fun.line, self.f, last_step_size, self.epsilon)
+        success, qopt, fopt = self.line_search(self.fun.line, last_step_size, self.epsilon)
         if success:
             self.step = qopt*self.fun.axis
             self.x = self.x + self.step

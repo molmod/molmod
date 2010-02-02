@@ -91,7 +91,7 @@ class MinimizerTestCase(unittest.TestCase):
     def test_cg_newton(self):
         x_init = numpy.zeros(2, float)
         search_direction = ConjugateGradient()
-        line_search = NewtonLineSearch(qmax=1.0, max_reduce=500)
+        line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
         minimizer = Minimizer(
@@ -103,7 +103,7 @@ class MinimizerTestCase(unittest.TestCase):
     def test_sd_newton(self):
         x_init = numpy.zeros(2, float)
         search_direction = SteepestDescent()
-        line_search = NewtonLineSearch(qmax=1.0, max_reduce=500)
+        line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
         minimizer = Minimizer(
@@ -115,7 +115,7 @@ class MinimizerTestCase(unittest.TestCase):
     def test_cg_newtong(self):
         x_init = numpy.zeros(2, float)
         search_direction = ConjugateGradient()
-        line_search = NewtonLineSearch(qmax=1.0, max_reduce=500)
+        line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
         minimizer = Minimizer(
@@ -127,7 +127,7 @@ class MinimizerTestCase(unittest.TestCase):
     def test_sd_newtong(self):
         x_init = numpy.zeros(2, float)
         search_direction = SteepestDescent()
-        line_search = NewtonLineSearch(qmax=1.0, max_reduce=500)
+        line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
         minimizer = Minimizer(
