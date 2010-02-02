@@ -124,6 +124,12 @@ class ReadOnly(object):
         else:
             object.__setattr__(self, name, value)
 
+    def __setstate__(self, state):
+        """Part of the pickle protocol"""
+        for key, val in state.iteritems():
+            object.__setattr__(self, key, val)
+
+
     def copy_with(self, **kwargs):
         """Return a copy with (a few) changed attributes"""
         attrs = getattr(self, "__hidden").copy()

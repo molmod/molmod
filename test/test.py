@@ -61,6 +61,7 @@ from toyff import *
 from transformations import *
 from unit_cells import *
 from units import *
+from utils import *
 from vectors import *
 from volume import *
 from zmatrix import *
