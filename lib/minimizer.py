@@ -52,7 +52,7 @@ import numpy, time
 
 
 __all__ = [
-    "SearchDirection", "SteepestDescent", "ConjugateGradient",
+    "SearchDirection", "SteepestDescent", "ConjugateGradient", "QuasiNewton",
     "LineSearch", "GoldenLineSearch", "NewtonLineSearch",
     "ConvergenceCondition", "StopLossCondition", "Minimizer",
     "check_anagrad", "compute_fd_hessian",
@@ -66,8 +66,8 @@ class SearchDirection(object):
         # 2 characters indicating the method used to determine the direction
         self.status = "??"
 
-    def update(self, gradient):
-        """Update the search direction given the latest gradient"""
+    def update(self, gradient, step):
+        """Update the search direction given the latest gradient and step"""
         raise NotImplementedError
 
     def reset(self):
@@ -95,8 +95,8 @@ class SteepestDescent(SearchDirection):
         self.direction = None
         SearchDirection.__init__(self)
 
-    def update(self, gradient):
-        """Update the search direction given the latest gradient"""
+    def update(self, gradient, step):
+        """Update the search direction given the latest gradient and step"""
         self.direction = -gradient
         self.status = "SD"
 
@@ -143,8 +143,8 @@ class ConjugateGradient(SearchDirection):
         self.gradient_old = None
         SearchDirection.__init__(self)
 
-    def update(self, gradient):
-        """Update the search direction given the latest gradient"""
+    def update(self, gradient, step):
+        """Update the search direction given the latest gradient and step"""
         do_sd = self.gradient_old is None
         self.gradient_old = self.gradient
         self.gradient = gradient
@@ -191,6 +191,55 @@ class ConjugateGradient(SearchDirection):
         self.direction = -self.gradient
         self.status = "SD"
 
+
+class QuasiNewton(SearchDirection):
+    """The quasi Newton method
+
+       bla bla bla
+    """
+    def __init__(self):
+        """Initialize a QuasiNewton object"""
+        self.inv_hessian = None
+        self.gradient = None
+        self.old_gradient = None
+        SearchDirection.__init__(self)
+
+    def update(self, gradient, step):
+        """Update the search direction given the latest gradient and step"""
+        self.old_gradient = self.gradient
+        self.gradient = gradient
+        N = len(self.gradient)
+        if self.inv_hessian is None:
+            # update the direction
+            self.direction = -self.gradient
+            self.status = "SD"
+            # new guess of the inverse hessian
+            self.inv_hessian = numpy.identity(N, float)
+        else:
+            # update the direction
+            self.direction = -numpy.dot(self.inv_hessian, self.gradient)
+            self.status = "QN"
+            # new guess of the inverse hessian (BFGS)
+            y = self.gradient - self.old_gradient
+            s = step
+            sy = numpy.dot(s, y)
+            A = numpy.outer(-y/sy, s)
+            A.ravel()[::N+1] += 1
+            self.inv_hessian = (
+                numpy.dot(numpy.dot(A.transpose(), self.inv_hessian), A) +
+                numpy.outer(s/sy, s)
+            )
+
+    def reset(self):
+        """Reset the internal state of the search direction algorithm"""
+        self.inv_hessian = None
+        self.gradient = None
+        self.old_gradient = None
+
+
+    def is_sd(self):
+        """Return True if the last direction was steepest descent"""
+        return self.status == "SD"
 
 
 phi = 0.5*(1+numpy.sqrt(5))
@@ -747,7 +796,7 @@ class Minimizer(object):
         self.counter = 0
         while True:
             # compute the new direction
-            self.search_direction.update(self.gradient)
+            self.search_direction.update(self.gradient, self.step)
             # print some stuff on screen
             if self.counter % 20 == 0:
                 self._print_header()

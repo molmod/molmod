@@ -64,6 +64,18 @@ class MinimizerTestCase(unittest.TestCase):
         # also compare the two hessians
         self.assert_(abs(hessian1 - hessian2).max() < 1e-4)
 
+    def test_sd_golden(self):
+        x_init = numpy.zeros(2, float)
+        search_direction = SteepestDescent()
+        line_search = GoldenLineSearch(qtol=1e-10, qmax=1.0, max_iter=500)
+        convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
+        stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3, grad_margin=1e-3)
+        minimizer = Minimizer(
+            x_init, fun, search_direction, line_search, convergence, stop_loss,
+            anagrad=False, verbose=True,
+        )
+        self.check_min(fun, minimizer.x, 1e-6, 1e-6)
+
     def test_cg_golden(self):
         x_init = numpy.zeros(2, float)
         search_direction = ConjugateGradient()
@@ -76,12 +88,12 @@ class MinimizerTestCase(unittest.TestCase):
         )
         self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
-    def test_sd_golden(self):
+    def test_sd_newton(self):
         x_init = numpy.zeros(2, float)
         search_direction = SteepestDescent()
-        line_search = GoldenLineSearch(qtol=1e-10, qmax=1.0, max_iter=500)
+        line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
-        stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3, grad_margin=1e-3)
+        stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
         minimizer = Minimizer(
             x_init, fun, search_direction, line_search, convergence, stop_loss,
             anagrad=False, verbose=True,
@@ -100,7 +112,7 @@ class MinimizerTestCase(unittest.TestCase):
         )
         self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
-    def test_sd_newton(self):
+    def test_sd_newtong(self):
         x_init = numpy.zeros(2, float)
         search_direction = SteepestDescent()
         line_search = NewtonLineSearch()
@@ -108,7 +120,7 @@ class MinimizerTestCase(unittest.TestCase):
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
         minimizer = Minimizer(
             x_init, fun, search_direction, line_search, convergence, stop_loss,
-            anagrad=False, verbose=True,
+            anagrad=True, verbose=True,
         )
         self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
@@ -136,9 +148,9 @@ class MinimizerTestCase(unittest.TestCase):
         )
         self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
-    def test_sd_newtong(self):
+    def test_qn_newtong(self):
         x_init = numpy.zeros(2, float)
-        search_direction = SteepestDescent()
+        search_direction = QuasiNewton()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
