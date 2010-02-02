@@ -47,7 +47,8 @@
    print "optimum", minimizer.x, fun(minimizer.x)
 """
 
-import numpy
+
+import numpy, time
 
 
 __all__ = [
@@ -309,7 +310,7 @@ class GoldenLineSearch(LineSearch):
 
 
 class NewtonLineSearch(LineSearch):
-    """The Newton line search algorithm with numerical gradients
+    """The Newton line search algorithm
 
        Only a single Newton or steepest descent step is performed.
 
@@ -326,7 +327,7 @@ class NewtonLineSearch(LineSearch):
     """
 
     def __init__(self, qmax=None, max_reduce=None):
-        """Initialize the Newton line search (numerical gradients)
+        """Initialize the Newton line search
 
            Optional arguments:
              qmax  --  The maximum step size of a line search
@@ -336,13 +337,6 @@ class NewtonLineSearch(LineSearch):
         self.max_reduce = max_reduce
         LineSearch.__init__(self, qmax)
         self.num_reduce = 0
-
-    def _compute_derivatives(self, q0, f0, fun, epsilon):
-        gl = fun(q0-epsilon, do_gradient=True)[1]
-        gh = fun(q0+epsilon, do_gradient=True)[1]
-        g0 = 0.5*(gl+gh)
-        h0 = (gh-gl)/(2*epsilon)
-        return g0, h0
 
     def __call__(self, fun, f0, last_step_size, epsilon):
         """Return the value that minimizes the one-dimensional function 'fun'
@@ -354,7 +348,10 @@ class NewtonLineSearch(LineSearch):
              epsilon  --  a value that is small compared to last_step_size, used
                           for finite differences
         """
-        g0, h0 = self._compute_derivatives(0.0, f0, fun, epsilon)
+        g0 = fun(0.0, do_gradient=True)[1]
+        gl = fun(-0.5*epsilon, do_gradient=True)[1]
+        gh = fun(+0.5*epsilon, do_gradient=True)[1]
+        h0 = (gh-gl)/epsilon
 
         # determine the initial step size
         if h0 > 0:
@@ -366,7 +363,7 @@ class NewtonLineSearch(LineSearch):
         while True:
             fopt = fun(qopt)
             if h0 > 0:
-                gopt, hopt = self._compute_derivatives(qopt, fopt, fun, epsilon)
+                gopt = fun(qopt, do_gradient=True)[1]
                 if abs(gopt) < abs(g0):
                     return True, qopt, fopt
             else:
@@ -494,7 +491,36 @@ class StopLossCondition(object):
         return False
 
 
-class AnaGradWrapper(object):
+
+class FunctionWrapper(object):
+    """Generic implementation of function and its analytical derivates
+
+       Also supports function evaluation and derivative along a line.
+    """
+    def __init__(self, fun):
+        """Initialize a FunctionWrapper object
+
+           Argument:
+             fun  --  a multivariate function
+        """
+        self._fun = fun
+        self.axis = None
+        self.x0 = None
+
+    def set_line(self, x0, axis):
+        """Configure the 1D function for a line search
+
+           Arguments:
+             x0  --  the reference point (q=0)
+             axis  --  a unit vector in the direction of the line search
+        """
+        self.x0 = x0
+        self.axis = axis
+        self.line_cache = {}
+
+
+
+class AnaGradWrapper(FunctionWrapper):
     """Wrapper of a function that also supports evaluation along a line
 
        This version assumes that the underlying function implements an
@@ -514,23 +540,11 @@ class AnaGradWrapper(object):
                               when True, a 2-tuple with the function value and
                               the gradient are returned [default=False]
         """
-        self._fun = fun
-        self.axis = None
-        self.x0 = None
+        FunctionWrapper.__init__(self, fun)
 
     def __call__(self, x, do_gradient=False):
         """Just call the underlying function with the same arguments"""
         return self._fun(x, do_gradient=do_gradient)
-
-    def set_line(self, x0, axis):
-        """Configure the 1D function for a line search
-
-           Arguments:
-             x0  --  the reference point (q=0)
-             axis  --  a unit vector in the direction of the line search
-        """
-        self.x0 = x0
-        self.axis = axis
 
     def line(self, q, do_gradient=False):
         """Evaluate the function along a predefined line
@@ -546,7 +560,7 @@ class AnaGradWrapper(object):
             return self(x)
 
 
-class NumGradWrapper(object):
+class NumGradWrapper(FunctionWrapper):
     def __init__(self, fun, epsilon):
         """Initialize a NumGradWrapper object
 
@@ -558,10 +572,8 @@ class NumGradWrapper(object):
            The function fun only takes a mandatory argument x:
              x  --  the arguments of the function to be tested
         """
-        self._fun = fun
         self.epsilon = epsilon
-        self.axis = None
-        self.x0 = None
+        FunctionWrapper.__init__(self, fun)
 
     def __call__(self, x, do_gradient=False):
         """Call the underlying for function evaluates, use finite differences for gradient"""
@@ -577,16 +589,6 @@ class NumGradWrapper(object):
             return f, g
         else:
             return f
-
-    def set_line(self, x0, axis):
-        """Configure the 1D function for a line search
-
-           Arguments:
-             x0  --  the reference point (q=0)
-             axis  --  a unit vector in the direction of the line search
-        """
-        self.x0 = x0
-        self.axis = axis
 
     def line(self, q, do_gradient=False):
         """Evaluate the function along a predefined line
@@ -673,6 +675,7 @@ class Minimizer(object):
     def _iterate(self):
         """Run the iterative optimizer"""
         self.f, self.gradient = self.fun(self.x, do_gradient=True)
+        last_end = time.clock()
         # the cg loop
         self.counter = 0
         while True:
@@ -685,7 +688,7 @@ class Minimizer(object):
             # perform a line search
             line_success = self._line_opt()
             if not line_success:
-                self._screen("Line search failed", newline=True)
+                self._screen("Line search failed           ")
                 if self.search_direction.is_sd():
                     self._screen("LINE FAILED", newline=True)
                     return
@@ -696,7 +699,12 @@ class Minimizer(object):
             self.f, self.gradient = self.fun(self.x, do_gradient=True)
             # check convergence
             converged, status = self.convergence_condition(self.gradient, self.step)
-            self._screen(status, newline=True)
+            self._screen(status)
+            # timing
+            end = time.clock()
+            self._screen("%5.2f" % (end - last_end), newline=True)
+            last_end = end
+            # check convergence, part 2
             if converged:
                 self._screen("CONVERGED", newline=True)
                 return
@@ -713,6 +721,7 @@ class Minimizer(object):
     def _print_header(self):
         header = " Iter  Dir     Function"
         header += self.convergence_condition.get_header()
+        header += "    Time"
         self._screen("-"*(len(header)+2), newline=True)
         self._screen(header, newline=True)
         self._screen("-"*(len(header)+2), newline=True)

@@ -72,7 +72,7 @@ class MinimizerTestCase(unittest.TestCase):
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3, grad_margin=1e-3)
         minimizer = Minimizer(
             x_init, fun, search_direction, line_search, convergence, stop_loss,
-            anagrad=False, verbose=False,
+            anagrad=False, verbose=True,
         )
         self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
@@ -84,7 +84,7 @@ class MinimizerTestCase(unittest.TestCase):
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3, grad_margin=1e-3)
         minimizer = Minimizer(
             x_init, fun, search_direction, line_search, convergence, stop_loss,
-            anagrad=False, verbose=False,
+            anagrad=False, verbose=True,
         )
         self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
@@ -96,7 +96,7 @@ class MinimizerTestCase(unittest.TestCase):
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
         minimizer = Minimizer(
             x_init, fun, search_direction, line_search, convergence, stop_loss,
-            anagrad=False, verbose=False,
+            anagrad=False, verbose=True,
         )
         self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
@@ -108,7 +108,7 @@ class MinimizerTestCase(unittest.TestCase):
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
         minimizer = Minimizer(
             x_init, fun, search_direction, line_search, convergence, stop_loss,
-            anagrad=False, verbose=False,
+            anagrad=False, verbose=True,
         )
         self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
@@ -120,7 +120,7 @@ class MinimizerTestCase(unittest.TestCase):
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
         minimizer = Minimizer(
             x_init, fun, search_direction, line_search, convergence, stop_loss,
-            anagrad=True, verbose=False,
+            anagrad=True, verbose=True,
         )
         self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
@@ -132,7 +132,7 @@ class MinimizerTestCase(unittest.TestCase):
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
         minimizer = Minimizer(
             x_init, fun, search_direction, line_search, convergence, stop_loss,
-            anagrad=True, verbose=False,
+            anagrad=True, verbose=True,
         )
         self.check_min(fun, minimizer.x, 1e-6, 1e-6)
 
