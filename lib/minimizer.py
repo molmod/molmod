@@ -1019,6 +1019,13 @@ class Minimizer(object):
 
         self._iterate()
 
+    def get_final(self):
+        """Return the final solution in the original coordinates"""
+        if self.prec is None:
+            return self.x
+        else:
+            return self.prec.undo(self.x)
+
     def _iterate(self):
         """Run the iterative optimizer"""
         self.f, self.gradient = self.fun(self.x, do_gradient=True)
