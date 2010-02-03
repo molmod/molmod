@@ -43,11 +43,7 @@ class TransformationsTestCase(BaseTestCase):
 
     def iter_random_rotations(self, n=20):
         for i in xrange(n):
-            yield Rotation.from_properties(
-                numpy.random.uniform(0,numpy.pi*2),
-                random_normal(),
-                numpy.random.randint(0,1),
-            )
+            yield Rotation.random()
 
     def iter_random_completes(self, n=20):
         for i in xrange(n):

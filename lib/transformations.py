@@ -27,6 +27,7 @@ implementation of the Kabsch algorithm.
 """
 
 from molmod.utils import cached, ReadOnly, rmsd
+from molmod.vectors import random_unit
 from molmod.unit_cells import UnitCell
 
 import numpy
@@ -182,6 +183,14 @@ class Rotation(ReadOnly):
     def identity(cls):
         """Return the identity transformation"""
         return cls(numpy.identity(3, float))
+
+    @classmethod
+    def random(cls):
+        """Return a random rotation"""
+        axis = random_unit(3)
+        angle = numpy.random.uniform(0,2*numpy.pi)
+        invert = bool(numpy.random.randint(0,2))
+        return Rotation.from_properties(angle, axis, invert)
 
     @classmethod
     def from_properties(cls, angle, axis, invert):
