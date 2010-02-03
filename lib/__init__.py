@@ -55,6 +55,7 @@ from molmod.ic import *
 from molmod.minimizer import *
 from molmod.molecules import *
 from molmod.molecular_graphs import *
+from molmod.pairff import *
 from molmod.quaternions import *
 from molmod.randomize import *
 from molmod.similarity import *
