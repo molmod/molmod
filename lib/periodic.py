@@ -19,7 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-"""Database with periodic elements"""
+"""Database containing the periodic table"""
 
 
 import molmod.units as units

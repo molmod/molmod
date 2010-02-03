@@ -19,7 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-"""Bond length database and bond type defintions"""
+"""Bond length database and bond type definitions"""
 
 
 from molmod.periodic import periodic
