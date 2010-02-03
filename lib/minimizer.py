@@ -496,7 +496,40 @@ class NewtonLineSearch(LineSearch):
 
 
 class Preconditioner(object):
+    """Base class for preconditioners
+
+       A preconditioner is a (linear) transformation of the unknowns to a new
+       basis in which the Hessian of the minimum becomes a better-conditioned
+       matrix. In these new coordinates the convergence of the minimizer will
+       be faster. Picking the right preconditioner is a matter of experience.
+       One must balance the extra computational cost of the preconditioner
+       against the gains in computational cost because of the reduced number of
+       iterations in the minimizer.
+
+       The preconditioners in this package act as wrappers around the function
+       to be optimized. One just replaces a function by the preconditioner in
+       the constructor of the Minimizer object. E.g.
+
+         >>> Minimizer(fun, ...)
+
+       becomes
+
+         >>> Minimizer(SomePreconditioner(fun, ...), ...)
+
+       Also note that the convergence and stop loss conditions are not affected
+       by the preconditioner. They get the gradient and step in original
+       coordinates.
+    """
     def __init__(self, fun, each, grad_rms):
+        """Initialize a preconditioner
+
+           Arguments:
+             fun  --  the function whose arguments must be transformed
+             each  --  update the linear transformation after each 'each'
+                       minimizer steps without updates
+             grad_rms  --  only update when the rms value of the gradient (in
+                           the original coordinates) is below this threshold
+        """
         self.fun = fun
         self.each = each
         self.grad_rms = grad_rms
@@ -504,6 +537,16 @@ class Preconditioner(object):
         self.last_update = 0
 
     def __call__(self, x_prec, do_gradient=False):
+        """The actual wrapper around the function call.
+
+           Arguments:
+             x_prec  --  the unknowns in preconditioned coordinates
+             do_gradient  --  if True, the gradient is also computed and
+                              transformed to preconditioned coordinates
+
+           Note that this implementation assumes that the preconditioner is a
+           linear transformation.
+        """
         if do_gradient:
             f, g = self.fun(self.undo(x_prec), do_gradient=True)
             return f, self.undo(g)
@@ -511,6 +554,21 @@ class Preconditioner(object):
             return self.fun(self.undo(x_prec))
 
     def update(self, counter, f, x_orig, gradient_orig):
+        """Perform an update of the linear transformation
+
+           Arguments:
+             counter  --  the iteration counter of the minimizer
+             f  --  the function value at x_orig
+             x_orig  --  the unknowns in original coordinates
+             gradient_orig  --  the gradient in original coordinates
+
+           Return value:
+             do_update  --  True when an update is required.
+
+           Derived classes must call this method to test of the preconditioner
+           requires updating. Derived classes must also return this boolean
+           to their caller.
+        """
         if counter - self.last_update > self.each:
             grad_rms = numpy.sqrt((gradient_orig**2).mean())
             if grad_rms < self.grad_rms:
@@ -519,20 +577,70 @@ class Preconditioner(object):
         return False
 
     def do(self, x_orig):
+        """Transform the unknowns to preconditioned coordinates
+
+           This method also transforms the gradient to original coordinates
+        """
         raise NotImplementedError
 
     def undo(self, x_prec):
+        """Transform the unknowns to original coordinates
+
+           This method also transforms the gradient to preconditioned coordinates
+        """
         raise NotImplementedError
 
 
 class DiagonalPreconditioner(Preconditioner):
+    """The diagonal preconditioner
+
+       This preconditioner derives a diagonal transformation based on a finite
+       difference approximation of the diagonal elements of the Hessian. The
+       trasnformation is such that these diagonal elements would become equal
+       after the transformation. This type of preconditioner is especially
+       usefull when the unknowns have different units. In many cases this
+       preconditioner is a good trade off betweem accelerated convergence and
+       extra cost. In particular when it is combined with a conjugate gradient
+       minimizer, it can be more effecient that a quasi Newton method.
+
+       (For more general info on preconditioners, read the doc string of the
+       Preconditioner base class.)
+    """
     def __init__(self, fun, each, grad_rms, epsilon=1e-3):
+        """Initialize a diagonal preconditioner
+
+           Arguments:
+             fun  --  the function whose arguments must be transformed
+             each  --  update the linear transformation after each 'each'
+                       minimizer steps without updates
+             grad_rms  --  only update when the rms value of the gradient (in
+                           the original coordinates) is below this threshold
+
+           Optional argument:
+             epsilon  --  a small scalar used for the finite differences (taken
+                          in previous preconditioned coordinates) [default=1e-3]
+        """
         self.epsilon = epsilon
         Preconditioner.__init__(self, fun, each, grad_rms)
         self.scales = None
 
     def update(self, counter, f, x_orig, gradient_orig):
-        if Preconditioner.update(self, counter, f, x_orig, gradient_orig):
+        """Perform an update of the linear transformation
+
+           Arguments:
+             counter  --  the iteration counter of the minimizer
+             f  --  the function value at x_orig
+             x_orig  --  the unknowns in original coordinates
+             gradient_orig  --  the gradient in original coordinates
+
+           Return value:
+             done_update  --  True when an update has been done
+
+           The minimizer must reset the search direction method when an updated
+           has been done.
+        """
+        do_update = Preconditioner.update(self, counter, f, x_orig, gradient_orig)
+        if do_update:
             # determine a new preconditioner
             N = len(x_orig)
             if self.scales is None:
@@ -548,16 +656,23 @@ class DiagonalPreconditioner(Preconditioner):
                 curv = (fh+fl-2*f)/epsilon**2
                 self.scales[i] = numpy.sqrt(curv)
             self.scales /= self.scales.min()
-            return True
-        return False
+        return do_update
 
     def do(self, x_orig):
+        """Transform the unknowns to preconditioned coordinates
+
+           This method also transforms the gradient to original coordinates
+        """
         if self.scales is None:
             return x_orig
         else:
             return x_orig*self.scales
 
     def undo(self, x_prec):
+        """Transform the unknowns to original coordinates
+
+           This method also transforms the gradient to preconditioned coordinates
+        """
         if self.scales is None:
             return x_prec
         else:
@@ -565,13 +680,46 @@ class DiagonalPreconditioner(Preconditioner):
 
 
 class FullPreconditioner(Preconditioner):
+    """The full preconditioner
+
+       This preconditioner is a bit experimental. The transformation is such
+       that the hessian in the new coordinates becomes a constant matrix,
+       i.e. diagonal with all elements the same.
+    """
     def __init__(self, fun, each, grad_rms, epsilon=1e-3):
+        """Initialize a full preconditioner
+
+           Arguments:
+             fun  --  the function whose arguments must be transformed
+             each  --  update the linear transformation after each 'each'
+                       minimizer steps without updates
+             grad_rms  --  only update when the rms value of the gradient (in
+                           the original coordinates) is below this threshold
+
+           Optional argument:
+             epsilon  --  a small scalar used for the finite differences (taken
+                          in original coordinates) [default=1e-3]
+        """
         self.epsilon = epsilon
         Preconditioner.__init__(self, fun, each, grad_rms)
         self.scales = None
         self.rotation = None
 
     def update(self, counter, f, x_orig, gradient_orig):
+        """Perform an update of the linear transformation
+
+           Arguments:
+             counter  --  the iteration counter of the minimizer
+             f  --  the function value at x_orig
+             x_orig  --  the unknowns in original coordinates
+             gradient_orig  --  the gradient in original coordinates
+
+           Return value:
+             done_update  --  True when an update has been done
+
+           The minimizer must reset the search direction method when an updated
+           has been done.
+        """
         if Preconditioner.update(self, counter, f, x_orig, gradient_orig):
             # determine a new preconditioner
             hessian = compute_fd_hessian(self.fun, x_orig, self.epsilon)
@@ -582,12 +730,20 @@ class FullPreconditioner(Preconditioner):
         return False
 
     def do(self, x_orig):
+        """Transform the unknowns to preconditioned coordinates
+
+           This method also transforms the gradient to original coordinates
+        """
         if self.scales is None:
             return x_orig
         else:
             return numpy.dot(self.rotation.transpose(), x_orig)*self.scales
 
     def undo(self, x_prec):
+        """Transform the unknowns to original coordinates
+
+           This method also transforms the gradient to preconditioned coordinates
+        """
         if self.scales is None:
             return x_prec
         else:
@@ -821,7 +977,7 @@ class Minimizer(object):
                           unknowns [default=1e-6]. it is used to compute
                           finite differences.
              verbose  --  print progress information on screen [default=True]
-             callback  --  optional callback routine after each CG iteration.
+             callback  --  optional callback routine after each iteration.
                            the callback routine gets the minimizer as first
                            and only argument. [default=None]
 
@@ -925,6 +1081,7 @@ class Minimizer(object):
             self.counter += 1
 
     def _print_header(self):
+        """Print the header for screen logging"""
         header = " Iter  Dir     Function"
         header += self.convergence_condition.get_header()
         header += "    Time"
