@@ -24,7 +24,7 @@
 from common import BaseTestCase
 
 from molmod.transformations import *
-from molmod.vectors import random_normal
+from molmod.vectors import random_unit
 from molmod.utils import rmsd
 
 import numpy, copy
@@ -49,7 +49,7 @@ class TransformationsTestCase(BaseTestCase):
         for i in xrange(n):
             yield Complete.from_properties(
                 numpy.random.uniform(0,numpy.pi*2),
-                random_normal(),
+                random_unit(),
                 numpy.random.randint(0,1),
                 numpy.random.uniform(-3, 3, 3)
             )
@@ -318,7 +318,7 @@ class TransformationsTestCase(BaseTestCase):
         randomized = []
         for points, degenerate in references:
             #points[:] -= points.mean(axis=0)
-            axis = random_normal()
+            axis = random_unit()
             angle = numpy.random.uniform(0, numpy.pi*2)
             transformation = Complete.from_properties(angle, axis, False, numpy.random.normal(0, 5, 3))
             randomized.append((transformation*points, transformation))
@@ -346,7 +346,7 @@ class TransformationsTestCase(BaseTestCase):
             transf = superpose(ref_points, tr_points)
             lowest_rmsd = rmsd(ref_points, transf*tr_points)
             for i in xrange(10):
-                transf_small = Complete.from_properties(0.01, random_normal(), True, numpy.random.normal(0,0.001,3))
+                transf_small = Complete.from_properties(0.01, random_unit(), True, numpy.random.normal(0,0.001,3))
                 transf_bis = transf*transf_small
                 higher_rmsd = rmsd(ref_points, transf_bis*tr_points)
                 self.assert_(lowest_rmsd < higher_rmsd)

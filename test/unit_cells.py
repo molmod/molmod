@@ -23,7 +23,7 @@
 from common import BaseTestCase
 
 from molmod.unit_cells import UnitCell
-from molmod.vectors import random_normal
+from molmod.vectors import random_unit
 from molmod.units import deg, angstrom
 
 import numpy, unittest
@@ -207,7 +207,7 @@ class UnitCellTestCase(BaseTestCase):
             ranges = uc.get_radius_ranges(radius)
             for j in xrange(100):
                 c0 = uc.to_cartesian(numpy.random.uniform(-0.5, 0.5, 3))
-                c1 = c0 + radius*random_normal()
+                c1 = c0 + radius*random_unit()
                 f1 = uc.to_fractional(c1)
                 self.assert_((abs(f1) <= ranges+0.5).all(), "f1=%s  ranges=%s" % (f1, ranges))
 

@@ -25,8 +25,7 @@ import numpy
 
 
 __all__ = [
-    "cosine", "angle", "random_unit", "random_normal", "random_orthonormal",
-    "triangle_normal",
+    "cosine", "angle", "random_unit", "random_orthonormal", "triangle_normal",
 ]
 
 
@@ -48,17 +47,17 @@ def angle(a, b):
     return numpy.arccos(cosine(a, b))
 
 
-def random_unit(size):
-    """Return a random unit vector of the given dimension"""
+def random_unit(size=3):
+    """Return a random unit vector of the given dimension
+
+       Optional argument:
+         size  --  the number of dimensions of the unit vector [default=3]
+    """
     while True:
         result = numpy.random.normal(0, 1, size)
         length = numpy.linalg.norm(result)
         if length > 1e-3:
             return result/length
-
-def random_normal():
-    """Return a random 3D unit vector"""
-    return random_unit(3)
 
 
 normal_fns = [

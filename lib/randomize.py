@@ -412,7 +412,7 @@ def random_dimer(molecule0, molecule1, thresholds, shoot_max):
     # apply a random rotation to molecule1
     center = numpy.zeros(3, float)
     angle = numpy.random.uniform(0, 2*numpy.pi)
-    axis = random_unit(3)
+    axis = random_unit()
     rotation = Complete.about_axis(center, angle, axis)
     cor1 = numpy.dot(molecule1.coordinates, rotation.r)
 
@@ -425,7 +425,7 @@ def random_dimer(molecule0, molecule1, thresholds, shoot_max):
     cor1 += delta
 
     # define a random direction
-    direction = random_unit(3)
+    direction = random_unit()
     cor1 += 1*direction
 
     # move molecule1 along this direction until all intermolecular atomic

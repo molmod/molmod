@@ -68,7 +68,8 @@ class VectorTestCase(BaseTestCase):
     def test_random_unit(self):
         for i in xrange(100):
             self.assertAlmostEqual(numpy.linalg.norm(random_unit(10)), 1.0)
-            self.assertAlmostEqual(numpy.linalg.norm(random_normal()), 1.0)
+            self.assertAlmostEqual(numpy.linalg.norm(random_unit()), 1.0)
+            self.assertEqual(len(random_unit()), 3)
 
     def test_random_orthonormal(self):
         for i in xrange(100):
