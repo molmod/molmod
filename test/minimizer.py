@@ -196,7 +196,6 @@ class MinimizerTestCase(BaseTestCase):
         evals, evecs = numpy.linalg.eigh(A)
         prec_fun.scales = abs(evals) + 1.0
         prec_fun.rotation = evecs
-        print prec_fun.rotation
         check_anagrad(prec_fun, x_init, 1e-5)
 
     def test_full_prec_consitency(self):

@@ -591,7 +591,7 @@ class DiagonalPreconditioner(Preconditioner):
        (For more general info on preconditioners, read the doc string of the
        Preconditioner base class.)
     """
-    def __init__(self, fun, each, grad_rms, epsilon=1e-3):
+    def __init__(self, fun, each, grad_rms, epsilon=1e-3, scale_limit=1e-4):
         """Initialize a diagonal preconditioner
 
            Arguments:
@@ -604,8 +604,12 @@ class DiagonalPreconditioner(Preconditioner):
            Optional argument:
              epsilon  --  a small scalar used for the finite differences (taken
                           in previous preconditioned coordinates) [default=1e-3]
+             scale_limit  --  scales smaller than scale_limit times the largest
+                              scale are fixed to scale_limit times the largest
+                              scale
         """
         self.epsilon = epsilon
+        self.scale_limit = scale_limit
         Preconditioner.__init__(self, fun, each, grad_rms)
         self.scales = None
 
@@ -639,8 +643,12 @@ class DiagonalPreconditioner(Preconditioner):
                 xl[i] -= 0.5*epsilon
                 fl = self.fun(xl)
                 curv = (fh+fl-2*f)/epsilon**2
-                self.scales[i] = numpy.sqrt(curv)
-            self.scales /= self.scales.min()
+                self.scales[i] = numpy.sqrt(abs(curv))
+            if self.scales.max() <= 0:
+                self.scales = numpy.ones(N, float)
+            else:
+                self.scales /= self.scales.max()
+                self.scales[self.scales<self.scale_limit] = self.scale_limit
         return do_update
 
     def do(self, x_orig):
