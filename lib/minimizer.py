@@ -591,7 +591,7 @@ class DiagonalPreconditioner(Preconditioner):
        (For more general info on preconditioners, read the doc string of the
        Preconditioner base class.)
     """
-    def __init__(self, fun, each, grad_rms, epsilon=1e-3, scale_limit=1e-4):
+    def __init__(self, fun, each, grad_rms, epsilon=1e-3, scale_limit=0.0):
         """Initialize a diagonal preconditioner
 
            Arguments:
