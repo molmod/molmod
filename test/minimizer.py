@@ -21,6 +21,8 @@
 # --
 
 
+from common import BaseTestCase
+
 from molmod.minimizer import *
 
 import unittest, numpy
@@ -41,7 +43,7 @@ def fun(x, do_gradient=False):
         return value
 
 
-class MinimizerTestCase(unittest.TestCase):
+class MinimizerTestCase(BaseTestCase):
     def check_min(self, x_opt, step_rms, grad_rms):
         # check if it is really the minimum by computing small displacements
         f_opt = fun(x_opt)
@@ -124,9 +126,9 @@ class MinimizerTestCase(unittest.TestCase):
         )
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
-    def test_cg_pr_newtong(self):
+    def test_cg_newtong(self):
         x_init = numpy.zeros(2, float)
-        search_direction = ConjugateGradient('Polak-Ribiere')
+        search_direction = ConjugateGradient()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
@@ -136,9 +138,9 @@ class MinimizerTestCase(unittest.TestCase):
         )
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
-    def test_cg_pr_newtong_diag_prec(self):
+    def test_cg_newtong_diag_prec(self):
         x_init = numpy.zeros(2, float)
-        search_direction = ConjugateGradient('Polak-Ribiere')
+        search_direction = ConjugateGradient()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
@@ -150,9 +152,9 @@ class MinimizerTestCase(unittest.TestCase):
         self.assert_(prec_fun.scales is not None)
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
-    def test_cg_pr_newtong_full_prec(self):
+    def test_cg_newtong_full_prec(self):
         x_init = numpy.zeros(2, float)
-        search_direction = ConjugateGradient('Polak-Ribiere')
+        search_direction = ConjugateGradient()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
@@ -162,18 +164,6 @@ class MinimizerTestCase(unittest.TestCase):
             anagrad=True, verbose=False,
         )
         self.assert_(prec_fun.scales is not None)
-        self.check_min(minimizer.get_final(), 1e-6, 1e-6)
-
-    def test_cg_fr_newtong(self):
-        x_init = numpy.zeros(2, float)
-        search_direction = ConjugateGradient('Fletcher-Reeves')
-        line_search = NewtonLineSearch()
-        convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
-        stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
-        minimizer = Minimizer(
-            x_init, fun, search_direction, line_search, convergence, stop_loss,
-            anagrad=True, verbose=False,
-        )
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
     def test_qn_newtong(self):
@@ -204,8 +194,24 @@ class MinimizerTestCase(unittest.TestCase):
         A = numpy.random.normal(0,1,(2,2))
         A = 0.5*(A + A.transpose())
         evals, evecs = numpy.linalg.eigh(A)
-        prec_fun.scales = numpy.sqrt(evals)
+        prec_fun.scales = abs(evals) + 1.0
         prec_fun.rotation = evecs
+        print prec_fun.rotation
         check_anagrad(prec_fun, x_init, 1e-5)
 
+    def test_full_prec_consitency(self):
+        x_init = numpy.zeros(2, float)
+        prec_fun = FullPreconditioner(fun, 20, 1e-2)
+        A = numpy.random.normal(0,1,(2,2))
+        A = 0.5*(A + A.transpose())
+        evals, evecs = numpy.linalg.eigh(A)
+        prec_fun.scales = abs(evals) + 1.0
+        prec_fun.rotation = evecs
+
+        for i in xrange(20):
+            orig = numpy.random.normal(0, 1, 2)
+            check = prec_fun.do(prec_fun.undo(orig))
+            self.assertArraysAlmostEqual(orig, check)
+            check = prec_fun.undo(prec_fun.do(orig))
+            self.assertArraysAlmostEqual(orig, check)
 

@@ -123,19 +123,9 @@ class ConjugateGradient(SearchDirection):
        practical applications. An automatic reset mechanism reverts the search
        direction to the steepest descent when beta becomes negative.
     """
-    def __init__(self, variant='Polak-Ribiere'):
+    def __init__(self):
         """Initialize a ConjugateGradient object
-
-           Optional argument:
-             variant  --  the variant of the Conjugate Gradient method to use:
-                          'Fletcher-Reeves' or 'Polak-Ribiere' (default)
         """
-        if variant == 'Polak-Ribiere':
-            self._beta = self._beta_pr
-        elif variant == 'Fletcher-Reeves':
-            self._beta = self._beta_fr
-        else:
-            raise ValueError("Unknown conjugate gradient variant: %s" % variant)
         # the current conjugate direction
         self.direction = None
         # the current gradient
@@ -173,17 +163,10 @@ class ConjugateGradient(SearchDirection):
             self.direction = self.direction * beta - self.gradient
             self.status = "CG"
 
-    def _beta_pr(self):
+    def _beta(self):
         # Polak-Ribiere
         return (
             numpy.dot(self.gradient, self.gradient - self.gradient_old) /
-            numpy.dot(self.gradient_old, self.gradient_old)
-        )
-
-    def _beta_fr(self):
-        # Fletcher-Reeves
-        return (
-            numpy.dot(self.gradient, self.gradient) /
             numpy.dot(self.gradient_old, self.gradient_old)
         )
 
@@ -469,13 +452,15 @@ class NewtonLineSearch(LineSearch):
                 del q2
                 del f2
                 del g2
+                if f1 >= f0 + self.c1*abs(g0*q1):
+                    break
                 if f1 <= f0 - self.c1*abs(g0*q1) and abs(g1) <= abs(g0*self.c2):
                     wolfe = True
                     break
                 gl = fun(q1-0.5*epsilon, do_gradient=True)[1]
                 gh = fun(q1+0.5*epsilon, do_gradient=True)[1]
                 h1 = (gh-gl)/epsilon
-            if counter > 0:
+            if counter > 0 and f1 <= f0:
                 return True, wolfe, q1, f1
             else:
                 # even the first newton step failed, revert to back tracking
