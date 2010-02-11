@@ -24,8 +24,9 @@
 
 from molmod.periodic import periodic
 from molmod.units import angstrom
-from molmod.utils import cached, ReadOnly
+from molmod.utils import cached, ReadOnly, rmsd
 from molmod.molecular_graphs import MolecularGraph
+from molmod.transformations import superpose
 
 from StringIO import StringIO
 
@@ -188,5 +189,22 @@ class Molecule(ReadOnly):
             del xyz_writer
         else:
             raise ValueError("Could not determine file format for %s." % filename)
+
+    def rmsd(self, other):
+        """Compute the RMSD between two molecules
+
+           Arguments:
+             other  --  Another molecule with the same atom numbers
+
+           Return value:
+             rmsd  --  The root mean square deviation between the two geometries
+                       after applying the Kabsch algorithm
+        """
+        if self.numbers.shape != other.numbers.shape or \
+           (self.numbers != other.numbers).all():
+            raise ValueError("The other molecule does not have the same numbers as this molecule.")
+        transformation = superpose(self.coordinates, other.coordinates)
+        tmp = transformation*other.coordinates
+        return rmsd(self.coordinates, tmp)
 
 

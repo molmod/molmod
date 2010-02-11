@@ -436,13 +436,13 @@ class Complete(Translation, Rotation):
 def superpose(ras, rbs, weights=None):
     """Compute the transformation that minimizes the RMSD between the points ras and rbs
 
-    Both ras and rbs are Nx3 numpy arrays. Each row corresponds to a 3D
-    coordinate. Corresponding rows contain the points that are brought
-    into overlap. The implementation is based on the Kabsch Algorithm:
+       Both ras and rbs are Nx3 numpy arrays. Each row corresponds to a 3D
+       coordinate. Corresponding rows contain the points that are brought
+       into overlap. The implementation is based on the Kabsch Algorithm:
 
-    http://dx.doi.org/10.1107%2FS0567739476001873
+       http://dx.doi.org/10.1107%2FS0567739476001873
 
-    The returned transformation projects B onto A.
+       The returned transformation projects B onto A.
     """
     if weights is None:
         ma = ras.mean(axis=0)

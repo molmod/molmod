@@ -171,4 +171,7 @@ class MoleculeTestCase(BaseTestCase):
         mol1.set_default_symbols()
         self.assertEqual(mol1.symbols, ["O", "H", "H"])
 
+    def test_rmsd(self):
+        mol0 = Molecule.from_file("input/water.xyz")
+        self.assertAlmostEqual(mol0.rmsd(mol0), 0.0)
 
