@@ -26,7 +26,7 @@ functions are provided: rotation_around_center and superpose. The latter is an
 implementation of the Kabsch algorithm.
 """
 
-from molmod.utils import cached, ReadOnly, rmsd
+from molmod.utils import cached, ReadOnly, compute_rmsd
 from molmod.vectors import random_unit
 from molmod.unit_cells import UnitCell
 
@@ -34,7 +34,7 @@ import numpy
 
 
 __all__ = [
-    "Translation", "Rotation", "Complete", "superpose",
+    "Translation", "Rotation", "Complete", "superpose", "fit_rmsd"
 ]
 
 
@@ -153,7 +153,7 @@ class Translation(ReadOnly):
            is True when the RMSD is below the threshold, i.e. when the two
            translations are almost identical.
         """
-        return rmsd(self.t, other.t) < t_threshold
+        return compute_rmsd(self.t, other.t) < t_threshold
 
 
 class Rotation(ReadOnly):
@@ -296,7 +296,7 @@ class Rotation(ReadOnly):
            is True when the RMSD is below the threshold, i.e. when the two
            rotations are almost identical.
         """
-        return rmsd(self.r, other.r) < r_threshold
+        return compute_rmsd(self.r, other.r) < r_threshold
 
 
 class Complete(Translation, Rotation):
@@ -430,19 +430,29 @@ class Complete(Translation, Rotation):
            the thresholds, i.e. when the two transformations are almost
            identical.
         """
-        return rmsd(self.t, other.t) < t_threshold and rmsd(self.r, other.r) < r_threshold
+        return compute_rmsd(self.t, other.t) < t_threshold and compute_rmsd(self.r, other.r) < r_threshold
 
 
 def superpose(ras, rbs, weights=None):
     """Compute the transformation that minimizes the RMSD between the points ras and rbs
 
-       Both ras and rbs are Nx3 numpy arrays. Each row corresponds to a 3D
-       coordinate. Corresponding rows contain the points that are brought
-       into overlap. The implementation is based on the Kabsch Algorithm:
+       Arguments:
+         ras  --  a numpy array with 3D coordinates of geometry A, shape=(N,3)
+         rbs  --  a numpy array with 3D coordinates of geometry B, shape=(N,3)
+
+       Optional arguments:
+         weights  --  a numpy array with fitting weights for each coordinate,
+                      shape=(N,)
+
+       Return value:
+         transformation  --  the transformation that brings geometry A into
+                             overlap with geometry B
+
+       Each row in ras and rbs represents a 3D coordinate. Corresponding rows
+       contain the points that are brought into overlap by the fitting
+       procedure. The implementation is based on the Kabsch Algorithm:
 
        http://dx.doi.org/10.1107%2FS0567739476001873
-
-       The returned transformation projects B onto A.
     """
     if weights is None:
         ma = ras.mean(axis=0)
@@ -476,4 +486,31 @@ def superpose(ras, rbs, weights=None):
 
     return Complete(r, numpy.dot(r, -mb) + ma)
 
+
+def fit_rmsd(ras, rbs, weights=None):
+    """Fit geometry rbs onto ras, returns more info than superpose
+
+       Arguments:
+         ras  --  a numpy array with 3D coordinates of geometry A, shape=(N,3)
+         rbs  --  a numpy array with 3D coordinates of geometry B, shape=(N,3)
+
+       Optional arguments:
+         weights  --  a numpy array with fitting weights for each coordinate,
+                      shape=(N,)
+
+       Return values:
+         transformation  --  the transformation that brings geometry A into
+                             overlap with geometry B
+         rbs_trans  --  the transformed coordinates of geometry B
+         rmsd  --  the rmsd of the distances between corresponding atoms in
+                   geometry A and B
+
+       This is a utility routine based on the function superpose. It just
+       computes rbs_trans and rmsd after calling superpose with the same
+       arguments
+    """
+    transformation = superpose(ras, rbs, weights)
+    rbs_trans = transformation * rbs
+    rmsd = compute_rmsd(ras, rbs_trans)
+    return transformation, rbs_trans, rmsd
 

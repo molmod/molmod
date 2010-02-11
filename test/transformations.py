@@ -25,7 +25,7 @@ from common import BaseTestCase
 
 from molmod.transformations import *
 from molmod.vectors import random_unit
-from molmod.utils import rmsd
+from molmod.utils import compute_rmsd
 
 import numpy, copy
 import unittest
@@ -325,6 +325,9 @@ class TransformationsTestCase(BaseTestCase):
 
         for (ref_points, degenerate), (tr_points, transf) in zip(references, randomized):
             check_transf = superpose(ref_points, tr_points)
+            check_transf2 = fit_rmsd(ref_points, tr_points)[0]
+            self.assertArraysAlmostEqual(check_transf.r, check_transf2.r)
+            self.assertArraysAlmostEqual(check_transf.t, check_transf2.t)
             # check whether the rotation matrix is orthogonal
             self.assertArraysAlmostEqual(numpy.dot(check_transf.r, check_transf.r.transpose()), numpy.identity(3, float), 1e-5)
             # first check whether check_transf brings the tr_points back to the ref_points
@@ -344,11 +347,11 @@ class TransformationsTestCase(BaseTestCase):
         # to a high rmsd.
         for (ref_points, degenerate), (tr_points, transf) in zip(references, randomized):
             transf = superpose(ref_points, tr_points)
-            lowest_rmsd = rmsd(ref_points, transf*tr_points)
+            lowest_rmsd = compute_rmsd(ref_points, transf*tr_points)
             for i in xrange(10):
                 transf_small = Complete.from_properties(0.01, random_unit(), True, numpy.random.normal(0,0.001,3))
                 transf_bis = transf*transf_small
-                higher_rmsd = rmsd(ref_points, transf_bis*tr_points)
+                higher_rmsd = compute_rmsd(ref_points, transf_bis*tr_points)
                 self.assert_(lowest_rmsd < higher_rmsd)
 
     def test_copy(self):
@@ -365,4 +368,11 @@ class TransformationsTestCase(BaseTestCase):
         self.assert_(c.t is copy.copy(c).t)
         self.assert_(c.t is copy.deepcopy(c).t)
 
+    def test_fit_rmsd(self):
+        a = numpy.random.normal(0,1,(20,3))
+        trans, a_trans, rmsd = fit_rmsd(a,a)
+        self.assertArraysAlmostEqual(trans.r, numpy.identity(3, float))
+        self.assertArraysAlmostEqual(trans.t, numpy.zeros(3, float), doabs=True)
+        self.assertArraysAlmostEqual(a, a_trans)
+        self.assertAlmostEqual(rmsd, 0.0)
 

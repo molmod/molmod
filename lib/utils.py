@@ -25,7 +25,7 @@
 import numpy
 
 
-__all__ = ["cached", "ReadOnly", "rmsd"]
+__all__ = ["cached", "ReadOnly", "compute_rmsd"]
 
 
 class cached(object):
@@ -141,7 +141,7 @@ class ReadOnly(object):
 
 
 
-def rmsd(a, b):
+def compute_rmsd(a, b):
     """Compute the root-mean-square deviation between two arrays
 
        Arguments:

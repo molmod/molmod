@@ -24,9 +24,9 @@
 
 from molmod.periodic import periodic
 from molmod.units import angstrom
-from molmod.utils import cached, ReadOnly, rmsd
+from molmod.utils import cached, ReadOnly
 from molmod.molecular_graphs import MolecularGraph
-from molmod.transformations import superpose
+from molmod.transformations import fit_rmsd
 
 from StringIO import StringIO
 
@@ -203,8 +203,5 @@ class Molecule(ReadOnly):
         if self.numbers.shape != other.numbers.shape or \
            (self.numbers != other.numbers).all():
             raise ValueError("The other molecule does not have the same numbers as this molecule.")
-        transformation = superpose(self.coordinates, other.coordinates)
-        tmp = transformation*other.coordinates
-        return rmsd(self.coordinates, tmp)
-
+        return fit_rmsd(self.coordinates, other.coordinates)[2]
 
