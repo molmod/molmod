@@ -197,11 +197,17 @@ class Molecule(ReadOnly):
              other  --  Another molecule with the same atom numbers
 
            Return value:
-             rmsd  --  The root mean square deviation between the two geometries
-                       after applying the Kabsch algorithm
+             transformation  --  the transformation that brings 'self' into
+                                 overlap with 'other'
+             other_trans  --  the transformed coordinates of geometry 'other'
+             rmsd  --  the rmsd of the distances between corresponding atoms in
+                       'self' and 'other'
+
+           Usage:
+             molecule1.rmsd(molecule2)
         """
         if self.numbers.shape != other.numbers.shape or \
            (self.numbers != other.numbers).all():
             raise ValueError("The other molecule does not have the same numbers as this molecule.")
-        return fit_rmsd(self.coordinates, other.coordinates)[2]
+        return fit_rmsd(self.coordinates, other.coordinates)
 

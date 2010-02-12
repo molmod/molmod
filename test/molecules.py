@@ -173,5 +173,5 @@ class MoleculeTestCase(BaseTestCase):
 
     def test_rmsd(self):
         mol0 = Molecule.from_file("input/water.xyz")
-        self.assertAlmostEqual(mol0.rmsd(mol0), 0.0)
+        self.assertAlmostEqual(mol0.rmsd(mol0)[2], 0.0)
 
