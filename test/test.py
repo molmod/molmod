@@ -57,6 +57,7 @@ from pairff import *
 from quaternions import *
 from randomize import *
 from similarity import *
+from symmetry import *
 from toyff import *
 from transformations import *
 from unit_cells import *

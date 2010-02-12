@@ -27,6 +27,7 @@ from molmod.units import angstrom
 from molmod.utils import cached, ReadOnly
 from molmod.molecular_graphs import MolecularGraph
 from molmod.transformations import fit_rmsd
+from molmod.symmetry import compute_rotsym
 
 from StringIO import StringIO
 
@@ -210,4 +211,19 @@ class Molecule(ReadOnly):
            (self.numbers != other.numbers).all():
             raise ValueError("The other molecule does not have the same numbers as this molecule.")
         return fit_rmsd(self.coordinates, other.coordinates)
+
+    def compute_rotsym(self, threshold=1e-3*angstrom):
+        """Compute the rotational symmetry number
+
+           Optional argument:
+             threshold  --  only when a rotation results in an rmsd below the given
+                            threshold, the rotation is considered to transform the
+                            molecule onto itself.
+        """
+        if hasattr(self, "graph"):
+            graph = self.graph
+        else:
+            graph = MolecularGraph.from_geometry(self)
+        return compute_rotsym(self, graph, threshold)
+
 

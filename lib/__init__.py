@@ -59,6 +59,7 @@ from molmod.pairff import *
 from molmod.quaternions import *
 from molmod.randomize import *
 from molmod.similarity import *
+from molmod.symmetry import *
 from molmod.toyff import *
 from molmod.transformations import *
 from molmod.unit_cells import *

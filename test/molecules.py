@@ -175,3 +175,9 @@ class MoleculeTestCase(BaseTestCase):
         mol0 = Molecule.from_file("input/water.xyz")
         self.assertAlmostEqual(mol0.rmsd(mol0)[2], 0.0)
 
+    def test_rotsym(self):
+        mol = Molecule.from_file("input/benzene.xyz")
+        self.assertEqual(mol.compute_rotsym(), 12)
+        mol.set_default_graph()
+        self.assertEqual(mol.compute_rotsym(), 12)
+
