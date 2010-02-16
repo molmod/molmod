@@ -37,7 +37,7 @@ class SymmetryTestCase(BaseTestCase):
         molecule = Molecule.from_file("input/butane.xyz")
         molecule.set_default_graph()
         rotsym = compute_rotsym(molecule, molecule.graph)
-        self.assertEqual(rotsym, 4)
+        self.assertEqual(rotsym, 2)
 
     def test_rotsym_cyclopentane(self):
         molecule = Molecule.from_file("input/cyclopentane.xyz")
@@ -49,13 +49,13 @@ class SymmetryTestCase(BaseTestCase):
         molecule = Molecule.from_file("input/octane.xyz")
         molecule.set_default_graph()
         rotsym = compute_rotsym(molecule, molecule.graph, threshold=0.01)
-        self.assertEqual(rotsym, 4)
+        self.assertEqual(rotsym, 2)
 
     def test_rotsym_tetra(self):
         molecule = Molecule.from_file("input/tetra.xyz")
         molecule.set_default_graph()
         rotsym = compute_rotsym(molecule, molecule.graph, threshold=0.01)
-        self.assertEqual(rotsym, 24)
+        self.assertEqual(rotsym, 12)
 
     def test_rotsym_water(self):
         molecule = Molecule.from_file("input/water.xyz")
@@ -68,4 +68,10 @@ class SymmetryTestCase(BaseTestCase):
         molecule.set_default_graph()
         rotsym = compute_rotsym(molecule, molecule.graph, threshold=0.01)
         self.assertEqual(rotsym, 12)
+
+    def test_rotsym_ethane(self):
+        molecule = Molecule.from_file("input/ethane.xyz")
+        molecule.set_default_graph()
+        rotsym = compute_rotsym(molecule, molecule.graph, threshold=0.01)
+        self.assertEqual(rotsym, 6)
 

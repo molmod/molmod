@@ -469,21 +469,13 @@ def superpose(ras, rbs, weights=None):
     else:
         weights = weights.reshape((-1, 1))
         A = numpy.dot(((rbs-mb)*weights).transpose(), (ras-ma)*weights)
-    B = numpy.dot(A.transpose(), A)
-    evals, evecs = numpy.linalg.eigh(B)
-    evals = numpy.clip(evals, 0, evals.max())
-    Bhalf = numpy.dot(evecs*numpy.sqrt(evals), evecs.transpose())
-    # safe inverse of A
     U, W, Vt = numpy.linalg.svd(A)
-    Winv = 1/W
-    Winv[abs(W)<1e-10] = 0
-    Ainv = numpy.dot(Vt.transpose()*Winv, U.transpose())
-    r = numpy.dot(Bhalf, Ainv)
-
-    # fix degeneracies
-    U, W, Vt = numpy.linalg.svd(r)
-    r = numpy.dot(U, Vt)
-
+    W[0] = 1
+    W[1] = 1
+    W[2] = 1
+    if numpy.linalg.det(A) < 0:
+        W[2] = -1
+    r = numpy.dot(Vt.transpose()*W, U.transpose())
     return Complete(r, numpy.dot(r, -mb) + ma)
 
 
