@@ -177,7 +177,7 @@ class ToyFFTestCase(unittest.TestCase):
             energy = ff(coordinates, False)
             lengths = numpy.array([dm[i,j] for i,j in ff.bond_edges])
             my_terms = numpy.cosh((lengths - ff.bond_lengths)*ff.bond_hyper_scale)-1
-            self.assertAlmostEqual(energy, my_terms.sum())
+            self.assertAlmostEqual(energy/my_terms.sum(), 1.0)
 
     def test_bond_hyper_gradient(self):
         for i in xrange(10):
