@@ -215,7 +215,7 @@ class Graph(ReadOnly):
     @cached
     def distances(self):
         """Construct the matrix with the all-pairs shortest path lenghts"""
-        from molmod.ext import graphs_floyd_warshall
+        from molmodext import graphs_floyd_warshall
         distances = numpy.zeros((self.num_vertices,)*2, numpy.int32)
         #distances[:] = -1 # set all -1, which is just a very big integer
         #distances.ravel()[::len(distances)+1] = 0 # set diagonal to zero

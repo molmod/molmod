@@ -115,7 +115,7 @@ class Molecule(ReadOnly):
     @cached
     def distance_matrix(self):
         """The matrix with all atom pair distances"""
-        from molmod.ext import molecules_distance_matrix
+        from molmodext import molecules_distance_matrix
         return molecules_distance_matrix(self.coordinates)
 
     @cached

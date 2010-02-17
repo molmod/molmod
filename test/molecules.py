@@ -50,7 +50,7 @@ class MoleculeTestCase(BaseTestCase):
             )
             fractional = numpy.random.uniform(0,1,(N,3))
             coordinates = unit_cell.to_cartesian(fractional)
-            from molmod.ext import molecules_distance_matrix
+            from molmodext import molecules_distance_matrix
             dm = molecules_distance_matrix(coordinates, unit_cell.matrix,
                                            unit_cell.reciprocal)
             for i in xrange(N):

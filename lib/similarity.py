@@ -37,7 +37,7 @@ a1 = SimilarityDescriptor(distance_matrix, labels)
 """
 
 
-from molmod.ext import similarity_table_labels, similarity_table_distances, \
+from molmodext import similarity_table_labels, similarity_table_distances, \
     similarity_measure
 
 import numpy
@@ -100,7 +100,7 @@ class SimilarityDescriptor(object):
              labels  --  a list with integer labels used to identify atoms of
                          the same type
         """
-        from molmod.ext import molecules_distance_matrix
+        from molmodext import molecules_distance_matrix
         distance_matrix = molecules_distance_matrix(coordinates)
         return cls(distance_matrix, labels)
 

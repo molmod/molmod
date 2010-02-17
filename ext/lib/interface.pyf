@@ -19,7 +19,7 @@
 ! --
 
 
-python module ext
+python module molmodext
 interface
 
 !!
@@ -231,5 +231,5 @@ interface
   end function monte_carlo_volumes
 
 end interface
-end python module ext
+end python module molmodext
 

@@ -75,7 +75,7 @@ class ToyFFTestCase(unittest.TestCase):
             for j in xrange(i):
                 mask[i,j] = True
 
-        from molmod.ext import molecules_distance_matrix
+        from molmodext import molecules_distance_matrix
         while True:
             unit_cell = UnitCell(
                 numpy.random.uniform(0,3,(3,3)),

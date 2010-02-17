@@ -26,7 +26,7 @@ from molmod import context
 from molmod.molecules import Molecule
 from molmod.periodic import periodic
 
-from molmod.ext import ff_dm_quad, ff_dm_reci, ff_bond_quad, ff_bond_hyper
+from molmodext import ff_dm_quad, ff_dm_reci, ff_bond_quad, ff_bond_hyper
 
 import numpy
 

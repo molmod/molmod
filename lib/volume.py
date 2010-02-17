@@ -24,7 +24,7 @@
 This approach is slow, but robust and simple to implement.
 """
 
-from molmod.ext import monte_carlo_volumes
+from molmodext import monte_carlo_volumes
 from molmod.periodic import periodic
 from molmod.units import angstrom
 

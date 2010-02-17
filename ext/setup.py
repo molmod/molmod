@@ -33,13 +33,13 @@ setup(
     author_email='Toon.Verstraelen@UGent.be',
     url='http://molmod.ugent.be/code/',
     ext_modules=[
-        Extension("molmod.ext", ["lib/interface.pyf", "lib/common.c",
+        Extension("molmodext", ["lib/interface.pyf", "lib/common.c",
             "lib/ff.c", "lib/graphs.c", "lib/similarity.c", "lib/molecules.c",
             "lib/unit_cells.c", "lib/volume.c",
         ]),
     ],
-    packages=['molmod'],
-    package_dir={'molmod': 'lib'},
+    #packages=['molmod'],
+    #package_dir={'molmod': 'lib'},
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
