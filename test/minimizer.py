@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
@@ -213,4 +214,5 @@ class MinimizerTestCase(BaseTestCase):
             self.assertArraysAlmostEqual(orig, check)
             check = prec_fun.undo(prec_fun.do(orig))
             self.assertArraysAlmostEqual(orig, check)
+
 

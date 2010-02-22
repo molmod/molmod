@@ -19,23 +19,3 @@
 // along with this program; if not, see <http://www.gnu.org/licenses/>
 //
 // --
-
-
-
-#ifndef MOLMOD_COMMON_H
-#define MOLMOD_COMMON_H
-
-
-void dot_matrix_vector_ddd(double *matrix, double *in, double *out);
-void dot_matrix_vector_did(double *matrix, int *in, double *out);
-void dot_matrixT_vector_ddd(double *matrix, double *in, double *out);
-void dot_matrixT_vector_did(double *matrix, int *in, double *out);
-double distance(double *a, double *b);
-double distance_periodic(double *a, double *b, double *matrix, double *reciprocal);
-double distance_delta(double *a, double *b, double *delta);
-double distance_delta_periodic(double *a, double *b, double *delta, double *matrix, double *reciprocal);
-double norm(double *a);
-
-#endif
-
-

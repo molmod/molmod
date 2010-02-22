@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
@@ -180,4 +181,5 @@ class MoleculeTestCase(BaseTestCase):
         self.assertEqual(mol.compute_rotsym(), 12)
         mol.set_default_graph()
         self.assertEqual(mol.compute_rotsym(), 12)
+
 

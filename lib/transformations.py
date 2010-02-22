@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
@@ -505,4 +506,5 @@ def fit_rmsd(ras, rbs, weights=None):
     rbs_trans = transformation * rbs
     rmsd = compute_rmsd(ras, rbs_trans)
     return transformation, rbs_trans, rmsd
+
 

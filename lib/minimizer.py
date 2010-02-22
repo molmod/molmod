@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2007 - 2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
@@ -1202,4 +1203,5 @@ def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
         hessian[i] = (compute_gradient(xh) - compute_gradient(xl))/epsilon
 
     return 0.5*(hessian + hessian.transpose())
+
 
