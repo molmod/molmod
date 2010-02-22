@@ -290,6 +290,9 @@ class HasNeighborNumbers(object):
            Arguments:
              *numbers  --  a list with atom numbers
         """
+        for number in numbers:
+            if not isinstance(number, int):
+                raise TypeError("All arguments must be integers, found a %s" % type(number))
         self.numbers = list(numbers)
         self.numbers.sort()
 
@@ -317,6 +320,9 @@ class HasNeighbors(object):
            Arguments:
              *neighbor_criteria  --  a list of criteria objects
         """
+        for criterion in neighbor_criteria:
+            if not hasattr(criterion, "__call__"):
+                raise TypeError("All arguments must be callable")
         self.neighbor_criteria = list(neighbor_criteria)
 
     def __call__(self, index, graph):

@@ -508,4 +508,17 @@ class MolecularGraphTestCase(unittest.TestCase):
             self.assert_((after.numbers==after_check.numbers).all())
             self.assert_((after.orders==after_check.orders).all())
 
+    def test_criteria_arguments(self):
+        try:
+            HasNeighborNumbers([1, 6])
+            self.fail("Should have raised a TypeError")
+        except:
+            pass
+        HasNeighborNumbers(1, 6)
+        try:
+            HasNeighbors([HasAtomNumber(1), HasAtomNumber(6)])
+            self.fail("Should have raised a TypeError")
+        except:
+            pass
+        HasNeighbors(HasAtomNumber(1), HasAtomNumber(6))
 
