@@ -78,4 +78,7 @@ class XYZTestCase(BaseTestCase):
         self.assertAlmostEqual(xf.geometries[0,0,0]/angstrom, -0.0914980466)
         self.assertAlmostEqual(xf.geometries[0,2,2]/angstrom, -0.7649930856)
 
+    def test_probes(self):
+        xyz = XYZFile("input/probes.xyz")
+        self.assertEqual(xyz.numbers[-1], 0)
 

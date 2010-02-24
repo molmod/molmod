@@ -182,7 +182,14 @@ class Molecule(ReadOnly):
             dump_cml(filename, [self])
         elif filename.endswith('.xyz'):
             from molmod.io import XYZWriter
-            xyz_writer = XYZWriter(filename, [periodic[n].symbol for n in self.numbers])
+            symbols = []
+            for n in self.numbers:
+                atom = periodic[n]
+                if atom is None:
+                    symbols.append("X")
+                else:
+                    symbols.append(atom.symbol)
+            xyz_writer = XYZWriter(filename, symbols)
             if hasattr(self, "title"):
                 title = self.title
             else:

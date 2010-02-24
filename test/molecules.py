@@ -182,4 +182,11 @@ class MoleculeTestCase(BaseTestCase):
         mol.set_default_graph()
         self.assertEqual(mol.compute_rotsym(), 12)
 
+    def test_probes(self):
+        mol1 = Molecule.from_file("input/probes.xyz")
+        self.assertEqual(mol1.numbers[-1], 0)
+        mol1.write_to_file("output/probes.xyz")
+        mol2 = Molecule.from_file("input/probes.xyz")
+        self.assertArraysEqual(mol1.numbers, mol2.numbers)
+
 
