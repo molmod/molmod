@@ -22,6 +22,8 @@
 # --
 
 
+from common import BaseTestCase
+
 import molmod.pairff
 
 import unittest, numpy, math
@@ -358,7 +360,7 @@ class PairFFTestCase(unittest.TestCase):
         self.assertAlmostEqual(error, 0.0, 3, "2b) The off-diagonal blocks of the analytical hessian are incorrect: % 12.8f / %12.8f" % (error, reference))
 
 
-class CoulombFFTestCase(unittest.TestCase):
+class CoulombFFTestCase(BaseTestCase):
     def test_cc1(self):
         coordinates = numpy.array([
             [ 0.0,  0.0,  0.0],
@@ -405,7 +407,6 @@ class CoulombFFTestCase(unittest.TestCase):
         ff = molmod.pairff.CoulombFF(mask, charges, dipoles, coordinates)
         self.assertAlmostEqual(ff.energy(), 1.0, 5, "Incorrect energy.")
 
-
     def test_dd1(self):
         coordinates = numpy.array([
             [ 0.0,  0.0,  0.0],
@@ -420,4 +421,90 @@ class CoulombFFTestCase(unittest.TestCase):
         ff = molmod.pairff.CoulombFF(mask, charges, dipoles, coordinates=coordinates)
         self.assertAlmostEqual(ff.energy(), -2.0, 5, "Incorrect energy.")
 
+    def test_esp_point_c(self):
+        coordinates = numpy.array([
+            [ 0.0,  0.0,  0.0],
+            [ 2.0,  0.0,  0.0]
+        ], float)
+        mask = 1 - numpy.identity(2, float)
+        charges = numpy.array([-1, 1], float)
+        ff = molmod.pairff.CoulombFF(mask, charges, coordinates=coordinates)
+        self.assertAlmostEqual(ff.esp_point(numpy.array([1.0, 0.0, 0.0])), 0.0, 5)
+        self.assertAlmostEqual(ff.esp_point(numpy.array([0.0, 2.0, 0.0])), -0.5+0.125**0.5, 5)
+
+    def test_esp_point_d(self):
+        coordinates = numpy.array([
+            [ 0.0,  0.0,  0.0],
+            [ 1.0,  0.0,  0.0]
+        ], float)
+        mask = 1 - numpy.identity(2, float)
+        dipoles = numpy.array([
+            [ 1.0,  0.0,  0.0],
+            [ 1.0,  0.0,  0.0]
+        ], float)
+        ff = molmod.pairff.CoulombFF(mask, charges=None, dipoles=dipoles, coordinates=coordinates)
+        self.assertAlmostEqual(ff.esp_point(numpy.array([0.5, 0.0, 0.0])), 0.0, 5)
+        self.assertAlmostEqual(ff.esp_point(numpy.array([0.0, 1.0, 0.0])), -0.5*0.5**0.5, 5)
+
+    def test_esp_c(self):
+        coordinates = numpy.array([
+            [ 0.0,  0.0,  0.0],
+            [ 2.0,  0.0,  0.0]
+        ], float)
+        mask = 1 - numpy.identity(2, float)
+        charges = numpy.array([-1, 1], float)
+        ff = molmod.pairff.CoulombFF(mask, charges, coordinates=coordinates)
+        self.assertArraysAlmostEqual(ff.esp(), numpy.array([0.5, -0.5]), 1e-5)
+
+    def test_esp_d(self):
+        coordinates = numpy.array([
+            [ 0.0,  0.0,  0.0],
+            [ 1.0,  0.0,  0.0]
+        ], float)
+        mask = 1 - numpy.identity(2, float)
+        dipoles = numpy.array([
+            [ 0.0,  1.0,  0.0],
+            [ 1.0,  0.0,  0.0]
+        ], float)
+        ff = molmod.pairff.CoulombFF(mask, charges=None, dipoles=dipoles, coordinates=coordinates)
+        self.assertArraysAlmostEqual(ff.esp(), numpy.array([-1.0, 0.0]), 1e-5)
+
+    def test_efield_point(self):
+        coordinates = numpy.array([
+            [-2.0,  0.0,  0.0],
+            [ 2.0,  0.0,  0.0]
+        ], float)
+        mask = 1 - numpy.identity(2, float)
+        dipoles = numpy.array([
+            [ 0.0,  1.0,  0.0],
+            [ 1.0,  0.0,  0.0]
+        ], float)
+        charges = numpy.array([-1, 1], float)
+        ff = molmod.pairff.CoulombFF(mask, charges=charges, dipoles=dipoles, coordinates=coordinates)
+        eps = 1e-5
+        for i in xrange(10):
+            center = numpy.random.uniform(-0.2, 0.2, 3)
+            esp0 = ff.esp_point(center)
+            efield0 = ff.efield_point(center)
+            for j in xrange(3):
+                ex_center = center.copy()
+                ex_center[j] += eps
+                self.assertAlmostEqual(-efield0[j], (ff.esp_point(ex_center) - esp0)/eps, 3)
+
+    def test_efield(self):
+        coordinates = numpy.random.uniform(-1, 1, (3,3))
+        point = coordinates[0]
+        mask = 1 - numpy.identity(3, float)
+        dipoles = numpy.random.uniform(-1, 1, (3,3))
+        charges = numpy.random.uniform(-1, 1, 3)
+        dipoles[0] = 0
+        charges[0] = 1
+        ff1 = molmod.pairff.CoulombFF(mask, charges=charges, dipoles=dipoles, coordinates=coordinates)
+        coordinates = coordinates[[1,2]]
+        mask = 1 - numpy.identity(2, float)
+        dipoles = dipoles[[1,2]]
+        charges = charges[[1,2]]
+        ff2 = molmod.pairff.CoulombFF(mask, charges=charges, dipoles=dipoles, coordinates=coordinates)
+        self.assertArraysAlmostEqual(ff1.gradient()[0], -ff1.efield()[0])
+        self.assertArraysAlmostEqual(ff1.gradient()[0], -ff2.efield_point(point))
 

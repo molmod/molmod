@@ -255,6 +255,70 @@ class CoulombFF(PairFF):
                 yield 12*c1*d_5, numpy.zeros((3, 3))
                 yield 12*c2*d_5, numpy.zeros((3, 3))
 
+    def esp_point(self, point):
+        result = 0.0
+        for index2 in xrange(self.numc):
+            delta = point - self.coordinates[index2]
+            d = numpy.linalg.norm(delta)
+            if self.charges is not None:
+                result += self.charges[index2]/d
+            if self.dipoles is not None:
+                direction = delta/d
+                result += numpy.dot(self.dipoles[index2], direction)/d**2
+        return result
+
+    def esp_component(self, index1):
+        result = 0.0
+        for index2 in xrange(self.numc):
+            if self.mask[index1, index2] > 0:
+                d = self.distances[index1, index2]
+                if self.charges is not None:
+                    result += self.charges[index2]/d
+                if self.dipoles is not None:
+                    result += numpy.dot(self.dipoles[index2], self.directions[index1, index2])/d**2
+        return result
+
+    def esp(self):
+        """Compute the electrostatic potential at each atom due to other atoms"""
+        result = numpy.zeros(self.numc, float)
+        for index1 in xrange(self.numc):
+            result[index1] = self.esp_component(index1)
+        return result
+
+    def efield_point(self, point):
+        result = 0.0
+        for index2 in xrange(self.numc):
+            delta = point - self.coordinates[index2]
+            d = numpy.linalg.norm(delta)
+            direction = delta/d
+            if self.charges is not None:
+                result += self.charges[index2]*direction/d**2
+            if self.dipoles is not None:
+                p = self.dipoles[index2]
+                result += (3*numpy.dot(p, direction)*direction - p)/d**3
+        return result
+
+    def efield_component(self, index1):
+        result = 0.0
+        for index2 in xrange(self.numc):
+            if self.mask[index1, index2] > 0:
+                d = self.distances[index1, index2]
+                direction = self.directions[index1, index2]
+                if self.charges is not None:
+                    result += self.charges[index2]*direction/d**2
+                if self.dipoles is not None:
+                    p = self.dipoles[index2]
+                    result += (3*numpy.dot(p, direction)*direction - p)/d**3
+        return result
+
+    def efield(self):
+        """Compute the electrostatic potential at each atom due to other atoms"""
+        result = numpy.zeros((self.numc,3), float)
+        for index1 in xrange(self.numc):
+            result[index1] = self.efield_component(index1)
+        return result
+
+
 
 class DispersionFF(PairFF):
     """Computes the London dispersion interaction"""
