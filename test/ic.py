@@ -126,6 +126,40 @@ class ICTestCase(BaseTestCase):
             oom = (delta1**2).mean()
             self.assert_(error*1e5 < oom)
 
+    def test_diff_cross(self):
+        def my_cross(x,y,deriv):
+            x = ic.Vector3(6,deriv,x,(0,1,2))
+            y = ic.Vector3(6,deriv,y,(3,4,5))
+            return ic.cross(x,y)
+        for a1, a2 in iter_bonds():
+            d = numpy.random.normal(0,eps,6) # random displacements
+            b1 = a1+d[:3] # displaced
+            b2 = a2+d[3:] # displaced
+            temp = my_cross(a1,a2,2)
+            qxa, gxa, hxa = temp.x.results()
+            qya, gya, hya = temp.y.results()
+            qza, gza, hza = temp.z.results()
+            temp = my_cross(b1,b2,2)
+            qxb, gxb, hxb = temp.x.results()
+            qyb, gyb, hyb = temp.y.results()
+            qzb, gzb, hzb = temp.z.results()
+            delta1 = [qxb - qxa, qyb - qya, qzb - qza]
+            delta2 = [numpy.dot(0.5*(gxa+gxb).ravel(), d),
+                      numpy.dot(0.5*(gya+gyb).ravel(), d),
+                      numpy.dot(0.5*(gza+gzb).ravel(), d)]
+            error = [abs(delta1[i]-delta2[i]) for i in xrange(3)]
+            oom = [abs(delta1[i]) for i in xrange(3)]
+            for i in xrange(3):
+                self.assert_(error[i]*1e5 < oom[i])
+            delta1 = numpy.array([[(gxb - gxa).ravel()],[(gyb - gya).ravel()],[(gzb - gza).ravel()]])
+            delta2 = numpy.array([[numpy.dot(0.5*(hxa+hxb).reshape((6,6)), d)],
+                                 [numpy.dot(0.5*(hya+hyb).reshape((6,6)), d)],
+                                 [numpy.dot(0.5*(hza+hzb).reshape((6,6)), d)]])
+            error = [((delta1[i]-delta2[i])**2).mean() for i in xrange(3)]
+            oom = [((delta1[i])**2).mean() for i in xrange(3)]
+            for i in xrange(3):
+                self.assert_(error[i]*1e5 < oom[i])
+
     def test_diff_idiv(self):
         def my_div(t,deriv):
             t0 = ic.Scalar(2,deriv,t[0],0)
@@ -219,6 +253,26 @@ class ICTestCase(BaseTestCase):
                 oom = (delta1**2).mean()
                 self.assert_(error*1e5 < oom)
 
+    def test_diff_opbend(self):
+        for r1, r2, r3, r4 in iter_diheds():
+            d = numpy.random.normal(0,eps,12)
+            s1 = r1+d[:3]
+            s2 = r2+d[3:6]
+            s3 = r3+d[6:9]
+            s4 = r4+d[9:]
+            for fn in [ic.opbend_cos, ic.opbend_angle]:
+                qr, gr, hr = fn(r1, r2, r3, r4, 2)
+                qs, gs, hs = fn(s1, s2, s3, s4, 2)
+                delta1 = qs - qr
+                delta2 = numpy.dot(0.5*(gr+gs).ravel(), d)
+                error = abs(delta1-delta2)
+                oom = abs(delta1)
+                self.assert_(error*1e5 < oom)
+                delta1 = (gs - gr).ravel()
+                delta2 = numpy.dot(0.5*(hs+hr).reshape((12,12)), d)
+                error = ((delta1-delta2)**2).mean()
+                oom = (delta1**2).mean()
+                self.assert_(error*1e5 < oom)
 
     def test_dihedral_ethene(self):
         mol = Molecule.from_file("input/ethene.xyz")
@@ -236,5 +290,22 @@ class ICTestCase(BaseTestCase):
             ]
             self.assertAlmostEqual(ic.dihed_cos(c[2], c[0], c[3], c[5])[0], numpy.cos(angle))
             self.assertAlmostEqual(ic.dihed_angle(c[2], c[0], c[3], c[5])[0], angle)
+
+    def test_opbend_ethene(self):
+        mol = Molecule.from_file("input/ethene.xyz")
+        c = mol.coordinates.copy()
+        self.assertAlmostEqual(ic.opbend_cos(c[0], c[5], c[4], c[3])[0], 1.0)
+        self.assertAlmostEqual(ic.opbend_angle(c[0], c[5], c[4], c[3])[0], 0.0)
+        for i in xrange(1000):
+            angle = numpy.random.uniform(-numpy.pi/2, numpy.pi/2)
+            radius = numpy.random.uniform(0, 5*angstrom)
+            #offset = numpy.random.uniform(0, 5*angstrom)
+            c[3] = [
+                radius*numpy.cos(angle),
+                0.0,
+                radius*numpy.sin(angle),
+            ]
+            self.assertAlmostEqual(ic.opbend_cos(c[0], c[5], c[4], c[3])[0], numpy.cos(angle))
+            self.assertAlmostEqual(ic.opbend_angle(c[0], c[5], c[4], c[3])[0], angle)
 
 

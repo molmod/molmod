@@ -100,11 +100,21 @@ class Scalar(object):
         self.v += other.v
         return self
 
+    def __add__(self, other):
+        result = self.copy()
+        result += other
+        return result
+
     def __isub__(self, other):
         if self.deriv > 1: self.dd -= other.dd
         if self.deriv > 0: self.d -= other.d
         self.v -= other.v
         return self
+
+    def __sub__(self, other):
+        result = self.copy()
+        result -= other
+        return result
 
     def __imul__(self, other):
         if isinstance(other, int) or isinstance(other, float):
@@ -128,6 +138,11 @@ class Scalar(object):
         else:
             raise TypeError("Second argument must be float, int or Scalar")
         return self
+
+    def __mul__(self, other):
+        result = self.copy()
+        result *= other
+        return result
 
     def __idiv__(self, other):
         if isinstance(other, int) or isinstance(other, float):
@@ -283,30 +298,19 @@ def dot(r1, r2):
         raise ValueError("Both arguments must have the same input size.")
     if r1.deriv != r2.deriv:
         raise ValueError("Both arguments must have the same deriv.")
-    result = Scalar(r1.size, r1.deriv)
-    result.v = r1.x.v*r2.x.v + r1.y.v*r2.y.v + r1.z.v*r2.z.v
-    if result.deriv > 0:
-        result.d[:] += r1.x.v*r2.x.d
-        result.d[:] += r2.x.v*r1.x.d
-        result.d[:] += r1.y.v*r2.y.d
-        result.d[:] += r2.y.v*r1.y.d
-        result.d[:] += r1.z.v*r2.z.d
-        result.d[:] += r2.z.v*r1.z.d
-    if result.deriv > 1:
-        result.dd[:] += numpy.outer(r1.x.d, r2.x.d)
-        result.dd[:] += numpy.outer(r2.x.d, r1.x.d)
-        result.dd[:] += numpy.outer(r1.y.d, r2.y.d)
-        result.dd[:] += numpy.outer(r2.y.d, r1.y.d)
-        result.dd[:] += numpy.outer(r1.z.d, r2.z.d)
-        result.dd[:] += numpy.outer(r2.z.d, r1.z.d)
-        result.dd[:] += r1.x.v*r2.x.dd
-        result.dd[:] += r2.x.v*r1.x.dd
-        result.dd[:] += r1.y.v*r2.y.dd
-        result.dd[:] += r2.y.v*r1.y.dd
-        result.dd[:] += r1.z.v*r2.z.dd
-        result.dd[:] += r2.z.v*r1.z.dd
-    return result
+    return r1.x*r2.x + r1.y*r2.y + r1.z*r2.z
 
+def cross(r1, r2):
+    """Compute the cross product between two Vector3 Objects (Returns a Vector3)"""
+    if r1.size != r2.size:
+        raise ValueError("Both arguments must have the same input size.")
+    if r1.deriv != r2.deriv:
+        raise ValueError("Both arguments must have the same deriv.")
+    result = Vector3(r1.size, r1.deriv)
+    result.x = r1.y*r2.z - r1.z*r2.y
+    result.y = r1.z*r2.x - r1.x*r2.z
+    result.z = r1.x*r2.y - r1.y*r2.x
+    return result
 
 def bond_length(r0, r1, deriv=0):
     """Compute the distance between the two points r0 and r1
@@ -520,4 +524,103 @@ def dihed_angle(r0, r1, r2, r3, deriv=0):
     sign = 1-(numpy.linalg.det([a, b, c]) > 0)*2
     return _cos_to_angle(result, deriv, sign)
 
+def opbend_cos(r0, r1, r2, r3, deriv=0):
+    """Compute the cosine of the angle between the vector (r0,r3) and plane r0,r1,r2
 
+       Arguments:
+         r0  --  a numpy array with three elements
+         r1  --  a numpy array with three elements
+         r2  --  a numpy array with three elements
+         r3  --  a numpy array with three elements
+         derive=0  --  the derivatives to be computed (0, 1 or 2)
+    """
+    a = r1 - r0
+    b = r2 - r0
+    c = r3 - r0
+    result = _opbend_cos_low(a, b, c, deriv)
+    v = result[0]
+    if deriv == 0:
+        return v,
+    d = numpy.zeros((4, 3), float)
+    d[0] = -result[1][:3]-result[1][3:6]-result[1][6:]
+    d[1] = result[1][:3]
+    d[2] = result[1][3:6]
+    d[3] = result[1][6:]
+    if deriv == 1:
+        return v, d
+    dd = numpy.zeros((4, 3, 4, 3), float)
+    aa = result[2][:3, :3]
+    ab = result[2][:3, 3:6]
+    ac = result[2][:3, 6:]
+    ba = result[2][3:6, :3]
+    bb = result[2][3:6, 3:6]
+    bc = result[2][3:6, 6:]
+    ca = result[2][6:, :3]
+    cb = result[2][6:, 3:6]
+    cc = result[2][6:, 6:]
+
+    dd[0, :, 0, :] =   aa + ab + ac + ba + bb + bc + ca + cb + cc
+    dd[0, :, 1, :] = - aa - ba - ca
+    dd[0, :, 2, :] = - ab - bb - cb
+    dd[0, :, 3, :] = - ac - bc - cc
+
+    dd[1, :, 0, :] = - aa - ab - ac
+    dd[1, :, 1, :] =   aa
+    dd[1, :, 2, :] =   ab
+    dd[1, :, 3, :] =   ac
+
+    dd[2, :, 0, :] = - ba - bb - bc
+    dd[2, :, 1, :] =   ba
+    dd[2, :, 2, :] =   bb
+    dd[2, :, 3, :] =   bc
+
+    dd[3, :, 0, :] = - ca - cb - cc
+    dd[3, :, 1, :] =   ca
+    dd[3, :, 2, :] =   cb
+    dd[3, :, 3, :] =   cc
+    if deriv == 2:
+        return v, d, dd
+    raise ValueError("deriv must be 0, 1 or 2.")
+
+def _opbend_cos_low(a, b, c, deriv):
+    """Similar to opbend_cos, but with relative vectors"""
+    a = Vector3(9, deriv, a, (0, 1, 2))
+    b = Vector3(9, deriv, b, (3, 4, 5))
+    c = Vector3(9, deriv, c, (6, 7, 8))
+    n  = cross(a,b)
+    n /= n.norm()
+    c /= c.norm()
+    temp = dot(n,c)
+    result = temp.copy()
+    result.v = numpy.sqrt(1.0-temp.v**2)
+    if result.deriv > 0:
+        result.d *= -temp.v
+        result.d /= result.v
+    if result.deriv > 1:
+        result.dd *= -temp.v
+        result.dd /= result.v
+        temp2 = numpy.array([temp.d]).transpose()*temp.d
+        temp2 /= result.v**3
+        result.dd -= temp2
+    return result.results()
+
+def opbend_angle(r0, r1, r2, r3, deriv=0):
+    """Compute the angle between the vector r0, r3 and  the plane r0, r1, r2
+
+       The sign convention is as follows: positive if r3 lies in the space above
+       plane r0, r1, r2 and negative if r3 lies below. Above is defined by right
+       hand rule from r0-r1 to r0-r2.
+
+       Arguments:
+         r0  --  a numpy array with three elements
+         r1  --  a numpy array with three elements
+         r2  --  a numpy array with three elements
+         r3  --  a numpy array with three elements
+         derive=0  --  the derivatives to be computed (0, 1 or 2)
+    """
+    result = opbend_cos(r0, r1, r2, r3, deriv)
+    a = r1 - r0
+    b = r2 - r0
+    c = r3 - r0
+    sign = numpy.sign(numpy.linalg.det([a, b, c]))
+    return _cos_to_angle(result, deriv, sign)
