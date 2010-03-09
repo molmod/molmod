@@ -179,8 +179,9 @@ class MoleculeTestCase(BaseTestCase):
     def test_rotsym(self):
         mol = Molecule.from_file("input/benzene.xyz")
         self.assertEqual(mol.compute_rotsym(), 12)
-        mol.set_default_graph()
-        self.assertEqual(mol.compute_rotsym(), 12)
+        molecule = Molecule.from_file("input/ethene_ethyl_trans.xyz")
+        rotsym = molecule.compute_rotsym()
+        self.assertEqual(rotsym, 1)
 
     def test_probes(self):
         mol1 = Molecule.from_file("input/probes.xyz")

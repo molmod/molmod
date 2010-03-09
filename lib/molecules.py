@@ -228,10 +228,9 @@ class Molecule(ReadOnly):
                             threshold, the rotation is considered to transform the
                             molecule onto itself.
         """
-        if hasattr(self, "graph"):
-            graph = self.graph
-        else:
-            graph = MolecularGraph.from_geometry(self)
+        # Generate a graph with a more permissive threshold for bond lengths:
+        # (is convenient in case of transition state geometries)
+        graph = MolecularGraph.from_geometry(self, scaling=1.5)
         return compute_rotsym(self, graph, threshold)
 
 

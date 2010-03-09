@@ -49,12 +49,22 @@ class MolecularGraph(Graph):
     """
 
     @classmethod
-    def from_geometry(cls, molecule, unit_cell=None, do_orders=False):
+    def from_geometry(cls, molecule, unit_cell=None, do_orders=False, scaling=1.0):
         """Construct a MolecularGraph object based on interatomic distances
 
            All short distances are computed with the binning module and compared
            with a database of bond lengths. Based on this comparison, bonded
            atoms are detected.
+
+           Argument:
+              molecule  --  The molecule to derive the graph from
+
+           Optional arguments:
+              unit_cell  --  describes the periodicity of the structure
+              do_orders  --  set to True to estimate the bond order
+              scaling  --  scale the threshold for the connectivity. increase
+                           this to 1.5 in case of transition states when a
+                           fully connected topology is required.
         """
         from molmod.bonds import bonds
 
@@ -69,7 +79,7 @@ class MolecularGraph(Graph):
         edges = []
 
         for i0, i1, delta, distance in pair_search:
-            bond_order = bonds.bonded(molecule.numbers[i0], molecule.numbers[i1], distance)
+            bond_order = bonds.bonded(molecule.numbers[i0], molecule.numbers[i1], distance/scaling)
             if bond_order is not None:
                 if do_orders:
                     orders.append(bond_order)
