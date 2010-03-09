@@ -41,7 +41,7 @@ __all__ = [
     "Scalar", "Vector3", "dot",
     "bond_length", "pair_distance",
     "bend_cos", "bend_angle",
-    "dihed_cos", "dihed_angle",
+    "dihed_cos", "dihed_angle","opbend_angle",
 ]
 
 
