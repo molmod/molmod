@@ -231,6 +231,9 @@ class Molecule(ReadOnly):
         # Generate a graph with a more permissive threshold for bond lengths:
         # (is convenient in case of transition state geometries)
         graph = MolecularGraph.from_geometry(self, scaling=1.5)
-        return compute_rotsym(self, graph, threshold)
+        try:
+            return compute_rotsym(self, graph, threshold)
+        except ValueError:
+            raise ValueError("The rotational symmetry number can only be computed when the graph is fully connected.")
 
 
