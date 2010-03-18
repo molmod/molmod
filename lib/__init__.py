@@ -65,6 +65,7 @@ from molmod.toyff import *
 from molmod.transformations import *
 from molmod.unit_cells import *
 from molmod.units import *
+from molmod.utils import *
 from molmod.vectors import *
 from molmod.volume import *
 from molmod.zmatrix import *
