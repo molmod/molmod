@@ -79,22 +79,22 @@ class ATRJReader(SlicedReader):
     """A Reader class for the ATRJ trajectory file format
 
        Once initialized, this object behaves like an iterator that runs over
-       the individual time frames. Example usage:
+       the individual time frames. Example usage::
 
-       >>> foo = ATRJReader("somefile.atrj")
-       >>> print foo.num_atoms
-       >>> for frame in foo:
-       ...    print frame.time
+         >>> foo = ATRJReader("somefile.atrj")
+         >>> print foo.num_atoms
+         >>> for frame in foo:
+         ...    print frame.time
     """
     def __init__(self, f, sub=slice(None)):
-        """Create an ATRJReader
-
+        """
            Arguments:
-             f  --  a filename or a file-like object
-             sub  --  an optional slice object to select a subset of time frames
+            | ``f``  --  a filename or a file-like object
+            | ``sub``  --  an optional slice object to select a subset of time
+                           frames
 
            The number of atoms is read immediately and is available as
-           self.num_atoms.
+           ``self.num_atoms``.
         """
         SlicedReader.__init__(self, f, sub)
         self._secfile = SectionFile(self._f)

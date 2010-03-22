@@ -38,12 +38,11 @@ class CP2KSection(object):
     """
 
     def __init__(self, name="", children=None, section_parameters=""):
-        """Initialize a CP2KSection object
-
-           Arguments:
-             name  --  the name of the section
-             children  --  a list of CP2KSection and CP2KKeyword objects
-             section_parameters  --  the value assigned to the section
+        """
+           Optional arguments:
+            | ``name``  --  the name of the section
+            | ``children``  --  a list of CP2KSection and CP2KKeyword objects
+            | ``section_parameters``  --  the value assigned to the section
         """
         if not isinstance(name, str):
             raise TypeError("A name must be a string, got %s." % name)
@@ -252,12 +251,11 @@ class CP2KKeyword(object):
     """Data structure representing a keyword-value pair in a CP2K input file"""
 
     def __init__(self, name="", value="", unit=None):
-        """Initialize a CP2KKeyword
-
-           Arguments:
-             name  --  The keyword name
-             value  --  The associated value
-             unit  --  The unit (user must guarantee validity of the unit)
+        """
+           Optional arguments:
+            | ``name``  --  The keyword name
+            | ``value``  --  The associated value
+            | ``unit``  --  The unit (user must guarantee validity of the unit)
         """
         self.__name = name.upper()
         self.__value = value
@@ -323,16 +321,15 @@ class CP2KInputFile(CP2KSection):
 
     @staticmethod
     def read_from_file(filename):
-        """Constructs a new CP2KInputFile object based on the contents of a file
-
+        """
            Arguments:
-             filename  --  the filename of the input file
+            | ``filename``  --  the filename of the input file
 
-           Use as follows:
+           Use as follows::
 
-           >>> if = CP2KInputFile.read_from_file("somefile.inp")
-           >>> for section in if:
-           ...     print section.name
+             >>> if = CP2KInputFile.read_from_file("somefile.inp")
+             >>> for section in if:
+             ...     print section.name
         """
         f = file(filename)
         result = CP2KInputFile()

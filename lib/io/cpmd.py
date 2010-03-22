@@ -34,17 +34,19 @@ __all__ = ["CPMDTrajectoryReader"]
 class CPMDTrajectoryReader(SlicedReader):
     """A Reader for CPMD trajectory files
 
-       Use this reader as an iterator:
-       >>> ldr = CPMDTrajectoryReader("TRAJECTORY")
-       >>> for pos, vel in ldr:
-       ...     print pos[4,2]
+       Use this reader as an iterator::
+
+         >>> ldr = CPMDTrajectoryReader("TRAJECTORY")
+         >>> for pos, vel in ldr:
+         ...     print pos[4,2]
     """
     def __init__(self, f, sub=slice(None)):
-        """Initialize a CPMDTrajectoryReader object
-
+        """
            Arguments:
-             f  --  a filename or a file-like object
-             sub  --  a slice object indicating which time frames to skip/read
+            | ``f``  --  a filename or a file-like object
+
+           Optional argument:
+            | ``sub``  --  a slice object indicating which time frames to skip/read
         """
         SlicedReader.__init__(self, f, sub)
         # first determine the number of atoms

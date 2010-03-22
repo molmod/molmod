@@ -40,10 +40,11 @@ def dump_pdb(filename, molecule, atomnames=None, resnames=None, chain_ids=None, 
        This function is based on the pdb file specification:
        http://www.wwpdb.org/documentation/format32/sect9.html
        For convenience, the relevant table is copied and the character indexes are
-       transformed to C-style (starting from zero).
+       transformed to C-style (starting from zero)
 
+       =======        ============  ==========   ==========================================
        COLUMNS        DATA  TYPE    FIELD        DEFINITION
-       -------------------------------------------------------------------------------------
+       =======        ============  ==========   ==========================================
         0 -  5        Record name   "ATOM  "
         6 - 10        Integer       serial       Atom  serial number.
        12 - 15        Atom          name         Atom name.
@@ -59,6 +60,7 @@ def dump_pdb(filename, molecule, atomnames=None, resnames=None, chain_ids=None, 
        60 - 65        Real(6.2)     tempFactor   Temperature  factor.
        76 - 77        LString(2)    element      Element symbol, right-justified.
        78 - 79        LString(2)    charge       Charge  on the atom.
+       =======        ============  ==========   ==========================================
     """
 
     f = file(filename, "w")

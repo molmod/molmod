@@ -43,15 +43,15 @@ class SDFReader(object):
     """A basic reader for SDF files.
 
        Use this reader as an iterator:
-       >>> sr = SDFReader("somefile.sdf")
-       >>> for mol in sr:
-       ...     print mol.title
+
+         >>> sr = SDFReader("somefile.sdf")
+         >>> for mol in sr:
+         ...     print mol.title
     """
     def __init__(self, f):
-        """Initialize an SDFReader object
-
+        """
            Argument:
-             f  --  a filename or a file-like object
+            | ``f``  --  a filename or a file-like object
         """
         if isinstance(f, basestring):
             self.filename = f

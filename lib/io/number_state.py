@@ -35,11 +35,10 @@ class StateAttr(object):
     """Base class for NumberState attributes"""
 
     def __init__(self, owner, name):
-        """Initialize a StateAttr object
-
+        """
            Arguments:
-             owner  --  the instance to read the attribute from
-             name  --  the name of the attribute
+            | ``owner``  --  the instance to read the attribute from
+            | ``name``  --  the name of the attribute
         """
         self.owner = owner
         self.name = name
@@ -91,8 +90,8 @@ class ArrayAttr(StateAttr):
         """Initialize a ArrayAttr object
 
            Arguments:
-             owner  --  the instance to read the attribute from
-             name  --  the name of the attribute
+             ``owner``  --  the instance to read the attribute from
+             ``name``  --  the name of the attribute
         """
         StateAttr.__init__(self, owner, name)
         array = self.get()
@@ -162,27 +161,26 @@ class NumberState(object):
 
        The attributes that contain data to be read from or to be written to
        files are set up in the constructor of the owner class. This is a
-       typical simple example:
+       typical simple example::
 
-       class Foo(object):
-           def __init__(self, a, b):
-               self.a = a
-               self.b = b
-               self.state = NumberState(self, ["a", "b"])
+         >>> class Foo(object):
+         ...     def __init__(self, a, b):
+         ...         self.a = a
+         ...         self.b = b
+         ...         self.state = NumberState(self, ["a", "b"])
 
        In this example a is an array and b is a single scalar. One can now
        read/write these attributes to a file as follows:
 
-       foo = Foo(a, b)
-       foo.state.dump("somefile.txt")
-       foo.state.load("somefile.txt")
+         >>> foo = Foo(a, b)
+         >>> foo.state.dump("somefile.txt")
+         >>> foo.state.load("somefile.txt")
     """
     def __init__(self, owner, names):
-        """Initialize a NumberState object
-
-           Argument:
-             owner  --  the object whose attributes are dumped and loaded
-             names  --  a list of attribute names to dump and load
+        """
+           Arguments:
+            | ``owner``  --  the object whose attributes are dumped and loaded
+            | ``names``  --  a list of attribute names to dump and load
         """
         self._owner = owner
         self._fields = {}
@@ -199,8 +197,8 @@ class NumberState(object):
         """Register a new attribute to take care of with dump and load
 
            Arguments:
-             name  --  the name to be used in the dump file
-             attr  --  an attr object describing the attribute
+            | ``name``  --  the name to be used in the dump file
+            | ``AttrCls``  --  an attr class describing the attribute
         """
         if not issubclass(AttrCls, StateAttr):
             raise TypeError("The second argument must a StateAttr instance.")
@@ -211,9 +209,9 @@ class NumberState(object):
     def get(self, subset=None):
         """Return a dictionary object with the registered fields and their values
 
-           Argument:
-             subset  --  a list of names to restrict the number of fields in
-                         the result
+           Optional rgument:
+            | ``subset``  --  a list of names to restrict the number of fields
+                              in the result
         """
         if subset is None:
             return dict((name, attr.get(copy=True)) for name, attr in self._fields.iteritems())
@@ -223,11 +221,13 @@ class NumberState(object):
     def set(self, new_fields, subset=None):
         """Assign the registered fields based on a dictionary
 
-           Arguments:
-             new_fields  --  the dictionary with the data to be assigned to the
-                             attributes
-             subset  --  a list of names to restrict the fields that are
-                         effectively overwritten
+           Argument:
+            | ``new_fields``  --  the dictionary with the data to be assigned to
+                                  the attributes
+
+           Optional argument:
+            | ``subset``  --  a list of names to restrict the fields that are
+                              effectively overwritten
         """
         for name in new_fields:
             if name not in self._fields and (subset is None or name in subset):
@@ -249,7 +249,7 @@ class NumberState(object):
         """Dump the registered fields to a file
 
            Argument:
-             filename  --  the file to write to
+            | ``filename``  --  the file to write to
         """
         f = file(filename, "w")
         for name in sorted(self._fields):
@@ -259,10 +259,12 @@ class NumberState(object):
     def load(self, filename, subset=None):
         """Load data into the registered fields
 
-           Arguments:
-             filename  --  the filename to read from
-             subset  --  a list of field names that are read from the file. If
-                         not given, all data is read from the file.
+           Argument:
+            | ``filename``  --  the filename to read from
+
+           Optional argument:
+            | ``subset``  --  a list of field names that are read from the file.
+                              If not given, all data is read from the file.
         """
         f = file(filename, "r")
         name = None

@@ -35,26 +35,28 @@ __all__ = ["DLPolyHistoryReader", "DLPolyOutputReader"]
 class DLPolyHistoryReader(SlicedReader):
     """A Reader for the DLPoly history file format.
 
-       Use this object as an iterator:
+       Use this object as an iterator::
 
-       >>> hr = HistoryReader("somefile.txt")
-       >>> for frame in hr:
-       ...     print frame["cell"]
+         >>> hr = HistoryReader("somefile.txt")
+         >>> for frame in hr:
+         ...     print frame["cell"]
+
     """
     def __init__(self, f, sub=slice(None), pos_unit=angstrom,
         vel_unit=angstrom/picosecond, frc_unit=amu*angstrom/picosecond**2,
         time_unit=picosecond, mass_unit=amu
     ):
-        """Initialize a DLPoly history reader
-
+        """
            Arguments:
-             f  --  a filename or a file-like object
-             sub  --  a slice indicating the frames to be skipped/selected
-             pos_unit, vel_unit, frc_unit, time_unit, mass_unit
-                  --  The conversion factors for the unit conversion from the
-                      units in the data file to atomic units. The defaults
-                      of these optional arguments correspond to the defaults of
-                      dlpoly.
+             | ``f``  --  a filename or a file-like object
+
+           Optional arguments:
+             | ``sub``  --  a slice indicating the frames to be skipped/selected
+             | ``pos_unit``, ``vel_unit``, ``frc_unit``, ``time_unit``,
+               ``mass_unit``  --  The conversion factors for the unit conversion
+                from the units in the data file to atomic units. The defaults of
+                these optional arguments correspond to the defaults of dlpoly.
+
         """
         SlicedReader.__init__(self, f, sub)
         self._counter = 1 # make our counter compatible with dlpoly
@@ -164,10 +166,11 @@ class DLPolyHistoryReader(SlicedReader):
 class DLPolyOutputReader(SlicedReader):
     """A Reader for DLPoly output files.
 
-       Use this object as an iterator:
-       >>> or = OutputReader("somefile.txt")
-       >>> for row in or:
-       ...     print row[5]
+       Use this object as an iterator::
+
+         >>> outr = OutputReader("somefile.txt")
+         >>> for row in outr:
+         ...     print row[5]
 
        The variable row in the example above is a concatenation of all the
        values that belong to one time frame. (line after line)
@@ -179,18 +182,19 @@ class DLPolyOutputReader(SlicedReader):
         pos_unit=angstrom, time_unit=picosecond, angle_unit=deg,
         e_unit=amu/(angstrom/picosecond)**2
     ):
-        """Initialize a DLPoly output reader
-
+        """
            Arguments:
-             f  --  a filename or a file-like object
-             sub  --  a slice indicating the frames to be skipped/selected
-             skip_equi_period  -- When True, the equilibration period is not
-                                  read (default=True)
-             pos_unit, time_unit, angle_unit, e_unit
-                  --  The conversion factors for the unit conversion from the
-                      units in the data file to atomic units. The defaults
-                      of these optional arguments correspond to the defaults of
-                      dlpoly.
+            | ``f``  --  a filename or a file-like object
+
+           Optional arguments:
+            | ``sub``  --  a slice indicating the frames to be skipped/selected
+            | ``skip_equi_period``  -- When True, the equilibration period is
+                                       not read [default=True]
+            | ``pos_unit``, ``time_unit``, ``angle_unit``, ``e_unit`` --  The
+               conversion factors for the unit conversion from the units in the
+               data file to atomic units. The defaults of these optional
+               arguments correspond to the defaults of dlpoly.
+
         """
         SlicedReader.__init__(self, f, sub)
         self._counter = 1 # make our counter compatible with dlpoly

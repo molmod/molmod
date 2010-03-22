@@ -53,11 +53,10 @@ class PSFFile(object):
     "A very simplistic and limited implementation of the PSF file format"
 
     def __init__(self, filename=None):
-        """Initialize a PSF file
-
+        """
            Argument:
-             filename  --  When not given, an empty data structure is created,
-                           otherwise the file is loaded from disk
+            | ``filename``  --  When not given, an empty data structure is
+                                created, otherwise the file is loaded from disk
         """
         if filename is None:
             self.clear()
@@ -259,12 +258,14 @@ class PSFFile(object):
            The molecular graph is estimated from the molecular geometry based on
            interatomic distances.
 
-           Arguments:
-             molecule  --  a Molecule instance
-             atom_types  --  a list with atom type strings (optional)
-             charges  --  The net atom charges
-             split  --  When True, the molecule is split into disconnected
-                        molecules (default=True)
+           Argument:
+            | ``molecule``  --  a Molecule instance
+
+           Optional arguments:
+            | ``atom_types``  --  a list with atom type strings
+            | ``charges``  --  The net atom charges
+            | ``split``  --  When True, the molecule is split into disconnected
+                             molecules [default=True]
         """
         molecular_graph = MolecularGraph.from_geometry(molecule)
         self.add_molecular_graph(molecular_graph, atom_types, charges, split)
@@ -272,12 +273,14 @@ class PSFFile(object):
     def add_molecular_graph(self, molecular_graph, atom_types=None, charges=None, split=True):
         """Add the molecular graph to the data structure
 
-           Arguments:
-             molecule  --  a Molecule instance
-             atom_types  --  a list with atom type strings (optional)
-             charges  --  The net atom charges
-             split  --  When True, the molecule is split into disconnected
-                        molecules (default=True)
+           Argument:
+            | ``molecular_graph``  --  a MolecularGraph instance
+
+           Optional arguments:
+            | ``atom_types``  --  a list with atom type strings
+            | ``charges``  --  The net atom charges
+            | ``split``  --  When True, the molecule is split into disconnected
+                             molecules [default=True]
         """
         # add atom numbers and molecule indices
         new = len(molecular_graph.numbers)

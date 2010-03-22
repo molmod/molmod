@@ -35,17 +35,19 @@ __all__ = ["GroReader"]
 class GroReader(SlicedReader):
     """A reader from .gro trajectory files from gromacs
 
-       Use this reader as an iterator:
-       >>> gr = GroReader("somefile.gro")
-       >>> for time, pos, vel, cell in gr:
-       ...     print pos
+       Use this reader as an iterator::
+
+         >>> gr = GroReader("somefile.gro")
+         >>> for time, pos, vel, cell in gr:
+         ...     print pos
     """
     def __init__(self, f, sub=slice(None)):
-        """Initialize a GroReader
+        """
+           Argument:
+            | ``f``  --  a filename or a file-like object
 
-           Arguments:
-             f  --  a filename or a file-like object
-             sub  --  a slice object to indicate the frames to be read/skipped.
+           Optional argument:
+            | ``sub``  --  a slice object to indicate the frames to be read/skipped.
         """
         SlicedReader.__init__(self, f, sub)
         self.num_atoms = None

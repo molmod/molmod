@@ -34,18 +34,17 @@ class CubeReader(object):
        information about cube files:
        http://www.gaussian.com/g_tech/g_ur/u_cubegen.htm
 
-       Use this object as an iterator:
+       Use this object as an iterator::
 
-       >>> cr = CubeReader("test.cube")
-       >>> print cr.numbers
-       >>> for vector, value in cr:
-       ...     print vector, value
+         >>> cr = CubeReader("test.cube")
+         >>> print cr.numbers
+         >>> for vector, value in cr:
+         ...     print vector, value
     """
     def __init__(self, filename):
-        """Initialize a CubeReader object
-
+        """
            Argument:
-             filename  --  the filename with the formatted cube data
+            | ``filename``  --  the filename with the formatted cube data
         """
         self.f = file(filename)
         # skip the first two lines

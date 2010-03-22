@@ -40,15 +40,16 @@ class FCHKFile(object):
     """
 
     def __init__(self, filename, ignore_errors=False, field_labels=None):
-        """Initialize an FCHKFile object
-
+        """
            Arguments:
-             filename  --  The formatted checkpoint file
-             ignore_errors  --  Try to read incorrectly formatted files without
-                                raising exceptions
-             field_labels  --  When given, only these fields are read from the
-                               formatted checkpoint file. (This can save a lot
-                               of time.)
+            | ``filename``  --  The formatted checkpoint file
+
+           Optional arguments:
+            | ``ignore_errors``  --  Try to read incorrectly formatted files
+                                     without raising exceptions [default=False]
+            | ``field_labels``  --  When given, only these fields are read from
+                                    the formatted checkpoint file. (This can
+                                    save a lot of time.)
         """
         self.filename = filename
         self.ignore_errors = ignore_errors
@@ -69,8 +70,8 @@ class FCHKFile(object):
         """Read all the requested fields
 
            Arguments:
-             filename  --  the filename of the FCHK file
-             field_labels  --  when given, only these fields are read
+            | ``filename``  --  the filename of the FCHK file
+            | ``field_labels``  --  when given, only these fields are read
         """
         # if fields is None, all fields are read
         def read_field(f):

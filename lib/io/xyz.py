@@ -38,24 +38,27 @@ __all__ = ["XYZReader", "XYZWriter", "XYZFile"]
 class XYZReader(SlicedReader):
     """A reader for XYZ trajectory files
 
-       Use this reader as an iterator:
-       >>> xr = XYZReader("somefile.xyz")
-       >>> for title, coordinates in xr:
-               print title
+       Use this reader as an iterator::
+
+         >>> xr = XYZReader("somefile.xyz")
+         >>> for title, coordinates in xr:
+                 print title
     """
 
     def __init__(self, f, sub=slice(None), file_unit=angstrom):
         """Initialize an XYZ reader
 
            Arguments:
-             f  --  a filename or a file-like object
-             sub  --  a slice indicating which frames to read/skip
-             file_unit  --  the conversion constant to convert data into atomic
-                            units (default=angstrom)
+            | ``f``  --  a filename or a file-like object
+
+           Optional arguments:
+            | ``sub``  --  a slice indicating which frames to read/skip
+            | ``file_unit``  --  the conversion constant to convert data into atomic
+                                  units [default=angstrom]
 
            After initialization, the following attributes are defined:
-             self.symbols  --  The atom symbols
-             self.numbers  --  The atom numbers
+            | ``symbols``  --  The atom symbols
+            | ``numbers``  --  The atom numbers
         """
         SlicedReader.__init__(self, f, sub)
         self.file_unit = file_unit
@@ -127,21 +130,22 @@ class XYZWriter(object):
     """A XYZ trajectory file writer
 
        This writer is designed to be used in conjunction with an iterator that
-       generates coordinates in one way or the other. Example:
+       generates coordinates in one way or the other. Example::
 
-       xr = XYZReader("somefile.xyz")
-       xw = XYZWriter("otherfile.xyz", xr.symbols[5:10])
-       for title, coordinates in xr:
-           xw.dump(title, -coordinates[5:10])
+         >>> xr = XYZReader("somefile.xyz")
+         >>> xw = XYZWriter("otherfile.xyz", xr.symbols[5:10])
+         >>> for title, coordinates in xr:
+         ...    xw.dump(title, -coordinates[5:10])
     """
     def __init__(self, f, symbols, file_unit=angstrom):
-        """Initialize a XYZWriter object
-
+        """
            Arguments:
-             f  -- a filename or a file-like object to write to
-             symbols  --  the atom symbols
-             file_unit  --  the unit of the values written to file
-                            (default=angstrom)
+            | ``f``  -- a filename or a file-like object to write to
+            | ``symbols``  --  the atom symbols
+
+           Optional argument
+            | ``file_unit``  --  the unit of the values written to file
+                                 [default=angstrom]
         """
         if isinstance(f, file):
             self._auto_close = False
@@ -160,8 +164,8 @@ class XYZWriter(object):
         """Dump a frame to the trajectory file
 
            Arguments:
-             title  --  the title of the frame
-             coordinates  --  a numpy array with coordinates in atomic units
+            | ``title``  --  the title of the frame
+            | ``coordinates``  --  a numpy array with coordinates in atomic units
         """
         print >> self._f, "% 8i" % len(self.symbols)
         print >> self._f, str(title)
@@ -173,28 +177,30 @@ class XYZFile(object):
     """Data structure representing an XYZ File
 
        This implementation is extra layer on top the XYZReader and XYZWriter,
-       and is somewhat easier to use. Example:
+       and is somewhat easier to use. Example::
 
-       xyz_file = XYZFile("some.xyz")
-       mol = xyz_file.get_molecule(3)
-       print mol.title
-       xyz_file.geometries[0, 4, 2] = 5.0 # frame 0, atom 4, Z-coordinate
-       xyz_file.write_to_file("other.xyz")
+         >>> xyz_file = XYZFile("some.xyz")
+         >>> mol = xyz_file.get_molecule(3)
+         >>> print mol.title
+         >>> xyz_file.geometries[0, 4, 2] = 5.0 # frame 0, atom 4, Z-coordinate
+         >>> xyz_file.write_to_file("other.xyz")
     """
     def __init__(self, f, sub=slice(None), file_unit=angstrom):
         """Initialize an XYZFile object
 
            Argument:
-             f  --  a filename or a file-like object to read from
-             sub  --  a slice indicating which frames to read/skip
-             file_unit  --  the conversion constant to convert data into atomic
-                            units (default=angstrom)
+            | ``f``  --  a filename or a file-like object to read from
+
+           Optional arguments:
+            | ``sub``  --  a slice indicating which frames to read/skip
+            | ``file_unit``  --  the conversion constant to convert data into atomic
+                                 units [default=angstrom]
 
            XYZFile instances always have to following attriubtes:
-             numbers  --  The atom numbers (of one frame)
-             symbols  --  The atom symbols (of one frame)
-             titles   --  The titles of all the frames
-             geometries  --  A MxNx3 array with all the atom coordinates
+            | ``numbers``  --  The atom numbers (of one frame)
+            | ``symbols``  --  The atom symbols (of one frame)
+            | ``titles``   --  The titles of all the frames
+            | ``geometries``  --  A MxNx3 array with all the atom coordinates
         """
         xyz_reader = XYZReader(f, file_unit=file_unit)
         self.file_unit = file_unit
@@ -223,18 +229,20 @@ class XYZFile(object):
     def get_molecule(self, index=0):
         """Get a molecule from the trajectory
 
-           Argument:
-             index  --  The frame index (default=0)
+           Optional argument:
+            | ``index``  --  The frame index [default=0]
         """
         return Molecule(self.numbers, self.geometries[index], self.titles[index], symbols=self.symbols)
 
     def write_to_file(self, f, file_unit=angstrom):
         """Write the trajectory to a file
 
-           Arguments:
-             f  -- a filename or a file-like object to write to
-             file_unit  --  the unit of the values written to file
-                            (default=angstrom)
+           Argument:
+            | ``f``  -- a filename or a file-like object to write to
+
+           Optional argument:
+            | ``file_unit``  --  the unit of the values written to file
+                                 [default=angstrom]
         """
         xyz_writer = XYZWriter(f, self.symbols, file_unit=file_unit)
         for title, coordinates in izip(self.titles, self.geometries):

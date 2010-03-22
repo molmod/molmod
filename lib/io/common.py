@@ -20,20 +20,21 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-"""Common functionality used by the molmod.io package"""
+"""Common functionality used by the molmod.io package
+"""
 
 __all__ = ["slice_match", "FileFormatError", "SlicedReader"]
 
 
 def slice_match(sub, counter):
-    """Efficiently test if counter is in xrange(*sub)
+    """Efficiently test if counter is in ``xrange(*sub)``
 
        Arguments:
-         sub  --  a slice object
-         counter  -- an integer
+        | ``sub``  --  a slice object
+        | ``counter``  -- an integer
 
        The function returns True if the counter is in
-       xrange(sub.start, sub.stop, sub.step).
+       ``xrange(sub.start, sub.stop, sub.step)``.
     """
 
     if sub.start is not None and counter < sub.start:
@@ -59,11 +60,12 @@ class SlicedReader(object):
     """Base class for readers that can read a slice of all the frames"""
 
     def __init__(self, f, sub=slice(None)):
-        """Initialize a SliceReader instance
+        """
+           Argument:
+            | ``f``  --  a filename or a file-like object
 
-           Arguments:
-             f  --  a filename or a file-like object
-             sub  --  a slice indicating which frames to read/skip
+           Optional argument:
+            | ``sub``  --  a slice indicating which frames to read/skip
 
         """
         if isinstance(f, file):

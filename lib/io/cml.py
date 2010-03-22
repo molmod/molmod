@@ -48,7 +48,6 @@ __all__ = ["load_cml", "dump_cml"]
 class CMLMoleculeLoader(ContentHandler):
     """A ContentHandler that reads the essentials out of a CML file"""
     def __init__(self):
-        """Initialize the CMLMoleculeLoader"""
         self.molecules = []
         self.current_title = None # current molecule
         ContentHandler.__init__(self)
@@ -145,7 +144,7 @@ def load_cml(cml_filename):
     """Load the molecules from a CML file
 
        Argument:
-         cml_filename  --  The filename of a CML file.
+        | ``cml_filename``  --  The filename of a CML file.
 
        Returns a list of molecule objects with optional molecular graph
        attribute and extra attributes.
@@ -162,8 +161,8 @@ def _dump_cml_molecule(f, molecule):
     """Dump a single molecule to a CML file
 
        Arguments:
-         f  --  a file-like object
-         molecule  --  a Molecule instance
+        | ``f``  --  a file-like object
+        | ``molecule``  --  a Molecule instance
     """
     extra = getattr(molecule, "extra", {})
     attr_str = " ".join("%s='%s'" % (key, value) for key, value in extra.iteritems())
@@ -194,8 +193,8 @@ def dump_cml(f, molecules):
     """Write a list of molecules to a CML file
 
        Arguments:
-         f  --  a filename of a CML file or a file-like object
-         molecules  --  a list of molecule objects.
+        | ``f``  --  a filename of a CML file or a file-like object
+        | ``molecules``  --  a list of molecule objects.
     """
     if isinstance(f, basestring):
         f = file(f, "w")
