@@ -23,7 +23,7 @@
 """Utilities that are used in all parts of the MolMod library"""
 
 
-import numpy
+import numpy, types
 
 
 __all__ = ["cached", "ReadOnly", "compute_rmsd"]
@@ -42,6 +42,9 @@ class cached(object):
         self.__doc__ = fn.__doc__
 
     def __get__(self, instance, owner):
+        # make sure that the class attribute is simply this cached object:
+        if instance is None:
+            return self
         value = getattr(instance, self.attribute_name, self)
         if value is self:
             #print "COMPUTING %s" % self.attribute_name
@@ -50,6 +53,12 @@ class cached(object):
             if isinstance(value, numpy.ndarray):
                 value.setflags(write=False)
         return value
+
+    def __set__(self, instance, value):
+        raise ValueError("A cached attribute is always read-only.")
+
+    def __delete__(self, obj):
+        raise TypeError("One can not delete a cached attribute.")
 
 
 class ReadOnly(object):
