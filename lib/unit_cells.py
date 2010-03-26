@@ -47,12 +47,13 @@ class UnitCell(ReadOnly):
         """Initialize a UnitCell object
 
            Argument:
-             matrix  --  the array with cell vectors. each column corresponds
-                         to a single cell vector.
+            | ``matrix``  --  the array with cell vectors. each column
+                              corresponds to a single cell vector.
 
            Optional arguments:
-             active  --  an array with three boolean values indicating which
-                         cell vectors are active. default: all three True
+            | ``active``  --  an array with three boolean values indicating
+                              which cell vectors are active. [default: all three
+                              True]
         """
         if active is None:
             active = numpy.array([True, True, True])
@@ -123,10 +124,11 @@ class UnitCell(ReadOnly):
 
            The actual definition of the volume depends on the number of active
            directions:
-             num_active == 0  --  always -1
-             num_active == 1  --  length of the cell vector
-             num_active == 2  --  surface of the parallelogram
-             num_active == 3  --  volume of the parallelepiped
+
+           * num_active == 0  --  always -1
+           * num_active == 1  --  length of the cell vector
+           * num_active == 2  --  surface of the parallelogram
+           * num_active == 3  --  volume of the parallelepiped
         """
         active = self.active_inactive[0]
         if len(active) == 0:
@@ -190,11 +192,11 @@ class UnitCell(ReadOnly):
     @cached
     def alignment_a(self):
         """Computes the rotation matrix that aligns the unit cell with the
-           Cartesian axes, starting with cell vector a
+           Cartesian axes, starting with cell vector a.
 
-              a parallel to x
-              b in xy-plane with b_y positive
-              c with c_z positive
+           * a parallel to x
+           * b in xy-plane with b_y positive
+           * c with c_z positive
         """
         from molmod.transformations import Rotation
         new_x = self.matrix[:, 0].copy()
@@ -208,11 +210,11 @@ class UnitCell(ReadOnly):
     @cached
     def alignment_c(self):
         """Computes the rotation matrix that aligns the unit cell with the
-           Cartesian axes, starting with cell vector c
+           Cartesian axes, starting with cell vector c.
 
-              c parallel to z
-              b in zy-plane with b_y positive
-              a with a_x positive
+           * c parallel to z
+           * b in zy-plane with b_y positive
+           * a with a_x positive
         """
         from molmod.transformations import Rotation
         new_z = self.matrix[:, 2].copy()
@@ -232,8 +234,8 @@ class UnitCell(ReadOnly):
         """Convert Cartesian to fractional coordinates
 
            Argument:
-             cartesian  --  Can be a numpy array with shape (3, ) or with shape
-                            (N, 3).
+            | ``cartesian``  --  Can be a numpy array with shape (3, ) or with shape
+                                 (N, 3).
 
            The return value has the same shape as the argument. This function is
            the inverse of to_cartesian.
@@ -244,8 +246,8 @@ class UnitCell(ReadOnly):
         """Converts fractional to Cartesian coordinates
 
            Argument:
-             fractional  --  Can be a numpy array with shape (3, ) or with shape
-                             (N, 3).
+            | ``fractional``  --  Can be a numpy array with shape (3, ) or with shape
+                                  (N, 3).
 
            The return value has the same shape as the argument. This function is
            the inverse of to_fractional.
@@ -256,7 +258,7 @@ class UnitCell(ReadOnly):
         """Compute the relative vector under periodic boundary conditions.
 
            Argument:
-             delta  --  the relative vector between two points
+            | ``delta``  --  the relative vector between two points
 
            The return value is not necessarily the shortest possible vector,
            but instead is the vector with fractional coordinates in the range
@@ -320,15 +322,16 @@ class UnitCell(ReadOnly):
            when computing pair wise long-range interactions in periodic systems.
 
            Argument:
-             radius  --  the radius of the interaction sphere
+            | ``radius``  --  the radius of the interaction sphere
 
            Optional argument:
-             max_ranges  --  numpy array with three elements:
-                             The maximum ranges of indexes to consider. This
-                             is practical when working with the minimum image
-                             convention to reduce the generated bins to the
-                             minimum image. (see binning.py) Use -1 to avoid
-                             such limitations. The default is three times -1.
+            | ``max_ranges``  --  numpy array with three elements: The maximum
+                                  ranges of indexes to consider. This is
+                                  practical when working with the minimum image
+                                  convention to reduce the generated bins to the
+                                  minimum image. (see binning.py) Use -1 to
+                                  avoid such limitations. The default is three
+                                  times -1.
 
         """
         if max_ranges is None:

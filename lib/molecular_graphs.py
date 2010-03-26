@@ -57,14 +57,14 @@ class MolecularGraph(Graph):
            atoms are detected.
 
            Argument:
-              molecule  --  The molecule to derive the graph from
+            | ``molecule``  --  The molecule to derive the graph from
 
            Optional arguments:
-              unit_cell  --  describes the periodicity of the structure
-              do_orders  --  set to True to estimate the bond order
-              scaling  --  scale the threshold for the connectivity. increase
-                           this to 1.5 in case of transition states when a
-                           fully connected topology is required.
+            | ``unit_cell``  --  describes the periodicity of the structure
+            | ``do_orders``  --  set to True to estimate the bond order
+            | ``scaling``  --  scale the threshold for the connectivity. increase
+                               this to 1.5 in case of transition states when a
+                               fully connected topology is required.
         """
         from molmod.bonds import bonds
 
@@ -108,12 +108,11 @@ class MolecularGraph(Graph):
         return cls(edges, numbers, numpy.array(orders))
 
     def __init__(self, edges, numbers, orders=None):
-        """Initialize a molecular graph
-
+        """
            Arguments:
-             edges -- See base class (Graph) documentation
-             numbers -- consecutive atom numbers
-             orders -- bond orders
+            | ``edges``  --  See base class (Graph) documentation
+            | ``numbers``  --  consecutive atom numbers
+            | ``orders``  --  bond orders
 
            When the nature of an atom or a bond is unclear ambiguous, set the
            corresponding integer to zero. This means the nature of the atom or
@@ -135,7 +134,7 @@ class MolecularGraph(Graph):
         """Construct a graph that repeats this graph a number of times
 
            Arguments:
-             repeat -- The number of repetitions.
+            | ``repeat`` -- The number of repetitions.
         """
         if not isinstance(repeat, int):
             raise TypeError("Can only multiply a graph with an integer")
@@ -158,7 +157,7 @@ class MolecularGraph(Graph):
 
     @cached
     def blob(self):
-        """Create a compact text representation of the graph"""
+        """A compact text representation of the graph"""
         atom_str = ",".join(str(number) for number in self.numbers)
         edge_str = ",".join("%i_%i_%i" % (i, j, o) for (i, j), o in zip(self.edges, self.orders))
         return "%s %s" % (atom_str, edge_str)
@@ -184,7 +183,7 @@ class MolecularGraph(Graph):
     def get_subgraph(self, subvertices, normalize=False):
         """Creates a subgraph of the current graph
 
-           See help(Graph.get_subgraph) for more information.
+           See :meth:`molmod.graphs.Graph.get_subgraph` for more information.
         """
         graph = Graph.get_subgraph(self, subvertices, normalize)
         if normalize:
@@ -252,10 +251,9 @@ class HasAtomNumber(object):
     """Criterion for the atom number of a vertex"""
 
     def __init__(self, number):
-        """Initialize a HasAtomNumber object
-
+        """
            Arguments:
-             number  --  the expected atom number
+            | ``number``  --  the expected atom number
         """
         self.number = number
 
@@ -263,9 +261,9 @@ class HasAtomNumber(object):
         """Return True only if the atom number is correct
 
            Arguments:
-             index  --  the index of the vertex/edge on which the criterion is
-                        applied
-             graph  --  the graph on which the criterion is tested
+            | ``index``  --  the index of the vertex/edge on which the criterion is
+                         applied
+            | ``graph``  --  the graph on which the criterion is tested
         """
         return graph.numbers[index] == self.number
 
@@ -274,10 +272,9 @@ class HasNumNeighbors(object):
     """Criterion for the number of neighboring vertexes"""
 
     def __init__(self, count):
-        """Initialize a HasNumNeighbors object
-
+        """
            Arguments:
-             count  --  the expected number of neighbors
+            | ``count``  --  the expected number of neighbors
         """
         self.count = count
 
@@ -285,9 +282,9 @@ class HasNumNeighbors(object):
         """Return True only if the number of neighbors is correct
 
            Arguments:
-             index  --  the index of the vertex/edge on which the criterion is
-                        applied
-             graph  --  the graph on which the criterion is tested
+            | ``index``  --  the index of the vertex/edge on which the criterion is
+                             applied
+            | ``graph``  --  the graph on which the criterion is tested
         """
         return len(graph.neighbors[index]) == self.count
 
@@ -296,10 +293,9 @@ class HasNeighborNumbers(object):
     """Criterion for the atom numbers of the neighbor vertexes"""
 
     def __init__(self, *numbers):
-        """Initialize a HasNeighborNumbers object
-
+        """
            Arguments:
-             *numbers  --  a list with atom numbers
+            | ``*numbers``  --  a list with atom numbers
         """
         for number in numbers:
             if not isinstance(number, int):
@@ -311,9 +307,9 @@ class HasNeighborNumbers(object):
         """Return True only if each neighbor can be linked with an atom number
 
            Arguments:
-             index  --  the index of the vertex/edge on which the criterion is
-                        applied
-             graph  --  the graph on which the criterion is tested
+            | ``index``  --  the index of the vertex/edge on which the criterion is
+                             applied
+            | ``graph``  --  the graph on which the criterion is tested
         """
         neighbors = graph.neighbors[index]
         if not len(neighbors) == len(self.numbers):
@@ -326,10 +322,9 @@ class HasNeighborNumbers(object):
 class HasNeighbors(object):
     """Tests if the neighbors of a vertex match the given criteria"""
     def __init__(self, *neighbor_criteria):
-        """Initialize a HasNeighbors object
-
+        """
            Arguments:
-             *neighbor_criteria  --  a list of criteria objects
+            | ``*neighbor_criteria``  --  a list of criteria objects
         """
         for criterion in neighbor_criteria:
             if not hasattr(criterion, "__call__"):
@@ -340,9 +335,9 @@ class HasNeighbors(object):
         """Return True only if each neighbor can be linked with a positive criterion
 
            Arguments:
-             index  --  the index of the vertex/edge on which the criterion is
-                        applied
-             graph  --  the graph on which the criterion is tested
+            | ``index``  --  the index of the vertex/edge on which the criterion is
+                             applied
+            | ``graph``  --  the graph on which the criterion is tested
         """
 
         def all_permutations(l):
@@ -372,13 +367,12 @@ class HasNeighbors(object):
 class BondLongerThan(object):
     """A vertex criterion to select bonds longer than a given threshold"""
     def __init__(self, length):
-        """Initialize a BondLongerThan object
-
+        """
            This criterion assumes that the molecular graph has an attribute
            self.bond_lengths
 
            Argument:
-             length -- the minimum length of the bond
+            | ``length`` -- the minimum length of the bond
         """
         self.length = length
 
@@ -386,9 +380,9 @@ class BondLongerThan(object):
         """Return True only if the bond is longer than the threshold
 
            Arguments:
-             index  --  the index of the vertex/edge on which the criterion is
-                        applied
-             graph  --  the graph on which the criterion is tested
+            | ``index``  --  the index of the vertex/edge on which the criterion is
+                             applied
+            | ``graph``  --  the graph on which the criterion is tested
         """
         return graph.bond_lengths[index] > self.length
 
@@ -412,9 +406,8 @@ def atom_criteria(*params):
 class BondPattern(CustomPattern):
     """Pattern for two consecutive vertices"""
     def __init__(self, criteria_sets=None, vertex_tags=None):
-        """Initialize a BondPattern object
-
-           Arguments: see CustomPattern.__init__
+        """
+           Arguments: see :class:`molmod.graphs.CustomPattern`
         """
         if vertex_tags is None:
             vertex_tags = {}
@@ -425,9 +418,8 @@ class BondPattern(CustomPattern):
 class BendingAnglePattern(CustomPattern):
     """Pattern for three consecutive vertices"""
     def __init__(self, criteria_sets=None, vertex_tags=None):
-        """Initialize a BendingAnglePattern object
-
-           Arguments: see CustomPattern.__init__
+        """
+           Arguments: see :class:`molmod.graphs.CustomPattern`
         """
         if vertex_tags is None:
             vertex_tags = {}
@@ -438,9 +430,8 @@ class BendingAnglePattern(CustomPattern):
 class DihedralAnglePattern(CustomPattern):
     """Pattern for four consecutive vertices"""
     def __init__(self, criteria_sets=None, vertex_tags=None):
-        """Initialize a DihedralAnglePattern object
-
-           Arguments: see CustomPattern.__init__
+        """
+           Arguments: see :class:`molmod.graphs.CustomPattern`
         """
         if vertex_tags is None:
             vertex_tags = {}
@@ -451,9 +442,8 @@ class DihedralAnglePattern(CustomPattern):
 class OutOfPlanePattern(CustomPattern):
     """Pattern for a central vertex connected to three other vertices"""
     def __init__(self, criteria_sets=None, vertex_tags=None):
-        """Initialize a TetraPattern object
-
-           Arguments: see CustomPattern.__init__
+        """
+           Arguments: see :class:`molmod.graphs.CustomPattern`
         """
         if vertex_tags is None:
             vertex_tags = {}
@@ -464,9 +454,8 @@ class OutOfPlanePattern(CustomPattern):
 class TetraPattern(CustomPattern):
     """Pattern for a central vertex connected to four other vertices"""
     def __init__(self, criteria_sets=None, vertex_tags=None):
-        """Initialize a TetraPattern object
-
-           Arguments: see CustomPattern.__init__
+        """
+           Arguments: see :class:`molmod.graphs.CustomPattern`
         """
         if vertex_tags is None:
             vertex_tags = {}
@@ -478,10 +467,9 @@ class NRingPattern(CustomPattern):
     """Pattern for strong rings with a fixed size"""
 
     def __init__(self, size, criteria_sets=None, vertex_tags=None, strong=False):
-        """Initialize a NRingPattern object
-
+        """
            Argument:
-             size  --  the size of the ring
+            | ``size``  --  the size of the ring
         """
         if vertex_tags is None:
             vertex_tags = {}

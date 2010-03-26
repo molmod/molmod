@@ -80,7 +80,8 @@ class Translation(ReadOnly):
         """Initialize a translation object
 
            Argument:
-             t  --  translation vector, a list-like object with three numbers
+            | ``t``  --  translation vector, a list-like object with three
+                         numbers
         """
         ReadOnly.__init__(self)
         self._init_attributes({"t": numpy.array(t, float)}, {})
@@ -115,20 +116,21 @@ class Translation(ReadOnly):
         """Apply this translation to the given object
 
            The argument can be several sorts of objects:
-             * numpy array with shape (3, )
-             * numpy array with shape (N, 3)
-             * numpy array with shape (3, N), use columns=True
-             * Translation
-             * Rotation
-             * Complete
-             * UnitCell
+
+           * ``numpy.array`` with shape (3, )
+           * ``numpy.array`` with shape (N, 3)
+           * ``numpy.array`` with shape (3, N), use ``columns=True``
+           * ``Translation``
+           * ``Rotation``
+           * ``Complete``
+           * ``UnitCell``
 
            In case of arrays, the 3D vectors are translated. In case of trans-
            formations, a new transformation is returned that consists of this
            translation applied AFTER the given translation. In case of a unit
            cell, the original object is returned.
 
-           This method is equivalent to self*x.
+           This method is equivalent to ``self*x``.
         """
         if isinstance(x, numpy.ndarray) and len(x.shape) == 2 and x.shape[0] == 3 and columns:
             return x + self.t.reshape((3,1))
@@ -168,7 +170,7 @@ class Rotation(ReadOnly):
         """Initialize a rotation object.
 
            Argument:
-             r  --  rotation matrix, a 3 by 3 orthonormal array-like object
+            | ``r``  --  rotation matrix, a 3 by 3 orthonormal array-like object
         """
         ReadOnly.__init__(self)
         self._init_attributes({"r": numpy.array(r, float)}, {})
@@ -258,20 +260,21 @@ class Rotation(ReadOnly):
         """Apply this rotation to the given object
 
            The argument can be several sorts of objects:
-             * numpy array with shape (3, )
-             * numpy array with shape (N, 3)
-             * numpy array with shape (3, N), use columns=True
-             * Translation
-             * Rotation
-             * Complete
-             * UnitCell
+
+           * ``numpy.array`` with shape (3, )
+           * ``numpy.array`` with shape (N, 3)
+           * ``numpy.array`` with shape (3, N), use ``columns=True``
+           * ``Translation``
+           * ``Rotation``
+           * ``Complete``
+           * ``UnitCell``
 
            In case of arrays, the 3D vectors are rotated. In case of trans-
            formations, a transformation is returned that consists of this
            rotation applied AFTER the given translation. In case of a unit cell,
            a unit cell with rotated cell vectors is returned.
 
-           This method is equivalent to self*x.
+           This method is equivalent to ``self*x``.
         """
         if isinstance(x, numpy.ndarray) and len(x.shape) == 2 and x.shape[0] == 3 and columns:
             return numpy.dot(self.r, x)
@@ -314,8 +317,9 @@ class Complete(Translation, Rotation):
         """Initialize a complete transformation, i.e. rotation & translation
 
            Arguments:
-             r  --  rotation matrix, a 3 by 3 orthonormal array-like object
-             t  --  translation vector, a list-like object with three numbers
+            | ``r``  --  rotation matrix, a 3 by 3 orthonormal array-like object
+            | ``t``  --  translation vector, a list-like object with three
+                         numbers
         """
         ReadOnly.__init__(self)
         self._init_attributes({"r": numpy.array(r, float), "t": numpy.array(t, float)}, {})
@@ -354,11 +358,11 @@ class Complete(Translation, Rotation):
         """Create transformation that represents a rotation about an axis
 
            Arguments:
-             center  --  Point on the axis
-             angle  --  Rotation angle
-             axis  --  Rotation axis
-             invert  --  When True, an inversion rotation is constructed
-                         [default=False]
+            | ``center``  --  Point on the axis
+            | ``angle``  --  Rotation angle
+            | ``axis``  --  Rotation axis
+            | ``invert``  --  When True, an inversion rotation is constructed
+                              [default=False]
         """
         return Translation(center) * \
                Rotation.from_properties(angle, axis, invert) * \
@@ -390,13 +394,14 @@ class Complete(Translation, Rotation):
         """Apply this transformation to the given object
 
            The argument can be several sorts of objects:
-             * numpy array with shape (3, )
-             * numpy array with shape (N, 3)
-             * numpy array with shape (3, N), use columns=True
-             * Translation
-             * Rotation
-             * Complete
-             * UnitCell
+
+           * ``numpy.array`` with shape (3, )
+           * ``numpy.array`` with shape (N, 3)
+           * ``numpy.array`` with shape (3, N), use ``columns=True``
+           * ``Translation``
+           * ``Rotation``
+           * ``Complete``
+           * ``UnitCell``
 
            In case of arrays, the 3D vectors are transformed. In case of trans-
            formations, a transformation is returned that consists of this
@@ -438,16 +443,18 @@ def superpose(ras, rbs, weights=None):
     """Compute the transformation that minimizes the RMSD between the points ras and rbs
 
        Arguments:
-         ras  --  a numpy array with 3D coordinates of geometry A, shape=(N,3)
-         rbs  --  a numpy array with 3D coordinates of geometry B, shape=(N,3)
+        | ``ras``  --  a ``numpy.array`` with 3D coordinates of geometry A,
+                       shape=(N,3)
+        | ``rbs``  --  a ``numpy.array`` with 3D coordinates of geometry B,
+                       shape=(N,3)
 
        Optional arguments:
-         weights  --  a numpy array with fitting weights for each coordinate,
-                      shape=(N,)
+        | ``weights``  --  a numpy array with fitting weights for each
+                           coordinate, shape=(N,)
 
        Return value:
-         transformation  --  the transformation that brings geometry A into
-                             overlap with geometry B
+        | ``transformation``  --  the transformation that brings geometry A into
+                                  overlap with geometry B
 
        Each row in ras and rbs represents a 3D coordinate. Corresponding rows
        contain the points that are brought into overlap by the fitting
@@ -484,19 +491,21 @@ def fit_rmsd(ras, rbs, weights=None):
     """Fit geometry rbs onto ras, returns more info than superpose
 
        Arguments:
-         ras  --  a numpy array with 3D coordinates of geometry A, shape=(N,3)
-         rbs  --  a numpy array with 3D coordinates of geometry B, shape=(N,3)
+        | ``ras``  --  a numpy array with 3D coordinates of geometry A,
+                       shape=(N,3)
+        | ``rbs``  --  a numpy array with 3D coordinates of geometry B,
+                       shape=(N,3)
 
        Optional arguments:
-         weights  --  a numpy array with fitting weights for each coordinate,
-                      shape=(N,)
+        | ``weights``  --  a numpy array with fitting weights for each
+                           coordinate, shape=(N,)
 
        Return values:
-         transformation  --  the transformation that brings geometry A into
-                             overlap with geometry B
-         rbs_trans  --  the transformed coordinates of geometry B
-         rmsd  --  the rmsd of the distances between corresponding atoms in
-                   geometry A and B
+        | ``transformation``  --  the transformation that brings geometry A into
+                                  overlap with geometry B
+        | ``rbs_trans``  --  the transformed coordinates of geometry B
+        | ``rmsd``  --  the rmsd of the distances between corresponding atoms in
+                        geometry A and B
 
        This is a utility routine based on the function superpose. It just
        computes rbs_trans and rmsd after calling superpose with the same

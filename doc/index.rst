@@ -7,7 +7,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   ref_const
+   ref_basic
    ref_io
+   ref_data
 
 
 

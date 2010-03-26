@@ -49,17 +49,16 @@ class Molecule(ReadOnly):
     """
 
     def __init__(self, numbers, coordinates=None, title=None, masses=None, graph=None, symbols=None):
-        """Initialize a Molecule object
-
+        """
            Mandatory arguments:
-             numbers  --  numpy array (1D, N elements) with the atom numbers
+            | ``numbers``  --  numpy array (1D, N elements) with the atom numbers
 
            Optional keyword arguments:
-             coordinates  --  numpy array (2D, Nx3 elements) Cartesian coordinates
-             title  --  a string with the name of the molecule
-             massess  --  a numpy array with atomic masses in atomic units
-             graph  --  a MolecularGraph instance
-             symbols  --  atom symbols or force-field atom-types
+            | ``coordinates``  --  numpy array (2D, Nx3 elements) Cartesian coordinates
+            | ``title``  --  a string with the name of the molecule
+            | ``massess``  --  a numpy array with atomic masses in atomic units
+            | ``graph``  --  a MolecularGraph instance
+            | ``symbols``  --  atom symbols or force-field atom-types
         """
         ReadOnly.__init__(self)
         mandatory = {"numbers": numpy.array(numbers, int)}
@@ -76,18 +75,22 @@ class Molecule(ReadOnly):
         }
         self._init_attributes(mandatory, optional)
 
-    @staticmethod
-    def from_file(filename):
-        """Construct a molecule object based read from the given file
+    @classmethod
+    def from_file(cls, filename):
+        """Construct a molecule object read from the given file
 
            The file format is inferred from the extensions. Currently supported
-           formats are: *.cml, *.fchk, *.pdb, *.sdf, *.xyz
+           formats are: ``*.cml``, ``*.fchk``, ``*.pdb``, ``*.sdf``, ``*.xyz``
 
            If a file contains more than one molecule, only the first one is
            read.
 
            Argument:
-             filename  --  the name of the file containing the molecule
+            | ``filename``  --  the name of the file containing the molecule
+
+           Example usage::
+
+             >>> mol = Molecule.from_file("foo.xyz")
         """
         # TODO: many different API's to load files. brrr...
         if filename.endswith(".cml"):
@@ -171,10 +174,10 @@ class Molecule(ReadOnly):
         """Write the molecule geometry to a file
 
            The file format is inferred from the extensions. Currently supported
-           formats are: *.xyz, *.cml
+           formats are: ``*.xyz``, ``*.cml``
 
            Argument:
-             filename  --  a filename
+            | ``filename``  --  a filename
         """
         # TODO: give all file format writers the same API
         if filename.endswith('.cml'):
@@ -203,17 +206,18 @@ class Molecule(ReadOnly):
         """Compute the RMSD between two molecules
 
            Arguments:
-             other  --  Another molecule with the same atom numbers
+            | ``other``  --  Another molecule with the same atom numbers
 
            Return value:
-             transformation  --  the transformation that brings 'self' into
-                                 overlap with 'other'
-             other_trans  --  the transformed coordinates of geometry 'other'
-             rmsd  --  the rmsd of the distances between corresponding atoms in
-                       'self' and 'other'
+            | ``transformation``  --  the transformation that brings 'self' into
+                                  overlap with 'other'
+            | ``other_trans``  --  the transformed coordinates of geometry 'other'
+            | ``rmsd``  --  the rmsd of the distances between corresponding atoms in
+                            'self' and 'other'
 
-           Usage:
-             molecule1.rmsd(molecule2)
+           Usage::
+
+             >>> print molecule1.rmsd(molecule2)
         """
         if self.numbers.shape != other.numbers.shape or \
            (self.numbers != other.numbers).all():
@@ -224,9 +228,9 @@ class Molecule(ReadOnly):
         """Compute the rotational symmetry number
 
            Optional argument:
-             threshold  --  only when a rotation results in an rmsd below the given
-                            threshold, the rotation is considered to transform the
-                            molecule onto itself.
+            | ``threshold``  --  only when a rotation results in an rmsd below the given
+                                 threshold, the rotation is considered to transform the
+                                 molecule onto itself.
         """
         # Generate a graph with a more permissive threshold for bond lengths:
         # (is convenient in case of transition state geometries)
