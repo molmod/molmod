@@ -103,6 +103,7 @@ calorie = 4.184*joule
 kjmol = 1.0e3*joule/mol
 kcalmol = 1.0e3*calorie/mol
 electronvolt = (1.0/coulomb)*joule
+rydberg = 0.5
 
 # *** Force ***
 
