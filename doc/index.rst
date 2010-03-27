@@ -5,6 +5,11 @@ Welcome to MolMod's documentation!
 Note that this documentation is under heavy construction. Some things are not
 in place yet. Hang on...
 
+Tutorial
+--------
+
+TODO
+
 Library reference
 -----------------
 
@@ -15,6 +20,7 @@ Library reference
    ref_basic
    ref_io
    ref_data
+   ref_algo
    ref_internals
 
 
