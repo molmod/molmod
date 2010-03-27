@@ -58,7 +58,7 @@ class UnitCell(ReadOnly):
         if active is None:
             active = numpy.array([True, True, True])
         ReadOnly.__init__(self)
-        self._init_attributes({"matrix": matrix, "active": active}, {})
+        self.init_attributes({"matrix": matrix, "active": active}, {})
         # sanity checks for the unit cell
         for col, name in enumerate(["a", "b", "c"]):
             if self.active[col]:

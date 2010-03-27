@@ -20,13 +20,20 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-"""Runtime context information for shared files"""
+"""Runtime context information for shared files
+
+   This module defines a ``context`` object of the class :class:`Context`. The
+   instance can be used to retrieve shared files::
+
+   >>> from molmod import context
+   >>> context.get_share_filename("periodic.csv")
+"""
 
 
 import os
 
 
-__all__ = ["context"]
+__all__ = ["Context", "context"]
 
 
 class Context(object):
@@ -35,7 +42,7 @@ class Context(object):
         """Initialize the Context object
 
            This is done once when importing a molmod module. There is no need
-           to do this externally a second time.
+           to do this manually a second time.
         """
         # find the data files
         fn_datadir = os.path.join(os.path.dirname(__file__), "datadir.txt")
@@ -51,7 +58,12 @@ class Context(object):
             raise RuntimeError("Share dir '%s' does not exist." % self.share_dir)
 
     def get_share_filename(self, filename):
-        """Retrieve the full path for a given filename in the share folder"""
+        """Retrieve the full path for a given filename in the share folder
+
+           Argument:
+            | filename  --  A file from the share directory (without the
+                            ``share/`` prefix)
+        """
         result = os.path.join(self.share_dir, filename)
         if not os.path.isfile(result):
             raise ValueError("Data file '%s' not found." % result)

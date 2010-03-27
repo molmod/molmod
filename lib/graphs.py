@@ -140,7 +140,7 @@ class Graph(ReadOnly):
                                  "list.")
             real_num_vertices = num_vertices
 
-        self._init_attributes(
+        self.init_attributes(
             {"edges": edges, "num_vertices": real_num_vertices},
             {}
         )

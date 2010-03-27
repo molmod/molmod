@@ -73,7 +73,7 @@ class Molecule(ReadOnly):
             "graph": graph,
             "symbols": symbols,
         }
-        self._init_attributes(mandatory, optional)
+        self.init_attributes(mandatory, optional)
 
     @classmethod
     def from_file(cls, filename):

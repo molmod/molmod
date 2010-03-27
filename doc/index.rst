@@ -15,6 +15,7 @@ Library reference
    ref_basic
    ref_io
    ref_data
+   ref_internals
 
 
 

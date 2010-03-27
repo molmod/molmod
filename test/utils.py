@@ -35,7 +35,7 @@ class Test(ReadOnly):
         ReadOnly.__init__(self)
         mandatory = {"a": a}
         optional = {"b": b}
-        self._init_attributes(mandatory, optional)
+        self.init_attributes(mandatory, optional)
 
 
 class UtilsTestCase(unittest.TestCase):

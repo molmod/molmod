@@ -128,7 +128,7 @@ class MolecularGraph(Graph):
         elif len(orders) != len(edges):
             raise ValueError("The number of (bond) orders must be equal to the number of edges")
         Graph.__init__(self, edges, len(numbers))
-        self._init_attributes({"numbers": numbers, "orders": orders}, {})
+        self.init_attributes({"numbers": numbers, "orders": orders}, {})
 
     def __mul__(self, repeat):
         """Construct a graph that repeats this graph a number of times

@@ -84,7 +84,7 @@ class Translation(ReadOnly):
                          numbers
         """
         ReadOnly.__init__(self)
-        self._init_attributes({"t": numpy.array(t, float)}, {})
+        self.init_attributes({"t": numpy.array(t, float)}, {})
         check_translation_vector(self.t)
 
     @classmethod
@@ -173,7 +173,7 @@ class Rotation(ReadOnly):
             | ``r``  --  rotation matrix, a 3 by 3 orthonormal array-like object
         """
         ReadOnly.__init__(self)
-        self._init_attributes({"r": numpy.array(r, float)}, {})
+        self.init_attributes({"r": numpy.array(r, float)}, {})
         check_rotation_matrix(self.r)
 
     @classmethod
@@ -322,7 +322,7 @@ class Complete(Translation, Rotation):
                          numbers
         """
         ReadOnly.__init__(self)
-        self._init_attributes({"r": numpy.array(r, float), "t": numpy.array(t, float)}, {})
+        self.init_attributes({"r": numpy.array(r, float), "t": numpy.array(t, float)}, {})
         check_translation_vector(self.t)
         check_rotation_matrix(self.r)
 
