@@ -7,14 +7,14 @@ The Molecule class
 .. automodule:: molmod.molecules
    :members:
 
-The Graph class
----------------
+Graph algorithms
+----------------
 
 .. automodule:: molmod.graphs
    :members:
 
-The MolecularGraph class
-------------------------
+Molecular graph algorithms
+--------------------------
 
 This is an extension of the Graph object with molecular features
 

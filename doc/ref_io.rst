@@ -69,7 +69,7 @@ PDB Files
 
 .. automodule:: molmod.io.pdb
    :members:
-   
+
 PDF Files
 ---------
 

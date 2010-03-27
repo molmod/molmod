@@ -21,28 +21,27 @@
 #
 # --
 #
-
-
-"""Graph data structure, analysis and pattern matching
+"""Graph data structure, analysis and pattern matching.
 
    Some distinctive features include:
-   * Iterating over all shortest paths between two vertices (Dijkstra)
-       http://en.wikipedia.org/wiki/Dijkstra's_algorithm
-   * Iterating over vertices or edges using the Breadth First convention
-       http://en.wikipedia.org/wiki/Breadth-first_search
-   * The all pairs shortest path matrix (Floyd-Warshall)
-       http://en.wikipedia.org/wiki/Floyd-Warshall_algorithm
-   * Symmetry analysis of graphs (automorphisms)
-       The Graph class can generate a list of permutations between vertices that
-       map the graph onto itself. This can be used to generate (and test) all
-       possible geometric symmetries in a molecule.
-       http://en.wikipedia.org/wiki/Graph_automorphism
-   * Scanning a graph for patterns
-       The GraphSearch is a generic class that can scan a graph for certain
-       patterns, e.g. given pattern_graphs, strong rings, isomorphisms,
-       automorphisms, ... The pattern_graph can deal with (multiple sets of)
-       additional conditions that must be satisfied, such as "give me all
-       dihedral angles where the central atoms are carbons" without duplicates.
+
+   * Iterating over all shortest paths between two vertices (Dijkstra). See
+     http://en.wikipedia.org/wiki/Dijkstra's_algorithm for more info.
+   * Iterating over vertices or edges using the Breadth First convention. See
+     http://en.wikipedia.org/wiki/Breadth-first_search for more info.
+   * The all pairs shortest path matrix (Floyd-Warshall). See
+     http://en.wikipedia.org/wiki/Floyd-Warshall_algorithm for more info.
+   * Symmetry analysis of graphs (automorphisms). The Graph class can generate a
+     list of permutations between vertices that map the graph onto itself. This
+     can be used to generate (and test) all possible geometric symmetries in a
+     molecule. See http://en.wikipedia.org/wiki/Graph_automorphism for more
+     info.
+   * Scanning a graph for patterns.
+     The GraphSearch is a generic class that can scan a graph for certain
+     patterns, e.g. given pattern_graphs, strong rings, isomorphisms,
+     automorphisms, ... The pattern_graph can deal with (multiple sets of)
+     additional conditions that must be satisfied, such as "give me all
+     dihedral angles where the central atoms are carbons" without duplicates.
 
    The central class in this module is 'Graph'. It caches most of the analysis
    results, which implies that the graph structure can not be changed once the
@@ -85,25 +84,24 @@ class Graph(ReadOnly):
        dictionary or list attributes to the graph object. This is the way to
        work attributes that are not applicable to all vertices or edges:
 
-       vertex_property = {vertex1: blablabla, vertex2: blablabla, ...}
-       edge_property = {frozenset([vertex1, vertex2]): blablabla, ..}
+       >>> graph.vertex_property = {vertex1: blablabla, vertex2: blablabla, ...}
+       >>> graph.edge_property = {frozenset([vertex1, vertex2]): blablabla, ..}
 
        If a certain property applies to all vertices or edges, it is sometimes
-       more practical to work with lists are numpy arrays that have the same
+       more practical to work with lists or ``numpy`` arrays that have the same
        ordering as the vertices or the edges:
 
-       # atom numbers for ethene
-       vertex_property = numpy.array([6, 6, 1, 1, 1, 1], int)
-       # bond orders for ethene
-       edge_property = numpy.array([2, 1, 1, 1, 1], int)
+       >>> # atom numbers of ethene
+       >>> graph.vertex_property = numpy.array([6, 6, 1, 1, 1, 1], int)
+       >>> # bond orders of ethene
+       >>> graph.edge_property = numpy.array([2, 1, 1, 1, 1], int)
     """
 
     def __init__(self, edges, num_vertices=None):
-        """Initialize a Graph object.
-
+        """
            Arguments:
-             edges -- tuple(frozenset([vertex1, vertex2]), ...)
-             num_vertices -- number of vertices
+            | ``edges`` -- ``tuple(frozenset([vertex1, vertex2]), ...)``
+            | ``num_vertices`` -- number of vertices
 
            vertex1 to vertexN must be integers from 0 to N-1. If vertices above
            the highest vertex value are not connected by edges, use the
@@ -147,13 +145,14 @@ class Graph(ReadOnly):
             {}
         )
 
-    num_edges = property(lambda self: len(self.edges))
+    num_edges = property(lambda self: len(self.edges),
+        doc="The number of edges in the graph")
 
     def __mul__(self, repeat):
         """Construct a graph that repeats this graph a number of times
 
            Arguments:
-             repeat -- The number of repetitions.
+            | ``repeat`` -- The number of repetitions.
         """
         if not isinstance(repeat, int):
             raise TypeError("Can only multiply a graph with an integer")
@@ -191,18 +190,18 @@ class Graph(ReadOnly):
 
     @cached
     def edge_index(self):
-        """Construct a map to look up the index of a edge"""
+        """A map to look up the index of a edge"""
         return dict((edge, index) for index, edge in enumerate(self.edges))
 
     @cached
     def neighbors(self):
-        """Setup a dictionary with neighbors
+        """A dictionary with neighbors
 
            The dictionary will have the following form:
-             {vertexX: (vertexY1, vertexY2, ...), ...}
+           ``{vertexX: (vertexY1, vertexY2, ...), ...}``
            This means that vertexX and vertexY1 are connected etc. This also
            implies that the following elements are part of the dictionary:
-             {vertexY1: (vertexX, ...), vertexY2: (vertexX, ...), ...}
+           ``{vertexY1: (vertexX, ...), vertexY2: (vertexX, ...), ...}``.
         """
         neighbors = dict(
             (vertex, set([])) for vertex
@@ -215,7 +214,7 @@ class Graph(ReadOnly):
 
     @cached
     def distances(self):
-        """Construct the matrix with the all-pairs shortest path lenghts"""
+        """The matrix with the all-pairs shortest path lenghts"""
         from molmodext import graphs_floyd_warshall
         distances = numpy.zeros((self.num_vertices,)*2, numpy.int32)
         #distances[:] = -1 # set all -1, which is just a very big integer
@@ -320,7 +319,7 @@ class Graph(ReadOnly):
 
     @cached
     def symmetries(self):
-        """Graph symmetries are permutations that map the graph onto itself."""
+        """Graph symmetries (permutations) that map the graph onto itself."""
 
         symmetry_cycles = set([])
         symmetries = set([])
@@ -334,7 +333,7 @@ class Graph(ReadOnly):
 
     @cached
     def symmetry_cycles(self):
-        """Construct the cycle representations of the graph symmetries"""
+        """The cycle representations of the graph symmetries"""
         result = set([])
         for symmetry in self.symmetries:
             result.add(symmetry.cycles)
@@ -534,34 +533,32 @@ class Graph(ReadOnly):
         """Constructs a subgraph of the current graph
 
            Arguments:
-             subvertices -- The vertices that should be retained.
-             normalize -- Whether or not the vertices should renumbered and
-                reduced to the given set of subvertices. When True, also the
-                edges are sorted. It the end, this means that new order of the
-                edges does not depend on the original order, but only on the
-                order of the argument subvertices.
-                This option is False by default. When False, only edges will be
-                discarded, but the retained data remain unchanged. Also the
-                parameter num_vertices is not affected.
+            | ``subvertices`` -- The vertices that should be retained.
+            | ``normalize`` -- Whether or not the vertices should renumbered and
+                 reduced to the given set of subvertices. When True, also the
+                 edges are sorted. It the end, this means that new order of the
+                 edges does not depend on the original order, but only on the
+                 order of the argument subvertices.
+                 This option is False by default. When False, only edges will be
+                 discarded, but the retained data remain unchanged. Also the
+                 parameter num_vertices is not affected.
 
-           The returned graph will have an attribute old_edge_indexes that
-           relates the positions of the new and the old edges as follows:
+           The returned graph will have an attribute ``old_edge_indexes`` that
+           relates the positions of the new and the old edges as follows::
 
-             self.edges[result._old_edge_indexes[i]] = result.edges[i]
+             >>> self.edges[result._old_edge_indexes[i]] = result.edges[i]
 
-           In derived classes, the following should be supported:
+           In derived classes, the following should be supported::
 
-             self.edge_property[result._old_edge_indexes[i]] = \
-                 result.edge_property[i]
+             >>> self.edge_property[result._old_edge_indexes[i]] = result.edge_property[i]
 
-           When normaliz e== True, also the vertices are affected and the derived
-           classes should make sure that the following works:
+           When ``normalize==True``, also the vertices are affected and the
+           derived classes should make sure that the following works::
 
-             self.vertex_property[result._old_vertex_indexes[i]] = \
-                result.vertex_property[i]
+             >>> self.vertex_property[result._old_vertex_indexes[i]] = result.vertex_property[i]
 
-           The attribute old_vertex_indexes is only constructed when
-           normalize == True.
+           The attribute ``old_vertex_indexes`` is only constructed when
+           ``normalize==True``.
         """
         if normalize:
             revorder = dict((j, i) for i, j in enumerate(subvertices))
@@ -680,16 +677,18 @@ class Graph(ReadOnly):
         return vertices_part
 
     def get_halfs_double(self, vertex_a1, vertex_b1, vertex_a2, vertex_b2):
-        """Compute the two parts separated by (vertex_a1, vertex_b1) and (vertex_a2, vertex_b2)
+        """Compute the two parts separated by ``(vertex_a1, vertex_b1)`` and ``(vertex_a2, vertex_b2)``
 
-           Raise a GraphError when (vertex_a1, vertex_b1) and (vertex_a2,
-           vertex_b2) do not separate the graph in two disconnected parts. The
-           edges must be neighbors. If not a GraphError is raised. The for
-           vertices must not coincide or a GraphError is raised.
+           Raise a GraphError when ``(vertex_a1, vertex_b1)`` and
+           ``(vertex_a2, vertex_b2)`` do not separate the graph in two
+           disconnected parts. The edges must be neighbors. If not a GraphError
+           is raised. The for vertices must not coincide or a GraphError is
+           raised.
 
            Returns the vertices of the two halfs and the four 'hinge' vertices
-           in the correct order, i.e. both vertex_a1 and vertex_a2 are in the
-           first half and both vertex_b1 and vertex_b2 are in the second half.
+           in the correct order, i.e. both ``vertex_a1`` and ``vertex_a2`` are
+           in the first half and both ``vertex_b1`` and ``vertex_b2`` are in the
+           second half.
         """
         if vertex_a1 not in self.neighbors[vertex_b1]:
             raise GraphError("vertex_a1 must be a neighbor of vertex_b1.")
@@ -835,7 +834,7 @@ class OneToOne(object):
         """Initialize a OneToOne object
 
            Argument:
-             relations  --  initial relations for the bijection
+            | ``relations``  --  initial relations for the bijection
         """
         self.forward = {}
         self.reverse = {}
@@ -940,13 +939,14 @@ class Pattern(object):
     """Base class for a pattern in a graph.
 
        Note the following conventions:
-         * A pattern can always be represented by a graph (or a set of graphs)
-           and some additional conditions. This graph is the so called 'PATTERN
-           GRAPH'. For technical reasons, this pattern graph is not always
-           constructed explicitly. Variables related to this graph often get
-           suffix '0'. Note that a pattern graph is always fully connected.
-         * The graph in which we search for the pattern, is called the 'SUBJECT
-           GRAPH'. Variables related to this graph often get suffix '1'.
+
+       * A pattern can always be represented by a graph (or a set of graphs)
+         and some additional conditions. This graph is the so called 'PATTERN
+         GRAPH'. For technical reasons, this pattern graph is not always
+         constructed explicitly. Variables related to this graph often get
+         suffix '0'. Note that a pattern graph is always fully connected.
+       * The graph in which we search for the pattern, is called the 'SUBJECT
+         GRAPH'. Variables related to this graph often get suffix '1'.
     """
 
     # This means that matching vertices must not have equal number of neighbors:
@@ -972,14 +972,14 @@ class Pattern(object):
         raise NotImplementedError
 
     def check_symmetry(self, new_relations, current_match, next_match):
-        """Off all symmetric new_relations, only allow one"""
+        """Off all symmetric ``new_relations``, only allow one"""
         return True
 
     def compare(self, vertex0, vertex1, subject_graph):
-        """Test if vertex0 and vertex1 can be equal
+        """Test if ``vertex0`` and ``vertex1`` can be equal
 
            False positives are allowed, but the less false positives, the more
-           efficient the GraphSearch will be.
+           efficient the :class:`GraphSearch` will be.
         """
         return True
 
@@ -994,7 +994,7 @@ class Pattern(object):
         return True
 
     def complete(self, match, subject_graph):
-        """Returns True if no more additional relations are required"""
+        """Returns ``True`` if no more additional relations are required"""
         return True
 
     def iter_final_matches(self, match, subject_graph, one_match):
@@ -1013,10 +1013,11 @@ class CriteriaSet(object):
         """Initialize a CriteriaSet object
 
            Arguments:
-             vertex_criteria  --  a dictionary with criteria for the vertices
-                                 key=vertex index, value=criterion object
-             edge_criteria  --  a dictionary with criteria for the edges
-                                 key=edge index, value=criterion object
+            | ``vertex_criteria``  --  a dictionary with criteria for the
+                                       vertices, ``key=vertex_index``,
+                                       ``value=criterion``
+            | ``edge_criteria``  --  a dictionary with criteria for the edges
+                                     ``key=edge_index``, ``value=criterion``
 
            Any other keyword argument will be assigned as attribute to matches
            that fulfill the criteria of this set.
@@ -1063,7 +1064,7 @@ class CritOr(object):
         """Initialize a CritOr object
 
            Argument:
-             criteria  --  a list of criteria to apply the OR operation to.
+            | ``criteria``  --  a list of criteria to apply the OR operation to.
         """
         self.criteria = criteria
 
@@ -1071,9 +1072,9 @@ class CritOr(object):
         """Evaluates all the criteria and applies an OR opartion
 
            Arguments:
-             index  --  the index of the vertex/edge on which the criterion is
-                        applied
-             graph  --  the graph on which the criterion is tested
+            | ``index``  --  the index of the vertex/edge on which the criterion
+                             is applied
+            | ``graph``  --  the graph on which the criterion is tested
         """
         for c in self.criteria:
             if c(index, graph):
@@ -1088,7 +1089,7 @@ class CritAnd(object):
         """Initialize a CritAnd object
 
            Argument:
-             criteria  --  a list of criteria to apply the AND operation to.
+            | ``criteria``  --  a list of criteria to apply the AND operation to
         """
         self.criteria = criteria
 
@@ -1096,9 +1097,9 @@ class CritAnd(object):
         """Evaluates all the criteria and applies an AND opartion
 
            Arguments:
-             index  --  the index of the vertex/edge on which the criterion is
-                        applied
-             graph  --  the graph on which the criterion is tested
+            | ``index``  --  the index of the vertex/edge on which the criterion
+                             is applied
+            | ``graph``  --  the graph on which the criterion is tested
         """
         for c in self.criteria:
             if not c(index, graph):
@@ -1113,7 +1114,7 @@ class CritXor(object):
         """Initialize a CritXor object
 
            Argument:
-             criteria  --  a list of criteria to apply the XOR operation to.
+            | ``criteria``  --  a list of criteria to apply the XOR operation to.
         """
         self.criteria = criteria
 
@@ -1121,9 +1122,9 @@ class CritXor(object):
         """Evaluates all the criteria and applies a generalized XOR opartion
 
            Arguments:
-             index  --  the index of the vertex/edge on which the criterion is
-                        applied
-             graph  --  the graph on which the criterion is tested
+            | ``index``  --  the index of the vertex/edge on which the criterion
+                             is applied
+            | ``graph``  --  the graph on which the criterion is tested
 
            when the XOR operation is applied to more than two criteria, True
            is only returned when an odd number of criteria return True.
@@ -1142,7 +1143,7 @@ class CritNot(object):
         """Initialize a CritNot
 
            Argument:
-             criterion  --  another criterion object
+            | ``criterion``  --  another criterion object
         """
         self.criterion = criterion
 
@@ -1150,9 +1151,9 @@ class CritNot(object):
         """Evaluates all the criterion and applies an inversion opartion
 
            Arguments:
-             index  --  the index of the vertex/edge on which the criterion is
-                        applied
-             graph  --  the graph on which the criterion is tested
+            | ``index``  --  the index of the vertex/edge on which the criterion is
+                             applied
+            | ``graph``  --  the graph on which the criterion is tested
         """
         return not self.criterion(index, graph)
 
@@ -1172,26 +1173,28 @@ class CustomPattern(Pattern):
         """Initialise a custom pattern.
 
         Arguments:
-          pattern_graph -- the pattern that has to be found in the subject graph.
-          criteria_sets -- Criteria sets associate additional conditions with
-              vertices and edges, and can also introduce global match
-              conditions.
-          vertex_tags -- vertex tags can reduce the symmetry of the pattern_graph
-              pattern. An example case where this is useful: Consider atoms
-              0, 1, 2 that are bonded in this order. We want to compute the
-              distance from atom 2 to the line (0, 1). In this case the
-              matches (0->a, 1->b, 2->c) and (0->c, 1->b, 2->a) correspond to
-              different internal coordinates. We want the graph search to return
-              the two solutions. In order to do this, set vertex_tags={0:0, 1:0,
-              2:1}. This means that vertex 0 and 1 are equivalent, but that
-              vertex 2 has a different nature. In the case of a bending angle,
-              only one match like (0->a, 1->b, 2->c) is sufficient and we do not
-              want to reduce the symmetry of the pattern_graph. In this case, one
-              should not use vertex_tags at all.
-          start_vertex  --  The first vertex in the pattern graph that is linked
-              with a vertex in the subject graph. A wise choice can improve the
-              performance of a graph search. If not given, the central vertex
-              is take as start_vertex
+          | ``pattern_graph`` -- the pattern that has to be found in the subject
+                                 graph.
+          | ``criteria_sets`` -- Criteria sets associate additional conditions
+                                 with vertices and edges, and can also introduce
+                                 global match conditions.
+          | ``vertex_tags`` -- vertex tags can reduce the symmetry of the
+              pattern_graph pattern. An example case where this is useful:
+              Consider atoms 0, 1, 2 that are bonded in this order. We want to
+              compute the distance from atom 2 to the line (0, 1). In this case
+              the matches (0->a, 1->b, 2->c) and (0->c, 1->b, 2->a) correspond
+              to different internal coordinates. We want the graph search to
+              return the two solutions. In order to do this, set
+              ``vertex_tags={0:0, 1:0, 2:1}``. This means that vertex 0 and 1
+              are equivalent, but that vertex 2 has a different nature. In the
+              case of a bending angle, only one match like (0->a, 1->b, 2->c) is
+              sufficient and we do not want to reduce the symmetry of the
+              ``pattern_graph``. In this case, one should not use vertex_tags at
+              all.
+          | ``start_vertex``  --  The first vertex in the pattern graph that is
+              linked with a vertex in the subject graph. A wise choice can
+              improve the performance of a graph search. If not given, the
+              central vertex is take as start_vertex
         """
         self.criteria_sets = criteria_sets
         if vertex_tags is None:
@@ -1335,12 +1338,13 @@ class EqualMatch(Match):
     def get_closed_cycles(self):
         """Return the closed cycles corresponding to this permutation
 
-        The cycle will be normalized to facilitate the elimination of
-        duplicates. The following is guaranteed:
-          1) If this permutation is represented by disconnected cycles, the
-             cycles will be sorted by the lowest index they contain.
-          2) Each cycle starts with its lowest index. (unique starting point)
-          3) Singletons are discarded. (because they are boring)
+           The cycle will be normalized to facilitate the elimination of
+           duplicates. The following is guaranteed:
+
+           1) If this permutation is represented by disconnected cycles, the
+              cycles will be sorted by the lowest index they contain.
+           2) Each cycle starts with its lowest index. (unique starting point)
+           3) Singletons are discarded. (because they are boring)
         """
         # A) construct all the cycles
         closed_cycles = []
@@ -1409,7 +1413,7 @@ class RingPattern(Pattern):
         """Initialize a ring pattern
 
            Argument:
-             max_size  --  the maximum number of vertices in a ring
+            | ``max_size``  --  the maximum number of vertices in a ring
         """
         if max_size < 3:
             raise ValueError("Ring sizes must be at least 3.")
@@ -1533,18 +1537,20 @@ class GraphSearch(object):
     """An algorithm that searches for all matches of a pattern in a graph
 
        Usage:
-       >>> gs = GraphSearch(pattern)
-       >>> for match in gs(graph):
-       ...     print match.forward
+
+         >>> gs = GraphSearch(pattern)
+         >>> for match in gs(graph):
+         ...     print match.forward
     """
 
     def __init__(self, pattern, debug=False):
         """Initialize a GraphSearch object
 
            Arguments:
-             pattern  --  A Pattern instance, describing the pattern to look for
-             debug  --  When true, debugging info is printed on screen
-                        (default=False)
+            | ``pattern``  --  A Pattern instance, describing the pattern to
+                               look for
+            | ``debug``  --  When true, debugging info is printed on screen
+                             [default=False]
         """
         self.pattern = pattern
         self.debug = debug
@@ -1553,10 +1559,10 @@ class GraphSearch(object):
         """Iterator over all matches of self.pattern in the given graph.
 
            Arguments:
-               subject_graph  --  The subject_graph in which the matches
-                                   according to self.pattern have to be found.
-               one_match --  If True, only one match will be returned. This
-                             allows certain optimizations.
+            | subject_graph  --  The subject_graph in which the matches
+                                 according to self.pattern have to be found.
+            | one_match --  If True, only one match will be returned. This
+                            allows certain optimizations.
         """
         # Matches are grown iteratively.
         for vertex0, vertex1 in self.pattern.iter_initial_relations(subject_graph):
