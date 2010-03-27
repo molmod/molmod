@@ -29,19 +29,32 @@
    forgetting these conversion factor in the body of the code.
 
    References for the conversion values:
-    * B. J. Mohr and B. N. Taylor,
-      CODATA recommended values of the fundamental physical
-      constants: 1998, Rev. Mod. Phys. 72(2), 351 (2000)
-    * The NIST Reference on Constants, Units, and Uncertainty
-      (http://physics.nist.gov/cuu/Constants/)
-    * 1 calorie = 4.184 Joules
+
+   * B. J. Mohr and B. N. Taylor,
+     CODATA recommended values of the fundamental physical
+     constants: 1998, Rev. Mod. Phys. 72(2), 351 (2000)
+   * The NIST Reference on Constants, Units, and Uncertainty
+     (http://physics.nist.gov/cuu/Constants/)
+   * 1 calorie = 4.184 Joules
 
    Naming conventions in this module: unit is the value of one external unit
    in internal - i.e. atomic - units. e.g. If you want to have a distance of
-   five angstrom in internal units: 5*angstrom. If you want to convert a length
-   of 5 internal units to angstrom: 5/angstrom. It is recommended to perform
-   this kind of conversions, only when data is read from the input and data is
-   written to the output.
+   five angstrom in internal units: ``5*angstrom``. If you want to convert a
+   length of 5 internal units to angstrom: ``5/angstrom``. It is recommended to
+   perform this kind of conversions, only when data is read from the input and
+   data is written to the output.
+
+   An often recurring question is how to convert a frequency in internal units
+   to a spectroscopic wavenumber in inverse centimeters. This is how it can be
+   done::
+
+     >>> from molmod import centimeter, lightspeed
+     >>> invcm = lightspeed/centimeter
+     >>> freq = 0.00320232
+     >>> print freq/invcm
+
+   These are the conversion constants defined in this module:
+
 """
 
 
@@ -49,7 +62,16 @@ from molmod.constants import avogadro
 
 
 def parse_unit(expression):
-    """Evaluate a python expression string containing constants"""
+    """Evaluate a python expression string containing constants
+
+       Argument:
+        | ``expression``  --  A string containing a numerical expressions
+                              including unit conversions.
+
+       In addition to the variables in this module, also the following
+       shorthands are supported:
+
+    """
     try:
         g = globals()
         g.update(shorthands)
@@ -168,3 +190,35 @@ shorthands = {
 }
 
 
+# automatically spice up the docstrings
+
+lines = [
+    "    ================  ==================",
+    "    Name              Value             ",
+    "    ================  ==================",
+]
+
+for key, value in sorted(globals().iteritems()):
+    if not isinstance(value, float):
+        continue
+    lines.append("    %16s  %.10e" % (key, value))
+lines.append("    ================  ==================")
+
+__doc__ += "\n".join(lines)
+
+
+lines = [
+    "     ================  ==================",
+    "         Short name        Value             ",
+    "         ================  ==================",
+]
+
+for key, value in sorted(shorthands.iteritems()):
+    if not isinstance(value, float):
+        continue
+    lines.append("         %16s  %.10e" % (key, value))
+lines.append("         ================  ==================")
+
+parse_unit.__doc__ += "\n".join(lines)
+
+del lines

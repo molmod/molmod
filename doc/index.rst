@@ -5,7 +5,7 @@ Welcome to MolMod's documentation!
 Note that this documentation is under heavy construction. Some things are not
 in place yet. Hang on...
 
-Library reference 
+Library reference
 -----------------
 
 .. toctree::
