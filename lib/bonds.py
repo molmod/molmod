@@ -20,7 +20,25 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-"""Bond length database and bond type definitions"""
+"""Bond length database and bond type definitions
+
+   An object ``bonds`` of the class ``BondData`` is created upon importing this
+   module. It loads information about average bond lengths from a csv file
+   when it is initialized. Missing data points in the csv file are estimated
+   by adding Van der Waals radii of the two atoms of the given bond.
+
+   This module also defines a few constants for different bond types:
+
+   =============  =====
+   Name           Value
+   =============  =====
+   BOND_SINGLE    0
+   BOND_DOUBLE    1
+   BOND_TRIPLE    2
+   BOND_HYBRID    3
+   BOND_HYDROGEN  4
+   =============  =====
+"""
 
 
 from molmod.periodic import periodic
@@ -46,22 +64,18 @@ bond_types = [
 
 
 class BondData(object):
-    """Database with bond lengths
-
-       This object loads information about average bond lengths from a csv file
-       when it is initialized. Missing data points in the csv file are estimated
-       by adding Van der Waals radii of the two atoms of the given bond.
-    """
+    """Database with bond lengths"""
     bond_tolerance = 1.2
 
-    def __init__(self, filename, periodic_data):
-        """Initialize a BondData object
+    def __init__(self, filename):
+        """
+           Arguments:
+            | ``filename``  --  the file to load the bond lengths from
 
            This object is created when importing this module. There is no need
-           to do it a second time externally.
+           to do it a second time manually.
         """
         self.lengths = dict([bond_type, {}] for bond_type in bond_types)
-        self.periodic_data = periodic_data
         self._load_bond_data(filename)
         self._approximate_unkown_bond_lengths()
         self.max_length = max(
@@ -114,12 +128,12 @@ class BondData(object):
     def _approximate_unkown_bond_lengths(self):
         """Completes the bond length database with approximations based on VDW radii"""
         dataset = self.lengths[BOND_SINGLE]
-        for n1 in self.periodic_data.iter_numbers():
-            for n2 in self.periodic_data.iter_numbers():
+        for n1 in periodic.iter_numbers():
+            for n2 in periodic.iter_numbers():
                 if n1 <= n2:
                     pair = frozenset([n1, n2])
-                    atom1 = self.periodic_data[n1]
-                    atom2 = self.periodic_data[n2]
+                    atom1 = periodic[n1]
+                    atom2 = periodic[n2]
                     #if (pair not in dataset) and hasattr(atom1, "covalent_radius") and hasattr(atom2, "covalent_radius"):
                     if (pair not in dataset) and (atom1.covalent_radius is not None) and (atom2.covalent_radius is not None):
                         dataset[pair] = (atom1.covalent_radius + atom2.covalent_radius)
@@ -128,11 +142,16 @@ class BondData(object):
     def bonded(self, n1, n2, distance):
         """Return the estimated bond type
 
-           This method checks wether for the given pair of atom numbers, the
-           given distance corresponds to a certain bond_length. The best
+           Arguments:
+            | ``n1``  --  the atom number of the first atom in the bond
+            | ``n2``  --  the atom number of the second atom the bond
+            | ``distance``  --  the distance between the two atoms
+
+           This method checks whether for the given pair of atom numbers, the
+           given distance corresponds to a certain bond length. The best
            matching bond type will be returned. If the distance is a factor
-           self.bond_tolerance larger than a tabulated distance, the algorithm
-           will not relate them.
+           ``self.bond_tolerance`` larger than a tabulated distance, the
+           algorithm will not relate them.
         """
         if distance > self.max_length * self.bond_tolerance:
             return None
@@ -157,6 +176,13 @@ class BondData(object):
     def get_length(self, n1, n2, bond_type=BOND_SINGLE):
         """Return the length of a bond between n1 and n2 of type bond_type
 
+           Arguments:
+            | ``n1``  --  the atom number of the first atom in the bond
+            | ``n2``  --  the atom number of the second atom the bond
+
+           Optional argument:
+            | ``bond_type``  --  the type of bond [default=BOND_SINGLE]
+
            This is a safe method for querying a bond_length. If no answer can be
            found, this get_length returns None.
         """
@@ -166,6 +192,6 @@ class BondData(object):
         return dataset.get(frozenset([n1, n2]))
 
 
-bonds = BondData(context.get_share_filename("bonds.csv"), periodic)
+bonds = BondData(context.get_share_filename("bonds.csv"))
 
 

@@ -20,14 +20,42 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-"""Databases with isotope information"""
+"""Databases with isotope information
+
+   This module defines two database interfaces: ame2003 and nubtab03. The
+   AME2003 [1]_, [2]_ database contains all the isotope masses and can be used as
+   follows:
+
+   >>> from molmod.isotopes import ame2003
+   >>> print ame2003.masses[7][15]
+
+   This would print the mass of nitrogen 15. The abundances are provided by the
+   NUBTAB03 database [3]_. Use it as follows:
+
+   >>> from molmod.isotopes import nubtab03
+   >>> print nubtab.abundances[6][12]
+
+   This would print the abundance of the carbon 12 isotope.
+
+   References:
+
+   .. [1] The AME2003 atomic mass evaluation (I). Evaluation of input data, adjustment
+          procedures. A.H. Wapstra, G. Audi, and C. Thibault. Nuclear Physics A729,
+          129 (2003).
+
+   .. [2] The AME2003 atomic mass evaluation (II). Tables, graphs, and references. G.
+          Audi, A.H. Wapstra, and C. Thibault. Nuclear Physics A729, 337 (2003).
+
+   .. [3] The NUBASE evaluation of nuclear and decay properties. G. Audi, O. Bersillon,
+          J. Blachot and A.H. Wapstra, Nuclear Physics A729, 3-128 (2003)
+"""
 
 
 from molmod import context
 from molmod.units import amu
 
 
-__all__ = ["ame2003", "nubtab03"]
+__all__ = ["Ame2003", "ame2003", "NubTab03", "nubtab03"]
 
 
 class Ame2003(object):
@@ -39,7 +67,7 @@ class Ame2003(object):
        keys and the corresponding isotope masses in atomic units as values. E.g.
        self.masses[6][12] is the mass of carbon 12.
 
-       If you use this interface, also cite:
+       If you use this interface, cite the following references:
 
        The AME2003 atomic mass evaluation (I). Evaluation of input data, adjustment
        procedures. A.H. Wapstra, G. Audi, and C. Thibault. Nuclear Physics A729,
@@ -49,11 +77,12 @@ class Ame2003(object):
        Audi, A.H. Wapstra, and C. Thibault. Nuclear Physics A729, 337 (2003).
     """
     def __init__(self, filename):
-        """Initialize the Ame2003 database (and load data)
+        """
+           Argument:
+            | ``filename``  --  the ame2003 data file
 
            An object of this type is created in this module, so there is not
-           need to construct it externally. Just use the ame2003 variable
-           defined below.
+           need to construct it manually.
         """
         self.masses = {}
 
@@ -87,18 +116,19 @@ class NubTab03(object):
        as keys and the corresponding isotope abundances as values. E.g.
        self.masses[6][12] is the abundance of carbon 12.
 
-       If you use this interface, also refer to:
+       If you use this interface, cite the following reference:
 
        The NUBASE evaluation of nuclear and decay properties. G. Audi, O. Bersillon,
        J. Blachot and A.H. Wapstra, Nuclear Physics A729, 3-128 (2003)
     """
 
     def __init__(self, filename):
-        """Initialize a NubTab database
+        """
+           Argument:
+            | ``filename``  --  the nubtab03 data file
 
            An object of this type is created in this module, so there is not
-           need to construct it externally. Just use the nubtab03 variable
-           defined below.
+           need to construct it externally.
         """
         self.abundances = {}
 

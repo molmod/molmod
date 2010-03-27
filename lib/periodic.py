@@ -20,7 +20,18 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-"""Database containing the periodic table"""
+"""Database containing the periodic table
+
+   An object of the ``PeriodicData`` class centralizes information about the
+   periodic system. The data is loaded during initialization of this
+   module and accessiable through the ``periodic`` instance, which acts like
+   a container::
+
+   >>> from molmod.periodic import periodic
+   >>> print periodic[1].mass
+   >>> print periodic["C"].vdw_radius
+   >>> print len(periodic)
+"""
 
 
 import molmod.units as units
@@ -36,17 +47,15 @@ class AtomInfo(object):
 
 
 class PeriodicData(object):
-    """The entire periodic system
-
-       Objects of the PeriodicData class centralize information about the
-       periodic system. The data is loaded during initialization.
-    """
+    """The entire periodic system"""
 
     def __init__(self, filename):
-        """Initlialize a periodic system structure
+        """
+           Argument:
+            | ``filename``  --  the file to load the periodic system from
 
            This object is created when importing this module. There is no need
-           to do it a second time externally.
+           to do it a second time manually.
         """
         # Initialize empty lists
         self.atoms_by_number = {}
@@ -125,7 +134,14 @@ class PeriodicData(object):
             return result
 
     def iter_numbers(self):
-        """Iterate over all atom numbers in the periodic system"""
+        """Iterate over all atom numbers in the periodic system
+
+           Usage::
+
+            >>> from molmod.periodic import periodic
+            >>> for number in periodic.iter_numbers():
+            ...     print number, periodic[number].mass
+        """
         for number in sorted(self.atoms_by_number):
             yield number
 
