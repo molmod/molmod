@@ -68,12 +68,6 @@ class cached(object):
                 value.setflags(write=False)
         return value
 
-    def __set__(self, instance, value):
-        raise ValueError("A cached attribute is always read-only.")
-
-    def __delete__(self, obj):
-        raise TypeError("One can not delete a cached attribute.")
-
 
 class ReadOnly(object):
     """A base class for read-only objects
