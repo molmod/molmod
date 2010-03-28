@@ -23,29 +23,29 @@
 """General purpose minimization of smooth multidimensional functions
 
    The implementation is mainly concerned with robustness, rather than
-   computational efficiency. Example usage:
+   computational efficiency. Example usage::
 
-   def fun(x, do_gradient=False):
-       value = 2 + numpy.sin(x[0]) + numpy.cos(x[1]) + x[0]*x[0] + x[1]*x[1] - x[0]*x[1]
-       if do_gradient:
-           gradient = numpy.array([
-               numpy.cos(x[0]) + 2*x[0] - x[1],
-               -numpy.sin(x[1]) + 2*x[1] - x[0],
-           ])
-           return value, gradient
-       else:
-           return value
+       def fun(x, do_gradient=False):
+           value = 2 + numpy.sin(x[0]) + numpy.cos(x[1]) + x[0]*x[0] + x[1]*x[1] - x[0]*x[1]
+           if do_gradient:
+               gradient = numpy.array([
+                   numpy.cos(x[0]) + 2*x[0] - x[1],
+                   -numpy.sin(x[1]) + 2*x[1] - x[0],
+               ])
+               return value, gradient
+           else:
+               return value
 
-   x_init = numpy.zeros(2, float)
-   search_direction = ConjugateGradient()
-   line_search = NewtonLineSearch()
-   convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6)
-   stop_loss = StopLossCondition(max_iter=50)
-   minimizer = Minimizer(
-       x_init, fun, search_direction, line_search, convergence, stop_loss,
-       anagrad=True, verbose=True,
-   )
-   print "optimum", minimizer.x, fun(minimizer.x)
+       x_init = numpy.zeros(2, float)
+       search_direction = ConjugateGradient()
+       line_search = NewtonLineSearch()
+       convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6)
+       stop_loss = StopLossCondition(max_iter=50)
+       minimizer = Minimizer(
+           x_init, fun, search_direction, line_search, convergence, stop_loss,
+           anagrad=True, verbose=True,
+       )
+       print "optimum", minimizer.x, fun(minimizer.x)
 """
 
 
@@ -64,7 +64,6 @@ __all__ = [
 class SearchDirection(object):
     """Abstract base class for a search direction method"""
     def __init__(self):
-        """Initialize a SearchDirection object"""
         # 2 characters indicating the method used to determine the direction
         self.status = "??"
 
@@ -92,7 +91,6 @@ class SteepestDescent(SearchDirection):
        ill-conditioned problems.
     """
     def __init__(self):
-        """Initialize a SearchDirection object"""
         # the current conjugate direction
         self.direction = None
         SearchDirection.__init__(self)
@@ -125,8 +123,6 @@ class ConjugateGradient(SearchDirection):
        direction to the steepest descent when beta becomes negative.
     """
     def __init__(self):
-        """Initialize a ConjugateGradient object
-        """
         # the current conjugate direction
         self.direction = None
         # the current gradient
@@ -178,12 +174,8 @@ class ConjugateGradient(SearchDirection):
 
 
 class QuasiNewton(SearchDirection):
-    """The quasi Newton method
-
-       bla bla bla
-    """
+    """The quasi Newton method"""
     def __init__(self):
-        """Initialize a QuasiNewton object"""
         self.inv_hessian = None
         self.gradient = None
         self.old_gradient = None
@@ -234,10 +226,9 @@ class LineSearch(object):
     """Abstract base class for a line search"""
 
     def __init__(self, qmax=None):
-        """Initialize a line search
-
-           Optional arguments:
-             qmax  --  The maximum step size of a line search
+        """
+           Optional argument:
+            | ``qmax``  --  The maximum step size of a line search
         """
         self.qmax = qmax
 
@@ -252,18 +243,19 @@ class LineSearch(object):
         """Return the value that minimizes the one-dimensional function 'fun'
 
            Arguments:
-             fun  --  function to minimize (one-dimensional)
-             f0   --  the function value at the starting point q=0"
-             last_step_size  --  the norm of step from the previous line search
-             epsilon  --  a value that is small compared to last_step_size
+            | ``fun``  --  function to minimize (one-dimensional)
+            | ``f0``   --  the function value at the starting point q=0"
+            | ``last_step_size``  --  the norm of step from the previous line
+                                      search
+            | ``epsilon``  --  a value that is small compared to last_step_size
 
            Returns:
-             success  --  a boolean indicating that the line search resulted
-                          in an improved solution
-             wolfe  --  a boolean indicating that the new solution satisfies
-                        wolfe conditions
-             qopt  --  the position of the new solution on the line
-             fopt  --  the corresponding function value
+            | ``success``  --  a boolean indicating that the line search
+                               resulted in an improved solution
+            | ``wolfe``  --  a boolean indicating that the new solution
+                             satisfies Wolfe conditions
+            | ``qopt``  --  the position of the new solution on the line
+            | ``fopt``  --  the corresponding function value
         """
         raise NotImplementedError
 
@@ -272,16 +264,15 @@ class GoldenLineSearch(LineSearch):
     """The golden section line search algorithm"""
 
     def __init__(self, qtol, qmax=None, max_iter=None):
-        """Initialize the golden section line search
-
+        """
            Argument:
-             qtol  --  The threshold for displacements along the line. (When
-                       displacements become smaller than qtol, we assume
-                       convergence)
+            | ``qtol``  --  The threshold for displacements along the line.
+                            (When displacements become smaller than qtol, we
+                            assume convergence.)
            Optional arguments
-             qmax  --  The maximum step size of a line search
-             max_iter  --  the maximum number of iteration for the line search
-                           (only applies to the bracketing part)
+            | ``qmax``  --  The maximum step size of a line search
+            | ``max_iter``  --  the maximum number of iteration for the line
+                                search (only applies to the bracketing part)
         """
         if qtol is None:
             raise ValueError("No stop condition is specified")
@@ -295,21 +286,22 @@ class GoldenLineSearch(LineSearch):
         """Return the value that minimizes the one-dimensional function 'fun'
 
            Arguments:
-             fun  --  function to minimize (one-dimensional)
-             f0   --  the function value at the starting point q=0"
-             last_step_size  --  the norm of step from the previous line search
-             epsilon  --  a value that is small compared to last_step_size
+            | ``fun``  --  function to minimize (one-dimensional)
+            | ``f0``   --  the function value at the starting point q=0"
+            | ``last_step_size``  --  the norm of step from the previous line
+                                      search
+            | ``epsilon``  --  a value that is small compared to last_step_size
 
            Returns:
-             success  --  a boolean indicating that the line search resulted
-                          in an improved solution
-             wolfe  --  a boolean indicating that the new solution satisfies
-                        wolfe conditions
-             qopt  --  the position of the new solution on the line
-             fopt  --  the corresponding function value
+            | ``success``  --  a boolean indicating that the line search
+                               resulted in an improved solution
+            | ``wolfe``  --  a boolean indicating that the new solution
+                             satisfies Wolfe conditions
+            | ``qopt``  --  the position of the new solution on the line
+            | ``fopt``  --  the corresponding function value
 
            P.S. The wolfe parameter is always True, but this aspect is not
-           guaranteed to be correct. Never use the GoldenLineSearch in
+           guaranteed to be correct. Never use the :class:`GoldenLineSearch` in
            combination with a quasi Newton method.
         """
         # bracket the minimum
@@ -399,15 +391,16 @@ class NewtonLineSearch(LineSearch):
        search. At most max_iter Newton steps are allowed.
     """
     def __init__(self, c1=1e-4, c2=1e-1, max_iter=5):
-        """Initialize the Newton line search
-
+        """
            Optional arguments:
-             c1  --  The coefficient in the first Wolfe condition (sufficient
-                     decrease of the function) [default=1e-4]
-             c2  --  The coefficient in the second Wolfe condition (sufficient
-                     decrease of the derivative) [default=1e-1]. the default
-                     is optimal for the conjugate gradient method
-             max_iter  --  the maximum number of iterations in the line search.
+            | ``c1``  --  The coefficient in the first Wolfe condition
+                          (sufficient decrease of the function) [default=1e-4]
+            | ``c2``  --  The coefficient in the second Wolfe condition
+                          (sufficient decrease of the derivative)
+                          [default=1e-1]. the default is optimal for the
+                          conjugate gradient method
+            | ``max_iter``  --  the maximum number of iterations in the line
+                                search.
         """
         self.c1 = c1
         self.c2 = c2
@@ -418,19 +411,20 @@ class NewtonLineSearch(LineSearch):
         """Return the value that minimizes the one-dimensional function 'fun'
 
            Arguments:
-             fun  --  function to minimize (one-dimensional)
-             f0   --  the function value at the starting point q=0"
-             last_step_size  --  the norm of step from the previous line search
-             epsilon  --  a value that is small compared to last_step_size, used
-                          for finite differences
+            | ``fun``  --  function to minimize (one-dimensional)
+            | ``f0``   --  the function value at the starting point q=0"
+            | ``last_step_size``  --  the norm of step from the previous line
+                                      search
+            | ``epsilon``  --  a value that is small compared to last_step_size,
+                               used for finite differences
 
            Returns:
-             success  --  a boolean indicating that the line search resulted
-                          in an improved solution
-             wolfe  --  a boolean indicating that the new solution satisfies
-                        wolfe conditions
-             qopt  --  the position of the new solution on the line
-             fopt  --  the corresponding function value
+            | ``success``  --  a boolean indicating that the line search
+                               resulted in an improved solution
+            | ``wolfe``  --  a boolean indicating that the new solution
+                             satisfies Wolfe conditions
+            | ``qopt``  --  the position of the new solution on the line
+            | ``fopt``  --  the corresponding function value
         """
         f0, g0 = fun(0.0, do_gradient=True)
         gl = fun(-0.5*epsilon, do_gradient=True)[1]
@@ -494,11 +488,11 @@ class Preconditioner(object):
 
        The preconditioners in this package act as wrappers around the function
        to be optimized. One just replaces a function by the preconditioner in
-       the constructor of the Minimizer object. E.g.
+       the constructor of the Minimizer object. E.g. ::
 
          >>> Minimizer(fun, ...)
 
-       becomes
+       becomes::
 
          >>> Minimizer(SomePreconditioner(fun, ...), ...)
 
@@ -507,14 +501,14 @@ class Preconditioner(object):
        coordinates.
     """
     def __init__(self, fun, each, grad_rms):
-        """Initialize a preconditioner
-
+        """
            Arguments:
-             fun  --  the function whose arguments must be transformed
-             each  --  update the linear transformation after each 'each'
-                       minimizer steps without updates
-             grad_rms  --  only update when the rms value of the gradient (in
-                           the original coordinates) is below this threshold
+            | ``fun``  --  the function whose arguments must be transformed
+            | ``each``  --  update the linear transformation after each 'each'
+                            minimizer steps without updates
+            | ``grad_rms``  --  only update when the rms value of the gradient
+                                (in the original coordinates) is below this
+                                threshold
         """
         self.fun = fun
         self.each = each
@@ -526,9 +520,9 @@ class Preconditioner(object):
         """The actual wrapper around the function call.
 
            Arguments:
-             x_prec  --  the unknowns in preconditioned coordinates
-             do_gradient  --  if True, the gradient is also computed and
-                              transformed to preconditioned coordinates
+            | ``x_prec``  --  the unknowns in preconditioned coordinates
+            | ``do_gradient``  --  if True, the gradient is also computed and
+                                   transformed to preconditioned coordinates
 
            Note that this implementation assumes that the preconditioner is a
            linear transformation.
@@ -543,13 +537,13 @@ class Preconditioner(object):
         """Perform an update of the linear transformation
 
            Arguments:
-             counter  --  the iteration counter of the minimizer
-             f  --  the function value at x_orig
-             x_orig  --  the unknowns in original coordinates
-             gradient_orig  --  the gradient in original coordinates
+            | ``counter``  --  the iteration counter of the minimizer
+            | ``f``  --  the function value at ``x_orig``
+            | ``x_orig``  --  the unknowns in original coordinates
+            | ``gradient_orig``  --  the gradient in original coordinates
 
            Return value:
-             do_update  --  True when an update is required.
+            | ``do_update``  --  True when an update is required.
 
            Derived classes must call this method to test of the preconditioner
            requires updating. Derived classes must also return this boolean
@@ -593,21 +587,22 @@ class DiagonalPreconditioner(Preconditioner):
        Preconditioner base class.)
     """
     def __init__(self, fun, each, grad_rms, epsilon=1e-3, scale_limit=0.0):
-        """Initialize a diagonal preconditioner
-
+        """
            Arguments:
-             fun  --  the function whose arguments must be transformed
-             each  --  update the linear transformation after each 'each'
-                       minimizer steps without updates
-             grad_rms  --  only update when the rms value of the gradient (in
-                           the original coordinates) is below this threshold
+            | ``fun``  --  the function whose arguments must be transformed
+            | ``each``  --  update the linear transformation after each 'each'
+                            minimizer steps without updates
+            | ``grad_rms``  --  only update when the rms value of the gradient
+                                (in the original coordinates) is below this
+                                threshold
 
            Optional argument:
-             epsilon  --  a small scalar used for the finite differences (taken
-                          in previous preconditioned coordinates) [default=1e-3]
-             scale_limit  --  scales smaller than scale_limit times the largest
-                              scale are fixed to scale_limit times the largest
-                              scale
+            | ``epsilon``  --  a small scalar used for the finite differences
+                               (taken in previous preconditioned coordinates)
+                               [default=1e-3]
+            | ``scale_limit``  --  scales smaller than scale_limit times the
+                                   largest scale are fixed to scale_limit times
+                                   the largest scale
         """
         self.epsilon = epsilon
         self.scale_limit = scale_limit
@@ -618,13 +613,13 @@ class DiagonalPreconditioner(Preconditioner):
         """Perform an update of the linear transformation
 
            Arguments:
-             counter  --  the iteration counter of the minimizer
-             f  --  the function value at x_orig
-             x_orig  --  the unknowns in original coordinates
-             gradient_orig  --  the gradient in original coordinates
+            | ``counter``  --  the iteration counter of the minimizer
+            | ``f``  --  the function value at ``x_orig``
+            | ``x_orig``  --  the unknowns in original coordinates
+            | ``gradient_orig``  --  the gradient in original coordinates
 
            Return value:
-             done_update  --  True when an update has been done
+            | ``done_update``  --  True when an update has been done
 
            The minimizer must reset the search direction method when an updated
            has been done.
@@ -681,18 +676,18 @@ class FullPreconditioner(Preconditioner):
        i.e. diagonal with all elements the same.
     """
     def __init__(self, fun, each, grad_rms, epsilon=1e-3):
-        """Initialize a full preconditioner
-
+        """
            Arguments:
-             fun  --  the function whose arguments must be transformed
-             each  --  update the linear transformation after each 'each'
-                       minimizer steps without updates
-             grad_rms  --  only update when the rms value of the gradient (in
-                           the original coordinates) is below this threshold
+            | ``fun``  --  the function whose arguments must be transformed
+            | ``each``  --  update the linear transformation after each 'each'
+                            minimizer steps without updates
+            | ``grad_rms``  --  only update when the rms value of the gradient
+                                (in the original coordinates) is below this
+                                threshold
 
            Optional argument:
-             epsilon  --  a small scalar used for the finite differences (taken
-                          in original coordinates) [default=1e-3]
+            | ``epsilon``  --  a small scalar used for the finite differences
+                               (taken in original coordinates) [default=1e-3]
         """
         self.epsilon = epsilon
         Preconditioner.__init__(self, fun, each, grad_rms)
@@ -703,13 +698,13 @@ class FullPreconditioner(Preconditioner):
         """Perform an update of the linear transformation
 
            Arguments:
-             counter  --  the iteration counter of the minimizer
-             f  --  the function value at x_orig
-             x_orig  --  the unknowns in original coordinates
-             gradient_orig  --  the gradient in original coordinates
+            | ``counter``  --  the iteration counter of the minimizer
+            | ``f``  --  the function value at ``x_orig``
+            | ``x_orig``  --  the unknowns in original coordinates
+            | ``gradient_orig``  --  the gradient in original coordinates
 
            Return value:
-             done_update  --  True when an update has been done
+            | ``done_update``  --  True when an update has been done
 
            The minimizer must reset the search direction method when an updated
            has been done.
@@ -746,21 +741,21 @@ class FullPreconditioner(Preconditioner):
 
 class ConvergenceCondition(object):
     """Callable object that tests the convergence of the minimizer"""
+
     def __init__(self, step_rms=None, step_max=None, grad_rms=None, grad_max=None):
-        """Initialize a ConvergenceCondition object
-
+        """
            Optional arguments:
-             step_rms  --  threshold for the RMS value of the step vector in the
-                           iterative minimizer
-             step_max  --  threshold for the maximum component of the step
-                           vector in the iterative minimizer
-             grad_rms  --  threshold for the RMS value of the gradient
-                           components of the function to be minimized
-             grad_max  --  threshold for the maximum value of the gradient
-                           components of the function to be minimized
+            | ``step_rms``  --  threshold for the RMS value of the step vector
+                                in the iterative minimizer
+            | ``step_max``  --  threshold for the maximum component of the step
+                                vector in the iterative minimizer
+            | ``grad_rms``  --  threshold for the RMS value of the gradient
+                                components of the function to be minimized
+            | ``grad_max``  --  threshold for the maximum value of the gradient
+                                components of the function to be minimized
 
-           The present arguments define when the minimization has converged.
-           All actual values must go below the given thresholds.
+           Only the present arguments define when the minimization has
+           converged. All actual values must go below the given thresholds.
         """
         if (step_rms is None and step_max is None and grad_rms is None and grad_max is None):
             raise ValueError("Some convergence criteria must be specified")
@@ -783,7 +778,12 @@ class ConvergenceCondition(object):
         return result
 
     def __call__(self, grad, step):
-        """Return True when the minimizer has converged"""
+        """Return True when the minimizer has converged
+
+           Arguments:
+            | ``grad``  --  The gradient at the current point
+            | ``step``  --  The last step vector
+        """
         stop = True
         status = ""
         red = "\033[0;31m"
@@ -810,21 +810,20 @@ class ConvergenceCondition(object):
 
 
 class StopLossCondition(object):
-    """Callable object that checks if minimizer has lost track
-    """
+    """Callable object that checks if minimizer has lost track"""
     def __init__(self, max_iter=None, fun_margin=None, grad_margin=None):
-        """Initialize a StopLossCondition object
-
+        """
            Optional arguments:
-             max_iter  --  the maximum number of iterations allowed
-             fun_margin  --  if the function to be minimized goes above the
-                             lowest value so far plus this margin, the
-                             minimization is aborted
-             grad_margin  --  if the RMS value of the gradient components goes
-                              above the lowest value plus this threshold, the
-                              minimization is aborted
+            | ``max_iter``  --  the maximum number of iterations allowed
+            | ``fun_margin``  --  if the function to be minimized goes above the
+                                  lowest value so far plus this margin, the
+                                  minimization is aborted
+            | ``grad_margin``  --  if the RMS value of the gradient components
+                                   goes above the lowest value plus this
+                                   threshold, the minimization is aborted
 
-           The present arguments define when the minimization has lost track.
+           Only the present arguments define when the minimization has lost
+           track.
         """
         self.max_iter = max_iter
         self.fun_margin = fun_margin
@@ -861,20 +860,20 @@ class StopLossCondition(object):
 class LineWrapper(object):
     """A configurable line function"""
     def __init__(self, fun, anagrad, epsilon):
-        """Initialize a LineWrapper object
-
+        """
            Argument:
-             fun  --  a multivariate function, see below
-             anagrad  --  boolean that indicates if fun supports analytical
-                          gradients
-             epsilon  --  a small scalar used for finite differences
+            | ``fun``  --  a multivariate function, see below
+            | ``anagrad``  --  boolean that indicates if fun supports analytical
+                               gradients
+            | ``epsilon``  --  a small scalar used for finite differences
 
-           The function fun takes a mandatory argument x and an optional argument
-           do_gradient:
-             x  --  the arguments of the function to be tested
-             do_gradient  --  when False, only the function value is returned.
-                              when True, a 2-tuple with the function value and
-                              the gradient are returned [default=False]
+           The function fun takes a mandatory argument ``x`` and an optional
+           argument ``do_gradient``:
+            | ``x``  --  the arguments of the function to be tested
+            | ``do_gradient``  --  when False, only the function value is
+                                   returned. when True, a 2-tuple with the
+                                   function value and the gradient are returned
+                                   [default=False]
         """
         self.fun = fun
         self.anagrad = anagrad
@@ -909,21 +908,21 @@ class LineWrapper(object):
 class FunWrapper(object):
     """Wrapper to compute the function and its gradient"""
     def __init__(self, fun, anagrad, epsilon):
-        """Initialize a FunWrapper object
-
+        """
            Argument:
-             fun  --  a multivariate function that can also compute analytical
-                      derivatives, see below
-             anagrad  --  boolean that indicates if fun supports analytical
-                          gradients
-             epsilon  --  a small scalar used for finite differences
+            | ``fun``  --  a multivariate function that can also compute
+                           analytical derivatives, see below
+            | ``anagrad``  --  boolean that indicates if fun supports analytical
+                               gradients
+            | ``epsilon``  --  a small scalar used for finite differences
 
-           The function fun takes a mandatory argument x and an optional argument
-           do_gradient:
-             x  --  the arguments of the function to be tested
-             do_gradient  --  when False, only the function value is returned.
-                              when True, a 2-tuple with the function value and
-                              the gradient are returned [default=False]
+           The function fun takes a mandatory argument ``x`` and an optional
+           argument ``do_gradient``:
+            | ``x``  --  the arguments of the function to be tested
+            | ``do_gradient``  --  when False, only the function value is
+                                   returned. when True, a 2-tuple with the
+                                   function value and the gradient are returned
+                                   [default=False]
         """
         self.fun = fun
         self.anagrad = anagrad
@@ -955,32 +954,33 @@ class Minimizer(object):
     def __init__(self, x_init, fun, search_direction, line_search,
                  convergence_condition, stop_loss_condition, anagrad=False,
                  epsilon=1e-6, verbose=True, callback=None):
-        """Initialize the minimizer
-
+        """
            Arguments:
-             x_init  --  the initial guess for the minimum
-             fun  --  function to be minimized (see below)
-             search_direction  --  a SearchDirection object
-             line_search  --  a LineSearch object
-             convergence_condition  --  a ConvergenceCondition object
-             stop_loss_condition  --  a StopLossCondition object
+            | ``x_init``  --  the initial guess for the minimum
+            | ``fun``  --  function to be minimized (see below)
+            | ``search_direction``  --  a SearchDirection object
+            | ``line_search``  --  a LineSearch object
+            | ``convergence_condition``  --  a ConvergenceCondition object
+            | ``stop_loss_condition``  --  a StopLossCondition object
 
-          Optional arguments
-             anagrad  --  when set to True, analytical gradients are used
-             epsilon  --  a small value compared to expected changes in the
-                          unknowns [default=1e-6]. it is used to compute
-                          finite differences.
-             verbose  --  print progress information on screen [default=True]
-             callback  --  optional callback routine after each iteration.
-                           the callback routine gets the minimizer as first
-                           and only argument. [default=None]
+           Optional arguments:
+            | ``anagrad``  --  when set to True, analytical gradients are used
+            | ``epsilon``  --  a small value compared to expected changes in the
+                               unknowns [default=1e-6]. it is used to compute
+                               finite differences.
+            | ``verbose``  --  print progress information on screen
+                               [default=True]
+            | ``callback``  --  optional callback routine after each iteration.
+                                the callback routine gets the minimizer as first
+                                and only argument. [default=None]
 
-           The function fun takes a mandatory argument x and an optional argument
-           do_gradient:
-             x  --  the arguments of the function to be tested
-             do_gradient  --  when False, only the function value is returned.
-                              when True, a 2-tuple with the function value and
-                              the gradient are returned [default=False]
+           The function fun takes a mandatory argument ``x`` and an optional
+           argument ``do_gradient``:
+            | ``x``  --  the arguments of the function to be tested
+            | ``do_gradient``  --  when False, only the function value is
+                                   returned. when True, a 2-tuple with the
+                                   function value and the gradient are returned
+                                   [default=False]
         """
         if len(x_init.shape)!=1:
             raise ValueError("The unknowns must be stored in a plain row vector.")
@@ -1132,20 +1132,21 @@ def check_anagrad(fun, x0, epsilon, scale=10):
     """Check the analytical gradient using finite differences
 
        Arguments:
-         fun  --  the function to be tested, more info below
-         x0  --  the reference point around which the function should be tested
-         epsilon  --  a small scalar used for the finite differences
+        | ``fun``  --  the function to be tested, more info below
+        | ``x0``  --  the reference point around which the function should be
+                      tested
+        | ``epsilon``  --  a small scalar used for the finite differences
 
        Optional argument
-         scale  --  scale*epsilon is the threshold for an error between the
-                    analytical and the numerical gradient
+        | ``scale``  --  ``scale*epsilon`` is the threshold for an error between
+                         the analytical and the numerical gradient
 
-       The function fun takes a mandatory argument x and an optional argument
-       do_gradient:
-         x  --  the arguments of the function to be tested
-         do_gradient  --  when False, only the function value is returned. when
-                          True, a 2-tuple with the function value and the
-                          gradient are returned [default=False]
+       The function fun takes a mandatory argument ``x`` and an optional
+       argument ``do_gradient``:
+        | ``x``  --  the arguments of the function to be tested
+        | ``do_gradient``  --  When False, only the function value is returned.
+                               When True, a 2-tuple with the function value and
+                               the gradient are returned [default=False]
     """
     N = len(x0)
     f0, ana_grad = fun(x0, do_gradient=True)
@@ -1163,21 +1164,22 @@ def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
     """Compute the Hessian using the finite difference method
 
        Arguments:
-         fun  --  the function for which the Hessian should be computed, more
-                  info below
-         x0  --  the point at which the hessian must be computed
-         epsilon  --  a small scalar step size used to compute the finite
-                      differences
+        | ``fun``  --  the function for which the Hessian should be computed,
+                       more info below
+        | ``x0``  --  the point at which the Hessian must be computed
+        | ``epsilon``  --  a small scalar step size used to compute the finite
+                           differences
 
        Optional argument:
-         anagrad  --  when True, analytical gradients are used [default=True]
+        | ``anagrad``  --  when True, analytical gradients are used
+                           [default=True]
 
-       The function fun takes a mandatory argument x and an optional argument
-       do_gradient:
-         x  --  the arguments of the function to be tested
-         do_gradient  --  when False, only the function value is returned. when
-                          True, a 2-tuple with the function value and the
-                          gradient are returned [default=False]
+       The function fun takes a mandatory argument ``x`` and an optional
+       argument ``do_gradient``:
+        | ``x``  --  the arguments of the function to be tested
+        | ``do_gradient``  --  When False, only the function value is returned.
+                               When True, a 2-tuple with the function value and
+                               the gradient are returned [default=False]
     """
     N = len(x0)
 

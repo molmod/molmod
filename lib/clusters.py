@@ -23,15 +23,13 @@
 """Basic cluster analysis tool
 
    Given a mixed set of related and unrelated data pionts, it is often interesting
-   to extract clusters of related items. The basic workflow is as follows:
+   to extract clusters of related items. The basic workflow is as follows::
 
-   >>> cf = ClusterFactory()
-
-   >>> some loop:
-   ...     cf.add_related(some, related, items)
-
-   >>> for cluster in cf.iter_clusters():
-   ...     print cluster
+       cf = ClusterFactory()
+       while foo:
+           cf.add_related(some, related, items)
+       for cluster in cf.iter_clusters():
+           print cluster
 """
 
 
@@ -45,7 +43,10 @@ class Cluster(object):
        on is often interested in extending the functionality of a cluster.
     """
     def __init__(self, items):
-        """Initialize a Cluster object"""
+        """
+           Argument:
+            | ``items``  --  the items that belong in this cluster
+        """
         self.items = set(items)
 
     def add_item(self, item):
@@ -69,7 +70,13 @@ class RuleCluster(Cluster):
        of equations.
     """
     def __init__(self, items, rules=None):
-        """Initialize a RuleCluster object"""
+        """
+           Argument:
+            | ``items``  --  the items that belong in this cluster
+
+           Optional argument:
+            | ``rules``  --  a list of rules that binds the items
+        """
         Cluster.__init__(self, items)
         if rules is None:
             self.rules = []
@@ -86,7 +93,11 @@ class ClusterFactory(object):
     """A very basic cluster algorithm"""
 
     def __init__(self, cls=Cluster):
-        """Initialize a ClusterFactory"""
+        """
+           Optinional argument:
+            | ``cls``  --  A class to construct new cluster objects
+                           [default=Cluster]
+        """
         self.cls = cls
         # mapping: item -> cluster. Each cluster is a tuple of related items.
         self.lookup = {}

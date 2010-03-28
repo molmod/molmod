@@ -45,18 +45,18 @@ class Binning(object):
         """Initialize a Binning object
 
            Arguments:
-             coordinates  --  a Nx3 numpy array with coordinates to be triaged
-                              into bins
-             cutoff  --  The maximum distance between coordinates pairs. This
-                         affects the variable self.neighbor_bins, which is a
-                         set of relative integer bin coordinates that lie within
-                         the cuttof of the central bin.
-             grid_cell  --  A unit cell  object specifying the size and shape
-                            of the bins
+            | ``coordinates``  --  a Nx3 numpy array with coordinates to be
+                                   triaged into bins
+            | ``cutoff``  --  The maximum distance between coordinates pairs.
+                              This affects the variable self.neighbor_bins,
+                              which is a set of relative integer bin coordinates
+                              that lie within the cuttof of the central bin.
+            | ``grid_cell``  --  A unit cell  object specifying the size and
+                                 shape of the bins
 
            Optional argument:
-             integer_cell  --  the periodicity of the system in terms if integer
-                               grid cells.
+            | ``integer_cell``  --  the periodicity of the system in terms if
+                                    integer grid cells.
         """
         self.grid_cell = grid_cell
         self.integer_cell = integer_cell
@@ -108,7 +108,7 @@ class Binning(object):
 
 
 class PairSearchBase(object):
-    """Base class for PairSearchIntra"""
+    """Base class for :class:`PairSearchIntra` and :class:`PairSearchInter`"""
     def _setup_grid(self, cutoff, unit_cell, grid):
         """Choose a proper grid for the binning process"""
         if grid is None:
@@ -150,35 +150,37 @@ class PairSearchBase(object):
 class PairSearchIntra(PairSearchBase):
     """Iterator over all pairs of coordinates with a distance below a cutoff.
 
-       Example usage:
-       >>> coordinates = numpy.random.uniform(0,10,(10,3))
-       >>> for i, j, distance, delta in  PairSearchIntra(coordinates, 2.5):
-       ...     print i, j, distance
+       Example usage::
+
+           coordinates = numpy.random.uniform(0,10,(10,3))
+           for i, j, distance, delta in PairSearchIntra(coordinates, 2.5):
+               print i, j, distance
 
        Note that for periodic systems the minimum image convention is applied.
     """
 
     def __init__(self, coordinates, cutoff, unit_cell=None, grid=None):
-        """Initialize a PairSearchIntra object
+        """
+           Arguments:
+            | ``coordinates``  --  A Nx3 numpy array with Cartesian coordinates
+            | ``radius``  --  The cutoff radius for the pair distances.
+                              Distances larger than the cutoff will be neglected
+                              in the pair search.
 
-           Argument:
-             coordinates  --  A Nx3 numpy array with Cartesian coordinates
-             radius  --  The cutoff radius for the pair distances. Distances
-                         larger than the cutoff will be neglected in the
-                         pair search.
-
-           Optional argument:
-             unit_cell  --  Specifies the periodic boundary conditions
-             grid  --  Specification of the grid, can be a floating point number
-                       which will result in cubic bins with edge length equal to
-                       the given number. Otherwise a UnitCell object can be
-                       specified to construct non-cubic bins. In the latter case
-                       and when a unit_cell is given, the unit cell vectors must
-                       be integer linear combinations of the grid cell vectors
-                       (for those directions that are active in the unit cell).
-                       If this is not the case, a ValueError is raised.
+           Optional arguments:
+            | ``unit_cell``  --  Specifies the periodic boundary conditions
+            | ``grid``  --  Specification of the grid, can be a floating point
+                        number which will result in cubic bins with edge length
+                        equal to the given number. Otherwise a UnitCell object
+                        can be specified to construct non-cubic bins. In the
+                        latter case and when a unit_cell is given, the unit cell
+                        vectors must be integer linear combinations of the grid
+                        cell vectors (for those directions that are active in
+                        the unit cell). If this is not the case, a ValueError is
+                        raised.
 
            The default value of grid depends on other parameters:
+
              1) When no unit cell is given, it is equal to cutoff/2.9.
              2) When a unit cell is given, the grid cell is as close to cubic
                 as possible, with spacings below cutoff/2 that are integer
@@ -207,35 +209,36 @@ class PairSearchIntra(PairSearchBase):
 class PairSearchInter(PairSearchBase):
     """Iterator over all pairs of coordinates with a distance below a cutoff.
 
-       Example usage:
-       >>> coordinates0 = numpy.random.uniform(0,10,(10,3))
-       >>> coordinates1 = numpy.random.uniform(0,10,(10,3))
-       >>> for i, j, distance, delta in  PairSearchInter(coordinates0, coordinates1, 2.5):
-       ...     print i, j, distance
+       Example usage::
+
+           coordinates0 = numpy.random.uniform(0,10,(10,3))
+           coordinates1 = numpy.random.uniform(0,10,(10,3))
+           for i, j, distance, delta in PairSearchInter(coordinates0, coordinates1, 2.5):
+               print i, j, distance
 
        Note that for periodic systems the minimum image convention is applied.
     """
 
     def __init__(self, coordinates0, coordinates1, cutoff, unit_cell=None, grid=None):
-        """Initialize a PairSearchInter object
+        """
+           Arguments:
+            | ``coordinates0``  --  A Nx3 numpy array with Cartesian coordinates
+            | ``coordinates1``  --  A Nx3 numpy array with Cartesian coordinates
+            | ``radius``  --  The cutoff radius for the pair distances.
+                              Distances larger than the cutoff will be neglected
+                              in the pair search.
 
-           Argument:
-             coordinates0  --  A Nx3 numpy array with Cartesian coordinates
-             coordinates1  --  A Nx3 numpy array with Cartesian coordinates
-             radius  --  The cutoff radius for the pair distances. Distances
-                         larger than the cutoff will be neglected in the
-                         pair search.
-
-           Optional argument:
-             unit_cell  --  Specifies the periodic boundary conditions
-             grid  --  Specification of the grid, can be a floating point number
-                       which will result in cubic bins with edge length equal to
-                       the given number. Otherwise a UnitCell object can be
-                       specified to construct non-cubic bins. In the latter case
-                       and when a unit_cell is given, the unit cell vectors must
-                       be integer linear combinations of the grid cell vectors
-                       (for those directions that are active in the unit cell).
-                       If this is not the case, a ValueError is raised.
+           Optional arguments:
+            | ``unit_cell``  --  Specifies the periodic boundary conditions
+            | ``grid``  --  Specification of the grid, can be a floating point
+                        number which will result in cubic bins with edge length
+                        equal to the given number. Otherwise a UnitCell object
+                        can be specified to construct non-cubic bins. In the
+                        latter case and when a unit_cell is given, the unit cell
+                        vectors must be integer linear combinations of the grid
+                        cell vectors (for those directions that are active in
+                        the unit cell). If this is not the case, a ValueError is
+                        raised.
 
            The default value of grid depends on other parameters:
              1) When no unit cell is given, it is equal to cutoff/2.9.

@@ -20,7 +20,13 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-"""Tools to guess initial geometries quickly based on the molecular graph"""
+"""Tools to guess initial geometries quickly based on the molecular graph
+
+   The ToyFF is not meant for accurate geometries, but rather to generate
+   molecular geometries from scratch. The routines below start with just a
+   random set of coordinates and turn that into a rough molecular geometry.
+   Post-processing with a more reliable force field is mandatory.
+"""
 
 
 from molmod import context
@@ -32,7 +38,7 @@ from molmodext import ff_dm_quad, ff_dm_reci, ff_bond_quad, ff_bond_hyper
 import numpy
 
 
-__all__ = ["guess_geometry", "tune_geometry"]
+__all__ = ["guess_geometry", "tune_geometry", "ToyFF", "SpecialAngles"]
 
 
 def guess_geometry(graph, unit_cell=None, verbose=False):
@@ -44,11 +50,13 @@ def guess_geometry(graph, unit_cell=None, verbose=False):
        level of theory is at least advisable.
 
        Argument:
-         graph  --  The molecular graph of the system
+        | ``graph``  --  The molecular graph of the system, see
+                         :class:molmod.molecular_graphs.MolecularGraph
 
        Optional argument:
-         unit_cell  --  periodic boundry conditions
-         verbose  --  Show optimizer progress when True
+        | ``unit_cell``  --  periodic boundry conditions, see
+                             :class:`molmod.unit_cells.UnitCell`
+        | ``verbose``  --  Show optimizer progress when True
     """
 
     N = len(graph.numbers)
@@ -105,12 +113,15 @@ def tune_geometry(graph, mol, unit_cell=None, verbose=False):
        optimization with a more accurate level of theory is at least advisable.
 
        Arguments:
-         graph  --  The molecular graph of the system
-         mol  --  The initial guess of the coordinates
+        | ``graph``  --  The molecular graph of the system, see
+                         :class:molmod.molecular_graphs.MolecularGraph
+        | ``mol``  --  A :class:molmod.molecules.Molecule class with the initial
+                       guess of the coordinates
 
        Optional argument:
-         unit_cell  --  periodic boundry conditions
-         verbose  --  Show optimizer progress when True
+        | ``unit_cell``  --  periodic boundry conditions, see
+                             :class:`molmod.unit_cells.UnitCell`
+        | ``verbose``  --  Show optimizer progress when True
     """
 
     N = len(graph.numbers)
@@ -147,18 +158,20 @@ def tune_geometry(graph, mol, unit_cell=None, verbose=False):
 class ToyFF(object):
     """A force field implementation for generating geometries.
 
-       See guess_geomtry and tune_geomtry for two practical use cases.
+       See :func:guess_geomtry and :func:tune_geomtry for two practical use
+       cases.
     """
 
     def __init__(self, graph, unit_cell=None):
-        """Initialize a Toy Force field
-
+        """
            Argument:
-             graph  --  the molecular graph from which the force field terms
-                        are extracted.
+            | ``graph``  --  the molecular graph from which the force field terms
+                             are extracted. See
+                             :class:molmod.molecular_graphs.MolecularGraph
 
            Optional argument:
-             unit_cell  --  periodic boundry conditions
+            | ``unit_cell``  --  periodic boundry conditions, see
+                                 :class:`molmod.unit_cells.UnitCell`
         """
         from molmod.bonds import bonds
 
@@ -243,9 +256,9 @@ class ToyFF(object):
         """Compute the energy (and gradient) for a set of Cartesian coordinates
 
            Argument:
-             x  --  the Cartesian coordinates
-             do_gradient  --  when set to True, the gradient is also computed
-                              and returned. (default=False)
+            | ``x``  --  the Cartesian coordinates
+            | ``do_gradient``  --  when set to True, the gradient is also
+                                   computed and returned. [default=False]
         """
         x = x.reshape((-1, 3))
         result = 0.0
@@ -279,7 +292,6 @@ class ToyFF(object):
 class SpecialAngles(object):
     """A database with precomputed valence angles from small molecules"""
     def __init__(self):
-        """Initialize the database (loads data from share files)"""
         self._angle_dict = {}
         f = open(context.get_share_filename('toyff_angles.txt'))
         for line in f:

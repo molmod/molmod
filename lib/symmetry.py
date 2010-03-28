@@ -20,7 +20,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-
+"""Tools to analyze the symmetry of molecules"""
 
 
 from molmod.units import angstrom
@@ -34,13 +34,13 @@ def compute_rotsym(molecule, graph, threshold=1e-3*angstrom):
     """Compute the rotational symmetry number
 
        Arguments:
-         molecule  --  The molecule
-         graph  --  The corresponding bond graph
+        | ``molecule``  --  The molecule
+        | ``graph``  --  The corresponding bond graph
 
        Optional argument:
-         threshold  --  only when a rotation results in an rmsd below the given
-                        threshold, the rotation is considered to transform the
-                        molecule onto itself.
+        | ``threshold``  --  only when a rotation results in an rmsd below the
+                             given threshold, the rotation is considered to
+                             transform the molecule onto itself.
     """
     result = 0
     for match in graph.symmetries:

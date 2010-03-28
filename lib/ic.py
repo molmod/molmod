@@ -54,14 +54,14 @@ class Scalar(object):
     """
 
     def __init__(self, size, deriv=0, value=0, index=None):
-        """Initialize a scalar internal coordinate.
-
+        """
            Arguments:
-             size -- The number of inputs on which this ic depends. e.g. a distance
-                     depends on 6 Cartesian coordinates.
-             deriv -- Consider up to deriv order derivatives. (max=2)
-             value -- The initial value.
-             index -- If this scalar is one of the input variables, this is its index.
+            | ``size`` -- The number of inputs on which this ic depends. e.g. a
+                          distance depends on 6 Cartesian coordinates.
+            | ``deriv`` -- Consider up to deriv order derivatives. (max=2)
+            | ``value`` -- The initial value.
+            | ``index`` -- If this scalar is one of the input variables, this is
+                           its index.
 
            The scalar object supports several in place modifications.
         """
@@ -184,15 +184,14 @@ class Vector3(object):
     """
 
     def __init__(self, size, deriv=0, values=(0, 0, 0), indexes=(None, None, None)):
-        """Initialize a Vector3 object
-
+        """
            Arguments:
-             size -- The number of inputs on which this ic depends. e.g. a distance
-                     depends on 6 Cartesian coordinates.
-             deriv -- Consider up to deriv order derivatives. (max=2)
-             values -- The initial values.
-             indexes -- If this vector is one of the input variables, these are
-                        the indexes of the components.
+            | ``size`` -- The number of inputs on which this ic depends. e.g. a
+                          distance depends on 6 Cartesian coordinates.
+            | ``deriv`` -- Consider up to deriv order derivatives. (max=2)
+            | ``values`` -- The initial values.
+            | ``indexes`` -- If this vector is one of the input variables, these
+                             are the indexes of the components.
         """
         self.deriv = deriv
         self.size = size
@@ -293,15 +292,28 @@ class Vector3(object):
 
 
 def dot(r1, r2):
-    """Compute the dot product between two Vector3 Objects (Returns a Scalar)"""
+    """Compute the dot product
+
+       Arguments:
+        | ``r1``, ``r2``  -- two :class:`Vector3` objects
+
+       (Returns a Scalar)
+    """
     if r1.size != r2.size:
         raise ValueError("Both arguments must have the same input size.")
     if r1.deriv != r2.deriv:
         raise ValueError("Both arguments must have the same deriv.")
     return r1.x*r2.x + r1.y*r2.y + r1.z*r2.z
 
+
 def cross(r1, r2):
-    """Compute the cross product between two Vector3 Objects (Returns a Vector3)"""
+    """Compute the cross product
+
+       Arguments:
+        | ``r1``, ``r2``  -- two :class:`Vector3` objects
+
+       (Returns a Vector3)
+    """
     if r1.size != r2.size:
         raise ValueError("Both arguments must have the same input size.")
     if r1.deriv != r2.deriv:
@@ -312,13 +324,16 @@ def cross(r1, r2):
     result.z = r1.x*r2.y - r1.y*r2.x
     return result
 
+
 def bond_length(r0, r1, deriv=0):
     """Compute the distance between the two points r0 and r1
 
        Arguments:
-         r0  --  a numpy array with three elements
-         r1  --  a numpy array with three elements
-         derive=0  --  the derivatives to be computed (0, 1 or 2)
+        | ``r0``  --  a numpy array with three elements
+        | ``r1``  --  a numpy array with three elements
+        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
+
+       When derivatives are computed a tuple with a single result is returned
     """
     r = r0 - r1
     result = _bond_length_low(r, deriv)
@@ -352,10 +367,12 @@ def bend_cos(r0, r1, r2, deriv=0):
     """Compute the cosine of the angle between the vectors r0-r1 and r2-r1
 
        Arguments:
-         r0  --  a numpy array with three elements
-         r1  --  a numpy array with three elements
-         r2  --  a numpy array with three elements
-         derive=0  --  the derivatives to be computed (0, 1 or 2)
+        | ``r0``  --  a numpy array with three elements
+        | ``r1``  --  a numpy array with three elements
+        | ``r2``  --  a numpy array with three elements
+        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
+
+       When derivatives are computed a tuple with a single result is returned
     """
     a = r0 - r1
     b = r2 - r1
@@ -421,10 +438,12 @@ def bend_angle(r0, r1, r2, deriv=0):
     """Compute the angle between the vectors r0-r1 and r2-r1
 
        Arguments:
-         r0  --  a numpy array with three elements
-         r1  --  a numpy array with three elements
-         r2  --  a numpy array with three elements
-         derive=0  --  the derivatives to be computed (0, 1 or 2)
+        | ``r0``  --  a numpy array with three elements
+        | ``r1``  --  a numpy array with three elements
+        | ``r2``  --  a numpy array with three elements
+        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
+
+       When derivatives are computed a tuple with a single result is returned
     """
     result = bend_cos(r0, r1, r2, deriv)
     return _cos_to_angle(result, deriv)
@@ -434,11 +453,11 @@ def dihed_cos(r0, r1, r2, r3, deriv=0):
     """Compute the cosine of the angle between the planes r0, r1, r2 and r1, r2, r3
 
        Arguments:
-         r0  --  a numpy array with three elements
-         r1  --  a numpy array with three elements
-         r2  --  a numpy array with three elements
-         r3  --  a numpy array with three elements
-         derive=0  --  the derivatives to be computed (0, 1 or 2)
+        | ``r0``  --  a numpy array with three elements
+        | ``r1``  --  a numpy array with three elements
+        | ``r2``  --  a numpy array with three elements
+        | ``r3``  --  a numpy array with three elements
+        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
     """
     a = r0 - r1
     b = r2 - r1
@@ -511,11 +530,13 @@ def dihed_angle(r0, r1, r2, r3, deriv=0):
        angle: http://dx.doi.org/10.1351/goldbook.T06406
 
        Arguments:
-         r0  --  a numpy array with three elements
-         r1  --  a numpy array with three elements
-         r2  --  a numpy array with three elements
-         r3  --  a numpy array with three elements
-         derive=0  --  the derivatives to be computed (0, 1 or 2)
+        | ``r0``  --  a numpy array with three elements
+        | ``r1``  --  a numpy array with three elements
+        | ``r2``  --  a numpy array with three elements
+        | ``r3``  --  a numpy array with three elements
+        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
+
+       When derivatives are computed a tuple with a single result is returned
     """
     result = dihed_cos(r0, r1, r2, r3, deriv)
     a = r0 - r1
@@ -528,11 +549,11 @@ def opbend_cos(r0, r1, r2, r3, deriv=0):
     """Compute the cosine of the angle between the vector (r0,r3) and plane r0,r1,r2
 
        Arguments:
-         r0  --  a numpy array with three elements
-         r1  --  a numpy array with three elements
-         r2  --  a numpy array with three elements
-         r3  --  a numpy array with three elements
-         derive=0  --  the derivatives to be computed (0, 1 or 2)
+        | ``r0``  --  a numpy array with three elements
+        | ``r1``  --  a numpy array with three elements
+        | ``r2``  --  a numpy array with three elements
+        | ``r3``  --  a numpy array with three elements
+        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
     """
     a = r1 - r0
     b = r2 - r0
@@ -612,11 +633,13 @@ def opbend_angle(r0, r1, r2, r3, deriv=0):
        hand rule from r0-r1 to r0-r2.
 
        Arguments:
-         r0  --  a numpy array with three elements
-         r1  --  a numpy array with three elements
-         r2  --  a numpy array with three elements
-         r3  --  a numpy array with three elements
-         derive=0  --  the derivatives to be computed (0, 1 or 2)
+        | ``r0``  --  a numpy array with three elements
+        | ``r1``  --  a numpy array with three elements
+        | ``r2``  --  a numpy array with three elements
+        | ``r3``  --  a numpy array with three elements
+        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
+
+       When no derivatives are computed a tuple with a single result is returned.
     """
     result = opbend_cos(r0, r1, r2, r3, deriv)
     a = r1 - r0
