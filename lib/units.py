@@ -34,7 +34,7 @@
      CODATA recommended values of the fundamental physical
      constants: 1998, Rev. Mod. Phys. 72(2), 351 (2000)
    * The NIST Reference on Constants, Units, and Uncertainty
-     (http://physics.nist.gov/cuu/Constants/)
+     (http://physics.nist.gov/cuu/Constants/index.html)
    * 1 calorie = 4.184 Joules
 
    Naming conventions in this module: unit is the value of one external unit
@@ -159,6 +159,9 @@ kelvin = 1.0
 
 debye = 0.39343031369146675 # = 1e-21*coulomb*meter**2/second/lightspeed
 
+# *** Current ***
+
+ampere = coulomb/second
 
 
 # Shorthands for the parse functions
