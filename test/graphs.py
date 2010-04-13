@@ -22,7 +22,7 @@
 # --
 
 
-from molmod.graphs import *
+from molmod import *
 
 import unittest, copy, numpy
 
@@ -649,4 +649,21 @@ class GraphTestCase(unittest.TestCase):
         for bs in collection.itervalues():
             self.assertEqual(len(bs), 3)
 
+    def test_rings_zeolite(self):
+        cases = [
+            ("opt_5ring10T.xyz", (10, 10, 12)),
+            ("opt_5ring12T.xyz", (8, 10, 10, 10, 10)),
+            ("opt_6_6ring.xyz", (12, 12)),
+            ("opt_6ring.xyz", (12,)),
+        ]
+        gs = GraphSearch(RingPattern(12), debug=False)
+        for fn_xyz, expected_sizes in cases:
+            mol = Molecule.from_file("input/%s" % fn_xyz)
+            mol.set_default_graph()
+            sizes = []
+            for match in gs(mol.graph):
+                sizes.append(len(match))
+            sizes.sort()
+            sizes = tuple(sizes)
+            self.assertEqual(sizes, expected_sizes)
 

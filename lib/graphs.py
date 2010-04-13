@@ -1446,12 +1446,12 @@ class RingPattern(Pattern):
         # avoid duplicate rings (order of traversal)
         if len(match) == 3:
             if match.forward[1] < match.forward[2]:
-                #print "RingPattern.check_next_match: duplicate order"
+                #print "RingPattern.check_next_match: duplicate order", match.forward[1], match.forward[2]
                 return False
         # avoid duplicate rings (starting point)
         for vertex1 in new_relations.itervalues():
             if vertex1 < match.forward[0]:
-                #print "RingPattern.check_next_match: duplicate start"
+                #print "RingPattern.check_next_match: duplicate start", vertex1, match.forward[0]
                 return False
         # can this ever become a strong ring?
         for vertex1 in new_relations.itervalues():
@@ -1462,7 +1462,6 @@ class RingPattern(Pattern):
             if len(paths[0]) != (len(match)+1)/2:
                 #print "RingPattern.check_next_match: not strong 2"
                 return False
-        #print "RingPattern.check_next_match: no remarks"
         return True
 
     def complete(self, match, subject_graph):
@@ -1520,10 +1519,16 @@ class RingPattern(Pattern):
                 if count != 2:
                     ok = False
                     break
+            if ok:
+                # also check if this does not violate the requirement for a
+                # unique origin:
+                if match.forward[size-1] < match.forward[0]:
+                    ok = False
             if not ok:
                 vertex1 = match.forward[size-1]
                 del match.forward[size-1]
                 del match.reverse[vertex1]
+                size -= 1
                 #print "RingPattern.complete: no even ring"
             else:
                 match.ring_vertices = tuple(match.forward[i] for i in order)
