@@ -219,7 +219,7 @@ class UnitCellTestCase(BaseTestCase):
     def test_radius_indexes(self):
         for i in xrange(20):
             uc = self.get_random_uc()
-            radius = numpy.random.uniform(1,2)*abs(uc.generalized_volume)**(0.333)
+            radius = numpy.random.uniform(1,2)*abs(uc.volume)**(0.333)
 
             #uc = UnitCell.from_parameters3(
             #    numpy.array([3.73800243,  2.35503196,  3.25130153]),
@@ -242,7 +242,7 @@ class UnitCellTestCase(BaseTestCase):
             if numpy.product(ranges) > 100:
                 continue
             indexes = uc.get_radius_indexes(radius)
-            self.assert_(len(indexes)*abs(uc.generalized_volume) > 4.0/3.0*numpy.pi*radius**3)
+            self.assert_(len(indexes)*abs(uc.volume) > 4.0/3.0*numpy.pi*radius**3)
             #print "testing distances"
             for j in xrange(20):
                 c0 = uc.to_cartesian(numpy.random.uniform(-0.5, 0.5, 3))
@@ -429,12 +429,12 @@ class UnitCellTestCase(BaseTestCase):
                 /numpy.linalg.norm(uc1.matrix[:,2]), 1
             )
 
-    def test_generalized_volume(self):
+    def test_volume(self):
         matrix = numpy.array([[10,0,0],[0,10,0],[0,0,10]], float)
-        self.assertEqual(UnitCell(matrix, numpy.array([False,False,False])).generalized_volume, -1)
-        self.assertEqual(UnitCell(matrix, numpy.array([True,False,False])).generalized_volume, 10)
-        self.assertEqual(UnitCell(matrix, numpy.array([True,True,False])).generalized_volume, 100)
-        self.assertEqual(UnitCell(matrix, numpy.array([True,True,True])).generalized_volume, 1000)
+        self.assertEqual(UnitCell(matrix, numpy.array([False,False,False])).volume, -1)
+        self.assertEqual(UnitCell(matrix, numpy.array([True,False,False])).volume, 10)
+        self.assertEqual(UnitCell(matrix, numpy.array([True,True,False])).volume, 100)
+        self.assertEqual(UnitCell(matrix, numpy.array([True,True,True])).volume, 1000)
 
     def test_alignment_a(self):
         matrix = numpy.array([[10,10,0],[-10,10,0],[0,0,10]], float)
@@ -478,7 +478,7 @@ class UnitCellTestCase(BaseTestCase):
         for i in xrange(10):
             uc0 = self.get_random_uc(full=False)
             uc1 = uc0.ordered
-            self.assertAlmostEqual(uc0.generalized_volume, uc1.generalized_volume)
+            self.assertAlmostEqual(uc0.volume, uc1.volume)
             self.assertEqual(uc0.active.sum(), uc1.active.sum())
             self.assert_(uc1.active[0] >= uc1.active[1])
             self.assert_(uc1.active[1] >= uc1.active[2])

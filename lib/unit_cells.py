@@ -65,7 +65,7 @@ class UnitCell(ReadOnly):
                 norm = numpy.linalg.norm(matrix[:, col])
                 if norm < self.eps:
                     raise ValueError("The length of ridge %s is (nearly) zero." % name)
-        if abs(self.generalized_volume) < self.eps:
+        if abs(self.volume) < self.eps:
             raise ValueError("The ridges of the unit cell are (nearly) linearly dependent vectors.")
 
     def __mul__(self, x):
@@ -119,7 +119,7 @@ class UnitCell(ReadOnly):
         return cls(matrix, active)
 
     @cached
-    def generalized_volume(self):
+    def volume(self):
         """The volume of the unit cell
 
            The actual definition of the volume depends on the number of active
