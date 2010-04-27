@@ -48,7 +48,7 @@ class Molecule(ReadOnly):
        a signifacant computational overhead.
     """
 
-    def __init__(self, numbers, coordinates=None, title=None, masses=None, graph=None, symbols=None):
+    def __init__(self, numbers, coordinates=None, title=None, masses=None, graph=None, symbols=None, unit_cell=None):
         """
            Mandatory arguments:
             | ``numbers``  --  numpy array (1D, N elements) with the atom numbers
@@ -59,6 +59,7 @@ class Molecule(ReadOnly):
             | ``massess``  --  a numpy array with atomic masses in atomic units
             | ``graph``  --  a MolecularGraph instance
             | ``symbols``  --  atom symbols or force-field atom-types
+            | ``unit_cell``  --  the unit cell in case the system is periodic
         """
         ReadOnly.__init__(self)
         mandatory = {"numbers": numpy.array(numbers, int)}
@@ -72,6 +73,7 @@ class Molecule(ReadOnly):
             "masses": masses,
             "graph": graph,
             "symbols": symbols,
+            "unit_cell": unit_cell,
         }
         self.init_attributes(mandatory, optional)
 
