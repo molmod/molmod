@@ -318,12 +318,12 @@ class PSFFile(object):
             name = self._get_name(molecular_graph)
             self.names.extend([name]*new)
 
-        self._add_graph_bonds(molecular_graph, offset, molecule)
-        self._add_graph_bends(molecular_graph, offset, molecule)
-        self._add_graph_dihedrals(molecular_graph, offset, molecule)
-        self._add_graph_impropers(molecular_graph, offset, molecule)
+        self._add_graph_bonds(molecular_graph, offset, atom_types, molecule)
+        self._add_graph_bends(molecular_graph, offset, atom_types, molecule)
+        self._add_graph_dihedrals(molecular_graph, offset, atom_types, molecule)
+        self._add_graph_impropers(molecular_graph, offset, atom_types, molecule)
 
-    def _add_graph_bonds(self, molecular_graph, offset, molecule=None):
+    def _add_graph_bonds(self, molecular_graph, offset, atom_types, molecule):
         # add bonds
         match_generator = GraphSearch(BondPattern([CriteriaSet()]))
         tmp = [(
@@ -338,7 +338,7 @@ class PSFFile(object):
             self.bonds[-len(tmp):] = tmp
             self.bonds[-len(tmp):] += offset
 
-    def _add_graph_bends(self, molecular_graph, offset, molecule=None):
+    def _add_graph_bends(self, molecular_graph, offset, atom_types, molecule):
         # add bends
         match_generator = GraphSearch(BendingAnglePattern([CriteriaSet()]))
         tmp = [(
@@ -354,7 +354,7 @@ class PSFFile(object):
             self.bends[-len(tmp):] = tmp
             self.bends[-len(tmp):] += offset
 
-    def _add_graph_dihedrals(self, molecular_graph, offset, molecule=None):
+    def _add_graph_dihedrals(self, molecular_graph, offset, atom_types, molecule):
         # add dihedrals
         match_generator = GraphSearch(DihedralAnglePattern([CriteriaSet()]))
         tmp = [(
@@ -371,7 +371,7 @@ class PSFFile(object):
             self.dihedrals[-len(tmp):] = tmp
             self.dihedrals[-len(tmp):] += offset
 
-    def _add_graph_impropers(self, molecular_graph, offset, molecule=None):
+    def _add_graph_impropers(self, molecular_graph, offset, atom_types, molecule):
         # add improper dihedrals, only when center has three bonds
         match_generator = GraphSearch(OutOfPlanePattern([CriteriaSet(
             vertex_criteria={0: HasNumNeighbors(3)},
