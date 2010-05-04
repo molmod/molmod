@@ -29,6 +29,7 @@
 boltzmann = 3.1668154051341965e-06
 avogadro = 6.0221415e23
 lightspeed = 137.03599975303575
+planck = 6.2831853071795864769
 
 
 # automatically spice up the docstrings
