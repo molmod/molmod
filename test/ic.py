@@ -242,6 +242,10 @@ class ICTestCase(BaseTestCase):
             for fn in [ic.dihed_cos, ic.dihed_angle]:
                 qr, gr, hr = fn(r1, r2, r3, r4, 2)
                 qs, gs, hs = fn(s1, s2, s3, s4, 2)
+                self.assert_(qr >= -numpy.pi)
+                self.assert_(qr <= numpy.pi)
+                self.assert_(qs >= -numpy.pi)
+                self.assert_(qs <= numpy.pi)
                 delta1 = qs - qr
                 delta2 = numpy.dot(0.5*(gr+gs).ravel(), d)
                 error = abs(delta1-delta2)
