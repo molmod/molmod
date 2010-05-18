@@ -5,10 +5,6 @@ if [ -n $1 ] && [ "$1" = "--system" ]; then
   rm -vr /usr/local/share/molmod
   rm -vr /usr/local/lib/python*/site-packages/molmod
 else
-  if [ -z $PYTHONPATH ]; then
-    echo 'WARNING: $PYTHONPATH is not defined, defaulting to \$HOME/lib/python'
-    PYTHONPATH=$HOME/lib/python
-  fi
   rm -vr $HOME/share/molmod
-  rm -vr $PYTHONPATH/molmod
+  rm -vr $HOME/lib/python/molmod
 fi
