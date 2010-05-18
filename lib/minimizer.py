@@ -68,7 +68,7 @@ __all__ = [
     "LineSearch", "GoldenLineSearch", "NewtonLineSearch",
     "Preconditioner", "DiagonalPreconditioner", "FullPreconditioner",
     "ConvergenceCondition", "StopLossCondition", "Minimizer",
-    "check_anagrad", "compute_fd_hessian",
+    "check_anagrad", "check_delta", "compute_fd_hessian",
 ]
 
 
@@ -1168,6 +1168,34 @@ def check_anagrad(fun, x0, epsilon, threshold):
         num_grad_comp = (fun(xh)-fun(xl))/epsilon
         if abs(num_grad_comp - ana_grad[i]) > threshold:
             raise ValueError("Error in the analytical gradient, component %i, got %s, should be about %s" % (i, ana_grad[i], num_grad_comp))
+
+
+def check_delta(fun, x0, x1, threshold):
+    """Check the difference between two function values using the analytical gradient
+
+       Arguments:
+        | ``fun``  --  the function to be tested, more info below
+        | ``x0``  --  the first argument vector
+        | ``x1``  --  the second argument vector, preferentially close to x0
+        | ``threshold``  --  the maximum acceptable deviation between the
+                             difference of function values in x0 and x1 and the
+                             approximation of the two function values using a
+                             first order Taylor approximation.
+
+       The function fun takes a mandatory argument ``x`` and an optional
+       argument ``do_gradient``:
+        | ``x``  --  the arguments of the function to be tested
+        | ``do_gradient``  --  When False, only the function value is returned.
+                               When True, a 2-tuple with the function value and
+                               the gradient are returned [default=False]
+    """
+    f0, grad0 = fun(x0, do_gradient=True)
+    f1, grad1 = fun(x1, do_gradient=True)
+    grad = 0.5*(grad0+grad1)
+    delta_f = f1 - f0
+    delta_x = x1 - x0
+    if abs(delta_f - numpy.dot(delta_x, grad)) > threshold:
+        raise ValueError("Error in the analytical gradient, delta_f is %s, should be about %s" % (delta_f, numpy.dot(delta_x, grad)))
 
 
 def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
