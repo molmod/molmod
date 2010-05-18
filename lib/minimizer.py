@@ -46,6 +46,17 @@
            anagrad=True, verbose=True,
        )
        print "optimum", minimizer.x, fun(minimizer.x)
+
+   The signature of the function ``fun`` must always be the same as in the
+   example. The first argument. ``x`` is mandatory and contains a 1D numpy array
+   with function arguments. The second argument, ``do_gradient`` is optional
+   with default value ``False``.
+
+   The returned values must also follow the same convention as in the example.
+   When ``do_gradient==True``, two return values are given. The first one is
+   the function value and the second one is a 1D numpy array with the partial
+   derivatives of the function towards the arguments. When
+   ``do_gradient==False``, only one value is returned, i.e. the function value.
 """
 
 
