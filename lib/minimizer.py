@@ -1128,7 +1128,7 @@ class Minimizer(object):
         self.fun(self.x) # reset the internal state of the function
 
 
-def check_anagrad(fun, x0, epsilon, scale=10):
+def check_anagrad(fun, x0, epsilon, threshold):
     """Check the analytical gradient using finite differences
 
        Arguments:
@@ -1136,10 +1136,9 @@ def check_anagrad(fun, x0, epsilon, scale=10):
         | ``x0``  --  the reference point around which the function should be
                       tested
         | ``epsilon``  --  a small scalar used for the finite differences
-
-       Optional argument
-        | ``scale``  --  ``scale*epsilon`` is the threshold for an error between
-                         the analytical and the numerical gradient
+        | ``threshold``  --  the maximum acceptable difference between the
+                             analytical gradient and the gradient obtained by
+                             finite differentiation
 
        The function fun takes a mandatory argument ``x`` and an optional
        argument ``do_gradient``:
@@ -1156,7 +1155,7 @@ def check_anagrad(fun, x0, epsilon, scale=10):
         xl = x0.copy()
         xl[i] -= 0.5*epsilon
         num_grad_comp = (fun(xh)-fun(xl))/epsilon
-        if abs(num_grad_comp - ana_grad[i]) > scale*epsilon:
+        if abs(num_grad_comp - ana_grad[i]) > threshold:
             raise ValueError("Error in the analytical gradient, component %i, got %s, should be about %s" % (i, ana_grad[i], num_grad_comp))
 
 

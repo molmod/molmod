@@ -181,13 +181,13 @@ class MinimizerTestCase(BaseTestCase):
 
     def test_check_anagrad(self):
         x_init = numpy.zeros(2, float)
-        check_anagrad(fun, x_init, 1e-5)
+        check_anagrad(fun, x_init, 1e-5, 1e-4)
 
     def test_check_anagrad_diag_prec(self):
         x_init = numpy.zeros(2, float)
         prec_fun = DiagonalPreconditioner(fun, 20, 1e-2)
         prec_fun.scales = numpy.random.uniform(1,2,2)
-        check_anagrad(prec_fun, x_init, 1e-5)
+        check_anagrad(prec_fun, x_init, 1e-5, 1e-4)
 
     def test_check_anagrad_full_prec(self):
         x_init = numpy.zeros(2, float)
@@ -197,7 +197,7 @@ class MinimizerTestCase(BaseTestCase):
         evals, evecs = numpy.linalg.eigh(A)
         prec_fun.scales = abs(evals) + 1.0
         prec_fun.rotation = evecs
-        check_anagrad(prec_fun, x_init, 1e-5)
+        check_anagrad(prec_fun, x_init, 1e-5, 1e-4)
 
     def test_full_prec_consitency(self):
         x_init = numpy.zeros(2, float)
