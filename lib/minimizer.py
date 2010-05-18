@@ -878,7 +878,7 @@ class LineWrapper(object):
                                gradients
             | ``epsilon``  --  a small scalar used for finite differences
 
-           The function fun takes a mandatory argument ``x`` and an optional
+           The function ``fun`` takes a mandatory argument ``x`` and an optional
            argument ``do_gradient``:
             | ``x``  --  the arguments of the function to be tested
             | ``do_gradient``  --  when False, only the function value is
@@ -927,7 +927,7 @@ class FunWrapper(object):
                                gradients
             | ``epsilon``  --  a small scalar used for finite differences
 
-           The function fun takes a mandatory argument ``x`` and an optional
+           The function ``fun`` takes a mandatory argument ``x`` and an optional
            argument ``do_gradient``:
             | ``x``  --  the arguments of the function to be tested
             | ``do_gradient``  --  when False, only the function value is
@@ -985,7 +985,7 @@ class Minimizer(object):
                                 the callback routine gets the minimizer as first
                                 and only argument. [default=None]
 
-           The function fun takes a mandatory argument ``x`` and an optional
+           The function ``fun`` takes a mandatory argument ``x`` and an optional
            argument ``do_gradient``:
             | ``x``  --  the arguments of the function to be tested
             | ``do_gradient``  --  when False, only the function value is
@@ -1151,7 +1151,7 @@ def check_anagrad(fun, x0, epsilon, threshold):
                              analytical gradient and the gradient obtained by
                              finite differentiation
 
-       The function fun takes a mandatory argument ``x`` and an optional
+       The function ``fun`` takes a mandatory argument ``x`` and an optional
        argument ``do_gradient``:
         | ``x``  --  the arguments of the function to be tested
         | ``do_gradient``  --  When False, only the function value is returned.
@@ -1182,7 +1182,7 @@ def check_delta(fun, x0, x1, threshold):
                              approximation of the two function values using a
                              first order Taylor approximation.
 
-       The function fun takes a mandatory argument ``x`` and an optional
+       The function ``fun`` takes a mandatory argument ``x`` and an optional
        argument ``do_gradient``:
         | ``x``  --  the arguments of the function to be tested
         | ``do_gradient``  --  When False, only the function value is returned.
@@ -1212,7 +1212,7 @@ def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
         | ``anagrad``  --  when True, analytical gradients are used
                            [default=True]
 
-       The function fun takes a mandatory argument ``x`` and an optional
+       The function ``fun`` takes a mandatory argument ``x`` and an optional
        argument ``do_gradient``:
         | ``x``  --  the arguments of the function to be tested
         | ``do_gradient``  --  When False, only the function value is returned.
