@@ -250,15 +250,16 @@ class LineSearch(object):
         else:
             return numpy.clip(step, -self.qmax, self.qmax)
 
-    def __call__(self, fun, f0, last_step_size, epsilon):
+    def __call__(self, fun, f0, initial_step_size, epsilon):
         """Return the value that minimizes the one-dimensional function 'fun'
 
            Arguments:
             | ``fun``  --  function to minimize (one-dimensional)
             | ``f0``   --  the function value at the starting point q=0"
-            | ``last_step_size``  --  the norm of step from the previous line
-                                      search
-            | ``epsilon``  --  a value that is small compared to last_step_size
+            | ``initial_step_size``  --  a guess of the order of magnitude of
+                                         step size to be found.
+            | ``epsilon``  --  a value that is small compared to
+                               initial_step_size
 
            Returns:
             | ``success``  --  a boolean indicating that the line search
@@ -293,15 +294,17 @@ class GoldenLineSearch(LineSearch):
         self.num_bracket = 0
         self.num_golden = 0
 
-    def __call__(self, fun, last_step_size, epsilon):
+    def __call__(self, fun, initial_step_size, epsilon):
         """Return the value that minimizes the one-dimensional function 'fun'
 
            Arguments:
             | ``fun``  --  function to minimize (one-dimensional)
             | ``f0``   --  the function value at the starting point q=0"
-            | ``last_step_size``  --  the norm of step from the previous line
-                                      search
-            | ``epsilon``  --  a value that is small compared to last_step_size
+            | ``initial_step_size``  --  a guess of the order of magnitude of
+                                         step size to be found. This is used to
+                                         bracket the minimum.
+            | ``epsilon``  --  a value that is small compared to
+                               initial_step_size
 
            Returns:
             | ``success``  --  a boolean indicating that the line search
@@ -317,7 +320,7 @@ class GoldenLineSearch(LineSearch):
         """
         # bracket the minimum
         f0 = fun(0.0)
-        triplet = self._bracket(last_step_size, f0, fun)
+        triplet = self._bracket(initial_step_size, f0, fun)
         if triplet is None:
             return False, False, 0.0, f0
         # do a golden section optimization
@@ -418,16 +421,19 @@ class NewtonLineSearch(LineSearch):
         self.max_iter = max_iter
         LineSearch.__init__(self)
 
-    def __call__(self, fun, last_step_size, epsilon):
+    def __call__(self, fun, initial_step_size, epsilon):
         """Return the value that minimizes the one-dimensional function 'fun'
 
            Arguments:
             | ``fun``  --  function to minimize (one-dimensional)
             | ``f0``   --  the function value at the starting point q=0"
-            | ``last_step_size``  --  the norm of step from the previous line
-                                      search
-            | ``epsilon``  --  a value that is small compared to last_step_size,
-                               used for finite differences
+            | ``initial_step_size``  --  a guess of the order of magnitude of
+                                         step size to be found. This is used
+                                         in case the default newton line search
+                                         fails and when the routine reverts to
+                                         backtracking as a last resort.
+            | ``epsilon``  --  a value that is small compared to
+                               initial_step_size
 
            Returns:
             | ``success``  --  a boolean indicating that the line search
@@ -473,7 +479,7 @@ class NewtonLineSearch(LineSearch):
                 pass
 
         # simple back tracking with tau = 0.5, no wolfe conditions yet
-        q1 = -numpy.sign(g0)*last_step_size*1.5
+        q1 = -numpy.sign(g0)*initial_step_size*1.5
         counter = 0.0
         while True:
             f1 = fun(q1)
@@ -964,7 +970,8 @@ class Minimizer(object):
 
     def __init__(self, x_init, fun, search_direction, line_search,
                  convergence_condition, stop_loss_condition, anagrad=False,
-                 epsilon=1e-6, verbose=True, callback=None):
+                 epsilon=1e-6, verbose=True, callback=None,
+                 initial_step_size=1.0):
         """
            Arguments:
             | ``x_init``  --  the initial guess for the minimum
@@ -984,6 +991,13 @@ class Minimizer(object):
             | ``callback``  --  optional callback routine after each iteration.
                                 the callback routine gets the minimizer as first
                                 and only argument. [default=None]
+            | ``initial_step_size``  --  The initial step size used in the first
+                                         call to the line search. For later
+                                         line searches, the actual step size
+                                         found by the previous line search is
+                                         used as initial step size. How the
+                                         initial step size is used, depends on
+                                         the line search algorithm.
 
            The function ``fun`` takes a mandatory argument ``x`` and an optional
            argument ``do_gradient``:
@@ -1010,6 +1024,7 @@ class Minimizer(object):
         self.epsilon = epsilon
         self.verbose = verbose
         self.callback = callback
+        self.initial_step_size = initial_step_size
 
         # perform some resets:
         self.search_direction.reset()
@@ -1117,13 +1132,11 @@ class Minimizer(object):
             return False
         self.line.configure(self.x, direction/direction_norm)
 
-        if self.step is None:
-            last_step_size = 1.0
-        else:
-            last_step_size = numpy.linalg.norm(self.step)
-        success, wolfe, qopt, fopt = self.line_search(self.line, last_step_size, self.epsilon)
+        success, wolfe, qopt, fopt = \
+            self.line_search(self.line, self.initial_step_size, self.epsilon)
         if success:
             self.step = qopt*self.line.axis
+            self.initial_step_size = numpy.linalg.norm(self.step)
             self.x = self.x + self.step
             self.f = fopt
             self._screen("% 9.3e  " % self.f)
