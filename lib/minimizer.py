@@ -347,7 +347,7 @@ class GoldenLineSearch(LineSearch):
                 if fa < f0:
                     return (0, f0), (qa, fa), (qb, fb)
                 counter += 1
-                if counter > self.max_iter:
+                if self.max_iter is not None and counter > self.max_iter:
                     return
         else:
             self.num_bracket += 1
@@ -367,7 +367,7 @@ class GoldenLineSearch(LineSearch):
                 if fa >= fb:
                     return (qc, fc), (qb, fb), (qa, fa)
                 counter += 1
-                if counter > self.max_iter:
+                if self.max_iter is not None and counter > self.max_iter:
                     return
 
     def _golden(self, triplet, fun):
@@ -458,7 +458,7 @@ class NewtonLineSearch(LineSearch):
                 if abs(g2) > abs(g1):
                     break
                 counter += 1
-                if counter > self.max_iter:
+                if self.max_iter is not None and counter > self.max_iter:
                     break
                 q1, f1, g1 = q2, f2, g2
                 del q2
@@ -487,7 +487,7 @@ class NewtonLineSearch(LineSearch):
                 return True, False, q1, f1
             q1 *= 0.5
             counter += 1
-            if counter > self.max_iter:
+            if self.max_iter is not None and counter > self.max_iter:
                 # had enough iterations, line search fails
                 return False, False, 0.0, f0
 
