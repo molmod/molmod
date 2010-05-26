@@ -144,6 +144,9 @@ nanosecond = 1e-9*second
 femtosecond = 1e-15*second
 picosecond = 1e-12*second
 
+# *** Frequency ***
+
+hertz = 1/second
 
 # *** Pressure ***
 
@@ -185,6 +188,7 @@ shorthands = {
     "eV": electronvolt,
     "N": newton,
     "s": second,
+    "Hz": hertz,
     "ns": nanosecond,
     "fs": femtosecond,
     "ps": picosecond,
