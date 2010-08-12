@@ -62,5 +62,3 @@ class GamessTestCase(BaseTestCase):
         self.assertAlmostEqual(punch.masses[0]/amu, 34.96885)
         self.assertAlmostEqual(punch.masses[3]/amu, 1.00782)
         self.assertAlmostEqual(punch.masses[-1]/amu, 18.99840)
-
-

@@ -70,7 +70,7 @@ class VolumeTestCase(unittest.TestCase):
         self.assert_(ses_volume < ses_upper_limit)
 
     def test_in_spheres(self):
-        from molmodext import in_spheres
+        from molmod.ext import in_spheres
         for i in xrange(1000):
             probe = numpy.random.uniform(0, 5, 3)
             probe_radius = numpy.random.uniform(0, 3)
@@ -84,7 +84,7 @@ class VolumeTestCase(unittest.TestCase):
                 self.assertEqual(result,-1)
 
     def test_in_spheres_all(self):
-        from molmodext import in_spheres_all
+        from molmod.ext import in_spheres_all
         num = 4
         hits = numpy.zeros(num, numpy.int32)
         for i in xrange(1000):
@@ -98,7 +98,7 @@ class VolumeTestCase(unittest.TestCase):
             self.assertEqual(set(hits[:counter]), set((dists<0).nonzero()[0]))
 
     def test_center_ses1(self):
-        from molmodext import center_ses1
+        from molmod.ext import center_ses1
         for i in xrange(1000):
             close1 = numpy.random.uniform(0, 5, 3)
             close1_radius = numpy.random.uniform(0, 5)
@@ -108,7 +108,7 @@ class VolumeTestCase(unittest.TestCase):
             self.assertAlmostEqual(numpy.linalg.norm(center-close1), close1_radius)
 
     def test_center_ses2(self):
-        from molmodext import center_ses2
+        from molmod.ext import center_ses2
         for i in xrange(1000):
             close1 = numpy.random.uniform(0, 5, 3)
             close1_radius = numpy.random.uniform(0, 5)
@@ -150,7 +150,7 @@ class VolumeTestCase(unittest.TestCase):
                 self.assert_(numpy.linalg.norm(center - probe) < numpy.linalg.norm(new_center - probe))
 
     def test_center_ses3(self):
-        from molmodext import center_ses3
+        from molmod.ext import center_ses3
         for i in xrange(1000):
             close1 = numpy.random.uniform(0, 5, 3)
             close1_radius = numpy.random.uniform(0, 5)
@@ -256,5 +256,3 @@ class VolumeTestCase(unittest.TestCase):
     def test_bigbox_tpa(self):
         mol = Molecule.from_file("input/tpa.xyz")
         self.check_bigbox(mol)
-
-

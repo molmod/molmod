@@ -55,5 +55,3 @@ class CMLTestCase(unittest.TestCase):
         self.assertEqual(l[2].title, "Acetic acid [-]")
         self.assert_((l[2].numbers==numpy.array([6,6,8,8,1,1,1])).all())
         self.assertEqual(l[2].extra["charge"],"-1.0")
-
-

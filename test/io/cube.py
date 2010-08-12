@@ -47,5 +47,3 @@ class CubeTestCase(BaseTestCase):
         vector, value = cr.next()
         self.assertAlmostEqual(value, 2.77030E-13)
         self.assertArraysAlmostEqual(vector, numpy.array([-9.375592, -8.571340, -4.994197]))
-
-

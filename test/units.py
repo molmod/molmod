@@ -33,5 +33,3 @@ __all__ = ["UnitTestCase"]
 class UnitTestCase(BaseTestCase):
     def test_shortands(self):
         self.assertEqual(parse_unit("m/s"), meter/second)
-
-

@@ -219,5 +219,3 @@ class MinimizerTestCase(BaseTestCase):
             self.assertArraysAlmostEqual(orig, check)
             check = prec_fun.undo(prec_fun.do(orig))
             self.assertArraysAlmostEqual(orig, check)
-
-

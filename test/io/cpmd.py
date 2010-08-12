@@ -50,5 +50,3 @@ class CPMDTestCase(BaseTestCase):
         pos, vel = ctr.next()
         self.assertAlmostEqual(pos[1,1], 7.55433910653197)
         self.assertAlmostEqual(vel[-1,-1], -0.00010042196797)
-
-

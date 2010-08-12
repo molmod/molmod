@@ -61,5 +61,3 @@ class BaseTestCase(unittest.TestCase):
     def assertArrayAlmostZero(self, arr, abserr_threshold):
         abserr = abs(arr).max()
         self.assert_(abserr <= abserr_threshold, "The absolute error is larger than the given threshold: %5.3e > %5.3e" % (abserr, abserr_threshold))
-
-

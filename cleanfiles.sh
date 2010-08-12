@@ -1,5 +1,5 @@
 #!/bin/bash
-for i in $(find lib test ext | egrep "\.pyc$|\.py~$|\.pyc~$|\.bak$|\.so$") ; do rm -v ${i}; done
+for i in $(find molmod test ext | egrep "\.pyc$|\.py~$|\.pyc~$|\.bak$|\.so$") ; do rm -v ${i}; done
 
 rm -vr doc/_build/
 
@@ -9,5 +9,3 @@ rm -v test/molmod
 rm -v MANIFEST
 rm -vr dist
 rm -vr build
-
-(cd ext; ./cleanfiles.sh)

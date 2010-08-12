@@ -60,5 +60,3 @@ class DataTestCase(unittest.TestCase):
 
     def test_nubtab03(self):
         self.assertAlmostEqual(nubtab03.abundances[1][1], 99.9885)
-
-

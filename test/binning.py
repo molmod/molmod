@@ -224,5 +224,3 @@ class BinningTestCase(unittest.TestCase):
                 in pair_search
             ]
             self.verify_distances_inter(coordinates0, coordinates1, cutoff, distances, unit_cell)
-
-

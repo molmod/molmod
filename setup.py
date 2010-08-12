@@ -24,8 +24,9 @@
 
 
 import glob, os
-from distutils.core import setup
-from distutils.command.install_data import install_data
+from numpy.distutils.core import setup
+from numpy.distutils.extension import Extension
+from numpy.distutils.command.install_data import install_data
 
 
 class MyInstallData(install_data):
@@ -58,7 +59,7 @@ setup(
     author_email='Toon.Verstraelen@UGent.be',
     url='http://molmod.ugent.be/code/',
     cmdclass={'install_data': MyInstallData},
-    package_dir = {'molmod': 'lib'},
+    package_dir = {'molmod': 'molmod'},
     packages=[
         'molmod',
         'molmod.io',
@@ -68,6 +69,12 @@ setup(
             "share/periodic.csv", "share/bonds.csv",
             "share/mass.mas03", "share/nubtab03.asc",
             "share/toyff_angles.txt"
+        ]),
+    ],
+    ext_modules=[
+        Extension("molmod.ext", ["molmod/ext.pyf", "molmod/common.c",
+            "molmod/ff.c", "molmod/graphs.c", "molmod/similarity.c", "molmod/molecules.c",
+            "molmod/unit_cells.c", "molmod/volume.c",
         ]),
     ],
     classifiers=[

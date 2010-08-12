@@ -29,5 +29,3 @@ This is an extension of the Graph object with molecular features
 
 .. automodule:: molmod.isotopes
    :members:
-
-

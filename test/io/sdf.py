@@ -70,5 +70,3 @@ class SDFTestCase(unittest.TestCase):
         self.assertAlmostEqual(mol.coordinates[13,0]/angstrom, 12.6002)
         self.assert_((mol.formal_charges[:12]==-1).all())
         self.assert_((mol.formal_charges[12:]==0).all())
-
-

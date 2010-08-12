@@ -32,5 +32,3 @@ Transformations in 3D
 
 .. automodule:: molmod.transformations
    :members:
-
-

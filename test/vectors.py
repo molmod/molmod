@@ -89,5 +89,3 @@ class VectorTestCase(BaseTestCase):
             self.assertAlmostEqual(numpy.dot(n, b-c), 0.0)
             self.assertAlmostEqual(numpy.dot(n, c-a), 0.0)
             self.assertAlmostEqual(numpy.linalg.norm(n), 1.0)
-
-

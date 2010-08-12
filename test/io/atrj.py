@@ -64,5 +64,3 @@ class ATRJTestCase(BaseTestCase):
         # check time
         self.assertAlmostEqual(frames[0].time/picosecond, 1.0)
         self.assertAlmostEqual(frames[1].time/picosecond, 3.0)
-
-

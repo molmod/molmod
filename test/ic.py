@@ -311,5 +311,3 @@ class ICTestCase(BaseTestCase):
             ]
             self.assertAlmostEqual(ic.opbend_cos(c[0], c[5], c[4], c[3])[0], numpy.cos(angle))
             self.assertAlmostEqual(ic.opbend_angle(c[0], c[5], c[4], c[3])[0], angle)
-
-

@@ -51,7 +51,7 @@ class MoleculeTestCase(BaseTestCase):
             )
             fractional = numpy.random.uniform(0,1,(N,3))
             coordinates = unit_cell.to_cartesian(fractional)
-            from molmodext import molecules_distance_matrix
+            from molmod.ext import molecules_distance_matrix
             dm = molecules_distance_matrix(coordinates, unit_cell.matrix,
                                            unit_cell.reciprocal)
             for i in xrange(N):
@@ -189,5 +189,3 @@ class MoleculeTestCase(BaseTestCase):
         mol1.write_to_file("output/probes.xyz")
         mol2 = Molecule.from_file("input/probes.xyz")
         self.assertArraysEqual(mol1.numbers, mol2.numbers)
-
-

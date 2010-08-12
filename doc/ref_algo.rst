@@ -36,4 +36,3 @@ ToyFF
 
 .. automodule:: molmod.toyff
    :members:
-

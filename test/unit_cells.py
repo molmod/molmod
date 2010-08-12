@@ -485,5 +485,3 @@ class UnitCellTestCase(BaseTestCase):
             for i1, i0 in enumerate(uc0.active_inactive[0]):
                 self.assertArraysAlmostEqual(uc0.matrix[:,i0], uc1.matrix[:,i1])
                 self.assertEqual(uc0.active[i0], uc1.active[i1])
-
-

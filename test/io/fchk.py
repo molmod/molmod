@@ -67,5 +67,3 @@ class FCHKTestCase(BaseTestCase):
 
         fchk = FCHKFile("input/1TOH.b3lyp.trim.fchk", ignore_errors=True, field_labels=["Virial Ratio"])
         self.assertAlmostEqual(fchk.fields["Virial Ratio"], 2.002408027154329)
-
-

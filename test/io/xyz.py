@@ -81,4 +81,3 @@ class XYZTestCase(BaseTestCase):
     def test_probes(self):
         xyz = XYZFile("input/probes.xyz")
         self.assertEqual(xyz.numbers[-1], 0)
-

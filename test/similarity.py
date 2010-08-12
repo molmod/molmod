@@ -87,5 +87,3 @@ class SimilarityTestCase(unittest.TestCase):
         result = numpy.array(result)
         self.assert_((abs(numpy.diag(result) - 1) < 1e-5).all(), "Diagonal must be unity.")
         self.assert_((abs(result - result.transpose()) < 1e-5).all(), "Result must be symmetric.")
-
-

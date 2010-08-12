@@ -105,5 +105,3 @@ class ZMatrixTestCase(BaseTestCase):
         ]
         test_one("input/tpa.xyz", checks)
         test_one("input/thf_single.xyz", [], reorder=True)
-
-

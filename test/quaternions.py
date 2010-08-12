@@ -60,5 +60,3 @@ class QuaternionTestCase(unittest.TestCase):
         r3 = numpy.dot(r1, r2)
         foo, q3_check = rotation_matrix_to_quaternion(r3)
         self.assert_((abs(q3-q3_check).max() < 1e-10) or (abs(q3+q3_check).max() < 1e-10))
-
-

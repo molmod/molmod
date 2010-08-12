@@ -666,4 +666,3 @@ class GraphTestCase(unittest.TestCase):
             sizes.sort()
             sizes = tuple(sizes)
             self.assertEqual(sizes, expected_sizes)
-

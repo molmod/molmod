@@ -83,5 +83,3 @@ class PSFTestCase(BaseTestCase):
         psf.write_to_file("output/tmp_impropers.psf")
         psf2 = PSFFile("output/tmp_impropers.psf")
         self.assertArraysEqual(psf.impropers, psf2.impropers)
-
-

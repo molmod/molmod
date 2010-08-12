@@ -376,5 +376,3 @@ class TransformationsTestCase(BaseTestCase):
         self.assertArraysAlmostEqual(trans.t, numpy.zeros(3, float), doabs=True)
         self.assertArraysAlmostEqual(a, a_trans)
         self.assertAlmostEqual(rmsd, 0.0)
-
-

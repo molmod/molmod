@@ -55,5 +55,3 @@ class DLPolyTestCase(BaseTestCase):
             self.assertAlmostEqual(row[0], 4000)
             self.assertAlmostEqual(row[-1]/(1000*atm), -1.1421E-01)
             break
-
-

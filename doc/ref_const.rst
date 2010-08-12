@@ -12,4 +12,3 @@ Constants
 
 .. automodule:: molmod.constants
    :members:
-

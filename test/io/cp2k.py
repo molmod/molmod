@@ -122,5 +122,3 @@ class CP2KTestCase(unittest.TestCase):
             self.assertEqual(line1, line2)
         f1.close()
         f2.close()
-
-

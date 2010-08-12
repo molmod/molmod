@@ -1,0 +1,234 @@
+! MolModExt implements a few number crunching routines for the molmod package in C.
+! Copyright (C) 2007 - 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+!
+! This file is part of MolModExt.
+!
+! MolModExt is free software; you can redistribute it and/or
+! modify it under the terms of the GNU General Public License
+! as published by the Free Software Foundation; either version 3
+! of the License, or (at your option) any later version.
+!
+! MolModExt is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program; if not, see <http://www.gnu.org/licenses/>
+!
+! --
+
+
+python module ext
+interface
+
+!!
+!!  ff.c
+!!
+
+  double precision function ff_dm_quad(n,periodic,cor,dm0,dmk,amp,gradient,matrix,reciprocal)
+    intent(c) ff_dm_quad
+    intent(c)
+    integer intent(hide), depend(cor) :: n=len(cor)
+    integer intent(hide), depend(matrix) :: periodic=(matrix_capi-Py_None)
+    double precision intent(in) :: cor(n,3)
+    double precision intent(in) :: dm0(n,n)
+    double precision intent(in) :: dmk(n,n)
+    double precision intent(in) :: amp
+    double precision intent(inout) :: gradient(n,3)
+    double precision, intent(in), optional :: matrix(3,3)=0
+    double precision, intent(in), optional :: reciprocal(3,3)=0
+  end function ff_dm_quad
+
+  double precision function ff_dm_reci(n,periodic,cor,radii,dm0,amp,gradient,matrix,reciprocal)
+    intent(c) ff_dm_reci
+    intent(c)
+    integer intent(hide), depend(cor) :: n=len(cor)
+    integer intent(hide), depend(matrix) :: periodic=(matrix_capi-Py_None)
+    double precision intent(in) :: cor(n,3)
+    double precision intent(in) :: radii(n)
+    integer intent(in) :: dm0(n,n)
+    double precision intent(in) :: amp
+    double precision intent(inout) :: gradient(n,3)
+    double precision, intent(in), optional :: matrix(3,3)=0
+    double precision, intent(in), optional :: reciprocal(3,3)=0
+  end function ff_dm_reci
+
+  double precision function ff_bond_quad(m,n,periodic,cor,pairs,lengths,amp,gradient,matrix,reciprocal)
+    intent(c) ff_bond_quad
+    intent(c)
+    integer intent(hide), depend(pairs) :: m=len(pairs)
+    integer intent(hide), depend(cor) :: n=len(cor)
+    integer intent(hide), depend(matrix) :: periodic=(matrix_capi-Py_None)
+    double precision intent(in) :: cor(n,3)
+    integer intent(in) :: pairs(m,2)
+    double precision intent(in) :: lengths(m)
+    double precision intent(in) :: amp
+    double precision intent(inout) :: gradient(n,3)
+    double precision, intent(in), optional :: matrix(3,3)=0
+    double precision, intent(in), optional :: reciprocal(3,3)=0
+  end function ff_bond_quad
+
+  double precision function ff_bond_hyper(m,n,periodic,cor,pairs,lengths,scale,amp,gradient,matrix,reciprocal)
+    intent(c) ff_bond_hyper
+    intent(c)
+    integer intent(hide), depend(pairs) :: m=len(pairs)
+    integer intent(hide), depend(cor) :: n=len(cor)
+    integer intent(hide), depend(matrix) :: periodic=(matrix_capi-Py_None)
+    double precision intent(in) :: cor(n,3)
+    integer intent(in) :: pairs(m,2)
+    double precision intent(in) :: lengths(m)
+    double precision intent(in) :: scale
+    double precision intent(in) :: amp
+    double precision intent(inout) :: gradient(n,3)
+    double precision, intent(in), optional :: matrix(3,3)=0
+    double precision, intent(in), optional :: reciprocal(3,3)=0
+  end function ff_bond_hyper
+
+!!
+!! graphs.c
+!!
+
+  subroutine graphs_floyd_warshall(n,dm)
+    intent(c) graphs_floyd_warshall
+    intent(c)
+    integer intent(hide), depend(dm) :: n=len(dm)
+    integer intent(inout) :: dm(n,n)
+  end subroutine graphs_floyd_warshall
+
+!!
+!! molecules.c
+!!
+
+  subroutine molecules_distance_matrix(n,cor,periodic,matrix,reciprocal,dm)
+    intent(c) molecules_distance_matrix
+    intent(c)
+    integer intent(hide), depend(cor) :: n=len(cor)
+    integer intent(hide), depend(matrix) :: periodic=(matrix_capi-Py_None)
+    double precision, intent(in) :: cor(n,3)
+    double precision, intent(in), optional :: matrix(3,3)=0
+    double precision, intent(in), optional :: reciprocal(3,3)=0
+    double precision, intent(out) :: dm(n,n)
+  end subroutine molecules_distance_matrix
+
+!!
+!! similarity.c
+!!
+
+  subroutine similarity_table_labels(n,labels,labels_table)
+    intent(c) similarity_table_labels
+    intent(c)
+    integer intent(hide), depend(labels) :: n=len(labels)
+    integer intent(in) :: labels(n)
+    integer intent(out) :: labels_table((n*(n-1))/2,2)
+  end subroutine similarity_table_labels
+
+  subroutine similarity_table_distances(n,distance_matrix,distances_table)
+    intent(c) similarity_table_distances
+    intent(c)
+    integer intent(hide), depend(distance_matrix) :: n=len(distance_matrix)
+    double precision intent(in) :: distance_matrix(n,n)
+    double precision intent(out) :: distances_table((n*(n-1))/2)
+  end subroutine similarity_table_distances
+
+  double precision function similarity_measure(n1,labels1,distances1,n2,labels2,distances2,margin,cutoff)
+    intent(c) similarity_measure
+    intent(c)
+    integer intent(hide), depend(labels1) :: n1=len(labels1)
+    integer intent(in) :: labels1(n1,2)
+    double precision intent(in) :: distances1(n1)
+    integer intent(hide), depend(labels2) :: n2=len(labels2)
+    integer intent(in) :: labels2(n2,2)
+    double precision intent(in) :: distances2(n2)
+    double precision :: margin
+    double precision :: cutoff
+  end function similarity_measure
+
+!!
+!! unit_cell.c
+!!
+
+  integer function unit_cell_get_radius_indexes(n, matrix, reciprocal, radius, max_ranges, indexes)
+    intent(c) unit_cell_get_radius_indexes
+    intent(c)
+    integer intent(hide) :: n
+    double precision intent(in) :: matrix(3,3)
+    double precision intent(in) :: reciprocal(3,3)
+    double precision intent(in) :: radius
+    integer intent(in) :: max_ranges(3)
+    integer intent(inout) :: indexes(n,3)
+  end function unit_cell_get_radius_indexes
+
+!!
+!! volume.c
+!!
+
+  integer function in_spheres(n, probe, probe_radius, spheres, sphere_radii)
+    intent(c) in_spheres
+    intent(c)
+    integer intent(hide) :: n=len(spheres)
+    double precision intent(in) :: probe(3)
+    double precision intent(in) :: probe_radius
+    double precision intent(in) :: spheres(n,3)
+    double precision intent(in) :: sphere_radii(n)
+  end function in_spheres
+
+  integer function in_spheres_all(n, probe, probe_radius, spheres, sphere_radii, hits)
+    intent(c) in_spheres_all
+    intent(c)
+    integer intent(hide) :: n=len(spheres)
+    double precision intent(in) :: probe(3)
+    double precision intent(in) :: probe_radius
+    double precision intent(in) :: spheres(n,3)
+    double precision intent(in) :: sphere_radii(n)
+    integer intent(inout) :: hits(n)
+  end function in_spheres_all
+
+  subroutine center_ses1(probe, close1, close1_radius, center)
+    intent(c) center_ses1
+    intent(c)
+    double precision intent(in) :: probe(3)
+    double precision intent(in) :: close1(3)
+    double precision intent(in) :: close1_radius
+    double precision intent(inout) :: center(3)
+  end subroutine center_ses1
+
+  integer function center_ses2(probe, close1, close1_radius, close2, close2_radius, center)
+    intent(c) center_ses2
+    intent(c)
+    double precision intent(in) :: probe(3)
+    double precision intent(in) :: close1(3)
+    double precision intent(in) :: close1_radius
+    double precision intent(in) :: close2(3)
+    double precision intent(in) :: close2_radius
+    double precision intent(inout) :: center(3)
+  end function center_ses2
+
+  integer function center_ses3(probe, close1, close1_radius, close2, close2_radius, close3, close3_radius, center)
+    intent(c) center_ses3
+    intent(c)
+    double precision intent(in) :: probe(3)
+    double precision intent(in) :: close1(3)
+    double precision intent(in) :: close1_radius
+    double precision intent(in) :: close2(3)
+    double precision intent(in) :: close2_radius
+    double precision intent(in) :: close3(3)
+    double precision intent(in) :: close3_radius
+    double precision intent(inout) :: center(3)
+  end function center_ses3
+
+  double precision function monte_carlo_volumes(n, probe_radius, spheres, sphere_radii, num_iter, ses_iter, bigbox, counts)
+    intent(c) monte_carlo_volumes
+    intent(c)
+    integer intent(hide) :: n=len(spheres)
+    double precision intent(in) :: probe_radius
+    double precision intent(in) :: spheres(n,3)
+    double precision intent(in) :: sphere_radii(n)
+    integer intent(in) :: num_iter
+    integer intent(in) :: ses_iter
+    integer intent(in) :: bigbox
+    integer*8 intent(inout) :: counts(5)
+  end function monte_carlo_volumes
+
+end interface
+end python module ext

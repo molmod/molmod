@@ -30,15 +30,9 @@ if '-i' in sys.argv:
     sys.argv.remove('-i')
 else:
     import glob
-    if '-c' in sys.argv:
-        sys.argv.remove('-c')
-        os.system("cd ../; rm -rf build; cd ext; rm -rf build")
     retcode = os.system("(cd ..; python setup.py build)")
     if retcode != 0: sys.exit(retcode)
-    retcode = os.system("(cd ../ext; python setup.py build)")
-    if retcode != 0: sys.exit(retcode)
     sys.path.insert(0, glob.glob("../build/lib*")[0])
-    sys.path.insert(0, glob.glob("../ext/build/lib*")[0])
 
 if not os.path.exists("output"):
     os.mkdir("output")
@@ -70,5 +64,3 @@ from volume import *
 from zmatrix import *
 
 unittest.main()
-
-

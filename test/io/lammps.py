@@ -51,5 +51,3 @@ class LAMMPSTestCase(BaseTestCase):
 
         ldr = LAMMPSDumpReader("input/lammps_dump.txt", [angstrom]*3 + [angstrom/femtosecond]*3, sub=slice(1,5,2))
         self.assertEqual(len(list(ldr)), 2)
-
-

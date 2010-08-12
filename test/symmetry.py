@@ -75,5 +75,3 @@ class SymmetryTestCase(BaseTestCase):
         molecule.set_default_graph()
         rotsym = compute_rotsym(molecule, molecule.graph, threshold=0.01)
         self.assertEqual(rotsym, 6)
-
-

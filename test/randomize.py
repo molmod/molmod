@@ -91,5 +91,3 @@ class RandomizeTestCase(BaseTestCase):
                 self.assertEqual(mol_transformation.affected_atoms, check_transformation.affected_atoms)
                 self.assertArraysAlmostEqual(mol_transformation.transformation.r, check_transformation.transformation.r, 1e-5, doabs=True)
                 self.assertArraysAlmostEqual(mol_transformation.transformation.t, check_transformation.transformation.t, 1e-5, doabs=True)
-
-

@@ -507,4 +507,3 @@ class CoulombFFTestCase(BaseTestCase):
         ff2 = molmod.pairff.CoulombFF(mask, charges=charges, dipoles=dipoles, coordinates=coordinates)
         self.assertArraysAlmostEqual(ff1.gradient()[0], -ff1.efield()[0])
         self.assertArraysAlmostEqual(ff1.gradient()[0], -ff2.efield_point(point))
-

@@ -43,5 +43,3 @@ class GromacsTestCase(BaseTestCase):
             self.assertAlmostEqual(vel[3,2]/nanometer*picosecond, -0.1734)
             self.assertAlmostEqual(cell[0,0]/nanometer, 1.82060)
             break
-
-

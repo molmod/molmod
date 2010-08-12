@@ -522,5 +522,3 @@ class MolecularGraphTestCase(unittest.TestCase):
         except:
             pass
         HasNeighbors(HasAtomNumber(1), HasAtomNumber(6))
-
-

@@ -12,5 +12,3 @@ Runtime context information
 
 .. automodule:: molmod.context
    :members:
-
-

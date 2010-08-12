@@ -63,5 +63,3 @@ class ClusterTestCase(unittest.TestCase):
         self.assertEqual(clusters[0].rules, ["u=v"])
         self.assertEqual(clusters[1].items, set(["x", "y", "z"]))
         self.assertEqual(clusters[1].rules, ["x*z=2", "x+y=1"])
-
-

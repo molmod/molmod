@@ -76,7 +76,7 @@ class ToyFFTestCase(unittest.TestCase):
             for j in xrange(i):
                 mask[i,j] = True
 
-        from molmodext import molecules_distance_matrix
+        from molmod.ext import molecules_distance_matrix
         while True:
             unit_cell = UnitCell(
                 numpy.random.uniform(0,3,(3,3)),
@@ -200,5 +200,3 @@ class ToyFFTestCase(unittest.TestCase):
         dm = dm + dm.max()*numpy.identity(len(dm))
         mol = tune_geometry(mol.graph, mol, unit_cell)
         mol.write_to_file("output/caplayer.xyz")
-
-

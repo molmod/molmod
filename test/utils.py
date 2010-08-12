@@ -51,5 +51,3 @@ class UtilsTestCase(unittest.TestCase):
         test2 = pickle.loads(s)
         self.assertEqual(test1.a, test2.a)
         self.assertEqual(test1.b, test2.b)
-
-

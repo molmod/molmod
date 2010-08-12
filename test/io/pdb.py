@@ -69,5 +69,3 @@ class PDBTestCase(BaseTestCase):
         mol_bis = load_pdb("output/test.pdb")
         self.assertArraysAlmostEqual(mol.coordinates, mol_bis.coordinates, 1e-3)
         self.assertArraysAlmostEqual(mol.numbers, mol_bis.numbers)
-
-

@@ -71,5 +71,3 @@ class NumberStateTestCase(BaseTestCase):
         test2.state.set(state, subset)
         self.assertArraysAlmostEqual(test1.a, test2.a, 1e-10)
         self.assertAlmostEqual(test1.d, test2.d)
-
-
