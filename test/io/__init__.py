@@ -28,6 +28,7 @@ from cpmd import *
 from cube import *
 from dlpoly import *
 from fchk import *
+from gamess import *
 from gromacs import *
 from lammps import *
 from number_state import *

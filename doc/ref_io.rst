@@ -28,6 +28,12 @@ CPMD Files
 .. automodule:: molmod.io.cpmd
    :members:
 
+Gamess punch files
+------------------
+
+.. automodule:: molmod.io.gamess
+   :members:
+
 Gaussian Cube Files
 -------------------
 

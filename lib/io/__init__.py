@@ -37,6 +37,7 @@ from molmod.io.cpmd import *
 from molmod.io.cube import *
 from molmod.io.dlpoly import *
 from molmod.io.fchk import *
+from molmod.io.gamess import *
 from molmod.io.gromacs import *
 from molmod.io.lammps import *
 from molmod.io.number_state import *
