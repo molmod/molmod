@@ -22,7 +22,7 @@
 # --
 """Some useful physicochemical constants in atomic units
 
-   These are the conversion constants defined in this module:
+   These are the physical constants defined in this module (in atomic units):
 
 """
 

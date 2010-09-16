@@ -180,7 +180,7 @@ class Graph(ReadOnly):
         return ""
 
     def get_edge_string(self, i):
-        """Returns a string that fully characterizes the nature of a edge
+        """Returns a string that fully characterizes the nature of an edge
 
            In case of an ordinary graph, all edges are the same.
         """
@@ -204,12 +204,14 @@ class Graph(ReadOnly):
            ``{vertexY1: (vertexX, ...), vertexY2: (vertexX, ...), ...}``.
         """
         neighbors = dict(
-            (vertex, set([])) for vertex
+            (vertex, []) for vertex
             in xrange(self.num_vertices)
         )
         for a, b in self.edges:
-            neighbors[a].add(b)
-            neighbors[b].add(a)
+            neighbors[a].append(b)
+            neighbors[b].append(a)
+        # turn lists into frozensets
+        neighbors = dict((key, frozenset(val)) for key, val in neighbors.iteritems())
         return neighbors
 
     @cached

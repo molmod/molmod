@@ -165,11 +165,21 @@ class Molecule(ReadOnly):
         self.masses = numpy.array([periodic[n].mass for n in self.numbers])
 
     def set_default_graph(self):
-        """Set self.graph to the default graph, see MolecularGraph.from_geometry"""
+        """Set self.graph to the default graph.
+
+           This method is equivalent to::
+
+              mol.graph = MolecularGraph.from_geometry(mol)
+
+           with the default options, and only works if the graph object is not
+           present yet.
+           See :meth:`molmod.molecular_graphs.MolecularGraph.from_geometry`
+           for more fine-grained control over the assignment of bonds.
+        """
         self.graph = MolecularGraph.from_geometry(self)
 
     def set_default_symbols(self):
-        """Set the symbols based on self.numbers"""
+        """Set self.symbols based on self.numbers"""
         self.symbols = [periodic[n].symbol for n in self.numbers]
 
     def write_to_file(self, filename):
@@ -210,16 +220,18 @@ class Molecule(ReadOnly):
            Arguments:
             | ``other``  --  Another molecule with the same atom numbers
 
-           Return value:
+           Return values:
             | ``transformation``  --  the transformation that brings 'self' into
                                   overlap with 'other'
             | ``other_trans``  --  the transformed coordinates of geometry 'other'
             | ``rmsd``  --  the rmsd of the distances between corresponding atoms in
                             'self' and 'other'
 
+           Make sure the atoms in `self` and `other` are in the same order.
+
            Usage::
 
-             >>> print molecule1.rmsd(molecule2)
+             >>> print molecule1.rmsd(molecule2)[2]/angstrom
         """
         if self.numbers.shape != other.numbers.shape or \
            (self.numbers != other.numbers).all():

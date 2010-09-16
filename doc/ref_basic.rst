@@ -1,28 +1,28 @@
-Basic data structures
-=====================
+Basic classes
+=============
 
-The Molecule class
-------------------
+Molecule class
+--------------
 
 .. automodule:: molmod.molecules
    :members:
 
-Graph algorithms
-----------------
+Graph class
+-----------
 
 .. automodule:: molmod.graphs
    :members:
 
-Molecular graph algorithms
---------------------------
+MolecularGraph class
+--------------------
 
 This is an extension of the Graph object with molecular features
 
 .. automodule:: molmod.molecular_graphs
    :members:
 
-The UnitCell class
-------------------
+UnitCell class
+--------------
 
 .. automodule:: molmod.unit_cells
    :members:

@@ -1,14 +1,14 @@
 Units and constants
 ===================
 
-Units
------
+:mod:`molmod.units` -- Conversion from and to atomic units
+----------------------------------------------------------
 
 .. automodule:: molmod.units
    :members:
 
-Constants
----------
+:mod:`molmod.constants` -- Physical Constants
+---------------------------------------------
 
 .. automodule:: molmod.constants
    :members:

@@ -1,4 +1,3 @@
-
 Welcome to MolMod's documentation!
 ==================================
 
@@ -8,7 +7,14 @@ in place yet. Hang on...
 Tutorial
 --------
 
-TODO
+All examples in the tutorial section can be found in the examples directory
+in the source tree. The example scripts contain comments to explain the
+individual steps. In the tutorial, some more background is provided.
+
+.. toctree::
+   :maxdepth: 2
+
+   tut_graph
 
 Library reference
 -----------------

@@ -46,6 +46,7 @@ from data import *
 from graphs import *
 from ic import *
 from io import *
+from meta import *
 from minimizer import *
 from molecules import *
 from molecular_graphs import *
