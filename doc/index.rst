@@ -12,8 +12,9 @@ in the source tree. The example scripts contain comments to explain the
 individual steps. In the tutorial, some more background is provided.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
+   tut_units
    tut_graph
 
 Library reference
