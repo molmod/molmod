@@ -37,6 +37,11 @@ class MetaTestCase(unittest.TestCase):
         retcode = os.system("cd %s; cd %s; ./%s 1> /dev/null 2> /dev/null" % (root, dirname, fn_py))
         self.assertEqual(retcode, 0)
 
+    def test_example_000(self):
+        self.check_example("000_units", "./a_reaction.py")
+        self.check_example("000_units", "./b_chbond.py")
+        self.check_example("000_units", "./c_h2rot.py")
+
     def test_example_002(self):
         self.check_example("002_graphs", "./a_graphs.py")
         self.check_example("002_graphs", "./b_neighbors.py")
