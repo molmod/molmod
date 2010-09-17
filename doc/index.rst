@@ -1,15 +1,28 @@
-Welcome to MolMod's documentation!
-==================================
+The MolMod Manual
+=================
 
-Note that this documentation is under heavy construction. Some things are not
-in place yet. Hang on...
+Note that this documentation is under construction. Some things are not in place
+yet. Hang on...
+
+Installation
+------------
+
+.. toctree::
+   :maxdepth: 1
+
+   install
 
 Tutorial
 --------
 
-All examples in the tutorial section can be found in the examples directory
-in the source tree. The example scripts contain comments to explain the
-individual steps. In the tutorial, some more background is provided.
+Each chapter in the tutorial contains a few examples programs to illustrate the
+features of a part of the MolMod library. After the examples, some problems are
+given that can be solved with small Python programs that are loosely similar to
+the examples.
+
+All examples can be found in the examples directory in the source tree. The
+example scripts contain comments to explain the individual steps. In the
+tutorial text, some more background is provided.
 
 .. toctree::
    :maxdepth: 1

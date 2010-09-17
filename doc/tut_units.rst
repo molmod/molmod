@@ -1,5 +1,5 @@
-Unit conversion in MolMod
-=========================
+Unit conversion
+===============
 
 .. highlight:: python
    :linenothreshold: 5
@@ -40,10 +40,11 @@ unit`::
 Some physical constants that are relevant for molecular modeling, are defined in
 :mod:`molmod.constants`.
 
-A few practical examples of computations with unit conversion are given below.
+Examples
+~~~~~~~~
 
 Energies
-~~~~~~~~
+--------
 
 This example shows, given a reactant and product energy, how one computes the
 reaction energy and prints out the result in kJ/mol.
@@ -77,7 +78,7 @@ any script that uses the MolMod package:
   <http://docs.python.org/>`_.
 
 Wavenumber
-~~~~~~~~~~
+----------
 
 Given the mass and force constant of a harmonic spring the following script
 computes the spectroscopic wavenumber of the oscillation. The mass and the force
@@ -89,7 +90,7 @@ File: ``examples/000_units/b_chbond.py``
 
 
 Rotational partition function of Hydrogen
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------------
 
 The last example solves a typical statistical physics exam question: "Compute
 the probability that a Hydrogen molecule in a dilute gas does not rotate at a
@@ -100,3 +101,39 @@ parameters are included in the source code below. Note that the constants
 File: ``examples/000_units/c_h2rot.py``
 
 .. literalinclude:: ../examples/000_units/c_h2rot.py
+
+
+Problems
+~~~~~~~~
+
+
+H2 oscillation
+--------------
+
+Consider the classical description of the H2 nuclei. Assume that the bond
+lengths oscillates with an amplitude of 0.1 Ångstrom around its equilibrium
+value. The spectroscopic wavenumber is 4160 cm\ :sup:`-1`. Write a program that
+computes the classical kinetic energy in kJ mol\ :sup:`-1` when the bond length
+passes through its equilibrium value?
+
+
+Heat capacity of the H2 stretch mode
+------------------------------------
+
+Write a program that prints out the internal energy in kJ mol\ :sup:`-1` and
+the heat capacity in J mol\ :sup:`-1` K\ :sup:`-1` associated with the vibrational
+stretch mode of the Hydrogen molecule for different temperatures: 300K, 400K,
+500K and 600K. The partition function of a harmonic oscillator is given by:
+
+.. math:: q_{\text{vib}} = \frac{\exp\left(-\frac{\hbar\nu}{2 k_BT}\right)}
+                                {1-\exp\left(-\frac{\hbar\nu}{k_BT}\right)}
+
+The heat capacity can be derived from the partition function,
+
+.. math:: C = \frac{\partial E}{\partial T},
+
+where E is the internal energy,
+
+.. math:: E = k_BT^2 \frac{\partial \ln(q_{\text{vib}})}{\partial T}.
+
+The spectroscopic wavenumer of the H-H bond is 4160 cm\ :sup:`-1`.
