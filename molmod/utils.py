@@ -80,32 +80,47 @@ class ReadOnlyAttribute(object):
        speaking not guaranteed that the contents of a read-only numpy array are
        really fixed. We rely on your common sense to not write crappy code that
        changes read-only numpy arrays.
+
+       Read-only attributes should be used in classes derived from the ReadOnly
+       class.
     """
 
     def __init__(self, ptype=None, none=True, check=None, npdim=None, npshape=None, npdtype=None):
         """
+           One can impose detailed type checking on the attribute through the
+           following options.
+
            Optional arguments:
-            | ``ptype`` --
-            | ``none`` --
-            | ``npdim`` --
-            | ``npshape`` --
-            | ``npdtype`` --
-            | ``check`` --
+            | ``ptype`` -- The expected (Python) type of the attribute.
+            | ``none`` -- When False, it is not possible to assign None.
+            | ``npdim`` -- In case of numpy arrays: the number of dimensions.
+            | ``npshape`` -- In case of numpy arrays: the expected shape.
+            | ``npdtype`` -- In case of numpy arrays: the expected dtype.
+            | ``check`` -- A method to check the validity of the attribute.
+
+           The npshape option must be a tuple with integer or None values. In
+           case of a None value, the corresponding shape in the attribute is
+           not tested. Trailing None values from the npshape argument can be
+           omitted.
         """
         self.ptype = ptype
         self.none = none
         self.check = check
-        if ptype is not None and issubclass(ptype, numpy.ndarray):
-            if not (npdim is None or isinstance(npdim, int)):
-                raise TypeError("npdim must be None or and integer.")
-            if not (npshape is None or (isinstance(npshape, tuple) and
-                    all(isinstance(s, int) or s is None for s
-                    in npshape))):
-                raise TypeError("npshape must be None or a tuple of integer "
-                    "and/or None values.")
-            self.npdim = npdim
-            self.npshape = npshape
-            self.npdtype = npdtype
+        if ptype is not None:
+            if issubclass(ptype, list):
+                raise TypeError("ptype can not be a subclass of list because "
+                    "lists are mutable.")
+            if issubclass(ptype, numpy.ndarray):
+                if not (npdim is None or isinstance(npdim, int)):
+                    raise TypeError("npdim must be None or and integer.")
+                if not (npshape is None or (isinstance(npshape, tuple) and
+                        all(isinstance(s, int) or s is None for s
+                        in npshape))):
+                    raise TypeError("npshape must be None or a tuple of "
+                        "integer and/or None values.")
+                self.npdim = npdim
+                self.npshape = npshape
+                self.npdtype = npdtype
         elif not (npdim is None and npshape is None and npdtype is None):
             raise ValueError("The arguments npdim, npshape and npdtype are "
                 "only allowed when ptype is a subclass of numpy.ndarray.")
@@ -125,6 +140,9 @@ class ReadOnlyAttribute(object):
     def __set__(self, instance, value):
         if value is None and not self.none:
             raise TypeError("This attribute may not be assigned None.")
+        if self.ptype is not None and issubclass(self.ptype, tuple) and value is not None:
+            # convert to a tuple of it is supposed one.
+            value = tuple(value)
         if not (self.ptype is None or value is None):
             # Only type check if there is one and the value is not None.
             if issubclass(self.ptype, numpy.ndarray):
@@ -170,6 +188,20 @@ class ReadOnlyAttribute(object):
         setattr(instance, self.attribute_name, value)
 
 
+class ReadOnlyType(type):
+    """A meta class for ReadOnly classes
+
+       This meta class makes sure ReadOnlyAttribute descriptors are inherited.
+    """
+
+    def __init__(cls, name, bases, dct):
+        super(ReadOnlyType, cls).__init__(name, bases, dct)
+        for base in bases:
+            for key, descriptor in base.__dict__.iteritems():
+                if isinstance(descriptor, ReadOnlyAttribute):
+                    setattr(cls, key, descriptor)
+
+
 class ReadOnly(object):
     """A base class for read-only objects
 
@@ -180,6 +212,8 @@ class ReadOnly(object):
        If you want to modify a ReadOnly object, just create a modified one from
        scratch. This is greatly facilitated by the method :meth:`copy_with`.
     """
+
+    __metaclass__ = ReadOnlyType
 
     def __copy__(self):
         return self
