@@ -1,34 +1,38 @@
 Basic classes
 =============
 
-Molecule class
---------------
+:mod:`molmod.molecules` -- Molecular systems
+--------------------------------------------
+
+Although the class :class:`Molecule` is singular, it is equally suitable for
+a cluster or complex with multiple molecules, or even a complete unit cell of a
+periodic system.
 
 .. automodule:: molmod.molecules
    :members:
 
-Graph class
------------
+:mod:`molmod.graphs` -- Abstract graphs
+---------------------------------------
 
 .. automodule:: molmod.graphs
    :members:
 
-MolecularGraph class
---------------------
+:mod:`molmod.molecular_graphs` -- Molecular graphs
+--------------------------------------------------
 
-This is an extension of the Graph object with molecular features
+This is an extension of the Graph object with molecular features.
 
 .. automodule:: molmod.molecular_graphs
    :members:
 
-UnitCell class
---------------
+:mod:`molmod.unit_cells` -- Periodic boundary conditions
+--------------------------------------------------------
 
 .. automodule:: molmod.unit_cells
    :members:
 
-Transformations in 3D
----------------------
+:mod:`molmod.transformations` Transformations in 3D
+---------------------------------------------------
 
 .. automodule:: molmod.transformations
    :members:

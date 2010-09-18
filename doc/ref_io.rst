@@ -4,98 +4,98 @@ Input/output
 .. automodule:: molmod.io
    :members:
 
-ATRJ Files
-----------
+:mod:`molmod.io.atrj` -- ATRJ Files
+-----------------------------------
 
 .. automodule:: molmod.io.atrj
    :members:
 
-CML Files
----------
+:mod:`molmod.io.cml` -- CML Files
+---------------------------------
 
 .. automodule:: molmod.io.cml
    :members:
 
-CP2K Files
-----------
+:mod:`molmod.io.cp2k` -- CP2K Files
+-----------------------------------
 
 .. automodule:: molmod.io.cp2k
    :members:
 
-CPMD Files
-----------
+:mod:`molmod.io.cpmd` -- CPMD Files
+-----------------------------------
 
 .. automodule:: molmod.io.cpmd
    :members:
 
-Gamess punch files
-------------------
+:mod:`molmod.io.gamess` -- Gamess punch files
+---------------------------------------------
 
 .. automodule:: molmod.io.gamess
    :members:
 
-Gaussian Cube Files
--------------------
+:mod:`molmod.io.cube` -- Gaussian Cube Files
+--------------------------------------------
 
 .. automodule:: molmod.io.cube
    :members:
 
-DLPoly Files
-------------
+:mod:`molmod.io.dlpoly` -- DLPoly Files
+---------------------------------------
 
 .. automodule:: molmod.io.dlpoly
    :members:
 
-Gaussian Formatted Checkpoint Files
------------------------------------
+:mod:`molmod.io.fchk` -- Gaussian Formatted Checkpoint Files
+------------------------------------------------------------
 
 .. automodule:: molmod.io.fchk
    :members:
 
-Custom Formatted Checkpoint Files
----------------------------------
+:mod:`molmod.io.number_state` -- Custom Formatted Checkpoint Files
+------------------------------------------------------------------
 
 .. automodule:: molmod.io.number_state
    :members:
 
-Gromacs Files
--------------
+:mod:`molmod.io.gromacs` -- Gromacs Files
+-----------------------------------------
 
 .. automodule:: molmod.io.gromacs
    :members:
 
-LAMMPS Files
-------------
+:mod:`molmod.io.lammps` -- LAMMPS Files
+---------------------------------------
 
 .. automodule:: molmod.io.lammps
    :members:
 
-PDB Files
----------
+:mod:`molmod.io.pdb` -- PDB Files
+---------------------------------
 
 .. automodule:: molmod.io.pdb
    :members:
 
-PDF Files
----------
+:mod:`molmod.io.psf` -- PDF Files
+---------------------------------
 
 .. automodule:: molmod.io.psf
    :members:
 
-SDF Files
----------
+:mod:`molmod.io.sdf` -- SDF Files
+---------------------------------
 
 .. automodule:: molmod.io.sdf
    :members:
 
-XYZ Files
----------
+:mod:`molmod.io.xyz` -- XYZ Files
+---------------------------------
 
 .. automodule:: molmod.io.xyz
    :members:
 
-Common routines
----------------
+:mod:`molmod.io.common` -- Common routines
+------------------------------------------
 
 .. automodule:: molmod.io.common
    :members:

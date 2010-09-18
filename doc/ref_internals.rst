@@ -1,14 +1,14 @@
 Internals of the MolMod package
 ===============================
 
-Read-only objects and cached attributes
----------------------------------------
+:mod:`molmod.utils` -- Read-only objects and cached attributes
+--------------------------------------------------------------
 
 .. automodule:: molmod.utils
    :members: cached, ReadOnly
 
-Runtime context information
----------------------------
+:mod:`molmod.context` -- Runtime context information
+----------------------------------------------------
 
 .. automodule:: molmod.context
    :members:

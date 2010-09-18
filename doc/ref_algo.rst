@@ -1,38 +1,38 @@
 Algorithms
 ==========
 
-Binning
--------
+:mod:`molmod.binning` -- Binning
+--------------------------------
 
 .. automodule:: molmod.binning
    :members:
 
-Clustering
-----------
+:mod:`molmod.clusters` -- Clustering
+------------------------------------
 
 .. automodule:: molmod.clusters
    :members:
 
-Internal coordinates
---------------------
+:mod:`molmod.ic` -- Internal coordinates
+----------------------------------------
 
 .. automodule:: molmod.ic
    :members:
 
-Minimizer
----------
+:mod:`molmod.minimizer` -- Minimizer
+------------------------------------
 
 .. automodule:: molmod.minimizer
    :members:
 
-Symmetry
---------
+:mod:`molmod.symmetry` -- Symmetry
+----------------------------------
 
 .. automodule:: molmod.symmetry
    :members:
 
-ToyFF
------
+:mod:`molmod.toyff` -- ToyFF
+----------------------------
 
 .. automodule:: molmod.toyff
    :members:
