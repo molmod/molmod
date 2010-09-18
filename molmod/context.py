@@ -41,7 +41,7 @@ class Context(object):
     def __init__(self):
         """Initialize the Context object
 
-           This is done once when importing a molmod module. There is no need
+           This is done once, when importing a molmod module. There is no need
            to do this manually a second time.
         """
         # find the data files
@@ -53,7 +53,7 @@ class Context(object):
             self.share_dir = os.path.join(datadir, "share", "molmod")
         else:
             # When running from the build directory for the tests.
-            self.share_dir = "../share"
+            self.share_dir = os.path.join(os.path.dirname(__file__), "../share")
         if not os.path.isdir(self.share_dir):
             raise RuntimeError("Share dir '%s' does not exist." % self.share_dir)
 

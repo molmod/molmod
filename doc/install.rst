@@ -131,12 +131,42 @@ previous install, then execute the following commands (in the same directory)::
 Testing your installation
 -------------------------
 
-Go to the directory where the MolMod source code was downloaded and execute the
-following commands::
+For the development and testing one needs to install one additional package:
 
-    cd molmod/test
-    ./test.py -v
+ * Nosetests: http://somethingaboutorange.com/mrl/projects/nose/0.11.2/
+
+Most Linux distributions can install this software with just a single command on
+the command line by the administrator.
+
+* Ubuntu 10.4::
+
+    sudo apt-get install python-nose
+
+* Debian 5 does not have Python 2.6. ::
+
+    su -
+    apt-get install python-nose
+    exit
+
+* Fedora 12 and 13. You first have to become root because the sudo program is
+  not configured by default. ::
+
+    su -
+    pkcon install python-nose
+    exit
+
+* Suse 11.2. ::
+
+    sudo zypper install python-nose
+
+Once these dependecies are installed, go to the temporary directory where the
+MolMod source code was downloaded and execute the following commands::
+
+    cd molmod
+    ./setup.py build_ext -i
+    nosetests -v
 
 This will run a series of tests to check the validity of the outcomes generated
 by MolMod. If some tests fail, post the output of the tests on the `mailing list
-<http://molmod.ugent.be/code/wiki/MolMod/MailingList>`_.
+<http://molmod.ugent.be/code/wiki/MolMod/MailingList>`_. (There are currently
+three test that are skipped.)

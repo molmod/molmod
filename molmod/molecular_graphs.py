@@ -226,7 +226,7 @@ class MolecularGraph(Graph):
         for i in xrange(self.num_vertices):
             num_elec = self.numbers[i]
             if formal_charges is not None:
-                num_elec -= formal_charges[i]
+                num_elec -= int(formal_charges[i])
             if num_elec >= 5 and num_elec <= 9:
                 num_hydrogen = num_elec - 10 + 8
             elif num_elec >= 13 and num_elec <= 17:
@@ -236,12 +236,13 @@ class MolecularGraph(Graph):
             else:
                 continue
             if num_hydrogen > 4:
-                num_hydrogen = 8-num_hydrogen
+                num_hydrogen = 8 - num_hydrogen
             for n in self.neighbors[i]:
                 bo = self.orders[self.edge_index[frozenset([i, n])]]
                 if bo <= 0:
                     bo = 1
-                num_hydrogen -= bo
+                num_hydrogen -= int(bo)
+            print num_hydrogen
             for j in xrange(num_hydrogen):
                 new_edges.append((i, counter))
                 counter += 1

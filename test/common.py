@@ -22,10 +22,14 @@
 # --
 
 
-import unittest, numpy
+import unittest, numpy, os
 
 
 __all__ = ["BaseTestCase"]
+
+
+if not os.path.exists("output"):
+    os.mkdir("output")
 
 
 class BaseTestCase(unittest.TestCase):
