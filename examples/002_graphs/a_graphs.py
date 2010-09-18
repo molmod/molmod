@@ -9,7 +9,7 @@ mol = Molecule.from_file("caffeine.xyz")
 # is present in the data file. XYZ files only contain atomic elements and
 # the corresponding coordinates. Therefore, the following line will not raise
 # an error:
-assert(not hasattr(mol, "graph"))
+assert(mol.graph is None)
 
 # 2) A molecular graph object can be derived from the geometry using a few rules
 # of thumb and a database of well-known bond lengths. Such a routine is

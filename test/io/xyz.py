@@ -36,7 +36,7 @@ __all__ = ["XYZTestCase"]
 class XYZTestCase(BaseTestCase):
     def test_xyz_reader(self):
         xr = XYZReader("input/water.xyz")
-        self.assertEqual(xr.symbols, ["O", "H", "H"])
+        self.assertEqual(xr.symbols, ("O", "H", "H"))
         self.assertArraysEqual(xr.numbers, numpy.array([8,1,1]))
         title, coordinates = xr.next()
         self.assertEqual(title, "water")
@@ -50,7 +50,7 @@ class XYZTestCase(BaseTestCase):
             xw.dump(title, coordinates)
         del xw
         xr = XYZReader("output/test.xyz")
-        self.assertEqual(xr.symbols, ["O", "H", "H"])
+        self.assertEqual(xr.symbols, ("O", "H", "H"))
         self.assertArraysEqual(xr.numbers, numpy.array([8,1,1]))
         title, coordinates = xr.next()
         self.assertEqual(title, "water")
@@ -59,20 +59,20 @@ class XYZTestCase(BaseTestCase):
 
     def test_xyz_file(self):
         xf = XYZFile("input/water.xyz")
-        self.assertEqual(xf.symbols, ["O", "H", "H"])
+        self.assertEqual(xf.symbols, ("O", "H", "H"))
         self.assertArraysEqual(xf.numbers, numpy.array([8,1,1]))
         self.assertEqual(xf.titles[0], "water")
         self.assertAlmostEqual(xf.geometries[0,0,0]/angstrom, -0.0914980466)
         self.assertAlmostEqual(xf.geometries[0,2,2]/angstrom, -0.7649930856)
         xf.write_to_file("output/test.xyz")
         xf = XYZFile("output/test.xyz")
-        self.assertEqual(xf.symbols, ["O", "H", "H"])
+        self.assertEqual(xf.symbols, ("O", "H", "H"))
         self.assertArraysEqual(xf.numbers, numpy.array([8,1,1]))
         self.assertEqual(xf.titles[0], "water")
         self.assertAlmostEqual(xf.geometries[0,0,0]/angstrom, -0.0914980466)
         self.assertAlmostEqual(xf.geometries[0,2,2]/angstrom, -0.7649930856)
         xf = XYZFile("output/test.xyz", slice(0,1))
-        self.assertEqual(xf.symbols, ["O", "H", "H"])
+        self.assertEqual(xf.symbols, ("O", "H", "H"))
         self.assertArraysEqual(xf.numbers, numpy.array([8,1,1]))
         self.assertEqual(xf.titles[0], "water")
         self.assertAlmostEqual(xf.geometries[0,0,0]/angstrom, -0.0914980466)

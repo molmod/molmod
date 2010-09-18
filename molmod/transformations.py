@@ -27,7 +27,7 @@ functions are provided: rotation_around_center and superpose. The latter is an
 implementation of the Kabsch algorithm.
 """
 
-from molmod.utils import cached, ReadOnly, compute_rmsd
+from molmod.utils import cached, ReadOnly, ReadOnlyAttribute, compute_rmsd
 from molmod.vectors import random_unit
 from molmod.unit_cells import UnitCell
 
@@ -51,31 +51,14 @@ def check_matrix(m):
         raise ValueError("The lower right element of the given matrix must be 1.0.")
 
 
-def check_translation_vector(t):
-    """Check the sanity of a translation vector"""
-    if t.shape != (3, ):
-        raise ValueError("The translation vector must contain three elements.")
-
-
-def check_rotation_matrix(r):
-    """Check the sanity of a rotation matrix"""
-    if r.shape != (3, 3):
-        raise ValueError("The rotation matrix must be a 3 by 3 array.")
-    if abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
-        abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
-        abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
-        numpy.dot(r[:, 0], r[:, 1]) > eps or \
-        numpy.dot(r[:, 1], r[:, 2]) > eps or \
-        numpy.dot(r[:, 2], r[:, 0]) > eps:
-        raise ValueError("The rotation matrix is significantly non-orthonormal.")
-
-
 class Translation(ReadOnly):
     """Represents a translation in 3D
 
        The attribute t contains the actual translation vector, which is a numpy
        array with three elements.
     """
+    t = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1, npshape=(3,), npdtype=float)
+
     def __init__(self, t):
         """Initialize a translation object
 
@@ -83,9 +66,7 @@ class Translation(ReadOnly):
             | ``t``  --  translation vector, a list-like object with three
                          numbers
         """
-        ReadOnly.__init__(self)
-        self.init_attributes({"t": numpy.array(t, float)}, {})
-        check_translation_vector(self.t)
+        self.t = t
 
     @classmethod
     def from_matrix(cls, m):
@@ -165,6 +146,18 @@ class Rotation(ReadOnly):
        The attribute r contains the actual rotation matrix, which is a numpy
        array with shape (3, 3).
     """
+    def check_r(self, r):
+        """Check the sanity of a rotation matrix"""
+        if abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
+            abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
+            abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
+            numpy.dot(r[:, 0], r[:, 1]) > eps or \
+            numpy.dot(r[:, 1], r[:, 2]) > eps or \
+            numpy.dot(r[:, 2], r[:, 0]) > eps:
+            raise ValueError("The rotation matrix is significantly non-orthonormal.")
+
+
+    r = ReadOnlyAttribute(numpy.ndarray, none=False, check=check_r, npdim=2, npshape=(3,3), npdtype=float)
 
     def __init__(self, r):
         """Initialize a rotation object.
@@ -172,9 +165,7 @@ class Rotation(ReadOnly):
            Argument:
             | ``r``  --  rotation matrix, a 3 by 3 orthonormal array-like object
         """
-        ReadOnly.__init__(self)
-        self.init_attributes({"r": numpy.array(r, float)}, {})
-        check_rotation_matrix(self.r)
+        self.r = r
 
     @classmethod
     def from_matrix(cls, m):
@@ -321,10 +312,8 @@ class Complete(Translation, Rotation):
             | ``t``  --  translation vector, a list-like object with three
                          numbers
         """
-        ReadOnly.__init__(self)
-        self.init_attributes({"r": numpy.array(r, float), "t": numpy.array(t, float)}, {})
-        check_translation_vector(self.t)
-        check_rotation_matrix(self.r)
+        Translation.__init__(self, t)
+        Rotation.__init__(self, r)
 
     @classmethod
     def from_matrix(cls, m):

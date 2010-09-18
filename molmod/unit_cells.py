@@ -24,7 +24,7 @@
 
 
 from molmod.units import angstrom
-from molmod.utils import cached, ReadOnly
+from molmod.utils import cached, ReadOnly, ReadOnlyAttribute
 
 import numpy
 
@@ -42,6 +42,8 @@ class UnitCell(ReadOnly):
        a significant computational overhead.
     """
     eps = 1e-6 # small positive number, below this value is approximately zero
+    matrix = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=2, npshape=(3,3), npdtype=float)
+    active = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1, npshape=(3,), npdtype=bool)
 
     def __init__(self, matrix, active=None):
         """Initialize a UnitCell object
@@ -57,8 +59,8 @@ class UnitCell(ReadOnly):
         """
         if active is None:
             active = numpy.array([True, True, True])
-        ReadOnly.__init__(self)
-        self.init_attributes({"matrix": matrix, "active": active}, {})
+        self.matrix = matrix
+        self.active = active
         # sanity checks for the unit cell
         for col, name in enumerate(["a", "b", "c"]):
             if self.active[col]:

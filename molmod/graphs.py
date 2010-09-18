@@ -52,7 +52,7 @@
 
 import copy, numpy
 
-from molmod.utils import cached, ReadOnly
+from molmod.utils import cached, ReadOnly, ReadOnlyAttribute
 
 
 __all__ = [
@@ -96,6 +96,8 @@ class Graph(ReadOnly):
        >>> # bond orders of ethene
        >>> graph.edge_property = numpy.array([2, 1, 1, 1, 1], int)
     """
+    edges = ReadOnlyAttribute(tuple, none=False)
+    num_vertices = ReadOnlyAttribute(int, none=False)
 
     def __init__(self, edges, num_vertices=None):
         """
@@ -111,7 +113,6 @@ class Graph(ReadOnly):
            converted.
         """
 
-        ReadOnly.__init__(self)
         tmp = []
         for edge in edges:
             if len(edge) != 2:
@@ -133,17 +134,14 @@ class Graph(ReadOnly):
         if num_vertices is not None:
             if not isinstance(num_vertices, int):
                 raise TypeError("The optional argument num_vertices must be an "
-                                "integer when given.")
+                    "integer when given.")
             if num_vertices < real_num_vertices:
                 raise ValueError("num_vertices must be equal or larger to the "
-                                 "number of vertices deduced from the edge "
-                                 "list.")
+                    "number of vertices deduced from the edge list.")
             real_num_vertices = num_vertices
 
-        self.init_attributes(
-            {"edges": edges, "num_vertices": real_num_vertices},
-            {}
-        )
+        self.edges = edges
+        self.num_vertices = real_num_vertices
 
     num_edges = property(lambda self: len(self.edges),
         doc="The number of edges in the graph")

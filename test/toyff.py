@@ -37,7 +37,7 @@ __all__ = ["ToyFFTestCase"]
 class ToyFFTestCase(unittest.TestCase):
     def load_molecule(self, fn):
         molecule = Molecule.from_file(os.path.join("input", fn))
-        if not hasattr(molecule, "graph"):
+        if molecule.graph is None:
             molecule.set_default_graph()
         return molecule
 

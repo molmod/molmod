@@ -25,8 +25,9 @@
 
 from molmod.periodic import periodic
 from molmod.units import angstrom
-from molmod.utils import cached, ReadOnly
+from molmod.utils import cached, ReadOnly, ReadOnlyAttribute
 from molmod.molecular_graphs import MolecularGraph
+from molmod.unit_cells import UnitCell
 from molmod.transformations import fit_rmsd
 from molmod.symmetry import compute_rotsym
 
@@ -47,35 +48,64 @@ class Molecule(ReadOnly):
        distance matrices, while it imposes a cleaner coding style without
        a signifacant computational overhead.
     """
+    def check_coordinates(self, coordinates):
+        if len(coordinates) != self.size:
+            raise TypeError("The number of coordinates does not match the "
+                "length of the atomic numbers array.")
+
+    def check_masses(self, masses):
+        if len(masses) != self.size:
+            raise TypeError("The number of masses does not match the length of "
+                "the atomic numbers array.")
+
+    def check_graph(self, graph):
+        if graph.num_vertices != self.size:
+            raise TypeError("The number of vertices in the graph does not "
+                "match the length of the atomic numbers array.")
+        # In practice these are typically the same arrays using the same piece
+        # of memory. Just checking to be sure.
+        if (self.numbers != graph.numbers).any():
+            raise TypeError("The atomic numbers in the graph do not match the "
+                "atomic numbers in the molecule.")
+
+    def check_symbols(self, symbols):
+        if len(symbols) != self.size:
+            raise TypeError("The number of symbols in the graph does not "
+                "match the length of the atomic numbers array.")
+        for symbol in symbols:
+            if not isinstance(symbol, basestring):
+                raise TypeError("All symbols must be strings.")
+
+    numbers = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1, npdtype=int)
+    coordinates = ReadOnlyAttribute(numpy.ndarray, npdim=2, npshape=(None,3),
+        npdtype=float, check=check_coordinates)
+    title = ReadOnlyAttribute(basestring)
+    masses = ReadOnlyAttribute(numpy.ndarray, npdim=1, npdtype=float,
+        check=check_masses)
+    graph = ReadOnlyAttribute(MolecularGraph, check=check_graph)
+    symbols = ReadOnlyAttribute(tuple, check_symbols)
+    unit_cell = ReadOnlyAttribute(UnitCell)
 
     def __init__(self, numbers, coordinates=None, title=None, masses=None, graph=None, symbols=None, unit_cell=None):
         """
            Mandatory arguments:
-            | ``numbers``  --  numpy array (1D, N elements) with the atom numbers
+            | ``numbers``  --  numpy array (1D, N elements) with the atomic numbers
 
            Optional keyword arguments:
             | ``coordinates``  --  numpy array (2D, Nx3 elements) Cartesian coordinates
             | ``title``  --  a string with the name of the molecule
             | ``massess``  --  a numpy array with atomic masses in atomic units
             | ``graph``  --  a MolecularGraph instance
-            | ``symbols``  --  atom symbols or force-field atom-types
+            | ``symbols``  --  atomic elements or force-field atom-types
             | ``unit_cell``  --  the unit cell in case the system is periodic
         """
-        ReadOnly.__init__(self)
-        mandatory = {"numbers": numpy.array(numbers, int)}
-        if coordinates is not None:
-            coordinates = numpy.array(coordinates, float)
-        if masses is not None:
-            masses = numpy.array(masses, float)
-        optional = {
-            "coordinates": coordinates,
-            "title": title,
-            "masses": masses,
-            "graph": graph,
-            "symbols": symbols,
-            "unit_cell": unit_cell,
-        }
-        self.init_attributes(mandatory, optional)
+        self.numbers = numbers
+        self.coordinates = coordinates
+        self.title = title
+        self.masses = masses
+        self.graph = graph
+        self.symbols = symbols
+        self.unit_cell = unit_cell
 
     @classmethod
     def from_file(cls, filename):
@@ -180,7 +210,7 @@ class Molecule(ReadOnly):
 
     def set_default_symbols(self):
         """Set self.symbols based on self.numbers"""
-        self.symbols = [periodic[n].symbol for n in self.numbers]
+        self.symbols = tuple(periodic[n].symbol for n in self.numbers)
 
     def write_to_file(self, filename):
         """Write the molecule geometry to a file
@@ -205,11 +235,7 @@ class Molecule(ReadOnly):
                 else:
                     symbols.append(atom.symbol)
             xyz_writer = XYZWriter(filename, symbols)
-            if hasattr(self, "title"):
-                title = self.title
-            else:
-                title = "Sorry, no titles today..."
-            xyz_writer.dump(title, self.coordinates)
+            xyz_writer.dump(self.title, self.coordinates)
             del xyz_writer
         else:
             raise ValueError("Could not determine file format for %s." % filename)

@@ -88,7 +88,7 @@ class XYZReader(SlicedReader):
 
         size = self.read_size()
         title = self._f.readline()[:-1]
-        self.symbols = []
+        symbols = []
         coordinates = numpy.zeros((size, 3), float)
         for counter in xrange(size):
             line = self._f.readline()
@@ -97,7 +97,7 @@ class XYZReader(SlicedReader):
             words = line.split()
             if len(words) < 4:
                 raise StopIteration
-            self.symbols.append(words[0])
+            symbols.append(words[0])
             try:
                 coordinates[counter, 0] = float(words[1])
                 coordinates[counter, 1] = float(words[2])
@@ -105,6 +105,7 @@ class XYZReader(SlicedReader):
             except ValueError:
                 raise StopIteration
         coordinates *= self.file_unit
+        self.symbols = tuple(symbols)
         return title, coordinates
 
     def _skip_frame(self):

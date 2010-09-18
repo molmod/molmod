@@ -140,7 +140,7 @@ class MoleculeTestCase(BaseTestCase):
     def test_from_file_xyz(self):
         molecule = Molecule.from_file("input/water.xyz")
         self.assertEqual(molecule.size, 3)
-        self.assertEqual(molecule.symbols, ["O", "H", "H"])
+        self.assertEqual(molecule.symbols, ("O", "H", "H"))
 
     def test_to_cml(self):
         mol0 = Molecule.from_file("input/caplayer.cml")
@@ -170,7 +170,7 @@ class MoleculeTestCase(BaseTestCase):
         mol0 = Molecule.from_file("input/water.xyz")
         mol1 = mol0.copy_with(symbols=None)
         mol1.set_default_symbols()
-        self.assertEqual(mol1.symbols, ["O", "H", "H"])
+        self.assertEqual(mol1.symbols, ("O", "H", "H"))
 
     def test_rmsd(self):
         mol0 = Molecule.from_file("input/water.xyz")

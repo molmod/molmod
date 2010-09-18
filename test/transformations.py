@@ -358,16 +358,19 @@ class TransformationsTestCase(BaseTestCase):
     def test_copy(self):
         import copy
         t = Translation([0.8, 3, -0.1])
-        self.assert_(t.t is copy.copy(t).t)
-        self.assert_(t.t is copy.deepcopy(t).t)
+        self.assert_(t is copy.copy(t))
+        self.assert_(t.t.ctypes.data == copy.copy(t).t.ctypes.data)
+        self.assert_(t.t.ctypes.data == copy.deepcopy(t).t.ctypes.data)
         r = Rotation.from_properties(0.1, [3.0, 0.0, 1.0], False)
-        self.assert_(r.r is copy.copy(r).r)
-        self.assert_(r.r is copy.deepcopy(r).r)
+        self.assert_(r is copy.copy(r))
+        self.assert_(r.r.ctypes.data == copy.copy(r).r.ctypes.data)
+        self.assert_(r.r.ctypes.data == copy.deepcopy(r).r.ctypes.data)
         c = Complete.from_properties(0.1, [3.0, 0.0, 1.0], False, [0.8, 3, -0.1])
-        self.assert_(c.r is copy.copy(c).r)
-        self.assert_(c.r is copy.deepcopy(c).r)
-        self.assert_(c.t is copy.copy(c).t)
-        self.assert_(c.t is copy.deepcopy(c).t)
+        self.assert_(c is copy.copy(c))
+        self.assert_(c.r.ctypes.data == copy.copy(c).r.ctypes.data)
+        self.assert_(c.r.ctypes.data == copy.deepcopy(c).r.ctypes.data)
+        self.assert_(c.t.ctypes.data == copy.copy(c).t.ctypes.data)
+        self.assert_(c.t.ctypes.data == copy.deepcopy(c).t.ctypes.data)
 
     def test_fit_rmsd(self):
         a = numpy.random.normal(0,1,(20,3))

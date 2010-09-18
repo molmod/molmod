@@ -26,7 +26,7 @@
 import numpy, types
 
 
-__all__ = ["cached", "ReadOnly", "compute_rmsd"]
+__all__ = ["cached", "ReadOnlyAttribute", "ReadOnly", "compute_rmsd"]
 
 
 class cached(object):
@@ -55,7 +55,7 @@ class cached(object):
         self.attribute_name = "_cache_%s" % fn.__name__
         self.__doc__ = fn.__doc__
 
-    def __get__(self, instance, owner):
+    def __get__(self, instance, cls=None):
         # make sure that the class attribute is simply this cached object:
         if instance is None:
             return self
@@ -69,23 +69,117 @@ class cached(object):
         return value
 
 
+class ReadOnlyAttribute(object):
+    """A descriptor that becomes read-only after the first assignment.
+
+       The initial value of the attribute is None. As long is this initial value
+       is not overwritten, one can assign an immutable value or a numpy
+       array. As soon as some value is assigned, no changes can be made.
+       If the value is an array (an important exception to the restriction of
+       mutable types), it is copied and set read-only. Warning: it is strictly
+       speaking not guaranteed that the contents of a read-only numpy array are
+       really fixed. We rely on your common sense to not write crappy code that
+       changes read-only numpy arrays.
+    """
+
+    def __init__(self, ptype=None, none=True, check=None, npdim=None, npshape=None, npdtype=None):
+        """
+           Optional arguments:
+            | ``ptype`` --
+            | ``none`` --
+            | ``npdim`` --
+            | ``npshape`` --
+            | ``npdtype`` --
+            | ``check`` --
+        """
+        self.ptype = ptype
+        self.none = none
+        self.check = check
+        if ptype is not None and issubclass(ptype, numpy.ndarray):
+            if not (npdim is None or isinstance(npdim, int)):
+                raise TypeError("npdim must be None or and integer.")
+            if not (npshape is None or (isinstance(npshape, tuple) and
+                    all(isinstance(s, int) or s is None for s
+                    in npshape))):
+                raise TypeError("npshape must be None or a tuple of integer "
+                    "and/or None values.")
+            self.npdim = npdim
+            self.npshape = npshape
+            self.npdtype = npdtype
+        elif not (npdim is None and npshape is None and npdtype is None):
+            raise ValueError("The arguments npdim, npshape and npdtype are "
+                "only allowed when ptype is a subclass of numpy.ndarray.")
+        # construct an annoying name
+        self.attribute_name = "_read_only_%i" % id(self)
+
+    def __get__(self, instance, cls=None):
+        # make sure that the class attribute is simply this cached object:
+        if instance is None:
+            return self
+        # just get the value, or return None if not present
+        result = getattr(instance, self.attribute_name, None)
+        if isinstance(result, numpy.ndarray):
+            result = result.view()
+        return result
+
+    def __set__(self, instance, value):
+        if value is None and not self.none:
+            raise TypeError("This attribute may not be assigned None.")
+        if not (self.ptype is None or value is None):
+            # Only type check if there is one and the value is not None.
+            if issubclass(self.ptype, numpy.ndarray):
+                if hasattr(value, "__len__"):
+                    # try to turn non-arrays into arrays.
+                    value = numpy.array(value, dtype=self.npdtype, copy=False)
+                else:
+                    raise TypeError("Single values are not automatically "
+                        "converted into arrays.")
+                if self.npdim is not None and len(value.shape) != self.npdim:
+                    raise TypeError("Value does not have the right dimension. "
+                        "Got %i. Expected %i" % (len(value.shape), self.npdim))
+                if self.npshape is not None:
+                    for i in xrange(len(self.npshape)):
+                        s = self.npshape[i]
+                        if s is not None:
+                            if len(value.shape) < i+1:
+                                raise TypeError("The array must have at least "
+                                    "dimension %i." % (i+1))
+                            if s != value.shape[i]:
+                                raise TypeError("Element %i of the shape is "
+                                    "not allowed. Got %i. Expected %i." %
+                                    (i, value.shape[i], s))
+                if self.npdtype is not None:
+                    if not numpy.issubdtype(value.dtype, self.npdtype):
+                        raise ValueError("The dtype must be a subdtype of %s. "
+                            "Got %s." % (self.npdtype, value.dtype))
+            if not isinstance(value, self.ptype):
+                raise TypeError("Value (%s) does not have the expected type "
+                    "(%s)." % (value, self.ptype))
+        if isinstance(value, numpy.ndarray):
+            if value.flags.writeable:
+                value = value.copy()
+                value.setflags(write=False)
+        else:
+            # Call the hash function. If that does not work, the object is
+            # mutable, which we don't like in case the object is not a numpy
+            # array.
+            hash(value)
+        if not (self.check is None or value is None):
+            # Only check if there is one and the value is not None.
+            self.check(instance, value)
+        setattr(instance, self.attribute_name, value)
+
+
 class ReadOnly(object):
     """A base class for read-only objects
 
-       An object that has mainly read-only attributes. If an attribute is not
-       assigned yet, it is writable. Some attributes are cached, i.e. they are
-       computed from other attributes upon request.
+       An object that has nothing but read-only attributes. If an attribute is
+       not assigned yet, it is writable. Some attributes are cached, i.e. they
+       are computed from other attributes upon request.
 
        If you want to modify a ReadOnly object, just create a modified one from
-       scratch. This is greatly facilitated by the :meth:`copy_with`.
-
-       The constructor of a derived class must call the :meth:`init_attributes`
-       method to tell the ReadOnly object which attributes must be read-only.
-       Some of them can be mandatory, and some can be optional.
+       scratch. This is greatly facilitated by the method :meth:`copy_with`.
     """
-
-    def __init__(self):
-        object.__setattr__(self, "__hidden", {})
 
     def __copy__(self):
         return self
@@ -93,85 +187,39 @@ class ReadOnly(object):
     def __deepcopy__(self, memo):
         return self
 
-    def init_attributes(self, mandatory, optional):
-        """Prepare read-only attributes
-
-           This method is called in the __init__ routines of derived classes to
-           define read only attributes. Both arguments are dictionaries with
-           (name, value) pairs. In case of mandatory, the value is not allowed to
-           be None.
-
-           Example::
-
-               class Foo(ReadOnly):
-                   def __init__(self, numbers, coordinates=None, title=None):
-                       ReadOnly.__init__(self)
-                       mandatory = {"numbers": numbers}
-                       optional = {"coordinates": coordinates, "title": title}
-                       self.init_attributes(mandatory, optional)
-
-           Note that ``init_attributes`` could have been impelemented as a
-           constructor of the ``ReadOnly`` class, but this would not allow
-           second generation derived classes to introduce new read-only
-           attributes.
-        """
-        for name, value in optional.iteritems():
-            self._register_attribute(name)
-            setattr(self, name, value)
-        for name, value in mandatory.iteritems():
-            self._register_attribute(name)
-            if value is None:
-                raise ValueError("'%s' is a mandatory argument, can not be None" % name)
-            setattr(self, name, value)
-
-    def _register_attribute(self, name):
-        """Register an attribute name as a read-only attribute"""
-        hidden = getattr(self, "__hidden")
-        if name in hidden:
-            raise ValueError("The name '%s' is already registered." % name)
-        hidden[name] = None
-
-    def __getattr__(self, name):
-        value = getattr(self, "__hidden").get(name)
-        #value = self.__hidden.get(name)
-        if value is None:
-            return object.__getattribute__(self, name)
-            #raise AttributeError("Attribute '%s' is not defined for '%s'." % (name, self))
-        return value
-
-    def __setattr__(self, name, value):
-        hidden = getattr(self, "__hidden")
-        if name in hidden:
-            current = hidden.get(name)
-            if current is None:
-                if isinstance(value, numpy.ndarray):
-                    value.setflags(write=False)
-                hidden[name] = value
-            else:
-                raise AttributeError("Attribute '%s' is read-only." % name)
-        else:
-            object.__setattr__(self, name, value)
+    def __getstate__(self):
+        """Part of the pickle protocol"""
+        result = {}
+        for key, descriptor in self.__class__.__dict__.iteritems():
+            if isinstance(descriptor, ReadOnlyAttribute):
+                result[key] = descriptor.__get__(self)
+        return result
 
     def __setstate__(self, state):
         """Part of the pickle protocol"""
         for key, val in state.iteritems():
-            object.__setattr__(self, key, val)
-
+            descriptor = self.__class__.__dict__[key]
+            if not isinstance(descriptor, ReadOnlyAttribute):
+                raise RunTimeError("Got wrong class attribute during unpickling.")
+            descriptor.__set__(self, val)
 
     def copy_with(self, **kwargs):
         """Return a copy with (a few) changed attributes
 
            The keyword arguments are the attributes to be replaced by new
            values. All other attributes are copied (or referenced) from the
-           original object.
+           original object. This only works if the constructor takes all
+           (read-only) attributes as arguments.
         """
-        attrs = getattr(self, "__hidden").copy()
+        attrs = {}
+        for key, descriptor in self.__class__.__dict__.iteritems():
+            if isinstance(descriptor, ReadOnlyAttribute):
+                attrs[key] = descriptor.__get__(self)
         for key in kwargs:
             if key not in attrs:
                 raise TypeError("Unknown attribute: %s" % key)
         attrs.update(kwargs)
         return self.__class__(**attrs)
-
 
 
 def compute_rmsd(a, b):
