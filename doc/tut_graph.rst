@@ -2,7 +2,7 @@ Working with molecular graphs
 =============================
 
 Molecular graphs are objects that describe the connectivity of atoms in a
-molecule. In graph speech, every vertex is an atom and every edge is a bond.
+molecule. In graph speech, every atom is a vertex and every bond is an edge.
 Some background on `Graph Theory <http://en.wikipedia.org/wiki/Graph_theory>`_
 may be helpful. The :class:`molmod.molecular_graphs.MolecularGraph` class in
 MolMod can store atomic numbers associated with vertices and bond orders
@@ -19,15 +19,15 @@ Examples
 Edges
 -----
 
-The first example shows how a molecular graph can be created. The most important
-attribute of a graph object is ``edges``. This typically is a list of bonds in the
-molecule.
+The first example shows how one creates a molecular graph.. The most important
+attribute of a graph object is ``edges``. This is (in most cases) a list of
+bonds in the molecule, but more edges may be included if that would be useful.
 
 File: ``examples/002_graphs/a_graphs.py``
 
 .. literalinclude:: ../examples/002_graphs/a_graphs.py
 
-From the edges many related data structures can be derived. They are accessible
+From the edges many related properties can be derived. They are accessible
 as attributes of a graph object and are only constructed the first time they
 are used. A few examples, e.g. ``neighbors``, ``distances``, or ``symmetries``.
 
@@ -45,9 +45,10 @@ File: ``examples/002_graphs/b_neighbors.py``
 Distances
 ---------
 
-The ``distances`` attribute is a matrix with the number of bonds between two
-atoms. The matrix is constructed with the Floyd-Warshall algorithm, which is
-implemented in C to make it fast.
+The ``distances`` attribute is a square matrix with a row and a column for every
+vertex. Each element contains the (minimal) number of bonds between two atoms.
+The matrix is constructed with the `Floyd-Warshall algorithm
+<http://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm>`_.
 
 File: ``examples/002_graphs/c_distances.py``
 
@@ -74,13 +75,13 @@ Problems
 * Write a program that prints the atom indexes of all the Nitrogen atoms that
   are not bonded to a methyl group.
 
-* Write a program that finds all Nitrogen molecules in the caffeine that are at
+* Write a program that finds all Nitrogen atoms in the caffeine that are at
   least three bonds away from an Oxygen atom.
 
 * Download the `benzene
   <http://pubchem.ncbi.nlm.nih.gov/summary/summary.cgi?cid=241&disopt=3DSaveSDF>`_
   molecule from Pubchem and write a program that prints out all the graph
-  isomorphisms as permutations. Note that the SDF files from pubchem already
-  contain the bond graph, so there is no need to call
-  :meth:`Molecule.set_default_graph` after loading the molecule. How is the
-  number of isomorphisms related to the rotational symmetry number of benzene?
+  isomorphisms as permutations. The SDF files from pubchem already contain the
+  bond graph, so there is no need for ``mol.set_default_graph()`` after loading
+  the molecule. How is the number of isomorphisms related to the rotational
+  symmetry number of benzene?

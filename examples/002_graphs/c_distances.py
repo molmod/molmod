@@ -9,9 +9,9 @@ mol.set_default_graph()
 # The distances attribute is a square matrix of integers with a row and column 
 # for every atom. 
 print "Number of atoms:", mol.size
-print "Shape of the distances matrix:", mol.graph.distances.shape
+print "Shape of the distances array:", mol.graph.distances.shape
 
-# 1) The distances matrix can be used to get the 'minimal' number of bonds
+# 1) The distances array can be used to get the 'minimal' number of bonds
 # between two atoms. E.g. for two atoms in a five_membered ring, this is at most
 # two:
 print "Distance between atom 5 and 6 (part of a 5-ring):", mol.graph.distances[5,6]

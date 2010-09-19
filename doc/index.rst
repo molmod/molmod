@@ -15,10 +15,9 @@ Installation
 Tutorial
 --------
 
-Each chapter in the tutorial contains a few examples programs to illustrate the
-features of a part of the MolMod library. After the examples, some problems are
-given that can be solved with small Python programs that are loosely similar to
-the examples.
+Each chapter in the tutorial contains a few example programs that illustrate
+some features of the MolMod library. After the examples, a few related problems
+are given. Each problem can be solved with a small Python program.
 
 All examples can be found in the examples directory in the source tree. The
 example scripts contain comments to explain the individual steps. In the

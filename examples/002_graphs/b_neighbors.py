@@ -13,7 +13,7 @@ print "All neighbors:"
 print mol.graph.neighbors
 print
 
-# 1) Print the atomic number of the first atom and the atomic numbers of its
+# 1) Print the atomic number of the third atom and the atomic numbers of its
 # neighbors.
 print "Symbol of third atom (should be oxygen):", mol.symbols[2]
 print "The number of bonds to the third atom:", len(mol.graph.neighbors[2])

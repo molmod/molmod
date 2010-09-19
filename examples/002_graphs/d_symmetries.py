@@ -2,7 +2,7 @@
 
 from molmod import *
 
-# 0) Create a molecule object based on the XYZ file 'caffeine.xyz'. Also
+# 0) Create a molecule object based on the XYZ file 'ethanol.xyz'. Also
 # initialize the graph.
 mol = Molecule.from_file("ethanol.xyz")
 mol.set_default_graph()
@@ -14,8 +14,8 @@ print "Isomorphisms in the form of one-to-one mappings"
 for symmetry in mol.graph.symmetries:
     print symmetry
 
-print "Isomorphisms in the form of permutations"
 # 2) One can also request isomorphisms in the form of permutations, which is
 # often more convenient:
+print "Isomorphisms in the form of permutations"
 for cycle in mol.graph.symmetry_cycles:
     print cycle

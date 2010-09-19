@@ -4,32 +4,39 @@ Unit conversion
 .. highlight:: python
    :linenothreshold: 5
 
-The MolMod package expresses all quantities internally in a well-defined unit
-system, i.e. using `internal units`. Whenever numerical data goes into the
-MolMod code, it is assumed to be in atomic units, and results will also be returned
-in atomic units. When data is read from a file (through one of the modules
-in :mod:`molmod.io`) the numerical values are immediately converted to `internal
-units`. In case one needs to print a number on screen or to a file, it can be
-converted back to some `non-internal unit`.
+The MolMod package expresses all quantities in a well-defined `internal units`.
+Whenever numerical data goes into the MolMod code, it is assumed to be in
+`internal units`, and results will also be returned in `internal units`. When
+data is read from a file (through one of the modules in :mod:`molmod.io`) the
+numerical values are immediately converted to `internal units`. In case one
+needs to print a number on screen or to a file, it can be converted back to some
+`non-internal unit`.
 
 The `internal units` in MolMod are the atomic units. Most atomic units are
 listed at the `NIST website for physical constants
-<http://physics.nist.gov/cuu/Constants/index.html>`_. Note that there is no
-atomic unit for temperature, so we simply use Kelvin as the `internal unit`
-of temperature. The atomic units system has the advantage, just
-like the SI system, to be a consistent unit system. This means that, given any
-mathematical expression, one can just plug in all values in atomic units and the
-result will come out in atomic units without the need for some conversion
-factor. The atomic units are used instead of SI units as most molecular
-quantities have a reasonable order of magnitude in atomic units. A second
-advantage is that several important constant (which are basically plain
-conversion factors) become unity.
+<http://physics.nist.gov/cuu/Constants/index.html>`_. There is no atomic unit
+for temperature, so we use Kelvin as the `internal unit` of temperature. This
+approach has three advantages:
+
+1. Atomic units are, just like the SI units, consistent. This means that, given
+   any mathematical expression, one can just plug in all values in atomic units
+   and the result will come out in atomic units, without the need for some
+   conversion factor.
+
+2. Most molecular quantities have a reasonable order of magnitude in atomic
+   units, which reduces numerical issues.
+
+3. Several important constants become unity, which simplifies the programming.
 
 The conversion factors to translate values from and to `internal units` are
 defined in the module :mod:`molmod.units`. The convention for unit conversion is
-that multiplication with a constant converts a value into `internal units` and
-that division with the same constant converts a value back to the `non-internal
-unit`::
+as follows:
+
+* **Multiplication** with a constant converts a value **to** `internal units`.
+* **Division** with the same constant converts a value **back** to the
+  `non-internal unit`
+
+A simple example illustrates these conventions::
 
     from molmod import *
 
@@ -37,8 +44,7 @@ unit`::
     print "Distances in internal units:", distance
     print "Distances in Angstrom:", distance/angstrom
 
-Some physical constants that are relevant for molecular modeling, are defined in
-:mod:`molmod.constants`.
+Some relevant physical constants are defined in :mod:`molmod.constants`.
 
 Examples
 ~~~~~~~~
@@ -95,8 +101,8 @@ Rotational partition function of Hydrogen
 The last example solves a typical statistical physics exam question: "Compute
 the probability that a Hydrogen molecule in a dilute gas does not rotate at a
 temperature of 300 K. Approximate the Hydrogen molecule as a rigid rotor". The
-parameters are included in the source code below. Note that the constants
-``planck`` and ``boltzmann`` are defined in :mod:`molmod.constants`.
+parameters are included in the source code below. The constant ``boltzmann`` is
+defined in :mod:`molmod.constants`.
 
 File: ``examples/000_units/c_h2rot.py``
 
@@ -111,19 +117,20 @@ H2 oscillation
 --------------
 
 Consider the classical description of the H2 nuclei. Assume that the bond
-lengths oscillates with an amplitude of 0.1 Ångstrom around its equilibrium
+length oscillates with an amplitude of 0.1 Ångstrom around its equilibrium
 value. The spectroscopic wavenumber is 4160 cm\ :sup:`-1`. Write a program that
 computes the classical kinetic energy in kJ mol\ :sup:`-1` when the bond length
-passes through its equilibrium value?
+passes through its equilibrium value.
 
 
 Heat capacity of the H2 stretch mode
 ------------------------------------
 
-Write a program that prints out the internal energy in kJ mol\ :sup:`-1` and
-the heat capacity in J mol\ :sup:`-1` K\ :sup:`-1` associated with the vibrational
-stretch mode of the Hydrogen molecule for different temperatures: 300K, 400K,
-500K and 600K. The partition function of a harmonic oscillator is given by:
+Consider the quantummechanical description of the stretch mode in the H2
+molecule. Write a program that prints out the internal energy in kJ mol\
+:sup:`-1` and the heat capacity in J mol\ :sup:`-1` K\ :sup:`-1` at different
+temperatures: 300K, 400K, 500K and 600K. The partition function of a harmonic
+oscillator is given by:
 
 .. math:: q_{\text{vib}} = \frac{\exp\left(-\frac{\hbar\nu}{2 k_BT}\right)}
                                 {1-\exp\left(-\frac{\hbar\nu}{k_BT}\right)}
