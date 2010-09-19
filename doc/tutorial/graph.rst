@@ -1,6 +1,9 @@
 Working with molecular graphs
 =============================
 
+Introduction
+~~~~~~~~~~~~
+
 Molecular graphs are objects that describe the connectivity of atoms in a
 molecule. In graph speech, every atom is a vertex and every bond is an edge.
 Some background on `Graph Theory <http://en.wikipedia.org/wiki/Graph_theory>`_
@@ -25,7 +28,7 @@ bonds in the molecule, but more edges may be included if that would be useful.
 
 File: ``examples/002_graphs/a_graphs.py``
 
-.. literalinclude:: ../examples/002_graphs/a_graphs.py
+.. literalinclude:: ../../examples/002_graphs/a_graphs.py
 
 From the edges many related properties can be derived. They are accessible
 as attributes of a graph object and are only constructed the first time they
@@ -40,7 +43,7 @@ chemical environment of an atom, or just to count the number of bonds.
 
 File: ``examples/002_graphs/b_neighbors.py``
 
-.. literalinclude:: ../examples/002_graphs/b_neighbors.py
+.. literalinclude:: ../../examples/002_graphs/b_neighbors.py
 
 Distances
 ---------
@@ -52,7 +55,7 @@ The matrix is constructed with the `Floyd-Warshall algorithm
 
 File: ``examples/002_graphs/c_distances.py``
 
-.. literalinclude:: ../examples/002_graphs/c_distances.py
+.. literalinclude:: ../../examples/002_graphs/c_distances.py
 
 
 Symmetries
@@ -63,7 +66,7 @@ only those isomorphisms are considered that do not alter the atomic numbers.
 
 File: ``examples/002_graphs/d_symmetries.py``
 
-.. literalinclude:: ../examples/002_graphs/d_symmetries.py
+.. literalinclude:: ../../examples/002_graphs/d_symmetries.py
 
 
 Problems

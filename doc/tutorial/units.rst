@@ -1,6 +1,9 @@
 Unit conversion
 ===============
 
+Introduction
+~~~~~~~~~~~~
+
 .. highlight:: python
    :linenothreshold: 5
 
@@ -57,7 +60,7 @@ reaction energy and prints out the result in kJ/mol.
 
 File: ``examples/000_units/a_reaction.py``
 
-.. literalinclude:: ../examples/000_units/a_reaction.py
+.. literalinclude:: ../../examples/000_units/a_reaction.py
 
 This example is very basic, but it demonstrates some general requirements for
 any script that uses the MolMod package:
@@ -92,7 +95,7 @@ constant are an approximate model for a C-H bond.
 
 File: ``examples/000_units/b_chbond.py``
 
-.. literalinclude:: ../examples/000_units/b_chbond.py
+.. literalinclude:: ../../examples/000_units/b_chbond.py
 
 
 Rotational partition function of Hydrogen
@@ -106,7 +109,7 @@ defined in :mod:`molmod.constants`.
 
 File: ``examples/000_units/c_h2rot.py``
 
-.. literalinclude:: ../examples/000_units/c_h2rot.py
+.. literalinclude:: ../../examples/000_units/c_h2rot.py
 
 
 Problems

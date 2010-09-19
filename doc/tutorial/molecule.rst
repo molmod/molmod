@@ -114,7 +114,7 @@ didactic purposes.
 
 File: ``examples/001_molecules/a_convert.py``
 
-.. literalinclude:: ../examples/001_molecules/a_convert.py
+.. literalinclude:: ../../examples/001_molecules/a_convert.py
 
 
 Center of mass to origin
@@ -124,7 +124,7 @@ This example shows how a modified molecule object is made.
 
 File: ``examples/001_molecules/b_com.py``
 
-.. literalinclude:: ../examples/001_molecules/b_com.py
+.. literalinclude:: ../../examples/001_molecules/b_com.py
 
 
 All carbons
@@ -135,7 +135,7 @@ the ibuprofen molecule.
 
 File: ``examples/001_molecules/c_carbon.py``
 
-.. literalinclude:: ../examples/001_molecules/c_carbon.py
+.. literalinclude:: ../../examples/001_molecules/c_carbon.py
 
 
 Size of a molecule
@@ -146,7 +146,7 @@ prints out the largest inter-atomic distance in Ångström.
 
 File: ``examples/001_molecules/d_size.py``
 
-.. literalinclude:: ../examples/001_molecules/d_size.py
+.. literalinclude:: ../../examples/001_molecules/d_size.py
 
 
 Shape of a molecule
@@ -159,7 +159,7 @@ following program computes the shape category for the ibuprofen molecule
 
 File: ``examples/001_molecules/e_shape.py``
 
-.. literalinclude:: ../examples/001_molecules/e_shape.py
+.. literalinclude:: ../../examples/001_molecules/e_shape.py
 
 
 Problems
