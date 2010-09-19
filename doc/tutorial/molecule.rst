@@ -12,10 +12,10 @@ Introduction
 Molecule objects
 ----------------
 
-The ``Molecule`` class is a fundamental part of the MolMod package. Instances of
-this class hold all information to describe the geometry and the topology of
-a molecular structure. In practice the following attributes can be stored in
-a Molecule object:
+The class :class:`molmod.molecules.Molecule` is a fundamental part of the MolMod
+package. Instances of this class hold all information to describe the geometry
+and the topology of a molecular structure. In practice the following attributes
+can be stored in a Molecule object:
 
 * ``numbers``  --  An array of atomic numbers with N elements. This
   is the only mandatory attribute. All other attributes are optional.
