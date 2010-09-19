@@ -146,7 +146,7 @@ class Rotation(ReadOnly):
        The attribute r contains the actual rotation matrix, which is a numpy
        array with shape (3, 3).
     """
-    def check_r(self, r):
+    def _check_r(self, r):
         """Check the sanity of a rotation matrix"""
         if abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
             abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
@@ -157,7 +157,7 @@ class Rotation(ReadOnly):
             raise ValueError("The rotation matrix is significantly non-orthonormal.")
 
 
-    r = ReadOnlyAttribute(numpy.ndarray, none=False, check=check_r, npdim=2, npshape=(3,3), npdtype=float)
+    r = ReadOnlyAttribute(numpy.ndarray, none=False, check=_check_r, npdim=2, npshape=(3,3), npdtype=float)
 
     def __init__(self, r):
         """Initialize a rotation object.

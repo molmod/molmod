@@ -48,18 +48,18 @@ class MolecularGraph(Graph):
        new object with modified connectivity, numbers and orders. The advantage
        is that various graph analysis and properties can be cached.
     """
-    def check_numbers(self, numbers):
+    def _check_numbers(self, numbers):
         if len(numbers) != self.num_vertices:
             raise TypeError("The number of vertices must match the length of "
                 "the atomic numbers array.")
 
-    def check_orders(self, orders):
+    def _check_orders(self, orders):
         if len(orders) != self.num_edges:
             raise TypeError("The number of edges must match the length of "
                 "the bond orders array.")
 
-    numbers = ReadOnlyAttribute(numpy.ndarray, none=False, check=check_numbers, npdim=1, npdtype=int)
-    orders = ReadOnlyAttribute(numpy.ndarray, none=False, check=check_orders, npdim=1, npdtype=float)
+    numbers = ReadOnlyAttribute(numpy.ndarray, none=False, check=_check_numbers, npdim=1, npdtype=int)
+    orders = ReadOnlyAttribute(numpy.ndarray, none=False, check=_check_orders, npdim=1, npdtype=float)
 
     @classmethod
     def from_geometry(cls, molecule, do_orders=False, scaling=1.0):
