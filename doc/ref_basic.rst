@@ -4,9 +4,9 @@ Basic classes
 :mod:`molmod.molecules` -- Molecular systems
 --------------------------------------------
 
-Although the class :class:`Molecule` is singular, it is equally suitable for
-a cluster or complex with multiple molecules, or even a complete unit cell of a
-periodic system.
+Although the name of the class :class:`Molecule` is singular, it is equally
+suitable for a cluster or complex with multiple molecules, or even a complete
+unit cell of a periodic system.
 
 .. automodule:: molmod.molecules
    :members:

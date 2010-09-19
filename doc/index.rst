@@ -27,6 +27,7 @@ tutorial text, some more background is provided.
    :maxdepth: 1
 
    tut_units
+   tut_molecule
    tut_graph
 
 Library reference

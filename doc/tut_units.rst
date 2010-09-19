@@ -117,7 +117,7 @@ H2 oscillation
 --------------
 
 Consider the classical description of the H2 nuclei. Assume that the bond
-length oscillates with an amplitude of 0.1 Ångstrom around its equilibrium
+length oscillates with an amplitude of 0.1 Ångström around its equilibrium
 value. The spectroscopic wavenumber is 4160 cm\ :sup:`-1`. Write a program that
 computes the classical kinetic energy in kJ mol\ :sup:`-1` when the bond length
 passes through its equilibrium value.
