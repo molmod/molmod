@@ -20,7 +20,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-"""Data structure for molecular geometries"""
+"""Representation, analysis and manipulation of molecular systems."""
 
 
 from molmod.periodic import periodic
@@ -40,25 +40,28 @@ __all__ = ["Molecule"]
 
 
 class Molecule(ReadOnly):
-    """Extensible datastructure for molecular geometries
+    """Extensible class for molecular systems.
 
        Most attributes of the molecule object are treated as constants. If you
        want to modify the molecular geometry, just create a modified molecule
-       object. This facilitates the caching of derived quantities such as the
-       distance matrices, while it imposes a cleaner coding style without
-       a signifacant computational overhead.
+       object with the method :meth:`molmod.utils.ReadOnly.copy_with`. This facilitates the caching of
+       derived quantities such as the distance matrix, while it imposes a
+       cleaner coding style without a signifacant computational overhead.
     """
     def _check_coordinates(self, coordinates):
+        """the number of rows must be the same as the length of the array numbers"""
         if len(coordinates) != self.size:
             raise TypeError("The number of coordinates does not match the "
                 "length of the atomic numbers array.")
 
     def _check_masses(self, masses):
+        """the size must be the same as the length of the array numbers"""
         if len(masses) != self.size:
             raise TypeError("The number of masses does not match the length of "
                 "the atomic numbers array.")
 
     def _check_graph(self, graph):
+        """the atomic numbers must match"""
         if graph.num_vertices != self.size:
             raise TypeError("The number of vertices in the graph does not "
                 "match the length of the atomic numbers array.")
@@ -69,6 +72,7 @@ class Molecule(ReadOnly):
                 "atomic numbers in the molecule.")
 
     def _check_symbols(self, symbols):
+        """the size must be the same as the length of the array numbers and all elements must be strings"""
         if len(symbols) != self.size:
             raise TypeError("The number of symbols in the graph does not "
                 "match the length of the atomic numbers array.")
@@ -76,15 +80,20 @@ class Molecule(ReadOnly):
             if not isinstance(symbol, basestring):
                 raise TypeError("All symbols must be strings.")
 
-    numbers = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1, npdtype=int)
+    numbers = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1, npdtype=int,
+        doc="the atomic numbers")
     coordinates = ReadOnlyAttribute(numpy.ndarray, npdim=2, npshape=(None,3),
-        npdtype=float, check=_check_coordinates)
-    title = ReadOnlyAttribute(basestring)
+        npdtype=float, check=_check_coordinates, doc="atomic Cartesian "
+        "coordinates")
+    title = ReadOnlyAttribute(basestring, doc="a short description of the system")
     masses = ReadOnlyAttribute(numpy.ndarray, npdim=1, npdtype=float,
-        check=_check_masses)
-    graph = ReadOnlyAttribute(MolecularGraph, check=_check_graph)
-    symbols = ReadOnlyAttribute(tuple, _check_symbols)
-    unit_cell = ReadOnlyAttribute(UnitCell)
+        check=_check_masses, doc="the atomic masses")
+    graph = ReadOnlyAttribute(MolecularGraph, check=_check_graph,
+        doc="the molecular graph with the atom connectivity")
+    symbols = ReadOnlyAttribute(tuple, _check_symbols, doc="symbols for the "
+        "atoms, which can be element names for force-field atom types")
+    unit_cell = ReadOnlyAttribute(UnitCell, doc="description of the periodic "
+        "boundary conditions")
 
     def __init__(self, numbers, coordinates=None, title=None, masses=None, graph=None, symbols=None, unit_cell=None):
         """
@@ -109,7 +118,7 @@ class Molecule(ReadOnly):
 
     @classmethod
     def from_file(cls, filename):
-        """Construct a molecule object read from the given file
+        """Construct a molecule object read from the given file.
 
            The file format is inferred from the extensions. Currently supported
            formats are: ``*.cml``, ``*.fchk``, ``*.pdb``, ``*.sdf``, ``*.xyz``
@@ -146,27 +155,28 @@ class Molecule(ReadOnly):
         else:
             raise ValueError("Could not determine file format for %s." % filename)
 
-    size = property(lambda self: self.numbers.shape[0])
+    size = property(lambda self: self.numbers.shape[0],
+        doc="*Read-only attribute:* the number of atoms.")
 
     @cached
     def distance_matrix(self):
-        """The matrix with all atom pair distances"""
+        """the matrix with all atom pair distances"""
         from molmod.ext import molecules_distance_matrix
         return molecules_distance_matrix(self.coordinates)
 
     @cached
     def mass(self):
-        """The total mass of the molecule"""
+        """the total mass of the molecule"""
         return self.masses.sum()
 
     @cached
     def com(self):
-        """The center of mass of the molecule"""
+        """the center of mass of the molecule"""
         return (self.coordinates*self.masses.reshape((-1,1))).sum(axis=0)/self.mass
 
     @cached
     def inertia_tensor(self):
-        """The intertia tensor of the molecule"""
+        """the intertia tensor of the molecule"""
         result = numpy.zeros((3,3), float)
         for i in xrange(self.size):
             r = self.coordinates[i] - self.com
@@ -178,7 +188,7 @@ class Molecule(ReadOnly):
 
     @cached
     def chemical_formula(self):
-        """The chemical formula of the molecule"""
+        """the chemical formula of the molecule"""
         counts = {}
         for number in self.numbers:
             counts[number] = counts.get(number, 0)+1
@@ -191,7 +201,7 @@ class Molecule(ReadOnly):
         return "".join(items)
 
     def set_default_masses(self):
-        """Set self.masses based on self.numbers"""
+        """Set self.masses based on self.numbers and periodic table."""
         self.masses = numpy.array([periodic[n].mass for n in self.numbers])
 
     def set_default_graph(self):
@@ -209,11 +219,11 @@ class Molecule(ReadOnly):
         self.graph = MolecularGraph.from_geometry(self)
 
     def set_default_symbols(self):
-        """Set self.symbols based on self.numbers"""
+        """Set self.symbols based on self.numbers and the periodic table."""
         self.symbols = tuple(periodic[n].symbol for n in self.numbers)
 
     def write_to_file(self, filename):
-        """Write the molecule geometry to a file
+        """Write the molecular geometry to a file.
 
            The file format is inferred from the extensions. Currently supported
            formats are: ``*.xyz``, ``*.cml``
@@ -241,7 +251,7 @@ class Molecule(ReadOnly):
             raise ValueError("Could not determine file format for %s." % filename)
 
     def rmsd(self, other):
-        """Compute the RMSD between two molecules
+        """Compute the RMSD between two molecules.
 
            Arguments:
             | ``other``  --  Another molecule with the same atom numbers
@@ -265,7 +275,7 @@ class Molecule(ReadOnly):
         return fit_rmsd(self.coordinates, other.coordinates)
 
     def compute_rotsym(self, threshold=1e-3*angstrom):
-        """Compute the rotational symmetry number
+        """Compute the rotational symmetry number.
 
            Optional argument:
             | ``threshold``  --  only when a rotation results in an rmsd below the given

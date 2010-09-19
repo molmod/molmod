@@ -53,7 +53,9 @@ class cached(object):
     def __init__(self, fn):
         self.fn = fn
         self.attribute_name = "_cache_%s" % fn.__name__
-        self.__doc__ = fn.__doc__
+        fn_doc_lines = fn.__doc__.split("\n")
+        self.__doc__ = "*Cached attribute:* %s.\n" % fn_doc_lines[0] + \
+            "\n".join(fn_doc_lines[1:])
 
     def __get__(self, instance, cls=None):
         # make sure that the class attribute is simply this cached object:
@@ -85,7 +87,8 @@ class ReadOnlyAttribute(object):
        class.
     """
 
-    def __init__(self, ptype=None, none=True, check=None, npdim=None, npshape=None, npdtype=None):
+    def __init__(self, ptype=None, none=True, check=None, npdim=None,
+                 npshape=None, npdtype=None, doc=None):
         """
            One can impose detailed type checking on the attribute through the
            following options.
@@ -97,6 +100,7 @@ class ReadOnlyAttribute(object):
             | ``npshape`` -- In case of numpy arrays: the expected shape.
             | ``npdtype`` -- In case of numpy arrays: the expected dtype.
             | ``check`` -- A method to check the validity of the attribute.
+            | ``doc`` -- Short description.
 
            The npshape option must be a tuple with integer or None values. In
            case of a None value, the corresponding shape in the attribute is
@@ -106,6 +110,10 @@ class ReadOnlyAttribute(object):
         self.ptype = ptype
         self.none = none
         self.check = check
+        if doc is None:
+            doc = "no documentation available"
+        self.doc = doc
+        # process the type checks
         if ptype is not None:
             if issubclass(ptype, list):
                 raise TypeError("ptype can not be a subclass of list because "
@@ -124,6 +132,31 @@ class ReadOnlyAttribute(object):
         elif not (npdim is None and npshape is None and npdtype is None):
             raise ValueError("The arguments npdim, npshape and npdtype are "
                 "only allowed when ptype is a subclass of numpy.ndarray.")
+        # make a nice docstring
+        self.__doc__ = "*Read-only attribute:* %s.\n\n" % doc
+        check_lines = []
+        if not self.none:
+            check_lines.append("* May not be None.")
+        if self.ptype is not None:
+            check_lines.append("* Must be an instance of ``%s``" % self.ptype)
+            if issubclass(ptype, numpy.ndarray):
+                if self.npdim is not None:
+                    check_lines.append("* Must have dimension %i." % self.npdim)
+                if self.npshape is not None:
+                    tmp = []
+                    for s in self.npshape:
+                        if s is None:
+                            tmp.append("?")
+                        else:
+                            tmp.append(str(s))
+                    shape_str = "(%s)" % (", ".join(tmp))
+                    check_lines.append("* Must have shape %s." % shape_str)
+                if self.npdtype is not None:
+                    check_lines.append("* Must have dtype ``%s``." % self.npdtype)
+        if check is not None:
+            check_lines.append("* Special conditions: %s." % check.__doc__)
+        if len(check_lines) > 0:
+            self.__doc__ += "The attribute must satisfy the following conditions:\n\n" + "\n\n".join(check_lines)
         # construct an annoying name
         self.attribute_name = "_read_only_%i" % id(self)
 

@@ -42,17 +42,19 @@ class UnitCell(ReadOnly):
        a significant computational overhead.
     """
     eps = 1e-6 # small positive number, below this value is approximately zero
-    matrix = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=2, npshape=(3,3), npdtype=float)
-    active = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1, npshape=(3,), npdtype=bool)
+    matrix = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=2,
+        npshape=(3,3), npdtype=float, doc="matrix whose columns are the "
+        "primitive cell vectors")
+    active = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1, npshape=(3,),
+        npdtype=bool, doc="the active cell vectors")
 
     def __init__(self, matrix, active=None):
-        """Initialize a UnitCell object
-
+        """
            Argument:
             | ``matrix``  --  the array with cell vectors. each column
                               corresponds to a single cell vector.
 
-           Optional arguments:
+           Optional argument:
             | ``active``  --  an array with three boolean values indicating
                               which cell vectors are active. [default: all three
                               True]

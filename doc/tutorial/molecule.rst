@@ -57,6 +57,7 @@ case it would be requested a second time. This mechanism is called `caching`. It
 imposes good scripting practices when using the MolMod package and also improves
 the efficiency of the scripts. These are a few convenient derived quantities:
 
+* ``chemical_formula``  --  A string containing the chemical formula.
 * ``com``  --  The center of mass of the molecule.
 * ``distance_matrix``  --  A square matrix with all inter-atomic distances in
   a molecule (ignoring periodic boundary conditions for the moment).

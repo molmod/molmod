@@ -57,11 +57,11 @@ class Translation(ReadOnly):
        The attribute t contains the actual translation vector, which is a numpy
        array with three elements.
     """
-    t = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1, npshape=(3,), npdtype=float)
+    t = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1, npshape=(3,),
+        npdtype=float, doc="the translation vector")
 
     def __init__(self, t):
-        """Initialize a translation object
-
+        """
            Argument:
             | ``t``  --  translation vector, a list-like object with three
                          numbers
@@ -147,7 +147,7 @@ class Rotation(ReadOnly):
        array with shape (3, 3).
     """
     def _check_r(self, r):
-        """Check the sanity of a rotation matrix"""
+        """the columns must orthogonal"""
         if abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
             abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
             abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
@@ -157,11 +157,11 @@ class Rotation(ReadOnly):
             raise ValueError("The rotation matrix is significantly non-orthonormal.")
 
 
-    r = ReadOnlyAttribute(numpy.ndarray, none=False, check=_check_r, npdim=2, npshape=(3,3), npdtype=float)
+    r = ReadOnlyAttribute(numpy.ndarray, none=False, check=_check_r, npdim=2,
+        npshape=(3,3), npdtype=float, doc="the rotation matrix")
 
     def __init__(self, r):
-        """Initialize a rotation object.
-
+        """
            Argument:
             | ``r``  --  rotation matrix, a 3 by 3 orthonormal array-like object
         """
@@ -305,8 +305,7 @@ class Complete(Translation, Rotation):
        part.
     """
     def __init__(self, r, t):
-        """Initialize a complete transformation, i.e. rotation & translation
-
+        """
            Arguments:
             | ``r``  --  rotation matrix, a 3 by 3 orthonormal array-like object
             | ``t``  --  translation vector, a list-like object with three

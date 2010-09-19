@@ -96,8 +96,8 @@ class Graph(ReadOnly):
        >>> # bond orders of ethene
        >>> graph.edge_property = numpy.array([2, 1, 1, 1, 1], int)
     """
-    edges = ReadOnlyAttribute(tuple, none=False)
-    num_vertices = ReadOnlyAttribute(int, none=False)
+    edges = ReadOnlyAttribute(tuple, none=False, doc="the incidence list")
+    num_vertices = ReadOnlyAttribute(int, none=False, doc="the number of vertices")
 
     def __init__(self, edges, num_vertices=None):
         """
@@ -144,7 +144,7 @@ class Graph(ReadOnly):
         self.num_vertices = real_num_vertices
 
     num_edges = property(lambda self: len(self.edges),
-        doc="The number of edges in the graph")
+        doc="*Read-only attribute:* the number of edges in the graph.")
 
     def __mul__(self, repeat):
         """Construct a graph that repeats this graph a number of times
@@ -831,8 +831,7 @@ class OneToOne(object):
     """
 
     def __init__(self, relations=None):
-        """Initialize a OneToOne object
-
+        """
            Argument:
             | ``relations``  --  initial relations for the bijection
         """
@@ -1010,8 +1009,7 @@ class CriteriaSet(object):
     """A set of criteria that can be associated with a custum pattern."""
 
     def __init__(self, vertex_criteria=None, edge_criteria=None, **kwargs):
-        """Initialize a CriteriaSet object
-
+        """
            Arguments:
             | ``vertex_criteria``  --  a dictionary with criteria for the
                                        vertices, ``key=vertex_index``,
@@ -1061,8 +1059,7 @@ class CritOr(object):
     """OR Operator for criteria objects"""
 
     def __init__(self, *criteria):
-        """Initialize a CritOr object
-
+        """
            Argument:
             | ``criteria``  --  a list of criteria to apply the OR operation to.
         """
@@ -1086,8 +1083,7 @@ class CritAnd(object):
     """AND Operator for criteria objects"""
 
     def __init__(self, *criteria):
-        """Initialize a CritAnd object
-
+        """
            Argument:
             | ``criteria``  --  a list of criteria to apply the AND operation to
         """
@@ -1111,8 +1107,7 @@ class CritXor(object):
     """XOR Operator for criteria objects"""
 
     def __init__(self, *criteria):
-        """Initialize a CritXor object
-
+        """
            Argument:
             | ``criteria``  --  a list of criteria to apply the XOR operation to.
         """
@@ -1140,8 +1135,7 @@ class CritNot(object):
     """Inverion of another criterion"""
 
     def __init__(self, criterion):
-        """Initialize a CritNot
-
+        """
            Argument:
             | ``criterion``  --  another criterion object
         """
@@ -1170,8 +1164,7 @@ class CustomPattern(Pattern):
        different labels.
     """
     def __init__(self, pattern_graph, criteria_sets=None, vertex_tags=None, start_vertex=None):
-        """Initialise a custom pattern.
-
+        """
         Arguments:
           | ``pattern_graph`` -- the pattern that has to be found in the subject
                                  graph.
@@ -1386,7 +1379,7 @@ class EqualPattern(CustomPattern):
     MatchClass = EqualMatch
 
     def __init__(self, pattern_graph):
-        """Initialize a EqualPattern"""
+        """See :meth:`CustomPattern.__init__`"""
         # Don't allow criteria sets and vertex_tags. This limitation is due to
         # the compare method below. TODO: Is this a good idea?
         CustomPattern.__init__(self, pattern_graph)
@@ -1410,8 +1403,7 @@ class RingPattern(Pattern):
     """A pattern that matches strong rings up to a given size"""
 
     def __init__(self, max_size):
-        """Initialize a ring pattern
-
+        """
            Argument:
             | ``max_size``  --  the maximum number of vertices in a ring
         """
@@ -1549,8 +1541,7 @@ class GraphSearch(object):
     """
 
     def __init__(self, pattern, debug=False):
-        """Initialize a GraphSearch object
-
+        """
            Arguments:
             | ``pattern``  --  A Pattern instance, describing the pattern to
                                look for
