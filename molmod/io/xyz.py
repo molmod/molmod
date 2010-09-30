@@ -64,14 +64,22 @@ class XYZReader(SlicedReader):
         self.file_unit = file_unit
 
         try:
+            self.symbols = None
             self._first = self._read_frame()
             self.numbers = numpy.zeros(len(self.symbols), int)
             for index, symbol in enumerate(self.symbols):
-                atom_info = periodic[symbol]
-                if atom_info is None:
-                    self.numbers[index] = 0
-                else:
-                    self.numbers[index] = atom_info.number
+                try:
+                    number = int(symbol)
+                    symbol = periodic[number].symbol
+                    self.symbols[index] = symbol
+                except ValueError:
+                    atom_info = periodic[symbol]
+                    if atom_info is not None:
+                        number = atom_info.number
+                    else:
+                        number = 0
+                self.numbers[index] = number
+            self.symbols = tuple(self.symbols)
             self._f.seek(0)
         except StopIteration:
             raise FileFormatError("Could not read first frame from XYZ file. Incorrect file format.")
@@ -88,7 +96,8 @@ class XYZReader(SlicedReader):
 
         size = self.read_size()
         title = self._f.readline()[:-1]
-        symbols = []
+        if self.symbols is None:
+            symbols = []
         coordinates = numpy.zeros((size, 3), float)
         for counter in xrange(size):
             line = self._f.readline()
@@ -97,7 +106,8 @@ class XYZReader(SlicedReader):
             words = line.split()
             if len(words) < 4:
                 raise StopIteration
-            symbols.append(words[0])
+            if self.symbols is None:
+                symbols.append(words[0])
             try:
                 coordinates[counter, 0] = float(words[1])
                 coordinates[counter, 1] = float(words[2])
@@ -105,7 +115,8 @@ class XYZReader(SlicedReader):
             except ValueError:
                 raise StopIteration
         coordinates *= self.file_unit
-        self.symbols = tuple(symbols)
+        if self.symbols is None:
+            self.symbols = symbols
         return title, coordinates
 
     def _skip_frame(self):
@@ -122,8 +133,8 @@ class XYZReader(SlicedReader):
            This can be useful to configure your program before handeling the
            actual trajectory.
         """
-        title, coordinates = self._first
-        molecule = Molecule(self.numbers, coordinates, title, symbols=self.symbols)
+        title, coordinates, symbols = self._first
+        molecule = Molecule(self.numbers, coordinates, title, self.symbols)
         return molecule
 
 

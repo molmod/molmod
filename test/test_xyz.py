@@ -81,3 +81,12 @@ class XYZTestCase(BaseTestCase):
     def test_probes(self):
         xyz = XYZFile("input/probes.xyz")
         self.assertEqual(xyz.numbers[-1], 0)
+
+    def test_dopamine(self):
+        xyz = XYZFile("input/dopamine.xyz")
+        self.assertEqual(xyz.symbols[0], "O")
+        self.assertEqual(xyz.numbers[0], 8)
+        self.assertEqual(xyz.symbols[5], "C")
+        self.assertEqual(xyz.numbers[5], 6)
+        self.assertEqual(xyz.symbols[-1], "H")
+        self.assertEqual(xyz.numbers[-1], 1)
