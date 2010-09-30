@@ -58,6 +58,10 @@ class MetaTestCase(unittest.TestCase):
         self.check_example("002_graphs", "c_distances.py")
         self.check_example("002_graphs", "d_symmetries.py")
 
+    def test_example_003(self):
+        self.check_example("003_internal_coordinates", "a_bond_length.py")
+        self.check_example("003_internal_coordinates", "b_bending_angles.py")
+
     def test_code_quality(self):
         root = "../molmod"
         self.assert_(os.path.isdir(root))
