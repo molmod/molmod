@@ -23,6 +23,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 static inline double distance_sq(double *p1, double *p2) {
