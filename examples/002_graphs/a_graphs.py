@@ -23,12 +23,12 @@ mol.set_default_graph()
 # will also detect the breaking bond in a transition state.
 
 # 3) Print all edges, i.e. bonds in the graph. The edges list is ordered and
-# each item is a frozenset with two elements to stress the undericted nature of 
+# each item is a frozenset with two elements to stress the undericted nature of
 # the molecular graphs.
 print "All edges (or bonds)"
 print mol.graph.edges
 print
-# Print the third bond. 
+# Print the third bond.
 print "The third bond:", mol.graph.edges[2]
 # It is not possible to access only one of the two atom indexes of an edge. The
 # following won't work because a frozenset is like unordered list.
@@ -54,5 +54,3 @@ for i, j in mol.graph.edges:
         print "C-H bond:", i, j
     elif mol.numbers[j] == 6 and mol.numbers[i] == 1:
         print "C-H bond:", j, i
-
-

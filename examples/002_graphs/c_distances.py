@@ -6,8 +6,8 @@ from molmod import *
 # initialize the graph.
 mol = Molecule.from_file("caffeine.xyz")
 mol.set_default_graph()
-# The distances attribute is a square matrix of integers with a row and column 
-# for every atom. 
+# The distances attribute is a square matrix of integers with a row and column
+# for every atom.
 print "Number of atoms:", mol.size
 print "Shape of the distances array:", mol.graph.distances.shape
 

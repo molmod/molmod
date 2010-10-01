@@ -30,4 +30,3 @@ for i, ns in mol.graph.neighbors.iteritems():
             continue
         # Print stuff
         print "C=%i H=%i H=%i H=%i" % (i, h_indexes[0], h_indexes[1], h_indexes[2])
-

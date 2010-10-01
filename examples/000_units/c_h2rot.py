@@ -27,4 +27,3 @@ prob = q_rot_term(0)/q_rot
 
 print "The rotational temperature [Kelvin]:", rot_temp
 print "Probability [%]:", prob*100
-
