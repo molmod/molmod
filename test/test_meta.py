@@ -61,6 +61,7 @@ class MetaTestCase(unittest.TestCase):
     def test_example_003(self):
         self.check_example("003_internal_coordinates", "a_bond_length.py")
         self.check_example("003_internal_coordinates", "b_bending_angles.py")
+        self.check_example("003_internal_coordinates", "c_ff_hessian.py")
 
     def test_code_quality(self):
         root = "../molmod"
