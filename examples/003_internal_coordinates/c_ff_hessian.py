@@ -32,7 +32,7 @@ class HarmonicEnergyTerm(object):
         # Compute the derivatives of the bond stretch towards the two cartesian
         # coordinates. The bond length is computed too, but not used.
         args = [coordinates[i] for i in self.indexes]
-        args.append(1)
+        args.append(1) # Request first order derivatives with the last argument.
         q, g = self.icfn(*args)
         # Add the contribution to the Hessian (an outer product)
         for ja, ia in enumerate(self.indexes):
@@ -144,6 +144,8 @@ def setup_hydrocarbon_ff(graph):
     return ForceField(terms)
 
 
+# This if block is only executed when this file is ran as a program, and not
+# when it is loaded as a module.
 if __name__ == "__main__":
     propane = Molecule.from_file("propane.xyz")
     propane.set_default_graph()
