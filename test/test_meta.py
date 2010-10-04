@@ -64,6 +64,9 @@ class MetaTestCase(unittest.TestCase):
         self.check_example("003_internal_coordinates", "c_ff_hessian.py")
         self.check_example("003_internal_coordinates", "d_dft_hessian.py")
 
+    def test_example_004(self):
+        self.check_example("004_patterns", "a_propane_types.py")
+
     def test_code_quality(self):
         root = "../molmod"
         self.assert_(os.path.isdir(root))
