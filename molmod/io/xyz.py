@@ -133,8 +133,8 @@ class XYZReader(SlicedReader):
            This can be useful to configure your program before handeling the
            actual trajectory.
         """
-        title, coordinates, symbols = self._first
-        molecule = Molecule(self.numbers, coordinates, title, self.symbols)
+        title, coordinates = self._first
+        molecule = Molecule(self.numbers, coordinates, title, symbols=self.symbols)
         return molecule
 
 

@@ -36,6 +36,12 @@ __all__ = ["XYZTestCase"]
 class XYZTestCase(BaseTestCase):
     def test_xyz_reader(self):
         xr = XYZReader("input/water.xyz")
+        mol = xr.get_first_molecule()
+        self.assertEqual(mol.symbols, ("O", "H", "H"))
+        self.assertArraysEqual(mol.numbers, numpy.array([8,1,1]))
+        self.assertEqual(mol.title, "water")
+        self.assertAlmostEqual(mol.coordinates[0,0]/angstrom, -0.0914980466)
+        self.assertAlmostEqual(mol.coordinates[2,2]/angstrom, -0.7649930856)
         self.assertEqual(xr.symbols, ("O", "H", "H"))
         self.assertArraysEqual(xr.numbers, numpy.array([8,1,1]))
         title, coordinates = xr.next()
