@@ -133,3 +133,13 @@ Problems
 
 All atom types in dopamine
 --------------------------
+
+Extend the script with the atom types for dopamine such that it recognizes also
+the following atom types. Now the script should assign an atom type to every
+atom in dopamine.
+
+- ``hcsp3``: hydrogens bonded to sp3 carbons
+- ``hcsp2``: hydrogens bonded to sp2 carbons
+- ``ooh``: hydroxyl oxygens
+- ``nam``: amine nitrogen
+- ``ham``: amine hydrogen
