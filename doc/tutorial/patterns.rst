@@ -98,9 +98,17 @@ File: ``examples/004_patterns/a_propane_types.py``
 Some atom types in dopamine
 ---------------------------
 
-- C-sp3 oxygens
-- C-sp2 oxygens
-- Hydroxyl oxygens
+The script below detects just a few atom types in the dopamine molecule.
+
+- ``csp3``: sp3 carbons
+- ``csp2``: sp2 carbons
+- ``hoh``: hydroxyl hydrogens
+
+File: ``examples/004_patterns/b_dopamine_types.py``
+
+.. literalinclude:: ../../examples/004_patterns/b_dopamine_types.py
+
+This script does not complain when some atoms could not be labeled.
 
 
 Detecting aromatic rings in ...

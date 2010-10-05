@@ -66,6 +66,7 @@ class MetaTestCase(unittest.TestCase):
 
     def test_example_004(self):
         self.check_example("004_patterns", "a_propane_types.py")
+        self.check_example("004_patterns", "b_dopamine_types.py")
 
     def test_code_quality(self):
         root = "../molmod"
