@@ -24,8 +24,8 @@ Examples
 ~~~~~~~~
 
 
-All Atom types in propane
--------------------------
+`Basic` atom types in propane
+-----------------------------
 
 The script below detects the following atom types based on the bond graph of the
 propane molecule.
@@ -75,15 +75,33 @@ function, e.g. as follows::
 This atom type definition can be used in exactly the same way as the
 ``is_carbon`` function. It is clear that atom types based on simple explicit
 functions are error prone and time-consuming. Therefore the modules
-:mod:`molmod.graphs` and :mod:`molmod.molecular_graphs` introduce classes whose
-instances act as atom-types. For example the following is a completely
-equivalent definition of the two atom types so far::
+:mod:`molmod.graphs` and :mod:`molmod.molecular_graphs` introduce ``Criteria``
+classes whose instances act as atom-types. For example the following is a
+completely equivalent definition of the two atom types so far::
 
     is_carbon = HasAtomNumber(6)
     is_cach3 = CritAnd(is_carbon, HasNeighborNumbers(1, 1, 1, 6))
 
 These atom types act as functions that can be used in exactly the same way as
-the explicit functions given above, but they are much easier to define.
+the explicit functions given above, but they are much easier to define. The
+following table contains all ``Criteria`` classes that can be used to construct
+atom types. Atom types constructed with ``Criteria`` classes will be referred to
+as `basic` atom types. As we will see below, there is a second way to define
+`advanced` atom types.
+
+============================================= ===================================================================
+Class                                         Description
+============================================= ===================================================================
+Anything()                                    ``True`` for any atom
+CritOr(crit1, crit2, ...)                     ``True`` when one of the arguments would return True
+CritAnd(crit1, crit2, ...)                    ``True`` only when all arguments would return True
+CritXor(crit1, crit2, ...)                    ``True`` when an odd number of arguments would return True
+CritNot(crit)                                 ``True`` only when the argument would return False
+HasAtomNumber(number)                         ``True`` for an atom that has the given atom number
+HasNumNeighbors(count)                        ``True`` for an atom with the given number of neighbors
+HasNeighborNumbers(number1, number2, ...)     ``True`` for an atom with the same number of bonds as there are arguments and when the bonded atoms have the given atom numbers
+HasNeighbors(crit1, crit2, ...)               ``True`` for an atom with the same number of bonds as there are arguments and when each bonded atoms matches one of the given criteria
+============================================= ===================================================================
 
 The script below detects all atom types in propane by looping over all atoms and
 testing which atom type function returns True for each atom. If some atom has
@@ -95,8 +113,8 @@ File: ``examples/004_patterns/a_propane_types.py``
 
 
 
-Some atom types in dopamine
----------------------------
+Some `basic` atom types in dopamine
+-----------------------------------
 
 The script below detects just a few atom types in the dopamine molecule.
 
@@ -111,6 +129,11 @@ File: ``examples/004_patterns/b_dopamine_types.py``
 This script does not complain when some atoms could not be labeled.
 
 
+Some `advanced` atom types in dopamine
+--------------------------------------
+
+
+
 Detecting aromatic rings in ...
 -------------------------------
 
@@ -121,6 +144,12 @@ Detecting benzene fragments in ...
 
 All five-membered rings in a zeolite cluster
 --------------------------------------------
+
+In this example we show how one can identify all 5T rings (i.e. with 5 silicon
+and 5 oxygen atoms) in a zeolite cluster. We will use the following fragment of
+the MFI framework as a cluster model:
+
+.. image:: mfi_fragment_small.png
 
 
 Restoring consistent atom order
@@ -134,12 +163,13 @@ Problems
 All atom types in dopamine
 --------------------------
 
-Extend the script with the atom types for dopamine such that it recognizes also
-the following atom types. Now the script should assign an atom type to every
-atom in dopamine.
+Extend the script ``b_dopamine_types.py`` such that it recognizes also the
+following atom types:
 
 - ``hcsp3``: hydrogens bonded to sp3 carbons
 - ``hcsp2``: hydrogens bonded to sp2 carbons
 - ``ooh``: hydroxyl oxygens
 - ``nam``: amine nitrogen
 - ``ham``: amine hydrogen
+
+Now the script should assign an atom type to every atom in dopamine.
