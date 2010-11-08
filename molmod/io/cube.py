@@ -81,10 +81,11 @@ class CubeReader(object):
         for i in xrange(self.num_atoms):
             self.numbers[i], self.coordinates[i] = read_coordinate_line(self.f.readline())
 
-        self.counter_a = 0
-        self.counter_b = 0
-        self.counter_c = 0
-        self.values = []
+        self._counter_a = 0
+        self._counter_b = 0
+        self._counter_c = 0
+        self._done = False
+        self._values = []
 
     def __del__(self):
         self.f.close()
@@ -97,20 +98,24 @@ class CubeReader(object):
 
            This method is part of the iterator protocol.
         """
-        if len(self.values) == 0:
+        if self._done:
+            raise StopIteration
+        if len(self._values) == 0:
             line = self.f.readline()
             if len(line) == 0:
                 raise StopIteration
-            self.values = [float(word) for word in line.split()]
-        value = self.values.pop(0)
-        vector = self.origin + self.counter_a*self.vector_a + self.counter_b*self.vector_b + self.counter_c*self.vector_c
-        self.counter_c += 1
-        if self.counter_c >= self.num_c:
-            self.counter_c = 0
-            self.counter_b += 1
-            if self.counter_b >= self.num_b:
-                self.counter_b = 0
-                self.counter_a += 1
-                if self.counter_a >= self.num_a:
-                    raise StopIteration
+            self._values = [float(word) for word in line.split()]
+        value = self._values.pop(0)
+        vector = self.origin + self._counter_a*self.vector_a \
+                             + self._counter_b*self.vector_b \
+                             + self._counter_c*self.vector_c
+        self._counter_c += 1
+        if self._counter_c >= self.num_c:
+            self._counter_c = 0
+            self._counter_b += 1
+            if self._counter_b >= self.num_b:
+                self._counter_b = 0
+                self._counter_a += 1
+                if self._counter_a >= self.num_a:
+                    self._done = True
         return vector, value
