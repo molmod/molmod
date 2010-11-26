@@ -108,6 +108,45 @@ class MolecularGraph(Graph):
             result = cls(edges, molecule.numbers, orders)
         else:
             result = cls(edges, molecule.numbers)
+
+        # run a check on all neighbors. if two bonds point in a direction that
+        # differs only by 45 deg. the longest of the two is discarded. the
+        # double loop over the neighbors is done such that the longest bonds
+        # are eliminated first
+        slated_for_removal = set([])
+        threshold = 0.5**0.5
+        for c, ns in result.neighbors.iteritems():
+            lengths_ns = []
+            for n in ns:
+                delta = molecule.coordinates[n] - molecule.coordinates[c]
+                length = numpy.linalg.norm(delta)
+                lengths_ns.append([length, delta, n])
+            lengths_ns.sort(reverse=True, cmp=(lambda r0, r1: cmp(r0[0], r1[0])))
+            for i0, (length0, delta0, n0) in enumerate(lengths_ns):
+                for i1, (length1, delta1, n1) in enumerate(lengths_ns[:i0]):
+                    if length1 == 0.0:
+                        continue
+                    cosine = numpy.dot(delta0, delta1)/length0/length1
+                    if cosine > threshold:
+                        # length1 > length0
+                        slated_for_removal.add((c,n1))
+                        lengths_ns[i1][0] = 0.0
+        # construct a mask
+        mask = numpy.ones(len(edges), bool)
+        for i0, i1 in slated_for_removal:
+            edge_index = result.edge_index.get(frozenset([i0,i1]))
+            if edge_index is None:
+                raise ValueError('Could not find edge that has to be removed: %i %i' % (i0, i1))
+            mask[edge_index] = False
+        # actual removal
+        edges = [edges[i] for i in xrange(len(edges)) if mask[i]]
+        if do_orders:
+            bond_order = [bond_order[i] for i in xrange(len(bond_order)) if mask[i]]
+            result = cls(edges, molecule.numbers, orders)
+        else:
+            result = cls(edges, molecule.numbers)
+
+        lengths = [lengths[i] for i in xrange(len(lengths)) if mask[i]]
         result.bond_lengths = numpy.array(lengths)
 
         return result
