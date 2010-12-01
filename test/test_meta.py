@@ -22,8 +22,6 @@
 # --
 
 
-from tamkin import *
-
 import unittest, os, glob
 
 
