@@ -1037,7 +1037,7 @@ class Minimizer(object):
         # the current step size
         self.step = None
 
-        self._iterate()
+        self.success = self._iterate()
 
     def get_final(self):
         """Return the final solution in the original coordinates"""
@@ -1065,7 +1065,7 @@ class Minimizer(object):
                 self._screen("Line search failed", newline=True)
                 if self.search_direction.is_sd():
                     self._screen("LINE FAILED", newline=True)
-                    return
+                    return False
                 else:
                     self.search_direction.reset()
                     continue
@@ -1088,12 +1088,12 @@ class Minimizer(object):
             # check convergence, part 2
             if converged:
                 self._screen("CONVERGED", newline=True)
-                return
+                return True
             # check stop loss on the gradient in original basis
             lost = self.stop_loss_condition(self.counter, self.f, gradient_orig)
             if lost:
                 self._screen("LOST", newline=True)
-                return
+                return False
             # call back
             if self.callback is not None:
                 self.callback(self)
