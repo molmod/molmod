@@ -26,6 +26,7 @@ from common import BaseTestCase
 
 from molmod.molecules import *
 from molmod.unit_cells import UnitCell
+from molmod.units import angstrom, deg
 
 import unittest, numpy
 
@@ -119,6 +120,15 @@ class MoleculeTestCase(BaseTestCase):
         molecule = Molecule.from_file("input/water.xyz")
         molecule.set_default_graph()
         self.assertEqual(molecule.graph.num_edges, 2)
+
+    def test_default_graph_periodic(self):
+        molecule = Molecule.from_file("input/lau.xyz")
+        molecule = molecule.copy_with(unit_cell=UnitCell.from_parameters3(
+            numpy.array([14.587, 12.877, 7.613])*angstrom,
+            numpy.array([90.000, 111.159, 90.000])*deg
+        ))
+        molecule.set_default_graph()
+        self.assertEqual(molecule.graph.num_edges, 4*molecule.size/3)
 
     def test_from_file_cml(self):
         molecule = Molecule.from_file("input/caplayer.cml")

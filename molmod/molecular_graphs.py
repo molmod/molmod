@@ -85,7 +85,7 @@ class MolecularGraph(Graph):
         """
         from molmod.bonds import bonds
 
-        unit_cell = getattr(molecule, "unit_cell", None)
+        unit_cell = molecule.unit_cell
         pair_search = PairSearchIntra(
             molecule.coordinates,
             bonds.max_length*bonds.bond_tolerance,
