@@ -170,7 +170,7 @@ class ReadOnlyAttribute(object):
             result = result.view()
         return result
 
-    def __set__(self, instance, value):
+    def __set__(self, instance, value, do_check=True):
         if value is None and not self.none:
             raise TypeError("This attribute may not be assigned None.")
         if self.ptype is not None and issubclass(self.ptype, tuple) and value is not None:
@@ -215,10 +215,14 @@ class ReadOnlyAttribute(object):
             # mutable, which we don't like in case the object is not a numpy
             # array.
             hash(value)
+        if do_check:
+            self.check_wrapper(instance, value)
+        setattr(instance, self.attribute_name, value)
+
+    def check_wrapper(self, instance, value):
         if not (self.check is None or value is None):
             # Only check if there is one and the value is not None.
             self.check(instance, value)
-        setattr(instance, self.attribute_name, value)
 
 
 class ReadOnlyType(type):
@@ -268,7 +272,13 @@ class ReadOnly(object):
             descriptor = self.__class__.__dict__[key]
             if not isinstance(descriptor, ReadOnlyAttribute):
                 raise RunTimeError("Got wrong class attribute during unpickling.")
-            descriptor.__set__(self, val)
+            # Do not call custom check routines before all attributes
+            # are assigned.
+            descriptor.__set__(self, val, do_check=False)
+        # Now do the custon checks
+        for key, val in state.iteritems():
+            descriptor = self.__class__.__dict__[key]
+            descriptor.check_wrapper(self, val)
 
     def copy_with(self, **kwargs):
         """Return a copy with (a few) changed attributes

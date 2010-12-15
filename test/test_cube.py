@@ -47,3 +47,12 @@ class CubeTestCase(BaseTestCase):
         vector, value = cr.next()
         self.assertAlmostEqual(value, 2.77030E-13)
         self.assertArraysAlmostEqual(vector, numpy.array([-9.375592, -8.571340, -4.994197]))
+
+    def test_cube_reader_size(self):
+        cr = CubeReader("input/alanine.cube")
+        self.assertEqual(cr.num_a, 11)
+        self.assertEqual(cr.num_b, 10)
+        self.assertEqual(cr.num_c, 9)
+        l = list(cr)
+        self.assertEqual(len(cr.f.read().strip()), 0)
+        self.assertEqual(len(l), 11*10*9)

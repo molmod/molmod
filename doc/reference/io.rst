@@ -76,7 +76,7 @@ Input/output
 .. automodule:: molmod.io.pdb
    :members:
 
-:mod:`molmod.io.psf` -- PDF Files
+:mod:`molmod.io.psf` -- PSF Files
 ---------------------------------
 
 .. automodule:: molmod.io.psf

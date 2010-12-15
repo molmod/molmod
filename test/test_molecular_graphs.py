@@ -524,3 +524,17 @@ class MolecularGraphTestCase(unittest.TestCase):
         except:
             pass
         HasNeighbors(HasAtomNumber(1), HasAtomNumber(6))
+
+    def test_zirconium(self):
+        mol = Molecule.from_file('input/oh3siozroh3.xyz')
+        mol.set_default_graph()
+        assert len(mol.graph.edges)==14
+        mol = Molecule.from_file('input/osih2osihosih2osih2ozrh2oh.xyz')
+        mol.set_default_graph()
+        assert len(mol.graph.edges)==21
+        mol = Molecule.from_file('input/h3zrosihohosioh3.xyz')
+        mol.set_default_graph()
+        assert len(mol.graph.edges)==16
+        mol = Molecule.from_file('input/zr4o8-3.xyz')
+        mol.set_default_graph()
+        assert len(mol.graph.edges)==12
