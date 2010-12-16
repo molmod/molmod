@@ -5,3 +5,4 @@ rm -vr output
 rm -v MANIFEST
 rm -vr dist
 rm -vr build
+rm -v molmod/extmodule.c
