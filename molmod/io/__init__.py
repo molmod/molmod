@@ -34,6 +34,7 @@ from molmod.io.cml import *
 from molmod.io.common import *
 from molmod.io.cp2k import *
 from molmod.io.cpmd import *
+from molmod.io.crystal import *
 from molmod.io.cube import *
 from molmod.io.dlpoly import *
 from molmod.io.fchk import *
