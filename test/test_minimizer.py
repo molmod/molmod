@@ -221,3 +221,15 @@ class MinimizerTestCase(BaseTestCase):
             self.assertArraysAlmostEqual(orig, check)
             check = prec_fun.undo(prec_fun.do(orig))
             self.assertArraysAlmostEqual(orig, check)
+
+    def test_stop_loss_step(self):
+        x_init = numpy.zeros(2, float)
+        search_direction = ConjugateGradient()
+        line_search = NewtonLineSearch()
+        convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
+        stop_loss = StopLossCondition(max_iter=50, step_min=1e-2)
+        minimizer = Minimizer(
+            x_init, fun, search_direction, line_search, convergence, stop_loss,
+            anagrad=True, verbose=False,
+        )
+        assert numpy.sqrt((minimizer.step**2).mean()) < 1e-2

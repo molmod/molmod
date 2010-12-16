@@ -828,7 +828,7 @@ class ConvergenceCondition(object):
 
 class StopLossCondition(object):
     """Callable object that checks if minimizer has lost track"""
-    def __init__(self, max_iter=None, fun_margin=None, grad_margin=None):
+    def __init__(self, max_iter=None, fun_margin=None, grad_margin=None, step_min=None):
         """
            Optional arguments:
             | ``max_iter``  --  the maximum number of iterations allowed
@@ -838,6 +838,8 @@ class StopLossCondition(object):
             | ``grad_margin``  --  if the RMS value of the gradient components
                                    goes above the lowest value plus this
                                    threshold, the minimization is aborted
+            | ``step_min``  --  If the RMS step size drops below this margin, the
+                                optimization is interrupted.
 
            Only the present arguments define when the minimization has lost
            track.
@@ -845,6 +847,7 @@ class StopLossCondition(object):
         self.max_iter = max_iter
         self.fun_margin = fun_margin
         self.grad_margin = grad_margin
+        self.step_min = step_min
 
         self.reset()
 
@@ -852,7 +855,7 @@ class StopLossCondition(object):
         self.fn_lowest = None
         self.grad_rms_lowest = None
 
-    def __call__(self, counter, fn, gradient):
+    def __call__(self, counter, fn, gradient, step):
         """Return True when the minimizer has lost track"""
         if self.max_iter is not None and counter >= self.max_iter:
             return True
@@ -868,6 +871,11 @@ class StopLossCondition(object):
             if self.grad_rms_lowest is None or grad_rms < self.grad_rms_lowest:
                 self.grad_rms_lowest = grad_rms
             elif grad_rms > self.grad_rms_lowest + self.grad_margin:
+                return True
+
+        if self.step_min is not None:
+            step_rms = numpy.sqrt((step**2).mean())
+            if self.step_min > step_rms:
                 return True
 
         # all is fine
@@ -1090,7 +1098,7 @@ class Minimizer(object):
                 self._screen("CONVERGED", newline=True)
                 return True
             # check stop loss on the gradient in original basis
-            lost = self.stop_loss_condition(self.counter, self.f, gradient_orig)
+            lost = self.stop_loss_condition(self.counter, self.f, gradient_orig, step_orig)
             if lost:
                 self._screen("LOST", newline=True)
                 return False
