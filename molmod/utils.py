@@ -269,15 +269,19 @@ class ReadOnly(object):
     def __setstate__(self, state):
         """Part of the pickle protocol"""
         for key, val in state.iteritems():
-            descriptor = self.__class__.__dict__[key]
+            descriptor = self.__class__.__dict__.get(key)
             if not isinstance(descriptor, ReadOnlyAttribute):
-                raise RunTimeError("Got wrong class attribute during unpickling.")
+                # Got wrong class attribute during unpickling. Just ignore.
+                continue
             # Do not call custom check routines before all attributes
             # are assigned.
             descriptor.__set__(self, val, do_check=False)
         # Now do the custon checks
         for key, val in state.iteritems():
-            descriptor = self.__class__.__dict__[key]
+            descriptor = self.__class__.__dict__.get(key)
+            if not isinstance(descriptor, ReadOnlyAttribute):
+                # Got wrong class attribute during unpickling. Just ignore.
+                continue
             descriptor.check_wrapper(self, val)
 
     def copy_with(self, **kwargs):
