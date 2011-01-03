@@ -191,7 +191,7 @@ class MinimizerTestCase(BaseTestCase):
         prec_fun.scales = numpy.random.uniform(1,2,2)
         check_anagrad(prec_fun, x_init, 1e-5, 1e-4)
         dx = random_unit(len(x_init))*1e-4
-        check_delta(prec_fun, x_init, x_init+dx, 1e-4)
+        check_delta(prec_fun, x_init, x_init+dx, 1e-6)
 
     def test_check_anagrad_full_prec(self):
         raise SkipTest

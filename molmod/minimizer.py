@@ -1209,14 +1209,22 @@ def check_delta(fun, x0, x1, threshold):
         | ``do_gradient``  --  When False, only the function value is returned.
                                When True, a 2-tuple with the function value and
                                the gradient are returned [default=False]
+
+       An assertion error with detailed description is raised when the threshold
+       is surpassed. This makes check_delta suitable for unit testing purposes.
+       Additionally, the difference between the function values must be larger
+       than the threshold to guarantee the sensitivity of the test.
     """
     f0, grad0 = fun(x0, do_gradient=True)
     f1, grad1 = fun(x1, do_gradient=True)
     grad = 0.5*(grad0+grad1)
     delta_f = f1 - f0
     delta_x = x1 - x0
-    if abs(delta_f - numpy.dot(delta_x, grad)) > threshold:
-        raise ValueError("Error in the analytical gradient, delta_f is %s, should be about %s" % (delta_f, numpy.dot(delta_x, grad)))
+    if threshold > abs(delta_f):
+        raise AssertionError('The threshold (=%.2e) is larger than abs(delta_f) (=%.2e).' % (threshold, abs(delta_f)))
+    expected = numpy.dot(delta_x, grad)
+    if abs(delta_f - expected) > threshold:
+        raise AssertionError('Error in the analytical gradient: delta_f is %s, should be about %s.' % (delta_f, expected))
 
 
 def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
