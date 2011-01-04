@@ -190,8 +190,8 @@ class MinimizerTestCase(BaseTestCase):
         prec_fun = DiagonalPreconditioner(fun, 20, 1e-2)
         prec_fun.scales = numpy.random.uniform(1,2,2)
         check_anagrad(prec_fun, x_init, 1e-5, 1e-4)
-        dx = random_unit(len(x_init))*1e-4
-        check_delta(prec_fun, x_init, x_init+dx, 1e-6)
+        dxs = random_unit((100, len(x_init)))*1e-4
+        check_delta(prec_fun, x_init, dxs, 1e-6)
 
     def test_check_anagrad_full_prec(self):
         raise SkipTest
@@ -203,8 +203,8 @@ class MinimizerTestCase(BaseTestCase):
         prec_fun.scales = abs(evals) + 1.0
         prec_fun.rotation = evecs
         check_anagrad(prec_fun, x_init, 1e-5, 1e-4)
-        dx = random_unit(len(x_init))*1e-4
-        check_delta(prec_fun, x_init, x_init+dx, 1e-4)
+        dxs = random_unit((100, len(x_init)))*1e-4
+        check_delta(prec_fun, x_init, dxs, 1e-6)
 
     def test_full_prec_consitency(self):
         x_init = numpy.zeros(2, float)

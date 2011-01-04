@@ -1191,40 +1191,53 @@ def check_anagrad(fun, x0, epsilon, threshold):
             raise ValueError("Error in the analytical gradient, component %i, got %s, should be about %s" % (i, ana_grad[i], num_grad_comp))
 
 
-def check_delta(fun, x0, x1, threshold):
+def check_delta(fun, x, dxs, threshold):
     """Check the difference between two function values using the analytical gradient
 
        Arguments:
-        | ``fun``  --  the function to be tested, more info below
-        | ``x0``  --  the first argument vector
-        | ``x1``  --  the second argument vector, preferentially close to x0
-        | ``threshold``  --  the maximum acceptable deviation between the
-                             difference of function values in x0 and x1 and the
+        | ``fun``  --  The function to be tested, more info below.
+        | ``x``  --  The argument vector.
+        | ``dxs``  --  A matrix where each row is a vector of small differences
+                       to be added to the argument vector.
+        | ``threshold``  --  The maximum acceptable deviation between the
+                             difference of function values in x and x+dx and the
                              approximation of the two function values using a
                              first order Taylor approximation.
 
        The function ``fun`` takes a mandatory argument ``x`` and an optional
        argument ``do_gradient``:
-        | ``x``  --  the arguments of the function to be tested
+        | ``x``  --  The arguments of the function to be tested.
         | ``do_gradient``  --  When False, only the function value is returned.
                                When True, a 2-tuple with the function value and
-                               the gradient are returned [default=False]
+                               the gradient are returned. [default=False]
 
-       An assertion error with detailed description is raised when the threshold
-       is surpassed. This makes check_delta suitable for unit testing purposes.
-       Additionally, the difference between the function values must be larger
-       than the threshold to guarantee the sensitivity of the test.
+       For every row in dxs, the following test is repeated:
+
+       1) D1 = 'f(x+dx) - f(x)' is computed.
+       2) D2 = '(grad f(x+dx) + grad f(x)) . dx' is computed.
+
+       There should be at least 50% of dx rows for which D1 is larger than the
+       threshold. If not an AssertionError is raised.
+
+       For each case where D1 is larger than the threshold, the absolute
+       difference |D1 - D2| should be larger than the threshold.
     """
-    f0, grad0 = fun(x0, do_gradient=True)
-    f1, grad1 = fun(x1, do_gradient=True)
-    grad = 0.5*(grad0+grad1)
-    delta_f = f1 - f0
-    delta_x = x1 - x0
-    if threshold > abs(delta_f):
-        raise AssertionError('The threshold (=%.2e) is larger than abs(delta_f) (=%.2e).' % (threshold, abs(delta_f)))
-    expected = numpy.dot(delta_x, grad)
-    if abs(delta_f - expected) > threshold:
-        raise AssertionError('Error in the analytical gradient: delta_f is %s, should be about %s.' % (delta_f, expected))
+    df_small = []
+    for dx in dxs:
+        f0, grad0 = fun(x, do_gradient=True)
+        f1, grad1 = fun(x+dx, do_gradient=True)
+        grad = 0.5*(grad0+grad1)
+        df = f1 - f0
+        if abs(df) < threshold:
+            df_small.append(df)
+        else:
+            expected = numpy.dot(dx, grad)
+            if abs(df - expected) > threshold:
+                raise AssertionError('Error in the analytical gradient: df is %s, should be about %s.' % (df, expected))
+    if len(df_small)*2 > len(dxs):
+        raise AssertionError('Less than 50%% of the dx rows leads to a sufficiently large D1. (%i out of %i). small df\'s: %s' % (
+            len(dxs) - len(df_small), len(dxs), '[%s]' % ' '.join('%.1e' % df for df in df_small)
+        ))
 
 
 def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
