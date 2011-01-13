@@ -119,6 +119,8 @@ class MolecularGraph(Graph):
             lengths_ns = []
             for n in ns:
                 delta = molecule.coordinates[n] - molecule.coordinates[c]
+                if unit_cell is not None:
+                    delta = unit_cell.shortest_vector(delta)
                 length = numpy.linalg.norm(delta)
                 lengths_ns.append([length, delta, n])
             lengths_ns.sort(reverse=True, cmp=(lambda r0, r1: cmp(r0[0], r1[0])))

@@ -123,10 +123,12 @@ class MoleculeTestCase(BaseTestCase):
 
     def test_default_graph_periodic(self):
         molecule = Molecule.from_file("input/lau.xyz")
-        molecule = molecule.copy_with(unit_cell=UnitCell.from_parameters3(
+        uc = UnitCell.from_parameters3(
             numpy.array([14.587, 12.877, 7.613])*angstrom,
             numpy.array([90.000, 111.159, 90.000])*deg
-        ))
+        )
+        uc = uc.alignment_c*uc
+        molecule = molecule.copy_with(unit_cell=uc)
         molecule.set_default_graph()
         self.assertEqual(molecule.graph.num_edges, 4*molecule.size/3)
 

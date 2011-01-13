@@ -98,10 +98,10 @@ class UnitCell(ReadOnly):
 
         matrix = numpy.zeros((3, 3), float)
 
-        # first cell vector
+        # first cell vector along x-axis
         matrix[0, 0] = lengths[0]
 
-        # second cell vector
+        # second cell vector in x-y plane
         matrix[0, 1] = numpy.cos(angles[2])*lengths[1]
         matrix[1, 1] = numpy.sin(angles[2])*lengths[1]
 
