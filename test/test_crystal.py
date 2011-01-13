@@ -79,4 +79,4 @@ def test_crystal_quartz():
     assert cryout.density_matrix[0,0] == 0.0
     assert abs(cryout.density_matrix[2,2] - 2.1646E-02) < 1e-5
     print cryout.density_matrix[1,4]
-    assert abs(cryout.density_matrix[1,4] - -1.9742E-01) < 1e-4
+    assert abs(cryout.density_matrix[4,1] - -1.9742E-01) < 1e-4
