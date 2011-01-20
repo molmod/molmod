@@ -28,7 +28,7 @@ import numpy as np
 from molmod.molecules import Molecule
 
 
-__all__ = ["CubeReader", 'CubeFile']
+__all__ = ["CubeReader", 'Cube']
 
 
 
@@ -135,9 +135,19 @@ class CubeReader(object):
         return vector, value
 
 
-class CubeFile(object):
+class Cube(object):
+    '''A data structure for cube file data.
+    '''
     @classmethod
     def from_file(cls, filename):
+        '''Create a cube object by loading data from a file.
+
+           *Arguemnts:*
+
+           filename
+                The file to load. It must contain the header with the
+                description of the grid and the molecule.
+        '''
         f = file(filename)
         molecule, origin, axes, nrep, subtitle = read_cube_header(f)
         data = np.zeros(tuple(nrep), float)
@@ -155,6 +165,24 @@ class CubeFile(object):
         return cls(molecule, origin, axes, nrep, data, subtitle)
 
     def __init__(self, molecule, origin, axes, nrep, data, subtitle=''):
+        '''
+           *Arguments:*
+
+           molecule
+                A Molecule instance.
+
+           origin
+                The cartesian coordinate for the origin of the grid.
+
+           axes
+                The 3 by 3 array with the grid spacings as rows.
+
+           nrep
+                The number of grid points along each axis.
+
+           subtitle
+                The title on the second line in the cube file.
+        '''
         self.molecule = molecule
         self.origin = np.array(origin, copy=False)
         self.axes = np.array(axes, copy=False)
@@ -163,6 +191,7 @@ class CubeFile(object):
         self.subtitle = subtitle
 
     def write_to_file(self, fn):
+        '''Write the cube to a file in the Gaussian cube format.'''
         f = open(fn, 'w')
         print >> f, ' ' + self.molecule.title
         print >> f, ' ' + self.subtitle
@@ -197,6 +226,20 @@ class CubeFile(object):
                     print >> f
         f.close()
 
-    def copy(self):
-        return self.__class__(self.molecule, origin.copy(), axes.copy(),
-                              nrep.copy(), data.copy(), self.subtitle)
+    def copy(self, newdata=None):
+        '''Return a copy of the cube with optionally new data.'''
+        if newdata is None:
+            newdata = self.data.copy()
+        return self.__class__(self.molecule, self.origin.copy(), self.axes.copy(),
+                              self.nrep.copy(), newdata, self.subtitle)
+
+    def get_points(self):
+        '''Return a Nz*Nb*Nc*3 array with all cartesian coordinates of the
+           points in the cube.
+        '''
+        points = np.zeros((self.nrep[0], self.nrep[1], self.nrep[2], 3), float)
+        points[:] = self.origin
+        points[:] += np.outer(np.arange(self.nrep[0], dtype=float), self.axes[0]).reshape((-1,1,1,3))
+        points[:] += np.outer(np.arange(self.nrep[1], dtype=float), self.axes[1]).reshape((1,-1,1,3))
+        points[:] += np.outer(np.arange(self.nrep[2], dtype=float), self.axes[2]).reshape((1,1,-1,3))
+        return points
