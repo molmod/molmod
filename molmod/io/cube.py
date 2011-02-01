@@ -164,7 +164,7 @@ class Cube(object):
                 tmp[counter] = float(word)
                 counter += 1
         f.close()
-        return cls(molecule, origin, axes, nrep, data, subtitle)
+        return cls(molecule, origin, axes, nrep, data, subtitle, nuclear_charges)
 
     def __init__(self, molecule, origin, axes, nrep, data, subtitle='', nuclear_charges=None):
         '''
