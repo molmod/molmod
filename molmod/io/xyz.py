@@ -214,7 +214,7 @@ class XYZFile(object):
             | ``titles``   --  The titles of all the frames
             | ``geometries``  --  A MxNx3 array with all the atom coordinates
         """
-        xyz_reader = XYZReader(f, file_unit=file_unit)
+        xyz_reader = XYZReader(f, sub, file_unit=file_unit)
         self.file_unit = file_unit
 
         self.numbers = xyz_reader.numbers
@@ -225,12 +225,13 @@ class XYZFile(object):
             if start is None: start = 0
             step = sub.step
             if step is None: step = 1
-            count = (sub.stop - start)/step
+            count = (sub.stop - start + step - 1)/step
             self.geometries = numpy.zeros((count, len(self.numbers), 3), float)
 
             for counter, (title, coordinates) in enumerate(xyz_reader):
                 self.titles.append(title)
                 self.geometries[counter] = coordinates
+            assert counter+1 == count
         else:
             geometries = []
             for title, coordinates in xyz_reader:
