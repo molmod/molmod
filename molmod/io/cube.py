@@ -59,18 +59,19 @@ def read_cube_header(f):
         """Read an atom number and coordinate from the cube file"""
         words = line.split()
         return (
-            int(words[0]),
+            int(words[0]), float(words[1]),
             np.array([float(words[2]), float(words[3]), float(words[4])], float)
             # all coordinates in a cube file are in atomic units
         )
 
     numbers = np.zeros(natom, int)
+    nuclear_charges = np.zeros(natom, float)
     coordinates = np.zeros((natom, 3), float)
     for i in xrange(natom):
-        numbers[i], coordinates[i] = read_coordinate_line(f.readline())
+        numbers[i], nuclear_charges[i], coordinates[i] = read_coordinate_line(f.readline())
 
     molecule = Molecule(numbers, coordinates, title=title)
-    return molecule, origin, axes, nrep, subtitle
+    return molecule, origin, axes, nrep, subtitle, nuclear_charges
 
 
 class CubeReader(object):
@@ -92,8 +93,8 @@ class CubeReader(object):
         """
         self.f = file(filename)
 
-        self.molecule, self.origin, self.axes, self.nrep, self.subtitle = \
-            read_cube_header(self.f)
+        self.molecule, self.origin, self.axes, self.nrep, self.subtitle, \
+            self.nuclear_charges = read_cube_header(self.f)
 
         self._counter0 = 0
         self._counter1 = 0
@@ -149,7 +150,8 @@ class Cube(object):
                 description of the grid and the molecule.
         '''
         f = file(filename)
-        molecule, origin, axes, nrep, subtitle = read_cube_header(f)
+        molecule, origin, axes, nrep, subtitle, nuclear_charges = \
+            read_cube_header(f)
         data = np.zeros(tuple(nrep), float)
         tmp = data.ravel()
         counter = 0
@@ -164,7 +166,7 @@ class Cube(object):
         f.close()
         return cls(molecule, origin, axes, nrep, data, subtitle)
 
-    def __init__(self, molecule, origin, axes, nrep, data, subtitle=''):
+    def __init__(self, molecule, origin, axes, nrep, data, subtitle='', nuclear_charges=None):
         '''
            *Arguments:*
 
@@ -182,6 +184,10 @@ class Cube(object):
 
            subtitle
                 The title on the second line in the cube file.
+
+           nuclear_charges
+                The nuclear charges, can be different from the atomic numbers
+                in case of effective core potentials.
         '''
         self.molecule = molecule
         self.origin = np.array(origin, copy=False)
@@ -189,6 +195,10 @@ class Cube(object):
         self.nrep = np.array(nrep, copy=False)
         self.data = np.array(data, copy=False)
         self.subtitle = subtitle
+        if nuclear_charges is None:
+            self.nuclear_charges = self.molecule.numbers.astype(float)
+        else:
+            self.nuclear_charges = nuclear_charges
 
     def write_to_file(self, fn):
         '''Write the cube to a file in the Gaussian cube format.'''
@@ -204,11 +214,12 @@ class Cube(object):
         write_grid_line(self.data.shape[1], self.axes[1])
         write_grid_line(self.data.shape[2], self.axes[2])
 
-        def write_atom_line(n, v):
-            print >> f, '%5i % 11.6f % 11.6f % 11.6f % 11.6f' % (n, n, v[0], v[1], v[2])
+        def write_atom_line(n, nc, v):
+            print >> f, '%5i % 11.6f % 11.6f % 11.6f % 11.6f' % (n, nc, v[0], v[1], v[2])
 
         for i in xrange(self.molecule.size):
-            write_atom_line(self.molecule.numbers[i], self.molecule.coordinates[i])
+            write_atom_line(self.molecule.numbers[i], self.nuclear_charges[i],
+                            self.molecule.coordinates[i])
 
         for i0 in xrange(self.data.shape[0]):
             for i1 in xrange(self.data.shape[1]):
@@ -230,8 +241,10 @@ class Cube(object):
         '''Return a copy of the cube with optionally new data.'''
         if newdata is None:
             newdata = self.data.copy()
-        return self.__class__(self.molecule, self.origin.copy(), self.axes.copy(),
-                              self.nrep.copy(), newdata, self.subtitle)
+        return self.__class__(
+            self.molecule, self.origin.copy(), self.axes.copy(),
+            self.nrep.copy(), newdata, self.subtitle, self.nuclear_charges
+        )
 
     def get_points(self):
         '''Return a Nz*Nb*Nc*3 array with all cartesian coordinates of the
