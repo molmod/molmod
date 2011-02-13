@@ -26,17 +26,17 @@
    computational efficiency. Example usage::
 
        def fun(x, do_gradient=False):
-           value = 2 + numpy.sin(x[0]) + numpy.cos(x[1]) + x[0]*x[0] + x[1]*x[1] - x[0]*x[1]
+           value = 2 + np.sin(x[0]) + np.cos(x[1]) + x[0]*x[0] + x[1]*x[1] - x[0]*x[1]
            if do_gradient:
-               gradient = numpy.array([
-                   numpy.cos(x[0]) + 2*x[0] - x[1],
-                   -numpy.sin(x[1]) + 2*x[1] - x[0],
+               gradient = np.array([
+                   np.cos(x[0]) + 2*x[0] - x[1],
+                   -np.sin(x[1]) + 2*x[1] - x[0],
                ])
                return value, gradient
            else:
                return value
 
-       x_init = numpy.zeros(2, float)
+       x_init = np.zeros(2, float)
        search_direction = ConjugateGradient()
        line_search = NewtonLineSearch()
        convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6)
@@ -60,14 +60,14 @@
 """
 
 
-import numpy, time
+import numpy as np, time
 
 
 __all__ = [
     "SearchDirection", "SteepestDescent", "ConjugateGradient", "QuasiNewton",
     "LineSearch", "GoldenLineSearch", "NewtonLineSearch",
     "Preconditioner", "DiagonalPreconditioner", "FullPreconditioner",
-    "ConvergenceCondition", "StopLossCondition", "Minimizer",
+    "ConvergenceCondition", "StopLossCondition", "Bindings", "Minimizer",
     "check_anagrad", "check_delta", "compute_fd_hessian",
 ]
 
@@ -174,8 +174,8 @@ class ConjugateGradient(SearchDirection):
     def _beta(self):
         # Polak-Ribiere
         return (
-            numpy.dot(self.gradient, self.gradient - self.gradient_old) /
-            numpy.dot(self.gradient_old, self.gradient_old)
+            np.dot(self.gradient, self.gradient - self.gradient_old) /
+            np.dot(self.gradient_old, self.gradient_old)
         )
 
     def _update_sd(self):
@@ -202,20 +202,20 @@ class QuasiNewton(SearchDirection):
             self.direction = -self.gradient
             self.status = "SD"
             # new guess of the inverse hessian
-            self.inv_hessian = numpy.identity(N, float)
+            self.inv_hessian = np.identity(N, float)
         else:
             # update the direction
-            self.direction = -numpy.dot(self.inv_hessian, self.gradient)
+            self.direction = -np.dot(self.inv_hessian, self.gradient)
             self.status = "QN"
             # new guess of the inverse hessian (BFGS)
             y = self.gradient - self.old_gradient
             s = step
-            sy = numpy.dot(s, y)
-            A = numpy.outer(-y/sy, s)
+            sy = np.dot(s, y)
+            A = np.outer(-y/sy, s)
             A.ravel()[::N+1] += 1
             self.inv_hessian = (
-                numpy.dot(numpy.dot(A.transpose(), self.inv_hessian), A) +
-                numpy.outer(s/sy, s)
+                np.dot(np.dot(A.transpose(), self.inv_hessian), A) +
+                np.outer(s/sy, s)
             )
 
     def reset(self):
@@ -230,7 +230,7 @@ class QuasiNewton(SearchDirection):
         return self.status == "SD"
 
 
-phi = 0.5*(1+numpy.sqrt(5))
+phi = 0.5*(1+np.sqrt(5))
 
 
 class LineSearch(object):
@@ -248,7 +248,7 @@ class LineSearch(object):
         if self.qmax is None:
             return step
         else:
-            return numpy.clip(step, -self.qmax, self.qmax)
+            return np.clip(step, -self.qmax, self.qmax)
 
     def __call__(self, fun, f0, initial_step_size, epsilon):
         """Return the value that minimizes the one-dimensional function 'fun'
@@ -479,7 +479,7 @@ class NewtonLineSearch(LineSearch):
                 pass
 
         # simple back tracking with tau = 0.5, no wolfe conditions yet
-        q1 = -numpy.sign(g0)*initial_step_size*1.5
+        q1 = -np.sign(g0)*initial_step_size*1.5
         counter = 0.0
         while True:
             f1 = fun(q1)
@@ -567,7 +567,7 @@ class Preconditioner(object):
            to their caller.
         """
         if counter - self.last_update > self.each:
-            grad_rms = numpy.sqrt((gradient_orig**2).mean())
+            grad_rms = np.sqrt((gradient_orig**2).mean())
             if grad_rms < self.grad_rms:
                 self.last_update = counter
                 return True
@@ -646,7 +646,7 @@ class DiagonalPreconditioner(Preconditioner):
             # determine a new preconditioner
             N = len(x_orig)
             if self.scales is None:
-                self.scales = numpy.ones(N, float)
+                self.scales = np.ones(N, float)
             for i in xrange(N):
                 epsilon = self.epsilon/self.scales[i]
                 xh = x_orig.copy()
@@ -656,9 +656,9 @@ class DiagonalPreconditioner(Preconditioner):
                 xl[i] -= 0.5*epsilon
                 fl = self.fun(xl)
                 curv = (fh+fl-2*f)/epsilon**2
-                self.scales[i] = numpy.sqrt(abs(curv))
+                self.scales[i] = np.sqrt(abs(curv))
             if self.scales.max() <= 0:
-                self.scales = numpy.ones(N, float)
+                self.scales = np.ones(N, float)
             else:
                 self.scales /= self.scales.max()
                 self.scales[self.scales<self.scale_limit] = self.scale_limit
@@ -729,8 +729,8 @@ class FullPreconditioner(Preconditioner):
         if Preconditioner.update(self, counter, f, x_orig, gradient_orig):
             # determine a new preconditioner
             hessian = compute_fd_hessian(self.fun, x_orig, self.epsilon)
-            evals, evecs = numpy.linalg.eigh(hessian)
-            self.scales = numpy.sqrt(abs(evals))+self.epsilon
+            evals, evecs = np.linalg.eigh(hessian)
+            self.scales = np.sqrt(abs(evals))+self.epsilon
             self.rotation = evecs
             return True
         return False
@@ -743,7 +743,7 @@ class FullPreconditioner(Preconditioner):
         if self.scales is None:
             return x_orig
         else:
-            return numpy.dot(self.rotation.transpose(), x_orig)*self.scales
+            return np.dot(self.rotation.transpose(), x_orig)*self.scales
 
     def undo(self, x_prec):
         """Transform the unknowns to original coordinates
@@ -753,7 +753,7 @@ class FullPreconditioner(Preconditioner):
         if self.scales is None:
             return x_prec
         else:
-            return numpy.dot(self.rotation, x_prec/self.scales)
+            return np.dot(self.rotation, x_prec/self.scales)
 
 
 class ConvergenceCondition(object):
@@ -818,9 +818,9 @@ class ConvergenceCondition(object):
                 status += "%s% 9.3e  %s" % (color, measure, reset)
             return stop, status
 
-        stop, status = check_threshold(numpy.sqrt((step**2).mean()), self.step_rms, stop, status)
+        stop, status = check_threshold(np.sqrt((step**2).mean()), self.step_rms, stop, status)
         stop, status = check_threshold(abs(step).max(), self.step_max, stop, status)
-        stop, status = check_threshold(numpy.sqrt((grad**2).mean()), self.grad_rms, stop, status)
+        stop, status = check_threshold(np.sqrt((grad**2).mean()), self.grad_rms, stop, status)
         stop, status = check_threshold(abs(grad).max(), self.grad_max, stop, status)
 
         return stop, status
@@ -867,14 +867,14 @@ class StopLossCondition(object):
                 return True
 
         if self.grad_margin is not None:
-            grad_rms = numpy.sqrt((gradient**2).mean())
+            grad_rms = np.sqrt((gradient**2).mean())
             if self.grad_rms_lowest is None or grad_rms < self.grad_rms_lowest:
                 self.grad_rms_lowest = grad_rms
             elif grad_rms > self.grad_rms_lowest + self.grad_margin:
                 return True
 
         if self.step_min is not None:
-            step_rms = numpy.sqrt((step**2).mean())
+            step_rms = np.sqrt((step**2).mean())
             if self.step_min > step_rms:
                 return True
 
@@ -921,7 +921,7 @@ class LineWrapper(object):
         if do_gradient:
             if self.anagrad:
                 f, g = self.fun(x, do_gradient=True)
-                return f, numpy.dot(g, self.axis)
+                return f, np.dot(g, self.axis)
             else:
                 fh = self.fun(x + (0.5*self.epsilon) * self.axis)
                 fl = self.fun(x - (0.5*self.epsilon) * self.axis)
@@ -958,7 +958,7 @@ class FunWrapper(object):
             if self.anagrad:
                 return self.fun(x, do_gradient=True)
             else:
-                g = numpy.zeros(x.shape)
+                g = np.zeros(x.shape)
                 for j in xrange(len(x)):
                     xh = x.copy()
                     xh[j] += 0.5*self.epsilon
@@ -970,6 +970,65 @@ class FunWrapper(object):
             return self.fun(x)
 
 
+class Bindings(object):
+    def __init__(self, equations, threshold, rcond=0.0):
+        self.equations = equations
+        self.threshold = threshold
+        self.rcond = rcond
+
+    def _compute_equations(self, x, indexes=None):
+        # compute the error and the normals.
+        normals = []
+        values = []
+        error = 0.0
+        for i, (sign, equation) in enumerate(self.equations):
+            value, normal = equation(x)
+            if (indexes is not None and i in indexes) or (sign==-1 and value > -2*self.threshold) or (sign==0) or (sign==1 and value < 2*self.threshold):
+                values.append(value)
+                normals.append(normal)
+                error += value**2
+                if indexes is not None:
+                    indexes.add(i)
+        error = np.sqrt(error)
+        return normals, values, error
+
+    def shake(self, x, first=False):
+        print
+        print
+        if first:
+            indexes = None
+        else:
+            indexes = set([])
+        while True:
+            normals, values, error = self._compute_equations(x, indexes)
+            #print error, len(normals)
+            if error < self.threshold:
+                break
+            # perform the least-norm correction
+            U, S, Vt = np.linalg.svd(normals, full_matrices=False)
+            print error
+            rank = (S > S[0]*self.rcond).sum()
+            if rank == 0:
+                raise ValueError('Encountered rank 0 in shake algorithm.')
+            U = U[:,:rank]
+            S = S[:rank]
+            Vt = Vt[:,:rank]
+            dx = np.dot(Vt, np.dot(U.transpose(), values)/S)
+            print dx
+            print
+            x -= dx
+        print x
+        return x
+
+    def project(self, x, vector):
+        normals, values, error = self._compute_equations(x)
+        if len(normals) == 0:
+            return vector
+        U, S, Vt = np.linalg.svd(normals, full_matrices=False)
+        decomposition = np.dot(Vt, vector)
+        return vector - np.dot(Vt.transpose(), decomposition)
+
+
 class Minimizer(object):
     """A flexible multivariate minimizer
 
@@ -979,7 +1038,7 @@ class Minimizer(object):
     def __init__(self, x_init, fun, search_direction, line_search,
                  convergence_condition, stop_loss_condition, anagrad=False,
                  epsilon=1e-6, verbose=True, callback=None,
-                 initial_step_size=1.0):
+                 initial_step_size=1.0, bindings=None):
         """
            Arguments:
             | ``x_init``  --  the initial guess for the minimum
@@ -1033,6 +1092,7 @@ class Minimizer(object):
         self.verbose = verbose
         self.callback = callback
         self.initial_step_size = initial_step_size
+        self.bindings = bindings
 
         # perform some resets:
         self.search_direction.reset()
@@ -1056,7 +1116,11 @@ class Minimizer(object):
 
     def _iterate(self):
         """Run the iterative optimizer"""
+        if self.bindings is not None:
+            self.x = self.bindings.shake(self.x, first=True)
         self.f, self.gradient = self.fun(self.x, do_gradient=True)
+        if self.bindings is not None:
+            self.gradient = self.bindings.project(self.x, self.gradient)
         last_end = time.clock()
         # the cg loop
         self.counter = 0
@@ -1077,8 +1141,12 @@ class Minimizer(object):
                 else:
                     self.search_direction.reset()
                     continue
+            if self.bindings is not None:
+                self.x = self.bindings.shake(self.x)
             # compute the gradient at the new point
             self.f, self.gradient = self.fun(self.x, do_gradient=True)
+            if self.bindings is not None:
+                self.gradient = self.bindings.project(self.x, self.gradient)
             # handle the preconditioner, part 1
             if self.prec is not None:
                 gradient_orig = self.prec.do(self.gradient)
@@ -1135,7 +1203,9 @@ class Minimizer(object):
     def _line_opt(self):
         """Perform a line search along the current direction"""
         direction = self.search_direction.direction
-        direction_norm = numpy.linalg.norm(direction)
+        if self.bindings is not None:
+            direction = self.bindings.project(self.x, direction)
+        direction_norm = np.linalg.norm(direction)
         if direction_norm == 0:
             return False
         self.line.configure(self.x, direction/direction_norm)
@@ -1144,7 +1214,7 @@ class Minimizer(object):
             self.line_search(self.line, self.initial_step_size, self.epsilon)
         if success:
             self.step = qopt*self.line.axis
-            self.initial_step_size = numpy.linalg.norm(self.step)
+            self.initial_step_size = np.linalg.norm(self.step)
             self.x = self.x + self.step
             self.f = fopt
             self._screen("% 9.3e  " % self.f)
@@ -1231,7 +1301,7 @@ def check_delta(fun, x, dxs, threshold):
         if abs(df) < threshold:
             df_small.append(df)
         else:
-            expected = numpy.dot(dx, grad)
+            expected = np.dot(dx, grad)
             if abs(df - expected) > threshold:
                 raise AssertionError('Error in the analytical gradient: df is %s, should be about %s.' % (df, expected))
     if len(df_small)*2 > len(dxs):
@@ -1267,7 +1337,7 @@ def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
         if anagrad:
             return fun(x, do_gradient=True)[1]
         else:
-            gradient = numpy.zeros(N, float)
+            gradient = np.zeros(N, float)
             for i in xrange(N):
                 xh = x.copy()
                 xh[i] += 0.5*epsilon
@@ -1276,7 +1346,7 @@ def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
                 gradient[i] = (fun(xh)-fun(xl))/epsilon
             return gradient
 
-    hessian = numpy.zeros((N,N), float)
+    hessian = np.zeros((N,N), float)
     for i in xrange(N):
         xh = x0.copy()
         xh[i] += 0.5*epsilon

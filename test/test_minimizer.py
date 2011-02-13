@@ -27,7 +27,7 @@ from common import BaseTestCase
 from molmod.minimizer import *
 from molmod.vectors import random_unit
 
-import unittest, numpy
+import unittest, numpy as np
 from nose.plugins.skip import SkipTest
 
 
@@ -35,15 +35,31 @@ __all__ = ["MinimizerTestCase"]
 
 
 def fun(x, do_gradient=False):
-    value = 2 + numpy.sin(x[0]) + numpy.cos(x[1]) + x[0]*x[0] + x[1]*x[1] - x[0]*x[1]
+    value = 2 + np.sin(x[0]) + np.cos(x[1]) + x[0]*x[0] + x[1]*x[1] - x[0]*x[1]
     if do_gradient:
-        gradient = numpy.array([
-            numpy.cos(x[0]) + 2*x[0] - x[1],
-            -numpy.sin(x[1]) + 2*x[1] - x[0],
+        gradient = np.array([
+            np.cos(x[0]) + 2*x[0] - x[1],
+            -np.sin(x[1]) + 2*x[1] - x[0],
         ])
         return value, gradient
     else:
         return value
+
+def quad(x, do_gradient=False):
+    value = ((x - 1)**2).sum()
+    if do_gradient:
+        gradient = 2*(x-1)
+        return value, gradient
+    else:
+        return value
+
+def circle1(x):
+    return (x**2).sum()-4, 2*x
+
+def circle2(x):
+    x = x.copy()
+    x[0] -= -1
+    return (x**2).sum()-4, 2*x
 
 
 class MinimizerTestCase(BaseTestCase):
@@ -51,9 +67,9 @@ class MinimizerTestCase(BaseTestCase):
         # check if it is really the minimum by computing small displacements
         f_opt = fun(x_opt)
         for i in xrange(100):
-            delta = numpy.random.normal(0, 1, 2)
-            delta /= numpy.linalg.norm(delta)
-            delta *= numpy.sqrt(len(delta))
+            delta = np.random.normal(0, 1, 2)
+            delta /= np.linalg.norm(delta)
+            delta *= np.sqrt(len(delta))
             delta *= step_rms
             x_dev = x_opt + delta
             f_dev = fun(x_dev)
@@ -61,16 +77,16 @@ class MinimizerTestCase(BaseTestCase):
         # check if it is really the minimum by computing the eigen values of the
         # hessian
         hessian1 = compute_fd_hessian(fun, x_opt, 1e-4, anagrad=True)
-        self.assert_((numpy.linalg.eigvalsh(hessian1) > 0).all())
+        self.assert_((np.linalg.eigvalsh(hessian1) > 0).all())
         # check if it is really the minimum by computing the eigen values of the
         # hessian
         hessian2 = compute_fd_hessian(fun, x_opt, 1e-4, anagrad=False)
-        self.assert_((numpy.linalg.eigvalsh(hessian2) > 0).all())
+        self.assert_((np.linalg.eigvalsh(hessian2) > 0).all())
         # also compare the two hessians
         self.assert_(abs(hessian1 - hessian2).max() < 1e-4)
 
     def test_sd_golden(self):
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         search_direction = SteepestDescent()
         line_search = GoldenLineSearch(qtol=1e-10, qmax=1.0, max_iter=500)
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
@@ -82,7 +98,7 @@ class MinimizerTestCase(BaseTestCase):
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
     def test_cg_golden(self):
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         search_direction = ConjugateGradient()
         line_search = GoldenLineSearch(qtol=1e-10, qmax=1.0, max_iter=500)
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
@@ -94,7 +110,7 @@ class MinimizerTestCase(BaseTestCase):
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
     def test_sd_newton(self):
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         search_direction = SteepestDescent()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
@@ -106,7 +122,7 @@ class MinimizerTestCase(BaseTestCase):
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
     def test_cg_newton(self):
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         search_direction = ConjugateGradient()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
@@ -118,7 +134,7 @@ class MinimizerTestCase(BaseTestCase):
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
     def test_sd_newtong(self):
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         search_direction = SteepestDescent()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
@@ -130,7 +146,7 @@ class MinimizerTestCase(BaseTestCase):
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
     def test_cg_newtong(self):
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         search_direction = ConjugateGradient()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
@@ -142,7 +158,7 @@ class MinimizerTestCase(BaseTestCase):
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
     def test_cg_newtong_diag_prec(self):
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         search_direction = ConjugateGradient()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
@@ -156,7 +172,7 @@ class MinimizerTestCase(BaseTestCase):
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
     def test_cg_newtong_full_prec(self):
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         search_direction = ConjugateGradient()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
@@ -170,7 +186,7 @@ class MinimizerTestCase(BaseTestCase):
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
     def test_qn_newtong(self):
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         search_direction = QuasiNewton()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
@@ -182,24 +198,24 @@ class MinimizerTestCase(BaseTestCase):
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
     def test_check_anagrad(self):
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         check_anagrad(fun, x_init, 1e-5, 1e-4)
 
     def test_check_anagrad_diag_prec(self):
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         prec_fun = DiagonalPreconditioner(fun, 20, 1e-2)
-        prec_fun.scales = numpy.random.uniform(1,2,2)
+        prec_fun.scales = np.random.uniform(1,2,2)
         check_anagrad(prec_fun, x_init, 1e-5, 1e-4)
         dxs = random_unit((100, len(x_init)))*1e-4
         check_delta(prec_fun, x_init, dxs, 1e-6)
 
     def test_check_anagrad_full_prec(self):
         raise SkipTest
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         prec_fun = FullPreconditioner(fun, 20, 1e-2)
-        A = numpy.random.normal(0,1,(2,2))
+        A = np.random.normal(0,1,(2,2))
         A = 0.5*(A + A.transpose())
-        evals, evecs = numpy.linalg.eigh(A)
+        evals, evecs = np.linalg.eigh(A)
         prec_fun.scales = abs(evals) + 1.0
         prec_fun.rotation = evecs
         check_anagrad(prec_fun, x_init, 1e-5, 1e-4)
@@ -207,23 +223,23 @@ class MinimizerTestCase(BaseTestCase):
         check_delta(prec_fun, x_init, dxs, 1e-6)
 
     def test_full_prec_consitency(self):
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         prec_fun = FullPreconditioner(fun, 20, 1e-2)
-        A = numpy.random.normal(0,1,(2,2))
+        A = np.random.normal(0,1,(2,2))
         A = 0.5*(A + A.transpose())
-        evals, evecs = numpy.linalg.eigh(A)
+        evals, evecs = np.linalg.eigh(A)
         prec_fun.scales = abs(evals) + 1.0
         prec_fun.rotation = evecs
 
         for i in xrange(20):
-            orig = numpy.random.normal(0, 1, 2)
+            orig = np.random.normal(0, 1, 2)
             check = prec_fun.do(prec_fun.undo(orig))
             self.assertArraysAlmostEqual(orig, check)
             check = prec_fun.undo(prec_fun.do(orig))
             self.assertArraysAlmostEqual(orig, check)
 
     def test_stop_loss_step(self):
-        x_init = numpy.zeros(2, float)
+        x_init = np.zeros(2, float)
         search_direction = ConjugateGradient()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6, step_rms=1e-6, grad_max=3e-6, step_max=3e-6)
@@ -232,4 +248,56 @@ class MinimizerTestCase(BaseTestCase):
             x_init, fun, search_direction, line_search, convergence, stop_loss,
             anagrad=True, verbose=False,
         )
-        assert numpy.sqrt((minimizer.step**2).mean()) < 1e-2
+        assert np.sqrt((minimizer.step**2).mean()) < 1e-2
+
+    def test_bindings1(self):
+        x_init = np.array([0.1, 0.5], float)
+        search_direction = ConjugateGradient()
+        line_search = NewtonLineSearch()
+        convergence = ConvergenceCondition(grad_rms=1e-6)
+        stop_loss = StopLossCondition(max_iter=50)
+        bindings = Bindings([(1, circle1)], 1e-10)
+        minimizer = Minimizer(
+            x_init, quad, search_direction, line_search, convergence, stop_loss,
+            anagrad=True, verbose=False, bindings=bindings
+        )
+        assert np.sqrt((minimizer.gradient**2).mean()) < 1e-6
+
+    def test_bindings2(self):
+        x_init = np.array([0.1, 0.5], float)
+        search_direction = ConjugateGradient()
+        line_search = NewtonLineSearch()
+        convergence = ConvergenceCondition(grad_rms=1e-6)
+        stop_loss = StopLossCondition(max_iter=50)
+        bindings = Bindings([(0, circle1)], 1e-10)
+        minimizer = Minimizer(
+            x_init, quad, search_direction, line_search, convergence, stop_loss,
+            anagrad=True, verbose=False, bindings=bindings
+        )
+        assert np.sqrt((minimizer.gradient**2).mean()) < 1e-6
+
+    def test_bindings3(self):
+        x_init = np.array([0.1, 0.5], float)
+        search_direction = ConjugateGradient()
+        line_search = NewtonLineSearch()
+        convergence = ConvergenceCondition(grad_rms=1e-6)
+        stop_loss = StopLossCondition(max_iter=50)
+        bindings = Bindings([(-1, circle1)], 1e-10)
+        minimizer = Minimizer(
+            x_init, quad, search_direction, line_search, convergence, stop_loss,
+            anagrad=True, verbose=False, bindings=bindings
+        )
+        assert np.sqrt((minimizer.gradient**2).mean()) < 1e-6
+
+    def test_bindings4(self):
+        x_init = np.array([-2.0, 0.1], float)
+        search_direction = ConjugateGradient()
+        line_search = NewtonLineSearch()
+        convergence = ConvergenceCondition(grad_rms=1e-6)
+        stop_loss = StopLossCondition(max_iter=50)
+        bindings = Bindings([(1, circle1), (-1, circle2)], 1e-10, rcond=1e-10)
+        minimizer = Minimizer(
+            x_init, quad, search_direction, line_search, convergence, stop_loss,
+            anagrad=True, verbose=True, bindings=bindings
+        )
+        assert np.sqrt((minimizer.gradient**2).mean()) < 1e-6
