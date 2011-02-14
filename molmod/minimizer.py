@@ -1003,11 +1003,9 @@ class Constraints(object):
         while True:
             if error < self.threshold:
                 break
-            #print 'BEGIN OUTER'
             U, S, Vt = np.linalg.svd(normals, full_matrices=False)
             rcond = None
             while True:
-                #print '  BEGIN INNER'
                 if rcond is None:
                     rcond = 0.0
                 elif rcond == 0.0:
@@ -1019,15 +1017,10 @@ class Constraints(object):
                 if Sinv.max() == 0.0:
                     continue
                 Sinv = S/Sinv
-                #print '    Vt', Vt
-                #print '    U', U
-                #print '    values', values
-                #print '    Sinv', Sinv
-                dx = np.dot(Vt.transpose(), np.dot(U.transpose(), values)*Sinv)
-                new_x = x - dx
+                dx = -np.dot(Vt.transpose(), np.dot(U.transpose(), values)*Sinv)
+                new_x = x + dx
                 new_indexes = set(indexes)
                 new_normals, new_values, new_error = self._compute_equations(new_x, new_indexes)[:-1]
-                #print '    error', new_error, error
                 if new_error < error:
                     counter += 1
                     x = new_x
@@ -1036,11 +1029,9 @@ class Constraints(object):
                     values = new_values
                     error = new_error
                     break
-                #print '  END INNER'
             infeasible_test = np.linalg.norm(np.dot(values, normals))/error**2
             if infeasible_test < self.threshold:
                 raise RuntimeError('No feasible point found.')
-            #print 'END OUTER'
         return x, counter, len(values)
 
     def project(self, x, vector):
@@ -1175,7 +1166,7 @@ class Minimizer(object):
                 self._screen('%3i%3i' % (shake_count, active_count))
             # compute the gradient at the new point
             self.f, self.gradient = self.fun(self.x, do_gradient=True)
-            self._screen("% 9.3e  " % self.f)
+            self._screen("% 15.9e  " % self.f)
             if self.constraints is not None:
                 self.gradient = -self.constraints.project(self.x, -self.gradient)
             # handle the preconditioner, part 1
@@ -1219,9 +1210,9 @@ class Minimizer(object):
         header = " Iter  Dir"
         if self.constraints is not None:
             header += '  SC CC'
-        header += "  Function"
+        header += "         Function"
         header += self.convergence_condition.get_header()
-        header += "     Time"
+        header += "    Time"
         self._screen("-"*(len(header)), newline=True)
         self._screen(header, newline=True)
         self._screen("-"*(len(header)), newline=True)
