@@ -996,11 +996,8 @@ class Constraints(object):
         values = np.array(values, float)
         return normals, values, error, signs
 
-    def shake(self, x, first=False):
-        if first:
-            indexes = None
-        else:
-            indexes = set([])
+    def shake(self, x):
+        indexes = set([])
         normals, values, error = self._compute_equations(x, indexes)[:-1]
         counter = 0
         while True:
@@ -1028,11 +1025,8 @@ class Constraints(object):
                 #print '    Sinv', Sinv
                 dx = np.dot(Vt.transpose(), np.dot(U.transpose(), values)*Sinv)
                 new_x = x - dx
-                if indexes is None:
-                    new_indexes = None
-                else:
-                    new_indexes = set(indexes)
-                new_normals, new_values, new_error = self._compute_equations(new_x, indexes)[:-1]
+                new_indexes = set(indexes)
+                new_normals, new_values, new_error = self._compute_equations(new_x, new_indexes)[:-1]
                 #print '    error', new_error, error
                 if new_error < error:
                     counter += 1
@@ -1152,7 +1146,7 @@ class Minimizer(object):
     def _iterate(self):
         """Run the iterative optimizer"""
         if self.constraints is not None:
-            self.x = self.constraints.shake(self.x, first=True)[0]
+            self.x = self.constraints.shake(self.x)[0]
         self.f, self.gradient = self.fun(self.x, do_gradient=True)
         if self.constraints is not None:
             self.gradient = -self.constraints.project(self.x, -self.gradient)
