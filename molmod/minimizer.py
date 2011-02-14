@@ -67,7 +67,7 @@ __all__ = [
     "SearchDirection", "SteepestDescent", "ConjugateGradient", "QuasiNewton",
     "LineSearch", "GoldenLineSearch", "NewtonLineSearch",
     "Preconditioner", "DiagonalPreconditioner", "FullPreconditioner",
-    "ConvergenceCondition", "StopLossCondition", "Bindings", "Minimizer",
+    "ConvergenceCondition", "StopLossCondition", "Constraints", "Minimizer",
     "check_anagrad", "check_delta", "compute_fd_hessian",
 ]
 
@@ -970,63 +970,96 @@ class FunWrapper(object):
             return self.fun(x)
 
 
-class Bindings(object):
-    def __init__(self, equations, threshold, rcond=0.0):
+class Constraints(object):
+    def __init__(self, equations, threshold, rcond1=1e-10):
         self.equations = equations
         self.threshold = threshold
-        self.rcond = rcond
+        self.rcond1 = rcond1
 
     def _compute_equations(self, x, indexes=None):
         # compute the error and the normals.
         normals = []
         values = []
+        signs = []
         error = 0.0
         for i, (sign, equation) in enumerate(self.equations):
             value, normal = equation(x)
             if (indexes is not None and i in indexes) or (sign==-1 and value > -2*self.threshold) or (sign==0) or (sign==1 and value < 2*self.threshold):
                 values.append(value)
                 normals.append(normal)
+                signs.append(sign)
                 error += value**2
                 if indexes is not None:
                     indexes.add(i)
         error = np.sqrt(error)
-        return normals, values, error
+        normals = np.array(normals, float)
+        values = np.array(values, float)
+        return normals, values, error, signs
 
     def shake(self, x, first=False):
-        print
-        print
         if first:
             indexes = None
         else:
             indexes = set([])
+        normals, values, error = self._compute_equations(x, indexes)[:-1]
         while True:
-            normals, values, error = self._compute_equations(x, indexes)
-            #print error, len(normals)
             if error < self.threshold:
                 break
-            # perform the least-norm correction
+            #print 'BEGIN OUTER'
             U, S, Vt = np.linalg.svd(normals, full_matrices=False)
-            print error
-            rank = (S > S[0]*self.rcond).sum()
-            if rank == 0:
-                raise ValueError('Encountered rank 0 in shake algorithm.')
-            U = U[:,:rank]
-            S = S[:rank]
-            Vt = Vt[:,:rank]
-            dx = np.dot(Vt, np.dot(U.transpose(), values)/S)
-            print dx
-            print
-            x -= dx
-        print x
+            rcond = None
+            while True:
+                #print '  BEGIN INNER'
+                if rcond is None:
+                    rcond = 0.0
+                elif rcond == 0.0:
+                    rcond = self.rcond1
+                else:
+                    rcond *= 10
+                # perform the least-norm correction
+                Sinv = (S**2+rcond)
+                if Sinv.max() == 0.0:
+                    continue
+                Sinv = S/Sinv
+                #print '    Vt', Vt
+                #print '    U', U
+                #print '    values', values
+                #print '    Sinv', Sinv
+                dx = np.dot(Vt.transpose(), np.dot(U.transpose(), values)*Sinv)
+                new_x = x - dx
+                if indexes is None:
+                    new_indexes = None
+                else:
+                    new_indexes = set(indexes)
+                new_normals, new_values, new_error = self._compute_equations(new_x, indexes)[:-1]
+                #print '    error', new_error, error
+                if new_error < error:
+                    x = new_x
+                    index = new_indexes
+                    normals = new_normals
+                    values = new_values
+                    error = new_error
+                    break
+                #print '  END INNER'
+            infeasible_test = np.linalg.norm(np.dot(values, normals))/error**2
+            if infeasible_test < self.threshold:
+                raise RuntimeError('No feasible point found.')
+            #print 'END OUTER'
         return x
 
     def project(self, x, vector):
-        normals, values, error = self._compute_equations(x)
+        normals, signs = self._compute_equations(x)[::3]
         if len(normals) == 0:
             return vector
         U, S, Vt = np.linalg.svd(normals, full_matrices=False)
         decomposition = np.dot(Vt, vector)
-        return vector - np.dot(Vt.transpose(), decomposition)
+        for i, sign in enumerate(signs):
+            if sign == 0:
+                continue
+            if sign*decomposition[i] > 0:
+                decomposition[i] = 0.0
+        result = vector - np.dot(Vt.transpose(), decomposition)
+        return result
 
 
 class Minimizer(object):
@@ -1038,7 +1071,7 @@ class Minimizer(object):
     def __init__(self, x_init, fun, search_direction, line_search,
                  convergence_condition, stop_loss_condition, anagrad=False,
                  epsilon=1e-6, verbose=True, callback=None,
-                 initial_step_size=1.0, bindings=None):
+                 initial_step_size=1.0, constraints=None):
         """
            Arguments:
             | ``x_init``  --  the initial guess for the minimum
@@ -1092,7 +1125,7 @@ class Minimizer(object):
         self.verbose = verbose
         self.callback = callback
         self.initial_step_size = initial_step_size
-        self.bindings = bindings
+        self.constraints = constraints
 
         # perform some resets:
         self.search_direction.reset()
@@ -1116,11 +1149,11 @@ class Minimizer(object):
 
     def _iterate(self):
         """Run the iterative optimizer"""
-        if self.bindings is not None:
-            self.x = self.bindings.shake(self.x, first=True)
+        if self.constraints is not None:
+            self.x = self.constraints.shake(self.x, first=True)
         self.f, self.gradient = self.fun(self.x, do_gradient=True)
-        if self.bindings is not None:
-            self.gradient = self.bindings.project(self.x, self.gradient)
+        if self.constraints is not None:
+            self.gradient = -self.constraints.project(self.x, -self.gradient)
         last_end = time.clock()
         # the cg loop
         self.counter = 0
@@ -1141,12 +1174,13 @@ class Minimizer(object):
                 else:
                     self.search_direction.reset()
                     continue
-            if self.bindings is not None:
-                self.x = self.bindings.shake(self.x)
+            if self.constraints is not None:
+                self.x = self.constraints.shake(self.x)
             # compute the gradient at the new point
             self.f, self.gradient = self.fun(self.x, do_gradient=True)
-            if self.bindings is not None:
-                self.gradient = self.bindings.project(self.x, self.gradient)
+            self._screen("% 9.3e  " % self.f)
+            if self.constraints is not None:
+                self.gradient = -self.constraints.project(self.x, -self.gradient)
             # handle the preconditioner, part 1
             if self.prec is not None:
                 gradient_orig = self.prec.do(self.gradient)
@@ -1203,8 +1237,8 @@ class Minimizer(object):
     def _line_opt(self):
         """Perform a line search along the current direction"""
         direction = self.search_direction.direction
-        if self.bindings is not None:
-            direction = self.bindings.project(self.x, direction)
+        if self.constraints is not None:
+            direction = self.constraints.project(self.x, direction)
         direction_norm = np.linalg.norm(direction)
         if direction_norm == 0:
             return False
@@ -1217,7 +1251,6 @@ class Minimizer(object):
             self.initial_step_size = np.linalg.norm(self.step)
             self.x = self.x + self.step
             self.f = fopt
-            self._screen("% 9.3e  " % self.f)
             if not wolfe:
                 self.search_direction.reset()
             return True

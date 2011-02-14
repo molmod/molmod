@@ -250,54 +250,54 @@ class MinimizerTestCase(BaseTestCase):
         )
         assert np.sqrt((minimizer.step**2).mean()) < 1e-2
 
-    def test_bindings1(self):
+    def test_constraints1(self):
         x_init = np.array([0.1, 0.5], float)
         search_direction = ConjugateGradient()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6)
         stop_loss = StopLossCondition(max_iter=50)
-        bindings = Bindings([(1, circle1)], 1e-10)
+        constraints = Constraints([(1, circle1)], 1e-10)
         minimizer = Minimizer(
             x_init, quad, search_direction, line_search, convergence, stop_loss,
-            anagrad=True, verbose=False, bindings=bindings
+            anagrad=True, verbose=False, constraints=constraints
         )
         assert np.sqrt((minimizer.gradient**2).mean()) < 1e-6
 
-    def test_bindings2(self):
+    def test_constraints2(self):
         x_init = np.array([0.1, 0.5], float)
         search_direction = ConjugateGradient()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6)
         stop_loss = StopLossCondition(max_iter=50)
-        bindings = Bindings([(0, circle1)], 1e-10)
+        constraints = Constraints([(0, circle1)], 1e-10)
         minimizer = Minimizer(
             x_init, quad, search_direction, line_search, convergence, stop_loss,
-            anagrad=True, verbose=False, bindings=bindings
+            anagrad=True, verbose=False, constraints=constraints
         )
         assert np.sqrt((minimizer.gradient**2).mean()) < 1e-6
 
-    def test_bindings3(self):
+    def test_constraints3(self):
         x_init = np.array([0.1, 0.5], float)
         search_direction = ConjugateGradient()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6)
         stop_loss = StopLossCondition(max_iter=50)
-        bindings = Bindings([(-1, circle1)], 1e-10)
+        constraints = Constraints([(-1, circle1)], 1e-10)
         minimizer = Minimizer(
             x_init, quad, search_direction, line_search, convergence, stop_loss,
-            anagrad=True, verbose=False, bindings=bindings
+            anagrad=True, verbose=False, constraints=constraints
         )
         assert np.sqrt((minimizer.gradient**2).mean()) < 1e-6
 
-    def test_bindings4(self):
+    def test_constraints4(self):
         x_init = np.array([-2.0, 0.1], float)
         search_direction = ConjugateGradient()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6)
         stop_loss = StopLossCondition(max_iter=50)
-        bindings = Bindings([(1, circle1), (-1, circle2)], 1e-10, rcond=1e-10)
+        constraints = Constraints([(1, circle1), (-1, circle2)], 1e-10, rcond1=1e-10)
         minimizer = Minimizer(
             x_init, quad, search_direction, line_search, convergence, stop_loss,
-            anagrad=True, verbose=True, bindings=bindings
+            anagrad=True, verbose=True, constraints=constraints
         )
         assert np.sqrt((minimizer.gradient**2).mean()) < 1e-6
