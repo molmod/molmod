@@ -1002,6 +1002,7 @@ class Constraints(object):
         else:
             indexes = set([])
         normals, values, error = self._compute_equations(x, indexes)[:-1]
+        counter = 0
         while True:
             if error < self.threshold:
                 break
@@ -1034,6 +1035,7 @@ class Constraints(object):
                 new_normals, new_values, new_error = self._compute_equations(new_x, indexes)[:-1]
                 #print '    error', new_error, error
                 if new_error < error:
+                    counter += 1
                     x = new_x
                     index = new_indexes
                     normals = new_normals
@@ -1045,7 +1047,7 @@ class Constraints(object):
             if infeasible_test < self.threshold:
                 raise RuntimeError('No feasible point found.')
             #print 'END OUTER'
-        return x
+        return x, counter, len(values)
 
     def project(self, x, vector):
         normals, signs = self._compute_equations(x)[::3]
@@ -1150,7 +1152,7 @@ class Minimizer(object):
     def _iterate(self):
         """Run the iterative optimizer"""
         if self.constraints is not None:
-            self.x = self.constraints.shake(self.x, first=True)
+            self.x = self.constraints.shake(self.x, first=True)[0]
         self.f, self.gradient = self.fun(self.x, do_gradient=True)
         if self.constraints is not None:
             self.gradient = -self.constraints.project(self.x, -self.gradient)
@@ -1163,7 +1165,7 @@ class Minimizer(object):
             # print some stuff on screen
             if self.counter % 20 == 0:
                 self._print_header()
-            self._screen("% 5i   %2s  " % (self.counter, self.search_direction.status))
+            self._screen("% 5i   %2s" % (self.counter, self.search_direction.status))
             # perform a line search
             line_success = self._line_opt()
             if not line_success:
@@ -1175,7 +1177,8 @@ class Minimizer(object):
                     self.search_direction.reset()
                     continue
             if self.constraints is not None:
-                self.x = self.constraints.shake(self.x)
+                self.x, shake_count, active_count = self.constraints.shake(self.x)
+                self._screen('%3i%3i' % (shake_count, active_count))
             # compute the gradient at the new point
             self.f, self.gradient = self.fun(self.x, do_gradient=True)
             self._screen("% 9.3e  " % self.f)
@@ -1219,12 +1222,15 @@ class Minimizer(object):
 
     def _print_header(self):
         """Print the header for screen logging"""
-        header = " Iter  Dir     Function"
+        header = " Iter  Dir"
+        if self.constraints is not None:
+            header += '  SC CC'
+        header += "  Function"
         header += self.convergence_condition.get_header()
-        header += "    Time"
-        self._screen("-"*(len(header)+2), newline=True)
+        header += "     Time"
+        self._screen("-"*(len(header)), newline=True)
         self._screen(header, newline=True)
-        self._screen("-"*(len(header)+2), newline=True)
+        self._screen("-"*(len(header)), newline=True)
 
     def _screen(self, s, newline=False):
         """Print something on screen when self.verbose == True"""

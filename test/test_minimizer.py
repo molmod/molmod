@@ -45,6 +45,7 @@ def fun(x, do_gradient=False):
     else:
         return value
 
+
 def quad(x, do_gradient=False):
     value = ((x - 1)**2).sum()
     if do_gradient:
@@ -53,13 +54,24 @@ def quad(x, do_gradient=False):
     else:
         return value
 
+
 def circle1(x):
     return (x**2).sum()-4, 2*x
+
 
 def circle2(x):
     x = x.copy()
     x[0] -= -1
     return (x**2).sum()-4, 2*x
+
+
+class Half(object):
+    def __init__(self, x0, normal):
+        self.x0 = x0
+        self.normal = normal
+
+    def __call__(self, x):
+        return np.dot(x - self.x0, self.normal), self.normal
 
 
 class MinimizerTestCase(BaseTestCase):
@@ -295,9 +307,39 @@ class MinimizerTestCase(BaseTestCase):
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6)
         stop_loss = StopLossCondition(max_iter=50)
-        constraints = Constraints([(1, circle1), (-1, circle2)], 1e-10, rcond1=1e-10)
+        constraints = Constraints([(1, circle1), (-1, circle2)], 1e-10)
         minimizer = Minimizer(
             x_init, quad, search_direction, line_search, convergence, stop_loss,
-            anagrad=True, verbose=True, constraints=constraints
+            anagrad=True, verbose=False, constraints=constraints
         )
+        assert np.sqrt((minimizer.gradient**2).mean()) < 1e-6
+
+    def test_constraints5(self):
+        def surf(x, do_gradient=False):
+            value = x[0]*(1+0.5*x[1]*x[1])-x[1]*(1-0.5*x[0]*x[0])
+            if do_gradient:
+                gradient = np.array([
+                    (1+0.5*x[1]*x[1]) + x[1]*x[0],
+                    x[0]*x[1] - (1-0.5*x[0]*x[0]),
+                ], float)
+                return value, gradient
+            else:
+                return value
+        x_init = np.array([3.5, 1.2], float)
+        search_direction = ConjugateGradient()
+        line_search = NewtonLineSearch()
+        convergence = ConvergenceCondition(grad_rms=1e-6)
+        stop_loss = StopLossCondition(max_iter=50)
+        constraints = Constraints([
+            (1, Half([0.0, 0.0], [1.0, 0.0])),
+            (1, Half([0.0, 0.0], [0.0, 1.0])),
+            (1, Half([5.0, 5.0], [-1.0, 0.0])),
+            (1, Half([5.0, 5.0], [0.0, -1.0])),
+        ], 1e-10)
+        minimizer = Minimizer(
+            x_init, surf, search_direction, line_search, convergence, stop_loss,
+            anagrad=True, verbose=False, constraints=constraints
+        )
+        assert minimizer.x[0] == 0.0
+        assert minimizer.x[1] == 5.0
         assert np.sqrt((minimizer.gradient**2).mean()) < 1e-6
