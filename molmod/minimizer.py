@@ -1029,9 +1029,8 @@ class Constraints(object):
                     values = new_values
                     error = new_error
                     break
-            infeasible_test = np.linalg.norm(np.dot(values, normals))/error**2
-            if infeasible_test < self.threshold:
-                raise RuntimeError('No feasible point found.')
+                if np.linalg.norm(dx) < self.threshold:
+                    raise RuntimeError('No feasible point found.')
         return x, counter, len(values)
 
     def project(self, x, vector):

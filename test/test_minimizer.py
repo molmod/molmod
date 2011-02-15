@@ -343,3 +343,22 @@ class MinimizerTestCase(BaseTestCase):
         assert minimizer.x[0] == 0.0
         assert minimizer.x[1] == 5.0
         assert np.sqrt((minimizer.gradient**2).mean()) < 1e-6
+
+    def test_constraints6(self):
+        x_init = np.array([3.5, 1.2], float)
+        search_direction = ConjugateGradient()
+        line_search = NewtonLineSearch()
+        convergence = ConvergenceCondition(grad_rms=1e-6)
+        stop_loss = StopLossCondition(max_iter=50)
+        constraints = Constraints([
+            (1, Half([5.0, 0.0], [1.0, 0.0])),
+            (-1, circle1),
+        ], 1e-10)
+        try:
+            minimizer = Minimizer(
+                x_init, quad, search_direction, line_search, convergence, stop_loss,
+                anagrad=True, verbose=False, constraints=constraints
+            )
+            assert False
+        except RuntimeError:
+            pass
