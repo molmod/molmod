@@ -1003,7 +1003,8 @@ class Constraints(object):
         while True:
             if error < self.threshold:
                 break
-            U, S, Vt = np.linalg.svd(normals, full_matrices=False)
+            norms = np.sqrt((normals**2).sum(axis=1))
+            U, S, Vt = np.linalg.svd(normals/norms.reshape((-1,1)), full_matrices=False)
             rcond = None
             while True:
                 if rcond is None:
@@ -1017,10 +1018,11 @@ class Constraints(object):
                 if Sinv.max() == 0.0:
                     continue
                 Sinv = S/Sinv
-                dx = -np.dot(Vt.transpose(), np.dot(U.transpose(), values)*Sinv)
+                dx = -np.dot(Vt.transpose(), np.dot(U.transpose(), values)*Sinv)/norms
                 new_x = x + dx
                 new_indexes = set(indexes)
                 new_normals, new_values, new_error = self._compute_equations(new_x, new_indexes)[:-1]
+                #print counter, error, new_error, dx
                 if new_error < error:
                     counter += 1
                     x = new_x
