@@ -1039,14 +1039,18 @@ class Constraints(object):
         normals, signs = self._compute_equations(x)[::3]
         if len(normals) == 0:
             return vector
-        U, S, Vt = np.linalg.svd(normals, full_matrices=False)
-        decomposition = np.dot(Vt, vector)
+        U, S, Vt = np.linalg.svd(normals.transpose(), full_matrices=False)
+        if S.min() == 0.0:
+            Sinv = S/(S**2+self.rcond1)
+        else:
+            Sinv = 1.0/S
+        decomposition = np.dot(Vt.transpose(), np.dot(U.transpose(), vector)*Sinv)
         for i, sign in enumerate(signs):
             if sign == 0:
                 continue
             if sign*decomposition[i] > 0:
                 decomposition[i] = 0.0
-        result = vector - np.dot(Vt.transpose(), decomposition)
+        result = vector - np.dot(U, np.dot(Vt, decomposition)*S)
         return result
 
 
