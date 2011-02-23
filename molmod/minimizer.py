@@ -971,10 +971,11 @@ class FunWrapper(object):
 
 
 class Constraints(object):
-    def __init__(self, equations, threshold, rcond1=1e-10):
+    def __init__(self, equations, threshold, rcond1=1e-10, max_shake=100):
         self.equations = equations
         self.threshold = threshold
         self.rcond1 = rcond1
+        self.max_shake = max_shake
 
     def _compute_equations(self, x, indexes=None):
         # compute the error and the normals.
@@ -984,7 +985,9 @@ class Constraints(object):
         error = 0.0
         for i, (sign, equation) in enumerate(self.equations):
             value, normal = equation(x)
-            if (indexes is not None and i in indexes) or (sign==-1 and value > -2*self.threshold) or (sign==0) or (sign==1 and value < 2*self.threshold):
+            if (indexes is not None and i in indexes) or \
+               (sign==-1 and value > -self.threshold) or \
+               (sign==0) or (sign==1 and value < self.threshold):
                 values.append(value)
                 normals.append(normal)
                 signs.append(sign)
@@ -996,50 +999,91 @@ class Constraints(object):
         values = np.array(values, float)
         return normals, values, error, signs
 
-    def shake(self, x):
+    def rough_shake(self, x, normals, values, error, ortho=None):
+        x0 = x.copy()
+        counter = 0
+        while len(normals) > 0 and counter < 100:
+            dxs = []
+            for i in xrange(len(normals)):
+                dx = -normals[i]*values[i]/np.dot(normals[i], normals[i])
+                if ortho is not None:
+                    decomp = -np.dot(dx, ortho)/np.dot(ortho, ortho)
+                    if decomp > 0.0:
+                        dx += ortho*decomp
+                dxs.append(dx)
+            dxs = np.array(dxs)
+            dx = dxs[(dxs**2).sum(axis=1).argmax()]
+            x = x+dx
+            normals, values, error = self._compute_equations(x)[:-1]
+            counter += 1
+        return x
+
+    def fast_shake(self, x, normals, values, error, indexes, ortho=None):
+        norms = np.sqrt((normals**2).sum(axis=0))
+        mask = norms > 0
+        normals = normals[:,mask]
+        norms = norms[mask]
+        norms[:] = 1
+
+        U, S, Vt = np.linalg.svd(normals/norms, full_matrices=False)
+        rcond = None
+        while True:
+            if rcond is None:
+                rcond = 0.0
+            elif rcond == 0.0:
+                rcond = self.rcond1
+            else:
+                rcond *= 10
+            # perform the least-norm correction
+            Sinv = (S**2+rcond)
+            if Sinv.max() == 0.0:
+                continue
+            Sinv = S/Sinv
+            dx = -np.dot(Vt.transpose(), np.dot(U.transpose(), values)*Sinv)/norms
+            new_x = x.copy()
+            new_x[mask] += dx
+            if ortho is not None:
+                decomp = -np.dot(new_x - x, ortho)/np.dot(ortho, ortho)
+                if decomp > 1.0:
+                    # only interfere when stepping back too much against the
+                    # steepest descent
+                    new_x += ortho*decomp
+            new_indexes = set(indexes)
+            new_normals, new_values, new_error = self._compute_equations(new_x, new_indexes)[:-1]
+            new_gradient = np.dot(new_values, new_normals)
+            if new_error < 0.9*error:
+                return new_x, new_normals, new_values, new_error, new_indexes
+            elif abs(dx).sum() < self.threshold:
+                return None
+
+    def shake(self, x, ortho=None):
         indexes = set([])
         normals, values, error = self._compute_equations(x, indexes)[:-1]
         counter = 0
         while True:
-            if error < self.threshold:
-                break
-            norms = np.sqrt((normals**2).sum(axis=0))
-            mask = norms > 0
-            normals = normals[:,mask]
-            norms = norms[mask]
-            U, S, Vt = np.linalg.svd(normals/norms, full_matrices=False)
-            rcond = None
-            while True:
-                if rcond is None:
-                    rcond = 0.0
-                elif rcond == 0.0:
-                    rcond = self.rcond1
-                else:
-                    rcond *= 10
-                # perform the least-norm correction
-                Sinv = (S**2+rcond)
-                if Sinv.max() == 0.0:
+            if error > self.threshold:
+                counter += 1
+                # try a well-behaved move to the constrains
+                result = self.fast_shake(x, normals, values, error, indexes, ortho)
+                if result is not None:
+                    x, normals, values, error, indexes = result
                     continue
-                Sinv = S/Sinv
-                dx = -np.dot(Vt.transpose(), np.dot(U.transpose(), values)*Sinv)/norms
-                new_x = x.copy()
-                new_x[mask] += dx
-                new_indexes = set(indexes)
-                new_normals, new_values, new_error = self._compute_equations(new_x, new_indexes)[:-1]
-                new_gradient = np.dot(new_values, new_normals)
-                #print counter, new_error - error, np.linalg.norm(new_gradient), np.dot(new_gradient, dx)
-                if new_error < error:
-                    counter += 1
-                    x = new_x
-                    index = new_indexes
-                    normals = new_normals
-                    values = new_values
-                    error = new_error
-                    break
-                if np.dot(new_gradient[mask], dx)/error < self.threshold:
-                    raise RuntimeError('No feasible point found.')
+                # try a well-behaved move to the constrains
+                result = self.fast_shake(x, normals, values, error, indexes)
+                if result is not None:
+                    x, normals, values, error, indexes = result
+                    continue
+                # well-behaved move was too slow.
+                # do a cumbersome move to satisfiy constraints approximately.
+                x = self.rough_shake(x, normals, values, error, ortho)
+                indexes = set([])
+                normals, values, new_error = self._compute_equations(x, indexes)[:-1]
+                #print new_error, error
+            else:
+                break
+            if counter > self.max_shake:
+                raise RuntimeError('Exceeded maximum number of shake iterations.')
         return x, counter, len(values)
-
 
     def project(self, x, vector):
         normals, signs = self._compute_equations(x)[::3]
@@ -1178,7 +1222,7 @@ class Minimizer(object):
                     continue
             if self.constraints is not None:
                 try:
-                    self.x, shake_count, active_count = self.constraints.shake(self.x)
+                    self.x, shake_count, active_count = self.constraints.shake(self.x, -self.gradient)
                 except RuntimeError:
                     self._screen("SHAKE FAILED", newline=True)
                     return False
