@@ -354,11 +354,8 @@ class MinimizerTestCase(BaseTestCase):
             (1, Half([5.0, 0.0], [1.0, 0.0])),
             (-1, circle1),
         ], 1e-10)
-        try:
-            minimizer = Minimizer(
-                x_init, quad, search_direction, line_search, convergence, stop_loss,
-                anagrad=True, verbose=False, constraints=constraints
-            )
-            assert False
-        except RuntimeError:
-            pass
+        minimizer = Minimizer(
+            x_init, quad, search_direction, line_search, convergence, stop_loss,
+            anagrad=True, verbose=False, constraints=constraints
+        )
+        assert not minimizer.success

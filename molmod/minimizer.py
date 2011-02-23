@@ -1148,7 +1148,11 @@ class Minimizer(object):
     def _iterate(self):
         """Run the iterative optimizer"""
         if self.constraints is not None:
-            self.x = self.constraints.shake(self.x)[0]
+            try:
+                self.x = self.constraints.shake(self.x)[0]
+            except RuntimeError:
+                self._screen("SHAKE FAILED", newline=True)
+                return False
         self.f, self.gradient = self.fun(self.x, do_gradient=True)
         if self.constraints is not None:
             self.gradient = -self.constraints.project(self.x, -self.gradient)
@@ -1173,7 +1177,11 @@ class Minimizer(object):
                     self.search_direction.reset()
                     continue
             if self.constraints is not None:
-                self.x, shake_count, active_count = self.constraints.shake(self.x)
+                try:
+                    self.x, shake_count, active_count = self.constraints.shake(self.x)
+                except RuntimeError:
+                    self._screen("SHAKE FAILED", newline=True)
+                    return False
                 self._screen('%3i%3i' % (shake_count, active_count))
             # compute the gradient at the new point
             self.f, self.gradient = self.fun(self.x, do_gradient=True)
@@ -1293,7 +1301,7 @@ def check_anagrad(fun, x0, epsilon, threshold):
         xl[i] -= 0.5*epsilon
         num_grad_comp = (fun(xh)-fun(xl))/epsilon
         if abs(num_grad_comp - ana_grad[i]) > threshold:
-            raise ValueError("Error in the analytical gradient, component %i, got %s, should be about %s" % (i, ana_grad[i], num_grad_comp))
+            raise AssertionError("Error in the analytical gradient, component %i, got %s, should be about %s" % (i, ana_grad[i], num_grad_comp))
 
 
 def check_delta(fun, x, dxs, threshold):
