@@ -934,7 +934,7 @@ class FunWrapper(object):
     """Wrapper to compute the function and its gradient"""
     def __init__(self, fun, anagrad, epsilon):
         """
-           Argument:
+           Arguments:
             | ``fun``  --  a multivariate function that can also compute
                            analytical derivatives, see below
             | ``anagrad``  --  boolean that indicates if fun supports analytical
@@ -971,13 +971,65 @@ class FunWrapper(object):
 
 
 class Constraints(object):
+    '''Algorithm to apply half-open and convential constraints during minimization.'''
     def __init__(self, equations, threshold, rcond1=1e-10, max_shake=100):
+        '''
+           The constraint solver internally works with a constraint cost
+           function, defined is the squared sum of the constraint functions.
+           The constraints are satisfied by bringing the cost function to zero.
+           This is done in iterative fashion. At each iteration, three attempts
+           are made to lower the constraint cost function:
+
+           1) Take a Levenberg-Marquardt-like step orthogonal to the gradient
+              of the function being minimized.
+           2) Take a Levenberg-Marquardt-like step without further restrictions.
+           3) Take a step to fix only one of the constraints, i.e. the
+              constraint for which the largest step is required.
+
+           The first two steps can be rejected if they do not lower the
+           constraint cost function by at least 10%.
+
+           Arguments:
+            | ``equations`` -- a list of (sign,equation) pairs. sign can be +1,
+                               0 of -1. equation is a function with one
+                               argument: the vector of unknowns in the
+                               minimizer. It returns the value of the constraint
+                               function and the gradient of that function. If
+                               sign is +1, the parameters will be forced in the
+                               region where the constraint function is positive.
+                               (Similar for -1, constraint function is forced to
+                               be negative.) When the sign is 0, the constraint
+                               function is forced to be zero.
+            | ``threshold`` -- The acceptable allowed deviation from the
+                               constraints. The deviation is defined as the
+                               euclidean norm of the (active) constraint
+                               functions.
+
+           Optional arguments:
+            | ``rcond1`` -- During the iterative solution of the constraint
+                            equations in the shake algorithm, it may happen
+                            that an ill-conditioned set of equations must be
+                            solved. In that case rcond1 is the first ridge
+                            parameter used to regularize these equations. If
+                            needed, the ridge parameter is multiplied by 10
+                            until a better fit of the constraints is found.
+            | ``max_shake`` -- The maximum number of iterations in the shake
+                               algorithm.
+        '''
         self.equations = equations
         self.threshold = threshold
         self.rcond1 = rcond1
         self.max_shake = max_shake
 
     def _compute_equations(self, x, indexes=None):
+        '''Compute the values and the normals (gradients) of active constraints.
+
+           Arguments:
+            | ``x`` -- The unknowns.
+            | ``indexes`` -- A set of indexes of constraints that were found
+                             active in a previous step. This set will be updated
+                             if new constraints are activated.
+        '''
         # compute the error and the normals.
         normals = []
         values = []
@@ -1000,6 +1052,21 @@ class Constraints(object):
         return normals, values, error, signs
 
     def rough_shake(self, x, normals, values, error, ortho=None):
+        '''Take a robust, but not very efficient step towards the constraints.
+
+           Arguments:
+            | ``x`` -- The unknowns.
+            | ``normals`` -- A numpy array with the gradients of the active
+                             constraints. Each row is one gradient.
+            | ``values`` -- A numpy array with the values of the constraint
+                            functions.
+            | ``error`` -- The square root of the constraint cost function.
+
+           Optional argument:
+            | ``ortho`` -- A numpy array with a direction of the steepest
+                           descent of the function being minimized. When given,
+                           uphill steps are avoided to some extent.
+        '''
         x0 = x.copy()
         counter = 0
         while len(normals) > 0 and counter < 100:
@@ -1019,13 +1086,32 @@ class Constraints(object):
         return x
 
     def fast_shake(self, x, normals, values, error, indexes, ortho=None):
-        norms = np.sqrt((normals**2).sum(axis=0))
-        mask = norms > 0
-        normals = normals[:,mask]
-        norms = norms[mask]
-        norms[:] = 1
+        '''Take an efficient (not always robust) step towards the constraints.
 
-        U, S, Vt = np.linalg.svd(normals/norms, full_matrices=False)
+           Arguments:
+            | ``x`` -- The unknowns.
+            | ``normals`` -- A numpy array with the gradients of the active
+                             constraints. Each row is one gradient.
+            | ``values`` -- A numpy array with the values of the constraint
+                            functions.
+            | ``error`` -- The square root of the constraint cost function.
+            | ``indexes`` -- A set of constraint indexes that are to be
+                             considered active.
+
+           Optional argument:
+            | ``ortho`` -- A numpy array with a direction of the steepest
+                           descent of the function being minimized. When given,
+                           uphill steps are avoided to some extent.
+        '''
+        # filter out the degrees of freedom that do not feel the constraints.
+        mask = (normals!=0).any(axis=0) > 0
+        normals = normals[:,mask]
+        # Take a step to lower the constraint cost function. If the step is too
+        # large, it is reduced iteratively towards a small steepest descent
+        # step. This is very similar to the Levenberg-Marquardt algorithm.
+        # Singular Value decomposition is used to make this procedure
+        # numerically more stable and efficient.
+        U, S, Vt = np.linalg.svd(normals, full_matrices=False)
         rcond = None
         while True:
             if rcond is None:
@@ -1039,7 +1125,8 @@ class Constraints(object):
             if Sinv.max() == 0.0:
                 continue
             Sinv = S/Sinv
-            dx = -np.dot(Vt.transpose(), np.dot(U.transpose(), values)*Sinv)/norms
+            # compute the step
+            dx = -np.dot(Vt.transpose(), np.dot(U.transpose(), values)*Sinv)
             new_x = x.copy()
             new_x[mask] += dx
             if ortho is not None:
@@ -1048,44 +1135,72 @@ class Constraints(object):
                     # only interfere when stepping back too much against the
                     # steepest descent
                     new_x += ortho*decomp
+            # try the step
             new_indexes = set(indexes)
             new_normals, new_values, new_error = self._compute_equations(new_x, new_indexes)[:-1]
             new_gradient = np.dot(new_values, new_normals)
             if new_error < 0.9*error:
+                # Only if it decreases the constraint cost sufficiently, the
+                # step is accepted. This routine is pointless of it converges
+                # slowly.
                 return new_x, new_normals, new_values, new_error, new_indexes
             elif abs(dx).sum() < self.threshold:
+                # If the step becomes too small, then give up.
                 return None
 
     def shake(self, x, ortho=None):
+        '''Main shake routine - brings unknowns to the constraints.
+
+           Arguments:
+            | ``x`` -- The unknowns.
+
+           Optional argument:
+            | ``ortho`` -- A numpy array with a direction of the steepest
+                           descent of the function being minimized. When given,
+                           uphill steps are avoided to some extent.
+        '''
         indexes = set([])
         normals, values, error = self._compute_equations(x, indexes)[:-1]
         counter = 0
         while True:
-            if error > self.threshold:
-                counter += 1
-                # try a well-behaved move to the constrains
-                result = self.fast_shake(x, normals, values, error, indexes, ortho)
-                if result is not None:
-                    x, normals, values, error, indexes = result
-                    continue
-                # try a well-behaved move to the constrains
-                result = self.fast_shake(x, normals, values, error, indexes)
-                if result is not None:
-                    x, normals, values, error, indexes = result
-                    continue
-                # well-behaved move was too slow.
-                # do a cumbersome move to satisfiy constraints approximately.
-                x = self.rough_shake(x, normals, values, error, ortho)
-                indexes = set([])
-                normals, values, new_error = self._compute_equations(x, indexes)[:-1]
-                #print new_error, error
-            else:
+            if error <= self.threshold:
                 break
+            if ortho is not None:
+                # try a well-behaved move to the constrains, avoid going uphill
+                result = self.fast_shake(x, normals, values, error, indexes, ortho)
+                counter += 1
+                if result is not None:
+                    x, normals, values, error, indexes = result
+                    continue
+            # try a well-behaved move to the constrains
+            result = self.fast_shake(x, normals, values, error, indexes)
+            counter += 1
+            if result is not None:
+                x, normals, values, error, indexes = result
+                continue
+            # well-behaved moves are too slow.
+            # do a cumbersome move to satisfy constraints approximately.
+            x = self.rough_shake(x, normals, values, error, ortho)
+            counter += 1
+            indexes = set([])
+            normals, values, new_error = self._compute_equations(x, indexes)[:-1]
+            # When too many iterations are required, just give up.
             if counter > self.max_shake:
                 raise RuntimeError('Exceeded maximum number of shake iterations.')
         return x, counter, len(values)
 
     def project(self, x, vector):
+        '''Project a vector (gradient or direction) on the active constraints.
+
+           Arguments:
+            | ``x`` -- The unknowns.
+            | ``vector`` -- A numpy array with a direction or a gradient.
+
+           The return value is a gradient or direction, where the components
+           that point away from the constraints are projected out. In case of
+           half-open constraints, the projection is only active of the vector
+           points into the infeasible region.
+        '''
         normals, signs = self._compute_equations(x)[::3]
         if len(normals) == 0:
             return vector
