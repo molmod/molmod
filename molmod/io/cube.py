@@ -28,8 +28,29 @@ import numpy as np
 from molmod.molecules import Molecule
 
 
-__all__ = ["CubeReader", 'Cube']
+__all__ = ['get_cube_points', 'CubeReader', 'Cube']
 
+
+def get_cube_points(origin, axes, nrep):
+    '''Generate the Cartesian coordinates of the points in a cube file
+
+       *Arguemnts:*
+
+       origin
+            The cartesian coordinate for the origin of the grid.
+
+       axes
+            The 3 by 3 array with the grid spacings as rows.
+
+       nrep
+            The number of grid points along each axis.
+    '''
+    points = np.zeros((nrep[0], nrep[1], nrep[2], 3), float)
+    points[:] = origin
+    points[:] += np.outer(np.arange(nrep[0], dtype=float), axes[0]).reshape((-1,1,1,3))
+    points[:] += np.outer(np.arange(nrep[1], dtype=float), axes[1]).reshape((1,-1,1,3))
+    points[:] += np.outer(np.arange(nrep[2], dtype=float), axes[2]).reshape((1,1,-1,3))
+    return points
 
 
 def read_cube_header(f):
@@ -247,12 +268,7 @@ class Cube(object):
         )
 
     def get_points(self):
-        '''Return a Nz*Nb*Nc*3 array with all cartesian coordinates of the
+        '''Return a Nz*Nb*Nc*3 array with all Cartesian coordinates of the
            points in the cube.
         '''
-        points = np.zeros((self.nrep[0], self.nrep[1], self.nrep[2], 3), float)
-        points[:] = self.origin
-        points[:] += np.outer(np.arange(self.nrep[0], dtype=float), self.axes[0]).reshape((-1,1,1,3))
-        points[:] += np.outer(np.arange(self.nrep[1], dtype=float), self.axes[1]).reshape((1,-1,1,3))
-        points[:] += np.outer(np.arange(self.nrep[2], dtype=float), self.axes[2]).reshape((1,1,-1,3))
-        return points
+        return get_cube_points(self.origin, self.axes, self.nrep)
