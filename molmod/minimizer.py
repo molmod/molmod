@@ -972,7 +972,7 @@ class FunWrapper(object):
 
 class Constraints(object):
     '''Algorithm to apply half-open and convential constraints during minimization.'''
-    def __init__(self, equations, threshold, rcond1=1e-10, max_shake=100):
+    def __init__(self, equations, threshold, rcond1=1e-10, max_shake=500):
         '''
            The constraint solver internally works with a constraint cost
            function, defined is the squared sum of the constraint functions.
@@ -1049,6 +1049,7 @@ class Constraints(object):
         error = np.sqrt(error)
         normals = np.array(normals, float)
         values = np.array(values, float)
+        signs = np.array(signs, int)
         return normals, values, error, signs
 
     def rough_shake(self, x, normals, values, error, ortho=None):
@@ -1201,21 +1202,38 @@ class Constraints(object):
            half-open constraints, the projection is only active of the vector
            points into the infeasible region.
         '''
+
         normals, signs = self._compute_equations(x)[::3]
         if len(normals) == 0:
             return vector
-        U, S, Vt = np.linalg.svd(normals.transpose(), full_matrices=False)
-        if S.min() == 0.0:
-            Sinv = S/(S**2+self.rcond1)
-        else:
-            Sinv = 1.0/S
-        decomposition = np.dot(Vt.transpose(), np.dot(U.transpose(), vector)*Sinv)
-        for i, sign in enumerate(signs):
-            if sign == 0:
-                continue
-            if sign*decomposition[i] > 0:
-                decomposition[i] = 0.0
-        result = vector - np.dot(U, np.dot(Vt, decomposition)*S)
+
+        mask = signs == 0
+        result = vector.copy()
+        changed = True
+        while changed:
+            changed = False
+            y = np.dot(normals, result)
+            for i, sign in enumerate(signs):
+                if sign != 0:
+                    if sign*y[i] < -self.threshold:
+                        mask[i] = True
+                        changed = True
+                    elif mask[i] and np.dot(normals[i], result-vector) < 0:
+                        mask[i] = False
+                        changed = True
+
+            if mask.any():
+                normals_select = normals[mask]
+                y = np.dot(normals_select, vector)
+                U, S, Vt = np.linalg.svd(normals_select, full_matrices=False)
+                if S.min() == 0.0:
+                    Sinv = S/(S**2+self.rcond1)
+                else:
+                    Sinv = 1.0/S
+                result = vector - np.dot(Vt.transpose(), np.dot(U.transpose(), y)*Sinv)
+            else:
+                result = vector.copy()
+
         return result
 
 
