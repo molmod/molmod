@@ -209,6 +209,17 @@ class MinimizerTestCase(BaseTestCase):
         )
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
+    def test_qn_newtong_rel_grad(self):
+        x_init = np.zeros(2, float)
+        search_direction = QuasiNewton()
+        line_search = NewtonLineSearch()
+        convergence = ConvergenceCondition(rel_grad_rms=1e-6, rel_grad_max=3e-6)
+        stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
+        minimizer = Minimizer(
+            x_init, fun, search_direction, line_search, convergence, stop_loss,
+            anagrad=True, verbose=True,
+        )
+
     def test_check_anagrad(self):
         x_init = np.zeros(2, float)
         check_anagrad(fun, x_init, 1e-5, 1e-4)

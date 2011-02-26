@@ -759,7 +759,7 @@ class FullPreconditioner(Preconditioner):
 class ConvergenceCondition(object):
     """Callable object that tests the convergence of the minimizer"""
 
-    def __init__(self, step_rms=None, step_max=None, grad_rms=None, grad_max=None):
+    def __init__(self, step_rms=None, step_max=None, grad_rms=None, grad_max=None, rel_grad_rms=None, rel_grad_max=None):
         """
            Optional arguments:
             | ``step_rms``  --  threshold for the RMS value of the step vector
@@ -770,16 +770,26 @@ class ConvergenceCondition(object):
                                 components of the function to be minimized
             | ``grad_max``  --  threshold for the maximum value of the gradient
                                 components of the function to be minimized
+            | ``rel_grad_rms``  --  threshold for the RMS value of the gradient
+                                    components of the function to be minimized,
+                                    divided by the function value
+            | ``rel_grad_max``  --  threshold for the maximum value of the gradient
+                                    components of the function to be minimized,
+                                    divided by the function value
 
            Only the present arguments define when the minimization has
            converged. All actual values must go below the given thresholds.
         """
-        if (step_rms is None and step_max is None and grad_rms is None and grad_max is None):
+        if (step_rms is None and step_max is None and
+            grad_rms is None and grad_max is None and
+            rel_grad_rms is None and rel_grad_max is None):
             raise ValueError("Some convergence criteria must be specified")
         self.step_rms = step_rms
         self.step_max = step_max
         self.grad_rms = grad_rms
         self.grad_max = grad_max
+        self.rel_grad_rms = rel_grad_rms
+        self.rel_grad_max = rel_grad_max
 
     def get_header(self):
         """Returns the header for screen logging of the minimization"""
@@ -792,14 +802,19 @@ class ConvergenceCondition(object):
             result += "    Grad RMS"
         if self.grad_max is not None:
             result += "    Grad MAX"
+        if self.rel_grad_rms is not None:
+            result += "  Grad/F RMS"
+        if self.rel_grad_max is not None:
+            result += "  Grad/F MAX"
         return result
 
-    def __call__(self, grad, step):
+    def __call__(self, grad, step, f):
         """Return True when the minimizer has converged
 
            Arguments:
-            | ``grad``  --  The gradient at the current point
-            | ``step``  --  The last step vector
+            | ``grad``  --  The gradient at the current point.
+            | ``step``  --  The last step vector.
+            | ``f`` -- The last function value.
         """
         stop = True
         status = ""
@@ -822,6 +837,8 @@ class ConvergenceCondition(object):
         stop, status = check_threshold(abs(step).max(), self.step_max, stop, status)
         stop, status = check_threshold(np.sqrt((grad**2).mean()), self.grad_rms, stop, status)
         stop, status = check_threshold(abs(grad).max(), self.grad_max, stop, status)
+        stop, status = check_threshold(np.sqrt((grad**2).mean())/f, self.rel_grad_rms, stop, status)
+        stop, status = check_threshold(abs(grad).max()/f, self.rel_grad_max, stop, status)
 
         return stop, status
 
@@ -1373,7 +1390,7 @@ class Minimizer(object):
                 gradient_orig = self.gradient
                 step_orig = self.step
             # check convergence on the gradient and step in original basis
-            converged, status = self.convergence_condition(gradient_orig, step_orig)
+            converged, status = self.convergence_condition(gradient_orig, step_orig, self.f)
             self._screen(status)
             # timing
             end = time.clock()
