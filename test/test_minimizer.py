@@ -217,7 +217,7 @@ class MinimizerTestCase(BaseTestCase):
         stop_loss = StopLossCondition(max_iter=50, fun_margin=1e-3)
         minimizer = Minimizer(
             x_init, fun, search_direction, line_search, convergence, stop_loss,
-            anagrad=True, verbose=True,
+            anagrad=True, verbose=False,
         )
 
     def test_check_anagrad(self):
@@ -278,7 +278,7 @@ class MinimizerTestCase(BaseTestCase):
         search_direction = ConjugateGradient()
         line_search = NewtonLineSearch()
         convergence = ConvergenceCondition(grad_rms=1e-6)
-        stop_loss = StopLossCondition(max_iter=50)
+        stop_loss = StopLossCondition(max_iter=5)
         constraints = Constraints([(1, circle1)], 1e-10)
         minimizer = Minimizer(
             x_init, quad, search_direction, line_search, convergence, stop_loss,
