@@ -1113,18 +1113,14 @@ class Constraints(object):
             | ``error`` -- The square root of the constraint cost function.
         '''
         # filter out the degrees of freedom that do not feel the constraints.
-        norms = np.sqrt((normals**2).sum(axis=0))
-        mask = norms > 0
-        #mask = (normals!=0).any(axis=0) > 0
+        mask = (normals!=0).any(axis=0) > 0
         normals = normals[:,mask]
-        norms = norms[mask]
-        norms[:] = 1
         # Take a step to lower the constraint cost function. If the step is too
         # large, it is reduced iteratively towards a small steepest descent
         # step. This is very similar to the Levenberg-Marquardt algorithm.
         # Singular Value decomposition is used to make this procedure
         # numerically more stable and efficient.
-        U, S, Vt = np.linalg.svd(normals/norms, full_matrices=False)
+        U, S, Vt = np.linalg.svd(normals, full_matrices=False)
         rcond = None
         while True:
             if rcond is None:
@@ -1139,7 +1135,7 @@ class Constraints(object):
                 continue
             Sinv = S/Sinv
             # compute the step
-            dx = -np.dot(Vt.transpose(), np.dot(U.transpose(), values)*Sinv)*norms
+            dx = -np.dot(Vt.transpose(), np.dot(U.transpose(), values)*Sinv)
             new_x = x.copy()
             new_x[mask] += dx
             # try the step
