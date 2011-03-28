@@ -305,15 +305,23 @@ class UnitCell(ReadOnly):
             active[2] = True
             return UnitCell(matrix, active)
 
-    def get_radius_ranges(self, radius):
+    def get_radius_ranges(self, radius, mic=False):
         """Return ranges of indexes of the interacting neighboring unit cells
 
            Interacting neighboring unit cells have at least one point in their
            box volume that has a distance smaller or equal than radius to at
            least one point in the central cell. This concept is of importance
            when computing pair wise long-range interactions in periodic systems.
+
+           The mic (stands for minimum image convention) option can be used to
+           change the behavior of this routine such that only neighboring cells
+           are considered that have at least one point withing a distance below
+           `radius` from the center of the reference cell.
         """
-        result = numpy.ceil(radius/self.spacings).astype(int)
+        if mic:
+            result = numpy.ceil(radius/self.spacings-0.5).astype(int)
+        else:
+            result = numpy.ceil(radius/self.spacings).astype(int)
         result[True^self.active] = 0
         return result
 
