@@ -1218,12 +1218,12 @@ class Constraints(object):
         scale = np.linalg.norm(vector)
         if scale == 0.0:
             return vector
-        vector = vector/scale
         self.lock[:] = False
         normals, signs = self._compute_equations(x)[::3]
         if len(normals) == 0:
             return vector
 
+        vector = vector/scale
         mask = signs == 0
         result = vector.copy()
         changed = True
