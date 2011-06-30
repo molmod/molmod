@@ -140,9 +140,12 @@ class FCHKFile(object):
         f = file(filename, 'r')
         self.title = f.readline()[:-1].strip()
         words = f.readline().split()
-        if len(words) != 3:
-            raise FileFormatError("Second line of FCHKFile is incorrect. Expecting three words.")
-        self.command, self.lot, self.basis = words
+        if len(words) == 3:
+            self.command, self.lot, self.basis = words
+        elif len(words) == 2:
+            self.command, self.lot = words
+        else:
+            raise FileFormatError('The second line of the FCHK file should contain two or three words.')
 
         while read_field(f):
             pass
