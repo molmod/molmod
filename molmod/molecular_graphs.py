@@ -288,7 +288,6 @@ class MolecularGraph(Graph):
                 if bo <= 0:
                     bo = 1
                 num_hydrogen -= int(bo)
-            print num_hydrogen
             for j in xrange(num_hydrogen):
                 new_edges.append((i, counter))
                 counter += 1
