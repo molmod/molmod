@@ -25,7 +25,7 @@
 from molmod.molecules import Molecule
 from molmod.io.common import FileFormatError
 
-import numpy
+import numpy as np
 
 
 __all__ = ["FCHKFile"]
@@ -97,11 +97,11 @@ class FCHKFile(object):
                     return True
 
                 if words[0] == 'I':
-                    datatype = int
+                    datatype = np.int64
                     unreadable = 0
                 elif words[0] == 'R':
                     datatype = float
-                    unreadable = numpy.nan
+                    unreadable = np.nan
 
             if len(words) == 2:
                 try:
@@ -112,7 +112,7 @@ class FCHKFile(object):
                 if words[1] != "N=":
                     raise FileFormatError("Unexpected line in formatted checkpoint file %s\n%s" % (filename, line[:-1]))
                 length = int(words[2])
-                value = numpy.zeros(length, datatype)
+                value = np.zeros(length, datatype)
                 counter = 0
                 try:
                     while counter < length:
@@ -122,7 +122,8 @@ class FCHKFile(object):
                         for word in line.split():
                             try:
                                 value[counter] = datatype(word)
-                            except ValueError:
+                            except (ValueError, OverflowError), e:
+                                print 'WARNING: could not interpret word while reading %s: %s' % (word, self.filename)
                                 if self.ignore_errors:
                                     value[counter] = unreadable
                                 else:
@@ -157,7 +158,7 @@ class FCHKFile(object):
         if ("Atomic numbers" in self.fields) and ("Current cartesian coordinates" in self.fields):
             self.molecule = Molecule(
                 self.fields["Atomic numbers"],
-                numpy.reshape(self.fields["Current cartesian coordinates"], (-1, 3)),
+                np.reshape(self.fields["Current cartesian coordinates"], (-1, 3)),
                 self.title,
             )
 
@@ -179,7 +180,7 @@ class FCHKFile(object):
         if coor_array is None:
             return []
         else:
-            return numpy.reshape(coor_array, (-1, len(self.molecule.numbers), 3))
+            return np.reshape(coor_array, (-1, len(self.molecule.numbers), 3))
 
     def get_optimized_molecule(self):
         """Return a molecule object of the optimal geometry"""
@@ -198,7 +199,7 @@ class FCHKFile(object):
         if grad_array is None:
             return []
         else:
-            return numpy.reshape(grad_array, (-1, len(self.molecule.numbers), 3))
+            return np.reshape(grad_array, (-1, len(self.molecule.numbers), 3))
 
     def get_optimized_gradient(self):
         """Return the energy gradient of the optimized geometry"""
@@ -214,7 +215,7 @@ class FCHKFile(object):
         if force_const is None:
             return None
         N = len(self.molecule.numbers)
-        result = numpy.zeros((3*N, 3*N), float)
+        result = np.zeros((3*N, 3*N), float)
         counter = 0
         for row in xrange(3*N):
             result[row, :row+1] = force_const[counter:counter+row+1]
