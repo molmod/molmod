@@ -168,8 +168,12 @@ class UnitCell(ReadOnly):
            vectors.
         """
         U, S, Vt = numpy.linalg.svd(self.matrix*self.active)
-        Sinv = 1/S
-        Sinv[abs(S)<self.eps] = 0.0
+        Sinv = numpy.zeros(S.shape, float)
+        for i in xrange(3):
+            if abs(S[i]) < self.eps:
+                Sinv[i] = 0.0
+            else:
+                Sinv[i] = 1.0/S[i]
         return numpy.dot(U*Sinv, Vt)*self.active
 
     @cached

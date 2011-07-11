@@ -185,7 +185,7 @@ class ToyFF(object):
         self.dm = graph.distances.astype(numpy.int32)
         dm = self.dm.astype(float)
         self.dm0 = dm**2
-        self.dmk = dm**(-3)
+        self.dmk = (dm+0.1)**(-3)
         self.vdw_radii = numpy.array([periodic[number].vdw_radius for number in graph.numbers], dtype=float)
         self.covalent_radii = numpy.array([periodic[number].covalent_radius for number in graph.numbers], dtype=float)
 
