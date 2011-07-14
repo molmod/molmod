@@ -1532,13 +1532,13 @@ def check_delta(fun, x, dxs, threshold):
        For every row in dxs, the following test is repeated:
 
        1) D1 = 'f(x+dx) - f(x)' is computed.
-       2) D2 = '(grad f(x+dx) + grad f(x)) . dx' is computed.
+       2) D2 = '0.5 (grad f(x+dx) + grad f(x)) . dx' is computed.
 
        There should be at least 50% of dx rows for which D1 is larger than the
        threshold. If not an AssertionError is raised.
 
        For each case where D1 is larger than the threshold, the absolute
-       difference |D1 - D2| should be larger than the threshold.
+       difference |D1 - D2| should be smaller than the threshold.
     """
     df_small = []
     for dx in dxs:
