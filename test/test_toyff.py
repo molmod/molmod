@@ -144,6 +144,7 @@ class ToyFFTestCase(unittest.TestCase):
             energy = ff(coordinates, False)
             r0 = numpy.add.outer(ff.vdw_radii, ff.vdw_radii)
             d = dm/r0
+            numpy.ravel(d)[::len(d)+1] = 1.0
             my_terms = (d-1)*(d-1)/d
             my_terms[ff.dm<=1] = 0.0
             my_terms[d>=1] = 0.0

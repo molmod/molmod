@@ -42,7 +42,7 @@ class UnitCellTestCase(BaseTestCase):
             active = numpy.random.randint(2,size=3).astype(bool)
         while True:
             result = UnitCell(numpy.random.uniform(-r, r, (3, 3)), active)
-            if result.spacings.min() > 1.0e-1:
+            if not active.any() or result.spacings[active].min() > 1.0e-1:
                 #result = result.ordered
                 #result = result.alignment_a*result
                 return result
@@ -433,10 +433,10 @@ class UnitCellTestCase(BaseTestCase):
 
     def test_volume(self):
         matrix = numpy.array([[10,0,0],[0,10,0],[0,0,10]], float)
-        self.assertEqual(UnitCell(matrix, numpy.array([False,False,False])).volume, -1)
-        self.assertEqual(UnitCell(matrix, numpy.array([True,False,False])).volume, 10)
-        self.assertEqual(UnitCell(matrix, numpy.array([True,True,False])).volume, 100)
-        self.assertEqual(UnitCell(matrix, numpy.array([True,True,True])).volume, 1000)
+        self.assertAlmostEqual(UnitCell(matrix, numpy.array([False,False,False])).volume, -1)
+        self.assertAlmostEqual(UnitCell(matrix, numpy.array([True,False,False])).volume, 10)
+        self.assertAlmostEqual(UnitCell(matrix, numpy.array([True,True,False])).volume, 100)
+        self.assertAlmostEqual(UnitCell(matrix, numpy.array([True,True,True])).volume, 1000)
 
     def test_alignment_a(self):
         matrix = numpy.array([[10,10,0],[-10,10,0],[0,0,10]], float)

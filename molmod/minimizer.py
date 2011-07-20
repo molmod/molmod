@@ -210,7 +210,7 @@ class QuasiNewton(SearchDirection):
             # new guess of the inverse hessian (BFGS)
             y = self.gradient - self.old_gradient
             s = step
-            sy = np.dot(s, y)
+            sy = abs(np.dot(s, y))+1e-5
             A = np.outer(-y/sy, s)
             A.ravel()[::N+1] += 1
             self.inv_hessian = (
@@ -837,7 +837,11 @@ class ConvergenceCondition(object):
         stop, status = check_threshold(abs(step).max(), self.step_max, stop, status)
         stop, status = check_threshold(np.sqrt((grad**2).mean()), self.grad_rms, stop, status)
         stop, status = check_threshold(abs(grad).max(), self.grad_max, stop, status)
-        stop, status = check_threshold(np.sqrt((grad**2).mean())/f, self.rel_grad_rms, stop, status)
+        if f != 0.0:
+            value = np.sqrt((grad**2).mean())/f
+        else:
+            value = 0.0
+        stop, status = check_threshold(value, self.rel_grad_rms, stop, status)
         stop, status = check_threshold(abs(grad).max()/f, self.rel_grad_max, stop, status)
 
         return stop, status

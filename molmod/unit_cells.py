@@ -236,7 +236,12 @@ class UnitCell(ReadOnly):
     @cached
     def spacings(self):
         """Computes the distances between neighboring crystal planes"""
-        return (self.reciprocal**2).sum(axis=0)**(-0.5)
+        result_invsq = (self.reciprocal**2).sum(axis=0)
+        result = numpy.zeros(3, float)
+        for i in xrange(3):
+            if result_invsq[i] > 0:
+                result[i] = result_invsq[i]**(-0.5)
+        return result
 
     def to_fractional(self, cartesian):
         """Convert Cartesian to fractional coordinates
@@ -322,11 +327,13 @@ class UnitCell(ReadOnly):
            are considered that have at least one point withing a distance below
            `radius` from the center of the reference cell.
         """
-        if mic:
-            result = numpy.ceil(radius/self.spacings-0.5).astype(int)
-        else:
-            result = numpy.ceil(radius/self.spacings).astype(int)
-        result[True^self.active] = 0
+        result = numpy.zeros(3, int)
+        for i in xrange(3):
+            if self.spacings[i] > 0:
+                if mic:
+                    result[i] = numpy.ceil(radius/self.spacings[i]-0.5)
+                else:
+                    result[i] = numpy.ceil(radius/self.spacings[i])
         return result
 
     def get_radius_indexes(self, radius, max_ranges=None):
