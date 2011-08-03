@@ -177,13 +177,16 @@ class MolecularGraph(Graph):
             orders.append(o)
         return cls(edges, numbers, numpy.array(orders))
 
-    def __init__(self, edges, numbers, orders=None, symbols=None):
+    def __init__(self, edges, numbers, orders=None, symbols=None, num_vertices=None):
         """
            Arguments:
             | ``edges``  --  See base class (Graph) documentation
             | ``numbers``  --  consecutive atom numbers
+
+           Optional arguments:
             | ``orders``  --  bond orders
             | ``symbols``  --  atomic symbols
+            | ``num_vertices``  --  must be the same as the number of atoms or None
 
            When the nature of an atom or a bond is unclear ambiguous, set the
            corresponding integer to zero. This means the nature of the atom or
@@ -194,6 +197,8 @@ class MolecularGraph(Graph):
            same for bond orders. e.g. a nice choice for the bond order of a
            hybrid bond is -1.
         """
+        if num_vertices is not None and num_vertices != len(numbers):
+            raise ValueError('The number of vertices must be the same as the number of atoms.')
         if orders is None:
             orders = numpy.ones(len(edges), float)
         Graph.__init__(self, edges, len(numbers))

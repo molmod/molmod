@@ -538,3 +538,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         mol = Molecule.from_file('input/zr4o8-3.xyz')
         mol.set_default_graph()
         assert len(mol.graph.edges)==12
+
+    def test_copy_with(self):
+        for mol in self.iter_molecules():
+            graph = mol.graph.copy_with()
