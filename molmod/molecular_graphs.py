@@ -60,11 +60,22 @@ class MolecularGraph(Graph):
             raise TypeError("The number of edges must match the length of "
                 "the bond orders array.")
 
+    def _check_symbols(self, symbols):
+        """the size must be the same as the length of the array numbers and all elements must be strings"""
+        if len(symbols) != self.size:
+            raise TypeError("The number of symbols in the graph does not "
+                "match the length of the atomic numbers array.")
+        for symbol in symbols:
+            if not isinstance(symbol, basestring):
+                raise TypeError("All symbols must be strings.")
+
     numbers = ReadOnlyAttribute(numpy.ndarray, none=False, check=_check_numbers,
         npdim=1, npdtype=int, doc="the atomic numbers associated with the "
         "vertices")
     orders = ReadOnlyAttribute(numpy.ndarray, none=False, check=_check_orders,
         npdim=1, npdtype=float, doc="the bond orders associated with the edges")
+    symbols = ReadOnlyAttribute(tuple, _check_symbols, doc="symbols for the "
+        "atoms, which can be element names for force-field atom types")
 
     @classmethod
     def from_geometry(cls, molecule, do_orders=False, scaling=1.0):
@@ -105,9 +116,9 @@ class MolecularGraph(Graph):
                 edges.append((i0,i1))
 
         if do_orders:
-            result = cls(edges, molecule.numbers, orders)
+            result = cls(edges, molecule.numbers, orders, symbols=molecule.symbols)
         else:
-            result = cls(edges, molecule.numbers)
+            result = cls(edges, molecule.numbers, symbols=molecule.symbols)
 
         # run a check on all neighbors. if two bonds point in a direction that
         # differs only by 45 deg. the longest of the two is discarded. the
@@ -166,12 +177,13 @@ class MolecularGraph(Graph):
             orders.append(o)
         return cls(edges, numbers, numpy.array(orders))
 
-    def __init__(self, edges, numbers, orders=None):
+    def __init__(self, edges, numbers, orders=None, symbols=None):
         """
            Arguments:
             | ``edges``  --  See base class (Graph) documentation
             | ``numbers``  --  consecutive atom numbers
             | ``orders``  --  bond orders
+            | ``symbols``  --  atomic symbols
 
            When the nature of an atom or a bond is unclear ambiguous, set the
            corresponding integer to zero. This means the nature of the atom or
@@ -187,6 +199,7 @@ class MolecularGraph(Graph):
         Graph.__init__(self, edges, len(numbers))
         self.numbers = numbers
         self.orders = orders
+        self.symbols = symbols
 
     def __mul__(self, repeat):
         """Construct a graph that repeats this graph a number of times
@@ -209,7 +222,12 @@ class MolecularGraph(Graph):
         new_orders = numpy.zeros((repeat, len(self.orders)), int)
         new_orders[:] = self.orders
         new_orders = new_orders.ravel()
-        return MolecularGraph(new_edges, new_numbers, new_orders)
+        # copy symbols
+        if self.symbols is not None:
+            new_symbols = self.symbols*repeat
+        else:
+            new_symbols = None
+        return MolecularGraph(new_edges, new_numbers, new_orders, new_symbols)
 
     __rmul__ = __mul__
 
@@ -248,8 +266,14 @@ class MolecularGraph(Graph):
             new_numbers = self.numbers[graph._old_vertex_indexes] # vertices do change
         else:
             new_numbers = self.numbers # vertices don't change!
+        if self.symbols is None:
+            new_symbols = None
+        elif normalize:
+            new_symbols = tuple(self.symbols[i] for i in graph._old_vertex_indexes)
+        else:
+            new_symbols = self.symbols
         new_orders = self.orders[graph._old_edge_indexes]
-        result = MolecularGraph(graph.edges, new_numbers, new_orders)
+        result = MolecularGraph(graph.edges, new_numbers, new_orders, new_symbols)
         if normalize:
             result._old_vertex_indexes = graph._old_vertex_indexes
         result._old_edge_indexes = graph._old_edge_indexes
