@@ -22,292 +22,203 @@
 # --
 
 
-from common import BaseTestCase
-
 import molmod.ic as ic
-from molmod.molecular_graphs import MolecularGraph, atom_criteria
-from molmod.molecules import Molecule
-from molmod.graphs import CriteriaSet
-from molmod.units import angstrom, deg
+from molmod import angstrom, deg, CriteriaSet, Molecule, MolecularGraph, atom_criteria, check_delta
 
-import unittest, numpy, sys
+import unittest, numpy as np, sys
 
 
-__all__ = ["ICTestCase"]
-
-num = 100
+num = 10
 big = 5
 small = 1
 eps = 1e-5
 
+
 def iter_bonds():
     counter = 0
     while counter < num:
-        p1 = numpy.random.normal(0,big,3)
-        p2 = numpy.random.normal(0,big,3)
-        if numpy.linalg.norm(p1-p2) < small:
+        p1 = np.random.normal(0,big,3)
+        p2 = np.random.normal(0,big,3)
+        if np.linalg.norm(p1-p2) < small:
             continue
         yield p1, p2
         counter += 1
 
+
 def iter_bends():
     counter = 0
     while counter < num:
-        p1 = numpy.random.normal(0,big,3)
-        p2 = numpy.random.normal(0,big,3)
-        if numpy.linalg.norm(p1-p2) < small:
+        p1 = np.random.normal(0,big,3)
+        p2 = np.random.normal(0,big,3)
+        if np.linalg.norm(p1-p2) < small:
             continue
-        p3 = numpy.random.normal(0,big,3)
-        if numpy.linalg.norm(p1-p3) < small:
+        p3 = np.random.normal(0,big,3)
+        if np.linalg.norm(p1-p3) < small:
             continue
-        if numpy.linalg.norm(p2-p3) < small:
+        if np.linalg.norm(p2-p3) < small:
             continue
         yield p1, p2, p3
         counter += 1
 
+
 def iter_diheds():
     counter = 0
     while counter < num:
-        p1 = numpy.random.normal(0,big,3)
-        p2 = numpy.random.normal(0,big,3)
-        if numpy.linalg.norm(p1-p2) < small:
+        p1 = np.random.normal(0,big,3)
+        p2 = np.random.normal(0,big,3)
+        if np.linalg.norm(p1-p2) < small:
             continue
-        d = (p1-p2)/numpy.linalg.norm(p1-p2)
-        p3 = numpy.random.normal(0,big,3)
-        p3_ortho = p3 - d*numpy.dot(p3-p1,d)
-        if numpy.linalg.norm(p3_ortho) < small:
+        d = (p1-p2)/np.linalg.norm(p1-p2)
+        p3 = np.random.normal(0,big,3)
+        p3_ortho = p3 - d*np.dot(p3-p1,d)
+        if np.linalg.norm(p3_ortho) < small:
             continue
-        p4 = numpy.random.normal(0,big,3)
-        p4_ortho = p4 - d*numpy.dot(p4-p2,d)
-        if numpy.linalg.norm(p4_ortho) < small:
+        p4 = np.random.normal(0,big,3)
+        p4_ortho = p4 - d*np.dot(p4-p2,d)
+        if np.linalg.norm(p4_ortho) < small:
             continue
         yield p1, p2, p3, p4
         counter += 1
 
 
-class ICTestCase(BaseTestCase):
-    def test_diff_bond(self):
-        for a1, a2 in iter_bonds():
-            d = numpy.random.normal(0,eps,6) # random displacements
-            b1 = a1+d[:3] # displaced
-            b2 = a2+d[3:] # displaced
-            qa, ga, ha = ic.bond_length(a1,a2,2)
-            qb, gb, hb = ic.bond_length(b1,b2,2)
-            delta1 = qb - qa
-            delta2 = numpy.dot(0.5*(ga+gb).ravel(), d)
-            error = abs(delta1-delta2)
-            oom = abs(delta1)
-            self.assert_(error*1e5 < oom)
-            delta1 = (gb - ga).ravel()
-            delta2 = numpy.dot(0.5*(ha+hb).reshape((6,6)), d)
-            error = ((delta1-delta2)**2).mean()
-            oom = (delta1**2).mean()
-            self.assert_(error*1e5 < oom)
+def iter_pairs():
+    for counter in xrange(num):
+        while True:
+            x = np.random.normal(0,big,2)
+            if x[-1] > small: break
+        yield x
 
-    def test_diff_dot(self):
-        def my_dot(x,y,deriv):
-            x = ic.Vector3(6,deriv,x,(0,1,2))
-            y = ic.Vector3(6,deriv,y,(3,4,5))
-            return ic.dot(x,y).results()
-        for a1, a2 in iter_bonds():
-            d = numpy.random.normal(0,eps,6) # random displacements
-            b1 = a1+d[:3] # displaced
-            b2 = a2+d[3:] # displaced
-            qa, ga, ha = my_dot(a1,a2,2)
-            qb, gb, hb = my_dot(b1,b2,2)
-            delta1 = qb - qa
-            delta2 = numpy.dot(0.5*(ga+gb).ravel(), d)
-            error = abs(delta1-delta2)
-            oom = abs(delta1)
-            self.assert_(error*1e5 < oom)
-            delta1 = (gb - ga).ravel()
-            delta2 = numpy.dot(0.5*(ha+hb).reshape((6,6)), d)
-            error = ((delta1-delta2)**2).mean()
-            oom = (delta1**2).mean()
-            self.assert_(error*1e5 < oom)
 
-    def test_diff_cross(self):
-        def my_cross(x,y,deriv):
-            x = ic.Vector3(6,deriv,x,(0,1,2))
-            y = ic.Vector3(6,deriv,y,(3,4,5))
-            return ic.cross(x,y)
-        for a1, a2 in iter_bonds():
-            d = numpy.random.normal(0,eps,6) # random displacements
-            b1 = a1+d[:3] # displaced
-            b2 = a2+d[3:] # displaced
-            temp = my_cross(a1,a2,2)
-            qxa, gxa, hxa = temp.x.results()
-            qya, gya, hya = temp.y.results()
-            qza, gza, hza = temp.z.results()
-            temp = my_cross(b1,b2,2)
-            qxb, gxb, hxb = temp.x.results()
-            qyb, gyb, hyb = temp.y.results()
-            qzb, gzb, hzb = temp.z.results()
-            delta1 = [qxb - qxa, qyb - qya, qzb - qza]
-            delta2 = [numpy.dot(0.5*(gxa+gxb).ravel(), d),
-                      numpy.dot(0.5*(gya+gyb).ravel(), d),
-                      numpy.dot(0.5*(gza+gzb).ravel(), d)]
-            error = [abs(delta1[i]-delta2[i]) for i in xrange(3)]
-            oom = [abs(delta1[i]) for i in xrange(3)]
-            for i in xrange(3):
-                self.assert_(error[i]*1e5 < oom[i])
-            delta1 = numpy.array([[(gxb - gxa).ravel()],[(gyb - gya).ravel()],[(gzb - gza).ravel()]])
-            delta2 = numpy.array([[numpy.dot(0.5*(hxa+hxb).reshape((6,6)), d)],
-                                 [numpy.dot(0.5*(hya+hyb).reshape((6,6)), d)],
-                                 [numpy.dot(0.5*(hza+hzb).reshape((6,6)), d)]])
-            error = [((delta1[i]-delta2[i])**2).mean() for i in xrange(3)]
-            oom = [((delta1[i])**2).mean() for i in xrange(3)]
-            for i in xrange(3):
-                self.assert_(error[i]*1e5 < oom[i])
+def check_diff_ic(icfn, iterp, shape=(-1,3)):
+    def fnv(x0, do_gradient=False):
+        q, g = icfn(x0.reshape(shape),1)
+        if do_gradient:
+            return q, g.ravel()
+        else:
+            return q
 
-    def test_diff_idiv(self):
-        def my_div(t,deriv):
-            t0 = ic.Scalar(2,deriv,t[0],0)
-            t1 = ic.Scalar(2,deriv,t[1],1)
-            t0 /= t1
-            return t0.results()
-        for counter in xrange(num):
-            while True:
-                a = numpy.random.normal(0,big,2)
-                if a[-1] > small: break
-            d = numpy.random.normal(0,eps,2) # random displacements
-            b = a+d
-            comp = numpy.random.randint(3)
-            qa, ga, ha = my_div(a,2)
-            qb, gb, hb = my_div(b,2)
-            delta1 = qb - qa
-            delta2 = numpy.dot(0.5*(ga+gb), d)
-            error = abs(delta1-delta2)
-            oom = abs(delta1)
-            self.assert_(error*1e5 < oom)
-            delta1 = (gb - ga)
-            delta2 = numpy.dot(0.5*(ha+hb), d)
-            error = ((delta1-delta2)**2).mean()
-            oom = (delta1**2).mean()
-            self.assert_(error*1e5 < oom)
+    def fng(x0, do_gradient=False):
+        q, g, h = icfn(x0.reshape(shape),2)
+        if do_gradient:
+            return g.ravel(), h.reshape(g.size,g.size)
+        else:
+            return g.ravel()
 
-    def test_diff_bend(self):
-        for a1, a2, a3 in iter_bends():
-            d = numpy.random.normal(0,eps,9)
-            b1 = a1+d[:3]
-            b2 = a2+d[3:6]
-            b3 = a3+d[6:]
-            for fn in [ic.bend_cos, ic.bend_angle]:
-                qa, ga, ha = fn(a1, a2, a3, 2)
-                qb, gb, hb = fn(b1, b2, b3, 2)
-                delta1 = qb - qa
-                delta2 = numpy.dot(0.5*(ga+gb).ravel(), d)
-                error = abs(delta1-delta2)
-                oom = abs(delta1)
-                self.assert_(error*1e5 < oom)
-                delta1 = (gb - ga).ravel()
-                delta2 = numpy.dot(0.5*(ha+hb).reshape((9,9)), d)
-                error = ((delta1-delta2)**2).mean()
-                oom = (delta1**2).mean()
-                self.assert_(error*1e5 < oom)
+    for ps in iterp():
+        x0 = np.array(ps).ravel()
+        xds = np.random.normal(0, eps, (100, len(x0)))
+        check_delta(fnv, x0, xds, 1e-10)
+        check_delta(fng, x0, xds, 1e-10)
 
-    def test_diff_imul(self):
-        def my_mul(t,deriv):
-            t0 = ic.Scalar(2,deriv,t[0],0)
-            t1 = ic.Scalar(2,deriv,t[1],1)
-            t0 *= t1
-            return t0.results()
-        for counter in xrange(num):
-            while True:
-                a = numpy.random.normal(0,big,2)
-                if a[-1] > small: break
-            d = numpy.random.normal(0,eps,2) # random displacements
-            b = a+d
-            comp = numpy.random.randint(3)
-            qa, ga, ha = my_mul(a,2)
-            qb, gb, hb = my_mul(b,2)
-            delta1 = qb - qa
-            delta2 = numpy.dot(0.5*(ga+gb), d)
-            error = abs(delta1-delta2)
-            oom = abs(delta1)
-            self.assert_(error*1e5 < oom)
-            delta1 = (gb - ga)
-            delta2 = numpy.dot(0.5*(ha+hb), d)
-            error = ((delta1-delta2)**2).mean()
-            oom = (delta1**2).mean()
-            self.assert_(error*1e5 < oom)
 
-    def test_diff_dihed(self):
-        for r1, r2, r3, r4 in iter_diheds():
-            d = numpy.random.normal(0,eps,12)
-            s1 = r1+d[:3]
-            s2 = r2+d[3:6]
-            s3 = r3+d[6:9]
-            s4 = r4+d[9:]
-            for fn in [ic.dihed_cos, ic.dihed_angle]:
-                qr, gr, hr = fn(r1, r2, r3, r4, 2)
-                qs, gs, hs = fn(s1, s2, s3, s4, 2)
-                self.assert_(qr >= -numpy.pi)
-                self.assert_(qr <= numpy.pi)
-                self.assert_(qs >= -numpy.pi)
-                self.assert_(qs <= numpy.pi)
-                delta1 = qs - qr
-                delta2 = numpy.dot(0.5*(gr+gs).ravel(), d)
-                error = abs(delta1-delta2)
-                oom = abs(delta1)
-                self.assert_(error*1e5 < oom)
-                delta1 = (gs - gr).ravel()
-                delta2 = numpy.dot(0.5*(hs+hr).reshape((12,12)), d)
-                error = ((delta1-delta2)**2).mean()
-                oom = (delta1**2).mean()
-                self.assert_(error*1e5 < oom)
+def test_diff_bond():
+    check_diff_ic(ic.bond_length, iter_bonds)
 
-    def test_diff_opbend(self):
-        for r1, r2, r3, r4 in iter_diheds():
-            d = numpy.random.normal(0,eps,12)
-            s1 = r1+d[:3]
-            s2 = r2+d[3:6]
-            s3 = r3+d[6:9]
-            s4 = r4+d[9:]
-            for fn in [ic.opbend_cos, ic.opbend_angle]:
-                qr, gr, hr = fn(r1, r2, r3, r4, 2)
-                qs, gs, hs = fn(s1, s2, s3, s4, 2)
-                delta1 = qs - qr
-                delta2 = numpy.dot(0.5*(gr+gs).ravel(), d)
-                error = abs(delta1-delta2)
-                oom = abs(delta1)
-                self.assert_(error*1e5 < oom)
-                delta1 = (gs - gr).ravel()
-                delta2 = numpy.dot(0.5*(hs+hr).reshape((12,12)), d)
-                error = ((delta1-delta2)**2).mean()
-                oom = (delta1**2).mean()
-                self.assert_(error*1e5 < oom)
 
-    def test_dihedral_ethene(self):
-        mol = Molecule.from_file("input/ethene.xyz")
-        c = mol.coordinates.copy()
-        self.assertAlmostEqual(ic.dihed_cos(c[2], c[0], c[3], c[5])[0], 1.0)
-        self.assertAlmostEqual(ic.dihed_angle(c[2], c[0], c[3], c[5])[0], 0.0)
-        for i in xrange(1000):
-            angle = numpy.random.uniform(-numpy.pi, numpy.pi)
-            radius = numpy.random.uniform(0, 5*angstrom)
-            offset = numpy.random.uniform(0, 5*angstrom)
-            c[5] = [
-                offset,
-                -radius*numpy.cos(angle),
-                -radius*numpy.sin(angle),
-            ]
-            self.assertAlmostEqual(ic.dihed_cos(c[2], c[0], c[3], c[5])[0], numpy.cos(angle))
-            self.assertAlmostEqual(ic.dihed_angle(c[2], c[0], c[3], c[5])[0], angle)
+def test_diff_dot():
+    def my_dot(rs,deriv):
+        x = ic.Vector3(6,deriv,rs[0],(0,1,2))
+        y = ic.Vector3(6,deriv,rs[1],(3,4,5))
+        return ic.dot(x,y).results()
+    check_diff_ic(my_dot, iter_bonds)
 
-    def test_opbend_ethene(self):
-        mol = Molecule.from_file("input/ethene.xyz")
-        c = mol.coordinates.copy()
-        self.assertAlmostEqual(ic.opbend_cos(c[0], c[5], c[4], c[3])[0], 1.0)
-        self.assertAlmostEqual(ic.opbend_angle(c[0], c[5], c[4], c[3])[0], 0.0)
-        for i in xrange(1000):
-            angle = numpy.random.uniform(-numpy.pi/2, numpy.pi/2)
-            radius = numpy.random.uniform(0, 5*angstrom)
-            #offset = numpy.random.uniform(0, 5*angstrom)
-            c[3] = [
-                radius*numpy.cos(angle),
-                0.0,
-                radius*numpy.sin(angle),
-            ]
-            self.assertAlmostEqual(ic.opbend_cos(c[0], c[5], c[4], c[3])[0], numpy.cos(angle))
-            self.assertAlmostEqual(ic.opbend_angle(c[0], c[5], c[4], c[3])[0], angle)
+
+class MyCross(object):
+    def __init__(self, index):
+        self.index = index
+
+    def __call__(self, rs, deriv):
+        x = ic.Vector3(6,deriv,rs[0],(0,1,2))
+        y = ic.Vector3(6,deriv,rs[1],(3,4,5))
+        if self.index == 0:
+            return ic.cross(x,y).x.results()
+        elif self.index == 1:
+            return ic.cross(x,y).y.results()
+        elif self.index == 2:
+            return ic.cross(x,y).z.results()
+        else:
+            raise NotImplementedError
+
+
+def test_diff_cross():
+    check_diff_ic(MyCross(0), iter_bonds)
+    check_diff_ic(MyCross(1), iter_bonds)
+    check_diff_ic(MyCross(2), iter_bonds)
+
+
+def test_diff_idiv():
+    def my_div(t,deriv):
+        t0 = ic.Scalar(2,deriv,t[0],0)
+        t1 = ic.Scalar(2,deriv,t[1],1)
+        t0 /= t1
+        return t0.results()
+    check_diff_ic(my_div, iter_pairs, (2,))
+
+
+def test_diff_bend_angle():
+    check_diff_ic(ic.bend_angle, iter_bends)
+
+
+def test_diff_bend_cos():
+    check_diff_ic(ic.bend_cos, iter_bends)
+
+
+def test_diff_imul():
+    def my_mul(t,deriv):
+        t0 = ic.Scalar(2,deriv,t[0],0)
+        t1 = ic.Scalar(2,deriv,t[1],1)
+        t0 *= t1
+        return t0.results()
+    check_diff_ic(my_mul, iter_pairs, (2,))
+
+
+def test_diff_dihed_cos():
+    check_diff_ic(ic.dihed_cos, iter_diheds)
+
+
+def test_diff_dihed_angle():
+    check_diff_ic(ic.dihed_angle, iter_diheds)
+
+
+def test_diff_opbend_cos():
+    check_diff_ic(ic.opbend_cos, iter_diheds)
+
+
+def test_diff_opbend_angle():
+    check_diff_ic(ic.opbend_angle, iter_diheds)
+
+
+def test_dihedral_ethene():
+    mol = Molecule.from_file("input/ethene.xyz")
+    c = mol.coordinates.copy()
+    assert abs(ic.dihed_cos([c[2], c[0], c[3], c[5]])[0] - 1.0) < 1e-5
+    assert abs(ic.dihed_angle([c[2], c[0], c[3], c[5]])[0]) < 1e-5
+    for i in xrange(1000):
+        angle = np.random.uniform(-np.pi, np.pi)
+        radius = np.random.uniform(0, 5*angstrom)
+        offset = np.random.uniform(0, 5*angstrom)
+        c[5] = [
+            offset,
+            -radius*np.cos(angle),
+            -radius*np.sin(angle),
+        ]
+        assert abs(ic.dihed_cos([c[2], c[0], c[3], c[5]])[0] - np.cos(angle)) < 1e-5
+        assert abs(ic.dihed_angle([c[2], c[0], c[3], c[5]])[0] - angle) < 1e-5
+
+
+def test_opbend_ethene():
+    mol = Molecule.from_file("input/ethene.xyz")
+    c = mol.coordinates.copy()
+    assert abs(ic.opbend_cos([c[0], c[5], c[4], c[3]])[0] - 1.0) < 1e-5
+    assert abs(ic.opbend_angle([c[0], c[5], c[4], c[3]])[0]) < 1e-5
+    for i in xrange(1000):
+        angle = np.random.uniform(-np.pi/2, np.pi/2)
+        radius = np.random.uniform(0, 5*angstrom)
+        #offset = np.random.uniform(0, 5*angstrom)
+        c[3] = [
+            radius*np.cos(angle),
+            0.0,
+            radius*np.sin(angle),
+        ]
+        assert abs(ic.opbend_cos([c[0], c[5], c[4], c[3]])[0] - np.cos(angle)) < 1e-5
+        assert abs(ic.opbend_angle([c[0], c[5], c[4], c[3]])[0] - angle) < 1e-5

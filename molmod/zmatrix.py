@@ -143,11 +143,11 @@ class ZMatrixGenerator(object):
                 rel1 = i - self.new_index[ref1]
             if i > 1:
                 ref2 = self._get_new_ref([ref0, ref1])
-                angle, = ic.bend_angle(coordinates[ref0], coordinates[ref1], coordinates[ref2])
+                angle, = ic.bend_angle(coordinates[[ref0, ref1, ref2]])
                 rel2 = i - self.new_index[ref2]
             if i > 2:
                 ref3 = self._get_new_ref([ref0, ref1, ref2])
-                dihed, = ic.dihed_angle(coordinates[ref0], coordinates[ref1], coordinates[ref2], coordinates[ref3])
+                dihed, = ic.dihed_angle(coordinates[[ref0, ref1, ref2, ref3]])
                 rel3 = i - self.new_index[ref3]
             result[i] = (self.graph.numbers[i], distance, rel1, angle, rel2, dihed, rel3)
         return result

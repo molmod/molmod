@@ -31,9 +31,7 @@ class HarmonicEnergyTerm(object):
         """
         # Compute the derivatives of the bond stretch towards the two cartesian
         # coordinates. The bond length is computed too, but not used.
-        args = [coordinates[i] for i in self.indexes]
-        args.append(1) # Request first order derivatives with the last argument.
-        q, g = self.icfn(*args)
+        q, g = self.icfn(coordinates[list(self.indexes)], 1)
         # Add the contribution to the Hessian (an outer product)
         for ja, ia in enumerate(self.indexes):
             # ja is 0, 1, 2, ...

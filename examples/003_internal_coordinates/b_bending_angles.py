@@ -25,7 +25,7 @@ for i1 in xrange(mol.size):
 print "An overview of all bending angles in dopamine:"
 for i0, i1, i2 in angles:
     # Notice again the [0] at the end.
-    angle = bend_angle(mol.coordinates[i0], mol.coordinates[i1], mol.coordinates[i2])[0]
+    angle = bend_angle(mol.coordinates[[i0, i1, i2]])[0]
     # Python formatting of the indexes, symbols, and the angle in degrees.
     print "%2i %2i %2i    %2s %2s %2s    %5.1f" % (
         i0, i1, i2, mol.symbols[i0], mol.symbols[i1], mol.symbols[i2], angle/deg

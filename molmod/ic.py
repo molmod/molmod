@@ -325,17 +325,16 @@ def cross(r1, r2):
     return result
 
 
-def bond_length(r0, r1, deriv=0):
-    """Compute the distance between the two points r0 and r1
+def bond_length(rs, deriv=0):
+    """Compute the distance between the two points rs[0] and rs[1]
 
        Arguments:
-        | ``r0``  --  a numpy array with three elements
-        | ``r1``  --  a numpy array with three elements
+        | ``rs``  --  two numpy array with three elements
         | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
 
        When derivatives are computed a tuple with a single result is returned
     """
-    r = r0 - r1
+    r = rs[0] - rs[1]
     result = _bond_length_low(r, deriv)
     v = result[0]
     if deriv == 0:
@@ -363,19 +362,17 @@ def _bond_length_low(r, deriv):
     return d.results()
 
 
-def bend_cos(r0, r1, r2, deriv=0):
-    """Compute the cosine of the angle between the vectors r0-r1 and r2-r1
+def bend_cos(rs, deriv=0):
+    """Compute the cosine of the angle between the vectors rs[0]-rs[1] and rs[2]-rs[1]
 
        Arguments:
-        | ``r0``  --  a numpy array with three elements
-        | ``r1``  --  a numpy array with three elements
-        | ``r2``  --  a numpy array with three elements
+        | ``rs``  --  three numpy array with three elements
         | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
 
        When derivatives are computed a tuple with a single result is returned
     """
-    a = r0 - r1
-    b = r2 - r1
+    a = rs[0] - rs[1]
+    b = rs[2] - rs[1]
     result = _bend_cos_low(a, b, deriv)
     v = result[0]
     if deriv == 0:
@@ -434,34 +431,29 @@ def _cos_to_angle(result, deriv, sign=1):
         return v*sign, d*sign, dd*sign
     raise ValueError("deriv must be 0, 1 or 2.")
 
-def bend_angle(r0, r1, r2, deriv=0):
-    """Compute the angle between the vectors r0-r1 and r2-r1
+def bend_angle(rs, deriv=0):
+    """Compute the angle between the vectors rs[0]-rs[1] and rs[2]-rs[1]
 
        Arguments:
-        | ``r0``  --  a numpy array with three elements
-        | ``r1``  --  a numpy array with three elements
-        | ``r2``  --  a numpy array with three elements
+        | ``rs``  --  three numpy array with three elements
         | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
 
        When derivatives are computed a tuple with a single result is returned
     """
-    result = bend_cos(r0, r1, r2, deriv)
+    result = bend_cos(rs, deriv)
     return _cos_to_angle(result, deriv)
 
 
-def dihed_cos(r0, r1, r2, r3, deriv=0):
-    """Compute the cosine of the angle between the planes r0, r1, r2 and r1, r2, r3
+def dihed_cos(rs, deriv=0):
+    """Compute the cosine of the angle between the planes rs[0], rs[1], rs[2] and rs[1], rs[2], rs[3]
 
        Arguments:
-        | ``r0``  --  a numpy array with three elements
-        | ``r1``  --  a numpy array with three elements
-        | ``r2``  --  a numpy array with three elements
-        | ``r3``  --  a numpy array with three elements
+        | ``rs``  --  four numpy array with three elements
         | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
     """
-    a = r0 - r1
-    b = r2 - r1
-    c = r3 - r2
+    a = rs[0] - rs[1]
+    b = rs[2] - rs[1]
+    c = rs[3] - rs[2]
     result = _dihed_cos_low(a, b, c, deriv)
     v = result[0]
     if deriv == 0:
@@ -523,41 +515,35 @@ def _dihed_cos_low(a, b, c, deriv):
     c /= c.norm()
     return dot(a, c).results()
 
-def dihed_angle(r0, r1, r2, r3, deriv=0):
-    """Compute the angle between the planes r0, r1, r2 and r1, r2, r3
+def dihed_angle(rs, deriv=0):
+    """Compute the angle between the planes rs[0], rs[1], rs[2] and rs[1], rs[2], rs[3]
 
        The sign convention corresponds to the IUPAC definition of the torsion
        angle: http://dx.doi.org/10.1351/goldbook.T06406
 
        Arguments:
-        | ``r0``  --  a numpy array with three elements
-        | ``r1``  --  a numpy array with three elements
-        | ``r2``  --  a numpy array with three elements
-        | ``r3``  --  a numpy array with three elements
+        | ``rs``  --  four numpy array with three elements
         | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
 
        When derivatives are computed a tuple with a single result is returned
     """
-    result = dihed_cos(r0, r1, r2, r3, deriv)
-    a = r0 - r1
-    b = r2 - r1
-    c = r3 - r2
+    result = dihed_cos(rs, deriv)
+    a = rs[0] - rs[1]
+    b = rs[2] - rs[1]
+    c = rs[3] - rs[2]
     sign = 1-(numpy.linalg.det([a, b, c]) > 0)*2
     return _cos_to_angle(result, deriv, sign)
 
-def opbend_cos(r0, r1, r2, r3, deriv=0):
-    """Compute the cosine of the angle between the vector (r0,r3) and plane r0,r1,r2
+def opbend_cos(rs, deriv=0):
+    """Compute the cosine of the angle between the vector (rs[0],rs[3]) and plane rs[0],rs[1],rs[2]
 
        Arguments:
-        | ``r0``  --  a numpy array with three elements
-        | ``r1``  --  a numpy array with three elements
-        | ``r2``  --  a numpy array with three elements
-        | ``r3``  --  a numpy array with three elements
+        | ``rs``  --  four numpy array with three elements
         | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
     """
-    a = r1 - r0
-    b = r2 - r0
-    c = r3 - r0
+    a = rs[1] - rs[0]
+    b = rs[2] - rs[0]
+    c = rs[3] - rs[0]
     result = _opbend_cos_low(a, b, c, deriv)
     v = result[0]
     if deriv == 0:
@@ -625,25 +611,22 @@ def _opbend_cos_low(a, b, c, deriv):
         result.dd -= temp2
     return result.results()
 
-def opbend_angle(r0, r1, r2, r3, deriv=0):
-    """Compute the angle between the vector r0, r3 and  the plane r0, r1, r2
+def opbend_angle(rs, deriv=0):
+    """Compute the angle between the vector rs[0], rs[3] and the plane rs[0], rs[1], rs[2]
 
-       The sign convention is as follows: positive if r3 lies in the space above
-       plane r0, r1, r2 and negative if r3 lies below. Above is defined by right
-       hand rule from r0-r1 to r0-r2.
+       The sign convention is as follows: positive if rs[3] lies in the space
+       above plane rs[0], rs[1], rs[2] and negative if rs[3] lies below. Above
+       is defined by right hand rule from rs[0]-rs[1] to rs[0]-rs[2].
 
        Arguments:
-        | ``r0``  --  a numpy array with three elements
-        | ``r1``  --  a numpy array with three elements
-        | ``r2``  --  a numpy array with three elements
-        | ``r3``  --  a numpy array with three elements
+        | ``rs``  --  four numpy array with three elements
         | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
 
        When no derivatives are computed a tuple with a single result is returned.
     """
-    result = opbend_cos(r0, r1, r2, r3, deriv)
-    a = r1 - r0
-    b = r2 - r0
-    c = r3 - r0
+    result = opbend_cos(rs, deriv)
+    a = rs[1] - rs[0]
+    b = rs[2] - rs[0]
+    c = rs[3] - rs[0]
     sign = numpy.sign(numpy.linalg.det([a, b, c]))
     return _cos_to_angle(result, deriv, sign)

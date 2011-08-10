@@ -36,9 +36,7 @@ class InternalCoordinate(object):
             | ``coordinates`` -- A numpy array with Cartesian coordinates,
                                  shape=(N,3)
         """
-        args = [coordinates[i] for i in self.indexes]
-        args.append(1) # Request first order derivatives with the last argument.
-        q, g = self.icfn(*args)
+        q, g = self.icfn(coordinates[list(self.indexes)], 1)
         for i, j in enumerate(self.indexes):
             jaccol[3*j:3*j+3] += g[i]
         return jaccol

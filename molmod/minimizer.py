@@ -1538,11 +1538,11 @@ def check_delta(fun, x, dxs, threshold):
        1) D1 = 'f(x+dx) - f(x)' is computed.
        2) D2 = '0.5 (grad f(x+dx) + grad f(x)) . dx' is computed.
 
-       There should be at least 50% of dx rows for which D1 is larger than the
-       threshold. If not an AssertionError is raised.
+       There should be at least 50% of dx rows for which the norm of D1 is
+       larger than the threshold. If not an AssertionError is raised.
 
-       For each case where D1 is larger than the threshold, the absolute
-       difference |D1 - D2| should be smaller than the threshold.
+       For each case where |D1| is larger than the threshold, the norm of the
+       difference, |D1 - D2|, should be smaller than the threshold.
     """
     df_small = []
     for dx in dxs:
@@ -1550,15 +1550,23 @@ def check_delta(fun, x, dxs, threshold):
         f1, grad1 = fun(x+dx, do_gradient=True)
         grad = 0.5*(grad0+grad1)
         df = f1 - f0
-        if abs(df) < threshold:
-            df_small.append(df)
+        if hasattr(df, '__iter__'):
+            norm = np.linalg.norm
         else:
-            expected = np.dot(dx, grad)
-            if abs(df - expected) > threshold:
-                raise AssertionError('Error in the analytical gradient: df is %s, should be about %s.' % (df, expected))
+            norm = abs
+
+        dfn = norm(df)
+        if dfn < threshold:
+            df_small.append(dfn)
+        else:
+            print grad.shape, dx.shape
+            expected = np.dot(grad, dx)
+            en = norm(expected-df)
+            if en > threshold:
+                raise AssertionError('Error in the analytical gradient: |D1| = %.1e, |D1-D2| = %.1e > %.1e.' % (dfn, en, threshold))
     if len(df_small)*2 > len(dxs):
-        raise AssertionError('Less than 50%% of the dx rows leads to a sufficiently large D1. (%i out of %i). small df\'s: %s' % (
-            len(dxs) - len(df_small), len(dxs), '[%s]' % ' '.join('%.1e' % df for df in df_small)
+        raise AssertionError('Less than 50%% of the dx rows leads to a sufficiently large D1. (%i out of %i). small df\'s: [%s]' % (
+            len(dxs) - len(df_small), len(dxs), ' '.join('%.1e' % dfn for dfn in df_small)
         ))
 
 
