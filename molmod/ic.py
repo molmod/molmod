@@ -38,10 +38,11 @@ import numpy as np
 
 
 __all__ = [
-    "Scalar", "Vector3", "dot",
+    "Scalar", "Vector3", "dot", "cross",
     "bond_length", "pair_distance",
     "bend_cos", "bend_angle",
-    "dihed_cos", "dihed_angle","opbend_angle",
+    "dihed_cos", "dihed_angle",
+    "opbend_cos", "opbend_angle",
 ]
 
 
