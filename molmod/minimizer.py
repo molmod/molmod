@@ -1513,7 +1513,7 @@ def check_anagrad(fun, x0, epsilon, threshold):
             raise AssertionError("Error in the analytical gradient, component %i, got %s, should be about %s" % (i, ana_grad[i], num_grad_comp))
 
 
-def check_delta(fun, x, dxs, threshold):
+def check_delta(fun, x, dxs, threshold, period=None):
     """Check the difference between two function values using the analytical gradient
 
        Arguments:
@@ -1525,6 +1525,11 @@ def check_delta(fun, x, dxs, threshold):
                              difference of function values in x and x+dx and the
                              approximation of the two function values using a
                              first order Taylor approximation.
+
+       Optional argument:
+        | ``period``  --  If the function value is periodic, one may provide the
+                          period such that differences are computed using
+                          periodic boundary conditions.
 
        The function ``fun`` takes a mandatory argument ``x`` and an optional
        argument ``do_gradient``:
@@ -1550,6 +1555,8 @@ def check_delta(fun, x, dxs, threshold):
         f1, grad1 = fun(x+dx, do_gradient=True)
         grad = 0.5*(grad0+grad1)
         df = f1 - f0
+        if period is not None:
+            df -= np.floor(df/period + 0.5)*period
         if hasattr(df, '__iter__'):
             norm = np.linalg.norm
         else:
@@ -1561,9 +1568,10 @@ def check_delta(fun, x, dxs, threshold):
         else:
             print grad.shape, dx.shape
             expected = np.dot(grad, dx)
-            en = norm(expected-df)
-            if en > threshold:
-                raise AssertionError('Error in the analytical gradient: |D1| = %.1e, |D1-D2| = %.1e > %.1e.' % (dfn, en, threshold))
+            en = norm(expected)
+            ern = norm(expected-df)
+            if ern > threshold:
+                raise AssertionError('Error in the analytical gradient: |D1| = %.1e, |D2| = %.1e, |D1-D2| = %.1e > %.1e.' % (dfn, en, ern, threshold))
     if len(df_small)*2 > len(dxs):
         raise AssertionError('Less than 50%% of the dx rows leads to a sufficiently large D1. (%i out of %i). small df\'s: [%s]' % (
             len(dxs) - len(df_small), len(dxs), ' '.join('%.1e' % dfn for dfn in df_small)

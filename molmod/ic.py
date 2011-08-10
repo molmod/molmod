@@ -34,7 +34,7 @@ know the chain rule for each operation and can therefore evaluate the
 derivatives simultaneously.
 """
 
-import numpy
+import numpy as np
 
 
 __all__ = [
@@ -44,6 +44,10 @@ __all__ = [
     "dihed_cos", "dihed_angle","opbend_angle",
 ]
 
+
+#
+# Auxiliary classes
+#
 
 class Scalar(object):
     """A scalar object with optional first and second order derivates
@@ -69,11 +73,11 @@ class Scalar(object):
         self.size = size
         self.v = value
         if deriv > 0:
-            self.d = numpy.zeros(size, float)
+            self.d = np.zeros(size, float)
             if index is not None:
                 self.d[index] = 1
         if deriv > 1:
-            self.dd = numpy.zeros((size, size), float)
+            self.dd = np.zeros((size, size), float)
         if deriv > 2:
             raise ValueError("This implementation (only) supports up to second order derivatives.")
 
@@ -128,7 +132,7 @@ class Scalar(object):
             if self.deriv > 1:
                 self.dd *= other.v
                 self.dd += self.v*other.dd
-                tmp = numpy.outer(self.d, other.d)
+                tmp = np.outer(self.d, other.d)
                 self.dd += tmp
                 self.dd += tmp.transpose()
             if self.deriv > 0:
@@ -159,7 +163,7 @@ class Scalar(object):
                 self.d /= other.v
             if self.deriv > 1:
                 self.dd -= self.v*other.dd
-                tmp = numpy.outer(self.d, other.d)
+                tmp = np.outer(self.d, other.d)
                 self.dd -= tmp
                 self.dd -= tmp.transpose()
                 self.dd /= other.v
@@ -172,7 +176,7 @@ class Scalar(object):
         self.v = 1/self.v
         tmp = self.v**2
         if self.deriv > 1:
-            self.dd[:] = tmp*(2*self.v*numpy.outer(self.d, self.d) - self.dd)
+            self.dd[:] = tmp*(2*self.v*np.outer(self.d, self.d) - self.dd)
         if self.deriv > 0:
             self.d[:] = -tmp*self.d[:]
 
@@ -242,7 +246,7 @@ class Vector3(object):
     def norm(self):
         """Return a Scalar object with the norm of this vector"""
         result = Scalar(self.size, self.deriv)
-        result.v = numpy.sqrt(self.x.v**2 + self.y.v**2 + self.z.v**2)
+        result.v = np.sqrt(self.x.v**2 + self.y.v**2 + self.z.v**2)
         if self.deriv > 0:
             result.d += self.x.v*self.x.d
             result.d += self.y.v*self.y.d
@@ -253,42 +257,22 @@ class Vector3(object):
             result.dd += self.y.v*self.y.dd
             result.dd += self.z.v*self.z.dd
             denom = result.v**2
-            result.dd += (1 - self.x.v**2/denom)*numpy.outer(self.x.d, self.x.d)
-            result.dd += (1 - self.y.v**2/denom)*numpy.outer(self.y.d, self.y.d)
-            result.dd += (1 - self.z.v**2/denom)*numpy.outer(self.z.d, self.z.d)
-            tmp = -self.x.v*self.y.v/denom*numpy.outer(self.x.d, self.y.d)
+            result.dd += (1 - self.x.v**2/denom)*np.outer(self.x.d, self.x.d)
+            result.dd += (1 - self.y.v**2/denom)*np.outer(self.y.d, self.y.d)
+            result.dd += (1 - self.z.v**2/denom)*np.outer(self.z.d, self.z.d)
+            tmp = -self.x.v*self.y.v/denom*np.outer(self.x.d, self.y.d)
             result.dd += tmp+tmp.transpose()
-            tmp = -self.y.v*self.z.v/denom*numpy.outer(self.y.d, self.z.d)
+            tmp = -self.y.v*self.z.v/denom*np.outer(self.y.d, self.z.d)
             result.dd += tmp+tmp.transpose()
-            tmp = -self.z.v*self.x.v/denom*numpy.outer(self.z.d, self.x.d)
+            tmp = -self.z.v*self.x.v/denom*np.outer(self.z.d, self.x.d)
             result.dd += tmp+tmp.transpose()
             result.dd /= result.v
         return result
 
-    #def norm2(self):
-    #    """Return a Scalar object with the square of the norm of this vector"""
-    #    result = Scalar(self.size, self.deriv)
-    #    result.v = self.x.v**2 + self.y.v**2 + self.z.v**2
-    #    if self.deriv > 0:
-    #        result.d += self.x.v*self.x.d
-    #        result.d += self.y.v*self.y.d
-    #        result.d += self.z.v*self.z.d
-    #        result.d *= 2
-    #    if self.deriv > 1:
-    #        result.dd += self.x.v*self.x.dd
-    #        result.dd += self.y.v*self.y.dd
-    #        result.dd += self.z.v*self.z.dd
-    #        result.dd += numpy.outer(self.x.d, self.x.d)
-    #        result.dd += numpy.outer(self.y.d, self.y.d)
-    #        result.dd += numpy.outer(self.z.d, self.z.d)
-    #        tmp = denom*numpy.outer(self.x.d, self.y.d)
-    #        result.dd += tmp+tmp.transpose()
-    #        tmp = denom*numpy.outer(self.y.d, self.z.d)
-    #        result.dd += tmp+tmp.transpose()
-    #        tmp = denom*numpy.outer(self.z.d, self.x.d)
-    #        result.dd += tmp+tmp.transpose()
-    #        result.dd *= 2
-    #    return result
+
+#
+# Auxiliary functions
+#
 
 
 def dot(r1, r2):
@@ -325,6 +309,10 @@ def cross(r1, r2):
     return result
 
 
+#
+# Internal coordinate functions
+#
+
 def bond_length(rs, deriv=0):
     """Compute the distance between the two points rs[0] and rs[1]
 
@@ -334,32 +322,9 @@ def bond_length(rs, deriv=0):
 
        When derivatives are computed a tuple with a single result is returned
     """
-    r = rs[0] - rs[1]
-    result = _bond_length_low(r, deriv)
-    v = result[0]
-    if deriv == 0:
-        return v,
-    d = numpy.zeros((2, 3), float)
-    d[0] = result[1]
-    d[1] = -result[1]
-    if deriv == 1:
-        return v, d
-    dd = numpy.zeros((2, 3, 2, 3), float)
-    dd[0, :, 0, :] = result[2]
-    dd[1, :, 1, :] = result[2]
-    dd[0, :, 1, :] = -result[2]
-    dd[1, :, 0, :] = -result[2]
-    if deriv == 2:
-        return v, d, dd
-    raise ValueError("deriv must be 0, 1 or 2.")
+    return _bond_transform(rs, _bond_length_low, deriv)
 
 pair_distance = bond_length
-
-def _bond_length_low(r, deriv):
-    """Similar to bond_length, but with a relative vector"""
-    r = Vector3(3, deriv, r, (0, 1, 2))
-    d = r.norm()
-    return d.results()
 
 
 def bend_cos(rs, deriv=0):
@@ -371,19 +336,112 @@ def bend_cos(rs, deriv=0):
 
        When derivatives are computed a tuple with a single result is returned
     """
-    a = rs[0] - rs[1]
-    b = rs[2] - rs[1]
-    result = _bend_cos_low(a, b, deriv)
+    return _bend_transform(rs, _bend_cos_low, deriv)
+
+
+def bend_angle(rs, deriv=0):
+    """Compute the angle between the vectors rs[0]-rs[1] and rs[2]-rs[1]
+
+       Arguments:
+        | ``rs``  --  three numpy array with three elements
+        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
+
+       When derivatives are computed a tuple with a single result is returned
+    """
+    return _bend_transform(rs, _bend_angle_low, deriv)
+
+
+def dihed_cos(rs, deriv=0):
+    """Compute the cosine of the angle between the planes rs[0], rs[1], rs[2] and rs[1], rs[2], rs[3]
+
+       Arguments:
+        | ``rs``  --  four numpy array with three elements
+        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
+    """
+    return _dihed_transform(rs, _dihed_cos_low, deriv)
+
+
+def dihed_angle(rs, deriv=0):
+    """Compute the angle between the planes rs[0], rs[1], rs[2] and rs[1], rs[2], rs[3]
+
+       The sign convention corresponds to the IUPAC definition of the torsion
+       angle: http://dx.doi.org/10.1351/goldbook.T06406
+
+       Arguments:
+        | ``rs``  --  four numpy array with three elements
+        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
+
+       When derivatives are computed a tuple with a single result is returned
+    """
+    return _dihed_transform(rs, _dihed_angle_low, deriv)
+
+
+def opbend_cos(rs, deriv=0):
+    """Compute the cosine of the angle between the vector (rs[0],rs[3]) and plane rs[0],rs[1],rs[2]
+
+       Arguments:
+        | ``rs``  --  four numpy array with three elements
+        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
+    """
+    return _opbend_transform(rs, _opbend_cos_low, deriv)
+
+
+def opbend_angle(rs, deriv=0):
+    """Compute the angle between the vector rs[0], rs[3] and the plane rs[0], rs[1], rs[2]
+
+       The sign convention is as follows: positive if rs[3] lies in the space
+       above plane rs[0], rs[1], rs[2] and negative if rs[3] lies below. Above
+       is defined by right hand rule from rs[0]-rs[1] to rs[0]-rs[2].
+
+       Arguments:
+        | ``rs``  --  four numpy array with three elements
+        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
+
+       When no derivatives are computed a tuple with a single result is returned.
+    """
+    return _opbend_transform(rs, _opbend_angle_low, deriv)
+
+
+#
+# Transformers
+#
+
+
+def _bond_transform(rs, fn_low, deriv):
+    r = rs[0] - rs[1]
+    result = fn_low(r, deriv)
     v = result[0]
     if deriv == 0:
         return v,
-    d = numpy.zeros((3, 3), float)
+    d = np.zeros((2, 3), float)
+    d[0] = result[1]
+    d[1] = -result[1]
+    if deriv == 1:
+        return v, d
+    dd = np.zeros((2, 3, 2, 3), float)
+    dd[0, :, 0, :] = result[2]
+    dd[1, :, 1, :] = result[2]
+    dd[0, :, 1, :] = -result[2]
+    dd[1, :, 0, :] = -result[2]
+    if deriv == 2:
+        return v, d, dd
+    raise ValueError("deriv must be 0, 1 or 2.")
+
+
+def _bend_transform(rs, fn_low, deriv):
+    a = rs[0] - rs[1]
+    b = rs[2] - rs[1]
+    result = fn_low(a, b, deriv)
+    v = result[0]
+    if deriv == 0:
+        return v,
+    d = np.zeros((3, 3), float)
     d[0] = result[1][:3]
     d[1] = -result[1][:3]-result[1][3:]
     d[2] = result[1][3:]
     if deriv == 1:
         return v, d
-    dd = numpy.zeros((3, 3, 3, 3), float)
+    dd = np.zeros((3, 3, 3, 3), float)
     aa = result[2][:3, :3]
     ab = result[2][:3, 3:]
     ba = result[2][3:, :3]
@@ -401,71 +459,23 @@ def bend_cos(rs, deriv=0):
         return v, d, dd
     raise ValueError("deriv must be 0, 1 or 2.")
 
-def _bend_cos_low(a, b, deriv):
-    """Similar to bend_cos, but with relative vectors"""
-    a = Vector3(6, deriv, a, (0, 1, 2))
-    b = Vector3(6, deriv, b, (3, 4, 5))
-    a /= a.norm()
-    b /= b.norm()
-    return dot(a, b).results()
 
-def _cos_to_angle(result, deriv, sign=1):
-    """Convert a cosine and its derivatives to an angle"""
-    v = numpy.arccos(numpy.clip(result[0], -1, 1))
-    if deriv == 0:
-        return v*sign,
-    if abs(result[0]) >= 1:
-        factor1 = 0
-    else:
-        factor1 = -1.0/numpy.sqrt(1-result[0]**2)
-    d = factor1*result[1]
-    if deriv == 1:
-        return v*sign, d*sign
-    factor2 = result[0]*factor1**3
-    size = result[2].shape[0]
-    dd = (
-        factor2*numpy.outer(result[1].ravel(), result[1].ravel()).reshape((size, 3, size, 3)) +
-        factor1*result[2]
-    )
-    if deriv == 2:
-        return v*sign, d*sign, dd*sign
-    raise ValueError("deriv must be 0, 1 or 2.")
-
-def bend_angle(rs, deriv=0):
-    """Compute the angle between the vectors rs[0]-rs[1] and rs[2]-rs[1]
-
-       Arguments:
-        | ``rs``  --  three numpy array with three elements
-        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
-
-       When derivatives are computed a tuple with a single result is returned
-    """
-    result = bend_cos(rs, deriv)
-    return _cos_to_angle(result, deriv)
-
-
-def dihed_cos(rs, deriv=0):
-    """Compute the cosine of the angle between the planes rs[0], rs[1], rs[2] and rs[1], rs[2], rs[3]
-
-       Arguments:
-        | ``rs``  --  four numpy array with three elements
-        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
-    """
+def _dihed_transform(rs, fn_low, deriv):
     a = rs[0] - rs[1]
     b = rs[2] - rs[1]
     c = rs[3] - rs[2]
-    result = _dihed_cos_low(a, b, c, deriv)
+    result = fn_low(a, b, c, deriv)
     v = result[0]
     if deriv == 0:
         return v,
-    d = numpy.zeros((4, 3), float)
+    d = np.zeros((4, 3), float)
     d[0] = result[1][:3]
     d[1] = -result[1][:3]-result[1][3:6]
     d[2] = result[1][3:6]-result[1][6:]
     d[3] = result[1][6:]
     if deriv == 1:
         return v, d
-    dd = numpy.zeros((4, 3, 4, 3), float)
+    dd = np.zeros((4, 3, 4, 3), float)
     aa = result[2][:3, :3]
     ab = result[2][:3, 3:6]
     ac = result[2][:3, 6:]
@@ -499,63 +509,23 @@ def dihed_cos(rs, deriv=0):
         return v, d, dd
     raise ValueError("deriv must be 0, 1 or 2.")
 
-def _dihed_cos_low(a, b, c, deriv):
-    """Similar to dihed_cos, but with relative vectors"""
-    a = Vector3(9, deriv, a, (0, 1, 2))
-    b = Vector3(9, deriv, b, (3, 4, 5))
-    c = Vector3(9, deriv, c, (6, 7, 8))
-    b /= b.norm()
-    tmp = b.copy()
-    tmp *= dot(a, b)
-    a -= tmp
-    tmp = b.copy()
-    tmp *= dot(c, b)
-    c -= tmp
-    a /= a.norm()
-    c /= c.norm()
-    return dot(a, c).results()
 
-def dihed_angle(rs, deriv=0):
-    """Compute the angle between the planes rs[0], rs[1], rs[2] and rs[1], rs[2], rs[3]
-
-       The sign convention corresponds to the IUPAC definition of the torsion
-       angle: http://dx.doi.org/10.1351/goldbook.T06406
-
-       Arguments:
-        | ``rs``  --  four numpy array with three elements
-        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
-
-       When derivatives are computed a tuple with a single result is returned
-    """
-    result = dihed_cos(rs, deriv)
-    a = rs[0] - rs[1]
-    b = rs[2] - rs[1]
-    c = rs[3] - rs[2]
-    sign = 1-(numpy.linalg.det([a, b, c]) > 0)*2
-    return _cos_to_angle(result, deriv, sign)
-
-def opbend_cos(rs, deriv=0):
-    """Compute the cosine of the angle between the vector (rs[0],rs[3]) and plane rs[0],rs[1],rs[2]
-
-       Arguments:
-        | ``rs``  --  four numpy array with three elements
-        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
-    """
+def _opbend_transform(rs, fn_low, deriv):
     a = rs[1] - rs[0]
     b = rs[2] - rs[0]
     c = rs[3] - rs[0]
-    result = _opbend_cos_low(a, b, c, deriv)
+    result = fn_low(a, b, c, deriv)
     v = result[0]
     if deriv == 0:
         return v,
-    d = numpy.zeros((4, 3), float)
+    d = np.zeros((4, 3), float)
     d[0] = -result[1][:3]-result[1][3:6]-result[1][6:]
     d[1] = result[1][:3]
     d[2] = result[1][3:6]
     d[3] = result[1][6:]
     if deriv == 1:
         return v, d
-    dd = numpy.zeros((4, 3, 4, 3), float)
+    dd = np.zeros((4, 3, 4, 3), float)
     aa = result[2][:3, :3]
     ab = result[2][:3, 3:6]
     ac = result[2][:3, 6:]
@@ -589,6 +559,81 @@ def opbend_cos(rs, deriv=0):
         return v, d, dd
     raise ValueError("deriv must be 0, 1 or 2.")
 
+
+#
+# Low level Internal coordinate functions
+#
+
+
+def _bond_length_low(r, deriv):
+    """Similar to bond_length, but with a relative vector"""
+    r = Vector3(3, deriv, r, (0, 1, 2))
+    d = r.norm()
+    return d.results()
+
+
+def _bend_cos_low(a, b, deriv):
+    """Similar to bend_cos, but with relative vectors"""
+    a = Vector3(6, deriv, a, (0, 1, 2))
+    b = Vector3(6, deriv, b, (3, 4, 5))
+    a /= a.norm()
+    b /= b.norm()
+    return dot(a, b).results()
+
+
+def _bend_angle_low(a, b, deriv):
+    """Similar to bend_angle, but with relative vectors"""
+    result = _bend_cos_low(a, b, deriv)
+    return _cos_to_angle(result, deriv)
+
+
+def _dihed_cos_low(a, b, c, deriv):
+    """Similar to dihed_cos, but with relative vectors"""
+    a = Vector3(9, deriv, a, (0, 1, 2))
+    b = Vector3(9, deriv, b, (3, 4, 5))
+    c = Vector3(9, deriv, c, (6, 7, 8))
+    b /= b.norm()
+    tmp = b.copy()
+    tmp *= dot(a, b)
+    a -= tmp
+    tmp = b.copy()
+    tmp *= dot(c, b)
+    c -= tmp
+    a /= a.norm()
+    c /= c.norm()
+    return dot(a, c).results()
+
+
+def _dihed_angle_low(av, bv, cv, deriv):
+    """Similar to dihed_cos, but with relative vectors"""
+    a = Vector3(9, deriv, av, (0, 1, 2))
+    b = Vector3(9, deriv, bv, (3, 4, 5))
+    c = Vector3(9, deriv, cv, (6, 7, 8))
+    b /= b.norm()
+    tmp = b.copy()
+    tmp *= dot(a, b)
+    a -= tmp
+    tmp = b.copy()
+    tmp *= dot(c, b)
+    c -= tmp
+    a /= a.norm()
+    c /= c.norm()
+    result = dot(a, c).results()
+    # avoid trobles with the gradients by either using arccos or arcsin
+    if abs(result[0]) < 0.5:
+        # if the cosine is far away for -1 or +1, it is safe to take the arccos
+        # and fix the sign of the angle.
+        sign = 1-(np.linalg.det([av, bv, cv]) > 0)*2
+        return _cos_to_angle(result, deriv, sign)
+    else:
+        # if the cosine is close to -1 or +1, it is better to compute the sine,
+        # take the arcsin and fix the sign of the angle
+        d = cross(b, a)
+        side = (result[0] > 0)*2-1 # +1 means angle in range [-pi/2,pi/2]
+        result = dot(d, c).results()
+        return _sin_to_angle(result, deriv, side)
+
+
 def _opbend_cos_low(a, b, c, deriv):
     """Similar to opbend_cos, but with relative vectors"""
     a = Vector3(9, deriv, a, (0, 1, 2))
@@ -599,34 +644,72 @@ def _opbend_cos_low(a, b, c, deriv):
     c /= c.norm()
     temp = dot(n,c)
     result = temp.copy()
-    result.v = numpy.sqrt(1.0-temp.v**2)
+    result.v = np.sqrt(1.0-temp.v**2)
     if result.deriv > 0:
         result.d *= -temp.v
         result.d /= result.v
     if result.deriv > 1:
         result.dd *= -temp.v
         result.dd /= result.v
-        temp2 = numpy.array([temp.d]).transpose()*temp.d
+        temp2 = np.array([temp.d]).transpose()*temp.d
         temp2 /= result.v**3
         result.dd -= temp2
     return result.results()
 
-def opbend_angle(rs, deriv=0):
-    """Compute the angle between the vector rs[0], rs[3] and the plane rs[0], rs[1], rs[2]
 
-       The sign convention is as follows: positive if rs[3] lies in the space
-       above plane rs[0], rs[1], rs[2] and negative if rs[3] lies below. Above
-       is defined by right hand rule from rs[0]-rs[1] to rs[0]-rs[2].
-
-       Arguments:
-        | ``rs``  --  four numpy array with three elements
-        | ``deriv``  --  the derivatives to be computed: 0, 1 or 2 [default=0]
-
-       When no derivatives are computed a tuple with a single result is returned.
-    """
-    result = opbend_cos(rs, deriv)
-    a = rs[1] - rs[0]
-    b = rs[2] - rs[0]
-    c = rs[3] - rs[0]
-    sign = numpy.sign(numpy.linalg.det([a, b, c]))
+def _opbend_angle_low(a, b, c, deriv=0):
+    """Similar to opbend_angle, but with relative vectors"""
+    result = _opbend_cos_low(a, b, c, deriv)
+    sign = np.sign(np.linalg.det([a, b, c]))
     return _cos_to_angle(result, deriv, sign)
+
+
+#
+# Cosine and sine to angle conversion
+#
+
+
+def _cos_to_angle(result, deriv, sign=1):
+    """Convert a cosine and its derivatives to an angle and its derivatives"""
+    v = np.arccos(np.clip(result[0], -1, 1))
+    if deriv == 0:
+        return v*sign,
+    if abs(result[0]) >= 1:
+        factor1 = 0
+    else:
+        factor1 = -1.0/np.sqrt(1-result[0]**2)
+    d = factor1*result[1]
+    if deriv == 1:
+        return v*sign, d*sign
+    factor2 = result[0]*factor1**3
+    dd = factor2*np.outer(result[1], result[1]) + factor1*result[2]
+    if deriv == 2:
+        return v*sign, d*sign, dd*sign
+    raise ValueError("deriv must be 0, 1 or 2.")
+
+
+def _sin_to_angle(result, deriv, side=1):
+    """Convert a sine and its derivatives to an angle and its derivatives"""
+    v = np.arcsin(np.clip(result[0], -1, 1))
+    sign = side
+    if sign == -1:
+        if v < 0:
+            offset = -np.pi
+        else:
+            offset = np.pi
+    else:
+        offset = 0.0
+    if deriv == 0:
+        return v*sign + offset,
+    if abs(result[0]) >= 1:
+        factor1 = 0
+    else:
+        factor1 = 1.0/np.sqrt(1-result[0]**2)
+    d = factor1*result[1]
+    if deriv == 1:
+        return v*sign + offset, d*sign
+    factor2 = result[0]*factor1**3
+    dd = factor2*np.outer(result[1], result[1]) + factor1*result[2]
+    if deriv == 2:
+        return v*sign + offset, d*sign, dd*sign
+    raise ValueError("deriv must be 0, 1 or 2.")

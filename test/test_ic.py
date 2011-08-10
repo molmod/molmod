@@ -89,7 +89,7 @@ def iter_pairs():
         yield x
 
 
-def check_diff_ic(icfn, iterp, shape=(-1,3)):
+def check_diff_ic(icfn, iterp, shape=(-1,3), period=None):
     def fnv(x0, do_gradient=False):
         q, g = icfn(x0.reshape(shape),1)
         if do_gradient:
@@ -107,7 +107,7 @@ def check_diff_ic(icfn, iterp, shape=(-1,3)):
     for ps in iterp():
         x0 = np.array(ps).ravel()
         xds = np.random.normal(0, eps, (100, len(x0)))
-        check_delta(fnv, x0, xds, 1e-10)
+        check_delta(fnv, x0, xds, 1e-10, period)
         check_delta(fng, x0, xds, 1e-10)
 
 
@@ -177,7 +177,18 @@ def test_diff_dihed_cos():
 
 
 def test_diff_dihed_angle():
-    check_diff_ic(ic.dihed_angle, iter_diheds)
+    check_diff_ic(ic.dihed_angle, iter_diheds, period=2*np.pi)
+
+
+def iter_diheds_special():
+    yield np.array([[+1,0,1], [0,0,0], [0,0,1], [1,0,1]])
+    yield np.array([[0,+1,1], [0,0,0], [0,0,1], [1,0,1]])
+    yield np.array([[-1,0,1], [0,0,0], [0,0,1], [1,0,1]])
+    yield np.array([[0,-1,1], [0,0,0], [0,0,1], [1,0,1]])
+
+
+def test_diff_dihed_angle_special():
+    check_diff_ic(ic.dihed_angle, iter_diheds_special, period=2*np.pi)
 
 
 def test_diff_opbend_cos():
