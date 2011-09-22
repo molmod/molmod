@@ -120,6 +120,7 @@ class PairSearchBase(object):
                 # enough yet.
                 #grid = unit_cell.get_optimal_subcell(cutoff/2.0)
                 divisions = numpy.ceil(unit_cell.spacings/cutoff)
+                divisions[divisions<1] = 1
                 grid = unit_cell/divisions
 
         if isinstance(grid, float):

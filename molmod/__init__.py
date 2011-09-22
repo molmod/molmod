@@ -46,6 +46,9 @@
 """
 
 
+import numpy as np
+np.seterr(divide='raise', invalid='raise')
+
 from molmod.context import *
 
 from molmod.binning import *
