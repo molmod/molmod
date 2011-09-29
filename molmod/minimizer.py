@@ -1566,7 +1566,6 @@ def check_delta(fun, x, dxs, threshold, period=None):
         if dfn < threshold:
             df_small.append(dfn)
         else:
-            print grad.shape, dx.shape
             expected = np.dot(grad, dx)
             en = norm(expected)
             ern = norm(expected-df)
