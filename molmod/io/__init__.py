@@ -30,6 +30,7 @@
 """
 
 from molmod.io.atrj import *
+from molmod.io.chk import *
 from molmod.io.cml import *
 from molmod.io.common import *
 from molmod.io.cp2k import *
