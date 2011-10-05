@@ -194,6 +194,8 @@ shorthands = {
     "ps": picosecond,
     "Pa": pascal,
     "K": kelvin,
+    # atomic units
+    "e": au,
 }
 
 
