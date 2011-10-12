@@ -107,8 +107,7 @@ def check_diff_ic(icfn, iterp, shape=(-1,3), period=None):
     for ps in iterp():
         x0 = np.array(ps).ravel()
         xds = np.random.normal(0, eps, (100, len(x0)))
-        check_delta(fnv, x0, xds, 1e-10, period)
-        check_delta(fng, x0, xds, 1e-10)
+        check_delta(fnv, x0, xds, period)
 
 
 def test_diff_bond():

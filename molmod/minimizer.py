@@ -1513,7 +1513,7 @@ def check_anagrad(fun, x0, epsilon, threshold):
             raise AssertionError("Error in the analytical gradient, component %i, got %s, should be about %s" % (i, ana_grad[i], num_grad_comp))
 
 
-def check_delta(fun, x, dxs, threshold, period=None):
+def check_delta(fun, x, dxs, period=None):
     """Check the difference between two function values using the analytical gradient
 
        Arguments:
@@ -1521,10 +1521,6 @@ def check_delta(fun, x, dxs, threshold, period=None):
         | ``x``  --  The argument vector.
         | ``dxs``  --  A matrix where each row is a vector of small differences
                        to be added to the argument vector.
-        | ``threshold``  --  The maximum acceptable deviation between the
-                             difference of function values in x and x+dx and the
-                             approximation of the two function values using a
-                             first order Taylor approximation.
 
        Optional argument:
         | ``period``  --  If the function value is periodic, one may provide the
@@ -1538,43 +1534,42 @@ def check_delta(fun, x, dxs, threshold, period=None):
                                When True, a 2-tuple with the function value and
                                the gradient are returned. [default=False]
 
-       For every row in dxs, the following test is repeated:
+       For every row in dxs, the following computation is repeated:
 
        1) D1 = 'f(x+dx) - f(x)' is computed.
        2) D2 = '0.5 (grad f(x+dx) + grad f(x)) . dx' is computed.
 
-       There should be at least 50% of dx rows for which the norm of D1 is
-       larger than the threshold. If not an AssertionError is raised.
-
-       For each case where |D1| is larger than the threshold, the norm of the
-       difference, |D1 - D2|, should be smaller than the threshold.
+       A threshold is set to the median of the D1 set. For each case where |D1|
+       is larger than the threshold, |D1 - D2|, should be smaller than the
+       threshold.
     """
-    df_small = []
+    dn1s = []
+    dn2s = []
+    dnds = []
     for dx in dxs:
         f0, grad0 = fun(x, do_gradient=True)
         f1, grad1 = fun(x+dx, do_gradient=True)
         grad = 0.5*(grad0+grad1)
-        df = f1 - f0
+        d1 = f1 - f0
         if period is not None:
-            df -= np.floor(df/period + 0.5)*period
-        if hasattr(df, '__iter__'):
+            d1 -= np.floor(d1/period + 0.5)*period
+        if hasattr(d1, '__iter__'):
             norm = np.linalg.norm
         else:
             norm = abs
+        d2 = np.dot(grad, dx)
 
-        dfn = norm(df)
-        if dfn < threshold:
-            df_small.append(dfn)
-        else:
-            expected = np.dot(grad, dx)
-            en = norm(expected)
-            ern = norm(expected-df)
-            if ern > threshold:
-                raise AssertionError('Error in the analytical gradient: |D1| = %.1e, |D2| = %.1e, |D1-D2| = %.1e > %.1e.' % (dfn, en, ern, threshold))
-    if len(df_small)*2 > len(dxs):
-        raise AssertionError('Less than 50%% of the dx rows leads to a sufficiently large D1. (%i out of %i). small df\'s: [%s]' % (
-            len(dxs) - len(df_small), len(dxs), ' '.join('%.1e' % dfn for dfn in df_small)
-        ))
+        dn1s.append(norm(d1))
+        dnds.append(norm(d1-d2))
+
+    # Get the threshold (and mask)
+    dn1s = np.array(dn1s)
+    threshold = np.median(dn1s)
+    mask = dn1s > threshold
+    # Make sure that all cases for which dn1 is above the treshold, dnd is below
+    # the threshold
+    dnds = np.array(dnds)
+    assert (dnds[mask] < threshold).all()
 
 
 def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
