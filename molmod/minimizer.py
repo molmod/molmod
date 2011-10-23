@@ -1572,16 +1572,27 @@ def check_delta(fun, x, dxs, period=None):
         d2 = np.dot(grad, dx)
 
         dn1s.append(norm(d1))
+        dn2s.append(norm(d2))
         dnds.append(norm(d1-d2))
+    dn1s = np.array(dn1s)
+    dn2s = np.array(dn2s)
+    dnds = np.array(dnds)
 
     # Get the threshold (and mask)
-    dn1s = np.array(dn1s)
     threshold = np.median(dn1s)
     mask = dn1s > threshold
     # Make sure that all cases for which dn1 is above the treshold, dnd is below
     # the threshold
-    dnds = np.array(dnds)
-    assert (dnds[mask] < threshold).all()
+    if not (dnds[mask] < threshold).all():
+        raise AssertionError((
+            'The first order approximation on the difference is too wrong. The '
+            'threshold is %.1e.\n\nDifferences:\n%s\n\nFirst order '
+            'approximation to differences:\n%s\n\nAbsolute errors:\n%s')
+            % (threshold,
+            ' '.join('%.1e' % v for v in dn1s[mask]),
+            ' '.join('%.1e' % v for v in dn2s[mask]),
+            ' '.join('%.1e' % v for v in dnds[mask])
+        ))
 
 
 def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
