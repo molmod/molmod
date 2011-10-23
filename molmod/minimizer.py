@@ -1325,7 +1325,8 @@ class Minimizer(object):
 
         # perform some resets:
         self.search_direction.reset()
-        self.stop_loss_condition.reset()
+        if self.stop_loss_condition is not None:
+            self.stop_loss_condition.reset()
 
         # the current function value
         self.f = None
@@ -1334,7 +1335,8 @@ class Minimizer(object):
         # the current step size
         self.step = None
 
-        self.success = self._iterate()
+        if self.convergence_condition is not None:
+            self.success = self._run()
 
     def get_final(self):
         """Return the final solution in the original coordinates"""
@@ -1343,8 +1345,14 @@ class Minimizer(object):
         else:
             return self.prec.undo(self.x)
 
-    def _iterate(self):
+    def _run(self):
         """Run the iterative optimizer"""
+        success = self.initialize()
+        while success is None:
+            success = self.propagate()
+        return success
+
+    def initialize(self):
         if self.constraints is not None:
             try:
                 self.x = self.constraints.free_shake(self.x)[0]
@@ -1354,84 +1362,87 @@ class Minimizer(object):
         self.f, self.gradient = self.fun(self.x, do_gradient=True)
         if self.constraints is not None:
             self.gradient = -self.constraints.project(self.x, -self.gradient)
-        last_end = time.clock()
+        self.last_end = time.clock()
         # the cg loop
         self.counter = 0
-        while True:
-            # compute the new direction
-            self.search_direction.update(self.gradient, self.step)
-            # print some stuff on screen
-            if self.counter % 20 == 0:
-                self._print_header()
-            self._screen("% 5i   %2s" % (self.counter, self.search_direction.status))
-            # perform a line search
-            if self.constraints is not None:
-                self.last_f = self.f
-            line_success = self._line_opt()
-            if not line_success:
-                self._screen("Line search failed", newline=True)
-                if self.search_direction.is_sd():
-                    self._screen("LINE FAILED", newline=True)
-                    return False
-                    self.search_direction.reset()
-                    continue
-            if self.constraints is not None:
+
+    def propagate(self):
+        # compute the new direction
+        self.search_direction.update(self.gradient, self.step)
+        # print some stuff on screen
+        if self.counter % 20 == 0:
+            self._print_header()
+        self._screen("% 5i   %2s" % (self.counter, self.search_direction.status))
+        # perform a line search
+        if self.constraints is not None:
+            self.last_f = self.f
+        line_success = self._line_opt()
+        if not line_success:
+            self._screen("Line search failed", newline=True)
+            if self.search_direction.is_sd():
+                self._screen("LINE FAILED", newline=True)
+                return False
+        if self.constraints is not None:
+            try:
+                x, shake_count, active_count = self.constraints.free_shake(self.x)
+            except RuntimeError:
+                self._screen("SHAKE FAILED", newline=True)
+                return False
+            # test if the function did increase. if so try harder
+            if self.fun(x) > self.last_f:
                 try:
-                    x, shake_count, active_count = self.constraints.free_shake(self.x)
+                    self.x, shake_count_bis, active_count = self.constraints.safe_shake(self.x, self.fun, self.last_f)
                 except RuntimeError:
                     self._screen("SHAKE FAILED", newline=True)
                     return False
-                # test if the function did increase. if so try harder
-                if self.fun(x) > self.last_f:
-                    try:
-                        self.x, shake_count_bis, active_count = self.constraints.safe_shake(self.x, self.fun, self.last_f)
-                    except RuntimeError:
-                        self._screen("SHAKE FAILED", newline=True)
-                        return False
-                    shake_count += shake_count_bis
-                else:
-                    self.x = x
-                self._screen('%3i%3i' % (shake_count, active_count))
-            # compute the gradient at the new point
-            self.f, self.gradient = self.fun(self.x, do_gradient=True)
-            self._screen("% 15.9e  " % self.f)
-            if self.constraints is not None:
-                self.gradient = -self.constraints.project(self.x, -self.gradient)
-            # handle the preconditioner, part 1
-            if self.prec is not None:
-                gradient_orig = self.prec.do(self.gradient)
-                step_orig = self.prec.undo(self.step)
+                shake_count += shake_count_bis
             else:
-                gradient_orig = self.gradient
-                step_orig = self.step
+                self.x = x
+            self._screen('%3i%3i' % (shake_count, active_count))
+        # compute the gradient at the new point
+        self.f, self.gradient = self.fun(self.x, do_gradient=True)
+        self._screen("% 15.9e  " % self.f)
+        if self.constraints is not None:
+            self.gradient = -self.constraints.project(self.x, -self.gradient)
+        # handle the preconditioner, part 1
+        if self.prec is not None:
+            gradient_orig = self.prec.do(self.gradient)
+            step_orig = self.prec.undo(self.step)
+        else:
+            gradient_orig = self.gradient
+            step_orig = self.step
+        if self.convergence_condition is not None:
             # check convergence on the gradient and step in original basis
             converged, status = self.convergence_condition(gradient_orig, step_orig, self.f)
             self._screen(status)
-            # timing
-            end = time.clock()
-            self._screen("%5.2f" % (end - last_end), newline=True)
-            last_end = end
-            # check convergence, part 2
-            if converged:
-                self._screen("CONVERGED", newline=True)
-                return True
-            # check stop loss on the gradient in original basis
+        else:
+            converged = False
+        # timing
+        end = time.clock()
+        self._screen("%5.2f" % (end - self.last_end), newline=True)
+        self.last_end = end
+        # check convergence, part 2
+        if converged:
+            self._screen("CONVERGED", newline=True)
+            return True
+        # check stop loss on the gradient in original basis
+        if self.stop_loss_condition is not None:
             lost = self.stop_loss_condition(self.counter, self.f, gradient_orig, step_orig)
             if lost:
                 self._screen("LOST", newline=True)
                 return False
-            # call back
-            if self.callback is not None:
-                self.callback(self)
-            # preconditioner, part 2
-            if self.prec is not None:
-               x_orig = self.prec.undo(self.x)
-               if self.prec.update(self.counter, self.f, x_orig, gradient_orig):
-                    self.x = self.prec.do(x_orig)
-                    self.f, self.gradient = self.fun(self.x, do_gradient=True)
-                    self.step = None
-                    self.search_direction.reset()
-            self.counter += 1
+        # call back
+        if self.callback is not None:
+            self.callback(self)
+        # preconditioner, part 2
+        if self.prec is not None:
+           x_orig = self.prec.undo(self.x)
+           if self.prec.update(self.counter, self.f, x_orig, gradient_orig):
+                self.x = self.prec.do(x_orig)
+                self.f, self.gradient = self.fun(self.x, do_gradient=True)
+                self.step = None
+                self.search_direction.reset()
+        self.counter += 1
 
     def _print_header(self):
         """Print the header for screen logging"""
@@ -1439,7 +1450,8 @@ class Minimizer(object):
         if self.constraints is not None:
             header += '  SC CC'
         header += "         Function"
-        header += self.convergence_condition.get_header()
+        if self.convergence_condition is not None:
+            header += self.convergence_condition.get_header()
         header += "    Time"
         self._screen("-"*(len(header)), newline=True)
         self._screen(header, newline=True)
