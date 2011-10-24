@@ -1267,7 +1267,7 @@ class Minimizer(object):
     def __init__(self, x_init, fun, search_direction, line_search,
                  convergence_condition, stop_loss_condition, anagrad=False,
                  epsilon=1e-6, verbose=True, callback=None,
-                 initial_step_size=1.0, constraints=None):
+                 initial_step_size=1.0, constraints=None, debug_line=False):
         """
            Arguments:
             | ``x_init``  --  the initial guess for the minimum
@@ -1294,6 +1294,11 @@ class Minimizer(object):
                                          used as initial step size. How the
                                          initial step size is used, depends on
                                          the line search algorithm.
+            | ``constraints``  --  An instance of the Constraints class.
+            | ``debug_line``  --  If True, and when the line search fails, a
+                                  plot with the line function will be made with
+                                  matplotlib and written as
+                                  ``'line_failed_%s.png' % isodatetime``.
 
            The function ``fun`` takes a mandatory argument ``x`` and an optional
            argument ``do_gradient``:
@@ -1322,6 +1327,7 @@ class Minimizer(object):
         self.callback = callback
         self.initial_step_size = initial_step_size
         self.constraints = constraints
+        self.debug_line = debug_line
 
         # perform some resets:
         self.search_direction.reset()
@@ -1375,6 +1381,8 @@ class Minimizer(object):
         self._screen("% 5i   %2s" % (self.counter, self.search_direction.status))
         # perform a line search
         if self.constraints is not None:
+            # Keep a copy of the last function value to make sure there is no
+            # increase.
             self.last_f = self.f
         line_success = self._line_opt()
         if not line_success:
@@ -1486,6 +1494,22 @@ class Minimizer(object):
                 self.search_direction.reset()
             return True
         else:
+            if self.debug_line:
+                import matplotlib.pyplot as pt, datetime
+                pt.clf()
+                qs = np.arange(0.0, 100.1)*(5*self.initial_step_size/100.0)
+                fs = np.array([self.line(q) for q in qs])
+                pt.plot(qs, fs)
+                pt.xlim(qs[0], qs[-1])
+                fdelta = fs.max() - fs.min()
+                if fdelta == 0.0:
+                    fdelta = fs.mean()
+                fmargin = fdelta*0.1
+                pt.ylim(fs.min() - fmargin, fs.max() + fmargin)
+                pt.title('fdelta = %.2e   fmean = %.2e' % (fdelta, fs.mean()))
+                pt.xlabel('Line coordinate, q')
+                pt.ylabel('Function value, f')
+                pt.savefig('line_failed_%s.png' % (datetime.datetime.now().isoformat()))
             self._reset_state()
             return False
 
