@@ -1176,7 +1176,7 @@ class Constraints(object):
                 # do a cumbersome move to satisfy constraints approximately.
                 x, normals, values, error = self._rough_shake(x, normals, values, error)
                 counter += 1
-                # When too many iterations are required, just give up.
+            # When too many iterations are required, just give up.
             if counter > self.max_shake:
                 raise RuntimeError('Exceeded maximum number of shake iterations.')
         return x, counter, len(values)
