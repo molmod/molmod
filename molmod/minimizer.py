@@ -404,7 +404,7 @@ class NewtonLineSearch(LineSearch):
        Wolfe conditions are used to determine the convergence of the line
        search. At most max_iter Newton steps are allowed.
     """
-    def __init__(self, c1=1e-4, c2=1e-1, max_iter=5):
+    def __init__(self, c1=1e-4, c2=1e-1, max_iter=5, qmax=None):
         """
            Optional arguments:
             | ``c1``  --  The coefficient in the first Wolfe condition
@@ -415,11 +415,12 @@ class NewtonLineSearch(LineSearch):
                           conjugate gradient method
             | ``max_iter``  --  the maximum number of iterations in the line
                                 search.
+            | ``qmax``  --  The maximum step size of a line search
         """
         self.c1 = c1
         self.c2 = c2
         self.max_iter = max_iter
-        LineSearch.__init__(self)
+        LineSearch.__init__(self, qmax)
 
     def __call__(self, fun, initial_step_size, epsilon):
         """Return the value that minimizes the one-dimensional function 'fun'
@@ -444,42 +445,62 @@ class NewtonLineSearch(LineSearch):
             | ``fopt``  --  the corresponding function value
         """
         f0, g0 = fun(0.0, do_gradient=True)
+        # Approximate the second order derivative with symmetric finite differences.
         gl = fun(-0.5*epsilon, do_gradient=True)[1]
         gh = fun(+0.5*epsilon, do_gradient=True)[1]
         h0 = (gh-gl)/epsilon
 
+        # If the line function is hollow, then try a newton step.
         if h0 > 0:
+            # the initial point becomes the old point.
             q1, f1, g1, h1 = 0.0, f0, g0, h0
             counter = 0
             wolfe = False
             while True:
                 q2 = q1-g1/h1
                 f2, g2 = fun(q2, do_gradient=True)
-                if abs(g2) > abs(g1):
+                if abs(g2) > abs(g1) or f2 > f1:
+                    # If the gradient or the function increases in absolute
+                    # value, the newton step is clearly not working.
+                    break
+                if self.qmax is not None and q2 > self.qmax:
+                    # This step is going to far, which we consider unsafe. This
+                    # is probably because h0 is too close to zero.
                     break
                 counter += 1
                 if self.max_iter is not None and counter > self.max_iter:
                     break
+                # The new point becomes the old point
                 q1, f1, g1 = q2, f2, g2
                 del q2
                 del f2
                 del g2
+                # Check for Wolfe conditions.
                 if f1 >= f0 + self.c1*abs(g0*q1):
                     break
                 if f1 <= f0 - self.c1*abs(g0*q1) and abs(g1) <= abs(g0*self.c2):
+                    # The Wolfe conditions are satisfied.
                     wolfe = True
                     break
+                # Make a new estimate of the second order derivative at q1
                 gl = fun(q1-0.5*epsilon, do_gradient=True)[1]
                 gh = fun(q1+0.5*epsilon, do_gradient=True)[1]
                 h1 = (gh-gl)/epsilon
             if counter > 0 and f1 <= f0:
+                # If at least one step is taken in the newton procedure, we are
+                # happy.
                 return True, wolfe, q1, f1
             else:
                 # even the first newton step failed, revert to back tracking
                 pass
 
-        # simple back tracking with tau = 0.5, no wolfe conditions yet
-        q1 = -np.sign(g0)*initial_step_size*1.5
+        # This is the fall-back part for when the Newton step did not work.
+        # Simple back-tracking is carried out with tau = 0.5.
+        if self.qmax is None:
+            qmax = initial_step_size*1.5
+        else:
+            qmax = min(initial_step_size*1.5, self.qmax)
+        q1 = -np.sign(g0)*qmax
         counter = 0.0
         while True:
             f1 = fun(q1)
