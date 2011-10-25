@@ -83,7 +83,7 @@ class PairFFTestCase(unittest.TestCase):
             [-1.2, 0.4, 0.3],
             [ 0.3, 0.9, 0.7]
         ], float)
-        mask = np.array([
+        scaling = np.array([
             [0.0, 0.5, 0.9],
             [0.5, 0.0, 0.1],
             [0.9, 0.1, 0.0],
@@ -103,7 +103,7 @@ class PairFFTestCase(unittest.TestCase):
         else:
             dipoles = None
 
-        return molmod.pairff.CoulombFF(mask, charges, dipoles, coordinates)
+        return molmod.pairff.CoulombFF(scaling, charges, dipoles, coordinates)
 
     def test_coulombff_c(self):
         self.check_ff(self.make_coulombff(do_charges=True,  do_dipoles=False))
@@ -122,13 +122,13 @@ class PairFFTestCase(unittest.TestCase):
             [-1.2, 0.4, 0.3],
             [ 0.3, 0.9, 0.7]
         ], float)
-        mask = np.array([
+        scaling = np.array([
             [0.0, 0.5, 0.9],
             [0.5, 0.0, 0.1],
             [0.9, 0.1, 0.0],
         ], float)
 
-        return molmod.pairff.DispersionFF(mask, strengths, coordinates)
+        return molmod.pairff.DispersionFF(scaling, strengths, coordinates)
 
     def test_dispersionff(self):
         self.check_ff(self.make_dispersionff())
@@ -141,13 +141,13 @@ class PairFFTestCase(unittest.TestCase):
             [-1.2, 0.4, 0.3],
             [ 0.3, 0.9, 0.7]
         ], float)
-        mask = np.array([
+        scaling = np.array([
             [0.0, 0.5, 0.9],
             [0.5, 0.0, 0.1],
             [0.9, 0.1, 0.0],
         ], float)
 
-        return molmod.pairff.PauliFF(mask, strengths, coordinates)
+        return molmod.pairff.PauliFF(scaling, strengths, coordinates)
 
     def test_pauliff(self):
         self.check_ff(self.make_pauliff())
@@ -162,13 +162,13 @@ class PairFFTestCase(unittest.TestCase):
             [-1.2, 0.4, 0.3],
             [ 0.3, 0.9, 0.7]
         ], float)
-        mask = np.array([
+        scaling = np.array([
             [0.0, 0.5, 0.9],
             [0.5, 0.0, 0.1],
             [0.9, 0.1, 0.0],
         ], float)
 
-        return molmod.pairff.ExpRepFF(mask, As, Bs, coordinates)
+        return molmod.pairff.ExpRepFF(scaling, As, Bs, coordinates)
 
     def test_exprepff(self):
         self.check_ff(self.make_exprepff())
@@ -179,13 +179,13 @@ class PairFFTestCase(unittest.TestCase):
             [-1.2, 0.4, 0.3],
             [ 0.3, 0.9, 0.7]
         ], float)
-        mask = np.array([
+        scaling = np.array([
             [0.0, 0.5, 0.9],
             [0.5, 0.0, 0.1],
             [0.9, 0.1, 0.0],
         ], float)
 
-        return Debug1FF(mask, coordinates)
+        return Debug1FF(scaling, coordinates)
 
     def test_debug1ff(self):
         self.check_ff(self.make_debug1ff())
@@ -196,13 +196,13 @@ class PairFFTestCase(unittest.TestCase):
             [-1.2, 0.4, 0.3],
             [ 0.3, 0.9, 0.7]
         ], float)
-        mask = np.array([
+        scaling = np.array([
             [0.0, 0.5, 0.9],
             [0.5, 0.0, 0.1],
             [0.9, 0.1, 0.0],
         ], float)
 
-        return Debug2FF(mask, coordinates)
+        return Debug2FF(scaling, coordinates)
 
     def test_debug2ff(self):
         self.check_ff(self.make_debug2ff())
@@ -213,13 +213,13 @@ class PairFFTestCase(unittest.TestCase):
             [-1.2, 0.4, 0.3],
             [ 0.3, 0.9, 0.7]
         ], float)
-        mask = np.array([
+        scaling = np.array([
             [0.0, 0.5, 0.9],
             [0.5, 0.0, 0.1],
             [0.9, 0.1, 0.0],
         ], float)
 
-        return Debug3FF(mask, coordinates)
+        return Debug3FF(scaling, coordinates)
 
     def test_debug3ff(self):
         self.check_ff(self.make_debug3ff())
@@ -230,13 +230,13 @@ class PairFFTestCase(unittest.TestCase):
             [-1.2, 0.4, 0.3],
             [ 0.3, 0.9, 0.7]
         ], float)
-        mask = np.array([
+        scaling = np.array([
             [0.0, 0.5, 0.9],
             [0.5, 0.0, 0.1],
             [0.9, 0.1, 0.0],
         ], float)
 
-        return Debug4FF(mask, coordinates)
+        return Debug4FF(scaling, coordinates)
 
     def test_debug4ff(self):
         self.check_ff(self.make_debug4ff())
@@ -388,9 +388,9 @@ class CoulombFFTestCase(BaseTestCase):
             [ 0.0,  0.0,  0.0],
             [ 1.0,  0.0,  0.0]
         ], float)
-        mask = 1 - np.identity(2, float)
+        scaling = 1 - np.identity(2, float)
         charges = np.array([-1, 1], float)
-        ff = molmod.pairff.CoulombFF(mask, charges, coordinates=coordinates)
+        ff = molmod.pairff.CoulombFF(scaling, charges, coordinates=coordinates)
         self.assertAlmostEqual(ff.energy(), -1.0, 5, "Incorrect energy.")
 
     def test_cc2(self):
@@ -399,9 +399,9 @@ class CoulombFFTestCase(BaseTestCase):
             [ 0.0,  0.0,  0.0],
             [ 1.0,  0.0,  0.0]
         ], float)
-        mask = 1 - np.identity(3, float)
+        scaling = 1 - np.identity(3, float)
         charges = np.array([1, -1, 1], float)
-        ff = molmod.pairff.CoulombFF(mask, charges, coordinates=coordinates)
+        ff = molmod.pairff.CoulombFF(scaling, charges, coordinates=coordinates)
         self.assertAlmostEqual(ff.energy(), -1.5, 5, "Incorrect energy.")
 
     def test_cc3(self):
@@ -410,9 +410,9 @@ class CoulombFFTestCase(BaseTestCase):
             [ 0.0,  0.0,  0.0],
             [ 1.0,  0.0,  0.0]
         ], float)
-        mask = 1 - np.identity(3, float)
+        scaling = 1 - np.identity(3, float)
         charges = np.array([1, -1, 1], float)
-        ff = molmod.pairff.CoulombFF(mask, charges, coordinates=coordinates)
+        ff = molmod.pairff.CoulombFF(scaling, charges, coordinates=coordinates)
         self.assertAlmostEqual(ff.energy(), -2.0 + 1/np.sqrt(2), 5, "Incorrect energy.")
 
     def test_cd1(self):
@@ -425,8 +425,8 @@ class CoulombFFTestCase(BaseTestCase):
             [ 1.0,  0.0,  0.0],
             [ 0.0,  0.0,  0.0]
         ], float)
-        mask = 1 - np.identity(2, float)
-        ff = molmod.pairff.CoulombFF(mask, charges, dipoles, coordinates)
+        scaling = 1 - np.identity(2, float)
+        ff = molmod.pairff.CoulombFF(scaling, charges, dipoles, coordinates)
         self.assertAlmostEqual(ff.energy(), 1.0, 5, "Incorrect energy.")
 
     def test_dd1(self):
@@ -439,8 +439,8 @@ class CoulombFFTestCase(BaseTestCase):
             [ 1.0,  0.0,  0.0],
             [ 1.0,  0.0,  0.0]
         ], float)
-        mask = 1 - np.identity(2, float)
-        ff = molmod.pairff.CoulombFF(mask, charges, dipoles, coordinates=coordinates)
+        scaling = 1 - np.identity(2, float)
+        ff = molmod.pairff.CoulombFF(scaling, charges, dipoles, coordinates=coordinates)
         self.assertAlmostEqual(ff.energy(), -2.0, 5, "Incorrect energy.")
 
     def test_esp_point_c(self):
@@ -448,9 +448,9 @@ class CoulombFFTestCase(BaseTestCase):
             [ 0.0,  0.0,  0.0],
             [ 2.0,  0.0,  0.0]
         ], float)
-        mask = 1 - np.identity(2, float)
+        scaling = 1 - np.identity(2, float)
         charges = np.array([-1, 1], float)
-        ff = molmod.pairff.CoulombFF(mask, charges, coordinates=coordinates)
+        ff = molmod.pairff.CoulombFF(scaling, charges, coordinates=coordinates)
         self.assertAlmostEqual(ff.esp_point(np.array([1.0, 0.0, 0.0])), 0.0, 5)
         self.assertAlmostEqual(ff.esp_point(np.array([0.0, 2.0, 0.0])), -0.5+0.125**0.5, 5)
 
@@ -459,12 +459,12 @@ class CoulombFFTestCase(BaseTestCase):
             [ 0.0,  0.0,  0.0],
             [ 1.0,  0.0,  0.0]
         ], float)
-        mask = 1 - np.identity(2, float)
+        scaling = 1 - np.identity(2, float)
         dipoles = np.array([
             [ 1.0,  0.0,  0.0],
             [ 1.0,  0.0,  0.0]
         ], float)
-        ff = molmod.pairff.CoulombFF(mask, charges=None, dipoles=dipoles, coordinates=coordinates)
+        ff = molmod.pairff.CoulombFF(scaling, charges=None, dipoles=dipoles, coordinates=coordinates)
         self.assertAlmostEqual(ff.esp_point(np.array([0.5, 0.0, 0.0])), 0.0, 5)
         self.assertAlmostEqual(ff.esp_point(np.array([0.0, 1.0, 0.0])), -0.5*0.5**0.5, 5)
 
@@ -473,9 +473,9 @@ class CoulombFFTestCase(BaseTestCase):
             [ 0.0,  0.0,  0.0],
             [ 2.0,  0.0,  0.0]
         ], float)
-        mask = 1 - np.identity(2, float)
+        scaling = 1 - np.identity(2, float)
         charges = np.array([-1, 1], float)
-        ff = molmod.pairff.CoulombFF(mask, charges, coordinates=coordinates)
+        ff = molmod.pairff.CoulombFF(scaling, charges, coordinates=coordinates)
         self.assertArraysAlmostEqual(ff.esp(), np.array([0.5, -0.5]), 1e-5)
 
     def test_esp_d(self):
@@ -483,12 +483,12 @@ class CoulombFFTestCase(BaseTestCase):
             [ 0.0,  0.0,  0.0],
             [ 1.0,  0.0,  0.0]
         ], float)
-        mask = 1 - np.identity(2, float)
+        scaling = 1 - np.identity(2, float)
         dipoles = np.array([
             [ 0.0,  1.0,  0.0],
             [ 1.0,  0.0,  0.0]
         ], float)
-        ff = molmod.pairff.CoulombFF(mask, charges=None, dipoles=dipoles, coordinates=coordinates)
+        ff = molmod.pairff.CoulombFF(scaling, charges=None, dipoles=dipoles, coordinates=coordinates)
         self.assertArraysAlmostEqual(ff.esp(), np.array([-1.0, 0.0]), 1e-5)
 
     def test_efield_point(self):
@@ -496,13 +496,13 @@ class CoulombFFTestCase(BaseTestCase):
             [-2.0,  0.0,  0.0],
             [ 2.0,  0.0,  0.0]
         ], float)
-        mask = 1 - np.identity(2, float)
+        scaling = 1 - np.identity(2, float)
         dipoles = np.array([
             [ 0.0,  1.0,  0.0],
             [ 1.0,  0.0,  0.0]
         ], float)
         charges = np.array([-1, 1], float)
-        ff = molmod.pairff.CoulombFF(mask, charges=charges, dipoles=dipoles, coordinates=coordinates)
+        ff = molmod.pairff.CoulombFF(scaling, charges=charges, dipoles=dipoles, coordinates=coordinates)
         eps = 1e-5
         for i in xrange(10):
             center = np.random.uniform(-0.2, 0.2, 3)
@@ -516,16 +516,16 @@ class CoulombFFTestCase(BaseTestCase):
     def test_efield(self):
         coordinates = np.random.uniform(-1, 1, (3,3))
         point = coordinates[0]
-        mask = 1 - np.identity(3, float)
+        scaling = 1 - np.identity(3, float)
         dipoles = np.random.uniform(-1, 1, (3,3))
         charges = np.random.uniform(-1, 1, 3)
         dipoles[0] = 0
         charges[0] = 1
-        ff1 = molmod.pairff.CoulombFF(mask, charges=charges, dipoles=dipoles, coordinates=coordinates)
+        ff1 = molmod.pairff.CoulombFF(scaling, charges=charges, dipoles=dipoles, coordinates=coordinates)
         coordinates = coordinates[[1,2]]
-        mask = 1 - np.identity(2, float)
+        scaling = 1 - np.identity(2, float)
         dipoles = dipoles[[1,2]]
         charges = charges[[1,2]]
-        ff2 = molmod.pairff.CoulombFF(mask, charges=charges, dipoles=dipoles, coordinates=coordinates)
+        ff2 = molmod.pairff.CoulombFF(scaling, charges=charges, dipoles=dipoles, coordinates=coordinates)
         self.assertArraysAlmostEqual(ff1.gradient()[0], -ff1.efield()[0])
         self.assertArraysAlmostEqual(ff1.gradient()[0], -ff2.efield_point(point))

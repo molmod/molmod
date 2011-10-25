@@ -30,7 +30,7 @@ import numpy as np
 
 
 __all__ = [
-    "PairFF", "CoulombFF", "DispersionFF", "PauliFF",
+    "PairFF", "CoulombFF", "DispersionFF", "PauliFF", "ExpRepFF",
 ]
 
 
@@ -44,13 +44,12 @@ class PairFF(object):
        s and v for a given r_ij.
     """
 
-    def __init__(self, mask, coordinates=None):
+    def __init__(self, scaling, coordinates=None):
         """Initialize a pair potential object
 
            Arguments:
-             mask  --  symmetric NxN array with booleans. When an element is
-                       set to False, its corresponding pair interaction is
-                       excluded
+             scaling  --  symmetric NxN array with pairwise scaling factors.
+                          When an element is set to zero, it will be excluded.
 
            Optional argument:
              coordinates  --  the initial Cartesian coordinates of the system,
@@ -59,8 +58,8 @@ class PairFF(object):
         """
         if coordinates is not None:
             self.update_coordinates(coordinates)
-        self.mask = mask
-        self.mask.ravel()[::len(self.mask)+1] = 0
+        self.scaling = scaling
+        self.scaling.ravel()[::len(self.scaling)+1] = 0
 
     def update_coordinates(self, coordinates=None):
         """Update the coordinates (and derived quantities)
@@ -103,18 +102,18 @@ class PairFF(object):
         result = 0.0
         for index1 in xrange(self.numc):
             for index2 in xrange(index1):
-                if self.mask[index1, index2] > 0:
+                if self.scaling[index1, index2] > 0:
                     for se, ve in self.yield_pair_energies(index1, index2):
-                        result += se*ve*self.mask[index1, index2]
+                        result += se*ve*self.scaling[index1, index2]
         return result
 
     def gradient_component(self, index1):
         """Compute the gradient of the energy for one atom"""
         result = np.zeros(3, float)
         for index2 in xrange(self.numc):
-            if self.mask[index1, index2] > 0:
+            if self.scaling[index1, index2] > 0:
                 for (se, ve), (sg, vg) in zip(self.yield_pair_energies(index1, index2), self.yield_pair_gradients(index1, index2)):
-                    result += (sg*self.directions[index1, index2]*ve + se*vg)*self.mask[index1, index2]
+                    result += (sg*self.directions[index1, index2]*ve + se*vg)*self.scaling[index1, index2]
         return result
 
     def gradient(self):
@@ -129,7 +128,7 @@ class PairFF(object):
         result = np.zeros((3, 3), float)
         if index1 == index2:
             for index3 in xrange(self.numc):
-                if self.mask[index1, index3] > 0:
+                if self.scaling[index1, index3] > 0:
                     d_1 = 1/self.distances[index1, index3]
                     for (se, ve), (sg, vg), (sh, vh) in zip(
                         self.yield_pair_energies(index1, index3),
@@ -142,8 +141,8 @@ class PairFF(object):
                             +sg*np.outer(self.directions[index1, index3],  vg)
                             +sg*np.outer(vg, self.directions[index1, index3])
                             +se*vh
-                        )*self.mask[index1, index3]
-        elif self.mask[index1, index2] > 0:
+                        )*self.scaling[index1, index3]
+        elif self.scaling[index1, index2] > 0:
             d_1 = 1/self.distances[index1, index2]
             for (se, ve), (sg, vg), (sh, vh) in zip(
                 self.yield_pair_energies(index1, index2),
@@ -156,7 +155,7 @@ class PairFF(object):
                     +sg*np.outer(self.directions[index1, index2],  vg)
                     +sg*np.outer(vg, self.directions[index1, index2])
                     +se*vh
-                )*self.mask[index1, index2]
+                )*self.scaling[index1, index2]
         return result
 
     def hessian(self):
@@ -179,13 +178,12 @@ class PairFF(object):
 class CoulombFF(PairFF):
     """Computes the electrostatic interactions using charges and point dipoles"""
 
-    def __init__(self, mask, charges=None, dipoles=None, coordinates=None):
+    def __init__(self, scaling, charges=None, dipoles=None, coordinates=None):
         """Initialize a CoulombFF object
 
            Arguments:
-             mask  --  symmetric NxN array with booleans. When an element is
-                       set to False, its corresponding pair interaction is
-                       excluded
+             scaling  --  symmetric NxN array with pairwise scaling factors.
+                          When an element is set to zero, it will be excluded.
 
            Optional arguments:
              charges  --  the atomic partial charges
@@ -194,7 +192,7 @@ class CoulombFF(PairFF):
                               which can be updated with the update_coordinates
                               method
         """
-        PairFF.__init__(self, mask, coordinates)
+        PairFF.__init__(self, scaling, coordinates)
         self.charges = charges
         self.dipoles = dipoles
 
@@ -270,7 +268,7 @@ class CoulombFF(PairFF):
     def esp_component(self, index1):
         result = 0.0
         for index2 in xrange(self.numc):
-            if self.mask[index1, index2] > 0:
+            if self.scaling[index1, index2] > 0:
                 d = self.distances[index1, index2]
                 if self.charges is not None:
                     result += self.charges[index2]/d
@@ -301,7 +299,7 @@ class CoulombFF(PairFF):
     def efield_component(self, index1):
         result = 0.0
         for index2 in xrange(self.numc):
-            if self.mask[index1, index2] > 0:
+            if self.scaling[index1, index2] > 0:
                 d = self.distances[index1, index2]
                 direction = self.directions[index1, index2]
                 if self.charges is not None:
@@ -323,13 +321,12 @@ class CoulombFF(PairFF):
 class DispersionFF(PairFF):
     """Computes the London dispersion interaction"""
 
-    def __init__(self, mask, strengths, coordinates=None):
+    def __init__(self, scaling, strengths, coordinates=None):
         """Initialize a DispersionFF object
 
            Arguments:
-             mask  --  symmetric NxN array with booleans. When an element is
-                       set to False, its corresponding pair interaction is
-                       excluded
+             scaling  --  symmetric NxN array with pairwise scaling factors.
+                          When an element is set to zero, it will be excluded.
              strengths  --  a symmetric with linear coefficients in front of
                             r**-6 for each atom pair
 
@@ -338,7 +335,7 @@ class DispersionFF(PairFF):
                               which can be updated with the update_coordinates
                               method
         """
-        PairFF.__init__(self, mask, coordinates)
+        PairFF.__init__(self, scaling, coordinates)
         self.strengths = strengths
 
     def yield_pair_energies(self, index1, index2):
@@ -363,13 +360,12 @@ class DispersionFF(PairFF):
 class PauliFF(PairFF):
     """Computes the Pauli repulsion interaction"""
 
-    def __init__(self, mask, strengths, coordinates=None):
+    def __init__(self, scaling, strengths, coordinates=None):
         """Initialize a PauliFF
 
            Arguments:
-             mask  --  symmetric NxN array with booleans. When an element is
-                       set to False, its corresponding pair interaction is
-                       excluded
+             scaling  --  symmetric NxN array with pairwise scaling factors.
+                          When an element is set to zero, it will be excluded.
              strengths  --  a symmetric with linear coefficients in front of
                             r**-12 for each atom pair
 
@@ -378,7 +374,7 @@ class PauliFF(PairFF):
                               which can be updated with the update_coordinates
                               method
         """
-        PairFF.__init__(self, mask, coordinates)
+        PairFF.__init__(self, scaling, coordinates)
         self.strengths = strengths
 
     def yield_pair_energies(self, index1, index2):
@@ -403,13 +399,12 @@ class PauliFF(PairFF):
 class ExpRepFF(PairFF):
     """Computes the exponential repulsion interaction"""
 
-    def __init__(self, mask, As, Bs, coordinates=None):
+    def __init__(self, scaling, As, Bs, coordinates=None):
         """Initialize a ExpRepFF
 
            Arguments:
-             mask  --  symmetric NxN array with booleans. When an element is
-                       set to False, its corresponding pair interaction is
-                       excluded
+             scaling  --  symmetric NxN array with pairwise scaling factors.
+                          When an element is set to zero, it will be excluded.
              As  --  A matrix with pre-exponential factors
              Bs  --  A matrix with exponents
 
@@ -420,7 +415,7 @@ class ExpRepFF(PairFF):
                               which can be updated with the update_coordinates
                               method
         """
-        PairFF.__init__(self, mask, coordinates)
+        PairFF.__init__(self, scaling, coordinates)
         self.As = As
         self.Bs = Bs
 
