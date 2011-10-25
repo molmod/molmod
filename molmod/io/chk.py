@@ -77,6 +77,8 @@ def load_chk(filename):
             counter = 0
             while True:
                 short = f.readline().split()
+                if len(short) == 0:
+                    raise IOError('Insufficient data')
                 for s in short:
                     if dtype is bool and s.lower() in ['True', '1', 'Yes']:
                         work[counter] = True
