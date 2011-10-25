@@ -1475,7 +1475,7 @@ class Minimizer(object):
 
     def _print_header(self):
         """Print the header for screen logging"""
-        header = " Iter  Dir"
+        header = " Iter  Dir  "
         if self.constraints is not None:
             header += '  SC CC'
         header += "         Function"
@@ -1511,7 +1511,10 @@ class Minimizer(object):
             self.initial_step_size = np.linalg.norm(self.step)
             self.x = self.x + self.step
             self.f = fopt
-            if not wolfe:
+            if wolfe:
+                self._screen("W")
+            else:
+                self._screen(" ")
                 self.search_direction.reset()
             return True
         else:
