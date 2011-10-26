@@ -1012,9 +1012,13 @@ class FunWrapper(object):
             return self.fun(x)
 
 
+class ConstraintError(Exception):
+    pass
+
+
 class Constraints(object):
     '''Algorithm to apply half-open and convential constraints during minimization.'''
-    def __init__(self, equations, threshold, rcond1=1e-10, max_shake=100):
+    def __init__(self, equations, threshold, rcond1=1e-10, max_iter=100):
         '''
            The constraint solver internally works with a constraint cost
            function, defined as the squared sum of the constraint functions.
@@ -1050,14 +1054,14 @@ class Constraints(object):
                             parameter used to regularize these equations. If
                             needed, the ridge parameter is multiplied by 10
                             until a better fit of the constraints is found.
-            | ``max_shake`` -- The maximum number of iterations in the shake
-                               algorithm.
+            | ``max_iter`` -- The maximum number of iterations in the shake
+                              algorithm. This is used in several functions.
         '''
         self.equations = equations
         self.lock = np.zeros(len(equations), bool)
         self.threshold = threshold
         self.rcond1 = rcond1
-        self.max_shake = max_shake
+        self.max_iter = max_iter
 
     def _compute_equations(self, x, verbose=False):
         '''Compute the values and the normals (gradients) of active constraints.
@@ -1113,7 +1117,7 @@ class Constraints(object):
             | ``error`` -- The square root of the constraint cost function.
         '''
         counter = 0
-        while error > self.threshold and counter < 100:
+        while error > self.threshold and counter < self.max_iter:
             dxs = []
             for i in xrange(len(normals)):
                 dx = -normals[i]*values[i]/np.dot(normals[i], normals[i])
@@ -1147,6 +1151,7 @@ class Constraints(object):
         # numerically more stable and efficient.
         U, S, Vt = np.linalg.svd(normals, full_matrices=False)
         rcond = None
+        counter = 0
         while True:
             if rcond is None:
                 rcond = 0.0
@@ -1173,6 +1178,9 @@ class Constraints(object):
             elif abs(dx).sum() < self.threshold:
                 # If the step becomes too small, then give up.
                 break
+            elif counter > self.max_iter:
+                raise ConstraintError('Exceeded maximum number of shake iterations.')
+            counter += 1
 
 
     def free_shake(self, x):
@@ -1198,8 +1206,8 @@ class Constraints(object):
                 x, normals, values, error = self._rough_shake(x, normals, values, error)
                 counter += 1
             # When too many iterations are required, just give up.
-            if counter > self.max_shake:
-                raise RuntimeError('Exceeded maximum number of shake iterations.')
+            if counter > self.max_iter:
+                raise ConstraintError('Exceeded maximum number of shake iterations.')
         return x, counter, len(values)
 
     def safe_shake(self, x, fun, fmax):
@@ -1252,6 +1260,7 @@ class Constraints(object):
         mask = signs == 0
         result = vector.copy()
         changed = True
+        counter = 0
         while changed:
             changed = False
             y = np.dot(normals, result)
@@ -1275,6 +1284,10 @@ class Constraints(object):
                 result = vector - np.dot(Vt.transpose(), np.dot(U.transpose(), y)*Sinv)
             else:
                 result = vector.copy()
+
+            if counter > self.max_iter:
+                raise ConstraintError('Exceeded maximum number of shake iterations.')
+            counter += 1
 
         return result*scale
 
@@ -1383,12 +1396,16 @@ class Minimizer(object):
         if self.constraints is not None:
             try:
                 self.x = self.constraints.free_shake(self.x)[0]
-            except RuntimeError:
+            except ConstraintError:
                 self._screen("SHAKE FAILED", newline=True)
                 return False
         self.f, self.gradient = self.fun(self.x, do_gradient=True)
         if self.constraints is not None:
-            self.gradient = -self.constraints.project(self.x, -self.gradient)
+            try:
+                self.gradient = -self.constraints.project(self.x, -self.gradient)
+            except ConstraintError:
+                self._screen("CONSTRAINT PROJECT FAILED", newline=True)
+                return False
         self.last_end = time.clock()
         # the cg loop
         self.counter = 0
@@ -1414,14 +1431,14 @@ class Minimizer(object):
         if self.constraints is not None:
             try:
                 x, shake_count, active_count = self.constraints.free_shake(self.x)
-            except RuntimeError:
+            except ConstraintError:
                 self._screen("SHAKE FAILED", newline=True)
                 return False
             # test if the function did increase. if so try harder
             if self.fun(x) > self.last_f:
                 try:
                     self.x, shake_count_bis, active_count = self.constraints.safe_shake(self.x, self.fun, self.last_f)
-                except RuntimeError:
+                except ConstraintError:
                     self._screen("SHAKE FAILED", newline=True)
                     return False
                 shake_count += shake_count_bis
@@ -1432,7 +1449,11 @@ class Minimizer(object):
         self.f, self.gradient = self.fun(self.x, do_gradient=True)
         self._screen("% 15.9e  " % self.f)
         if self.constraints is not None:
-            self.gradient = -self.constraints.project(self.x, -self.gradient)
+            try:
+                self.gradient = -self.constraints.project(self.x, -self.gradient)
+            except ConstraintError:
+                self._screen("CONSTRAINT PROJECT FAILED", newline=True)
+                return False
         # handle the preconditioner, part 1
         if self.prec is not None:
             gradient_orig = self.prec.do(self.gradient)
@@ -1498,7 +1519,11 @@ class Minimizer(object):
         """Perform a line search along the current direction"""
         direction = self.search_direction.direction
         if self.constraints is not None:
-            direction = self.constraints.project(self.x, direction)
+            try:
+                direction = self.constraints.project(self.x, direction)
+            except ConstraintError:
+                self._screen("CONSTRAINT PROJECT FAILED", newline=True)
+                return False
         direction_norm = np.linalg.norm(direction)
         if direction_norm == 0:
             return False
