@@ -1393,6 +1393,7 @@ class Minimizer(object):
         return success
 
     def initialize(self):
+        self.counter = 0
         if self.constraints is not None:
             try:
                 self.x = self.constraints.free_shake(self.x)[0]
@@ -1407,8 +1408,6 @@ class Minimizer(object):
                 self._screen("CONSTRAINT PROJECT FAILED", newline=True)
                 return False
         self.last_end = time.clock()
-        # the cg loop
-        self.counter = 0
 
     def propagate(self):
         # compute the new direction
