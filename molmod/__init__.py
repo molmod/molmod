@@ -56,6 +56,7 @@ from molmod.clusters import *
 from molmod.constants import *
 from molmod.graphs import *
 from molmod.ic import *
+from molmod.log import *
 from molmod.minimizer import *
 from molmod.molecules import *
 from molmod.molecular_graphs import *
