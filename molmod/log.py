@@ -21,7 +21,7 @@
 # --
 
 
-import sys, os, datetime, getpass, time
+import sys, os, datetime, getpass, time, codecs, locale
 from contextlib import contextmanager
 
 from molmod.units import kjmol, kcalmol, electronvolt, angstrom, nanometer, \
@@ -196,9 +196,11 @@ class ScreenLog(object):
         self.stack = []
         self.add_newline = False
         if f is None:
-            self._file = sys.stdout
+            _file = sys.stdout
         else:
-            self._file = f
+            _file = f
+        # Wrap sys.stdout into a StreamWriter to allow writing unicode.
+        self._file = codecs.getwriter(locale.getpreferredencoding())(_file)
 
     do_warning = property(lambda self: self._level >= self.warning)
     do_low = property(lambda self: self._level >= self.low)
