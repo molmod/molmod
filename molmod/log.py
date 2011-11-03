@@ -283,6 +283,20 @@ class ScreenLog(object):
     def hline(self, char='~'):
         self(char*self.width)
 
+    def center(self, *words, **kwargs):
+        if len(kwargs) == 0:
+            edge = ''
+        elif len(kwargs) == 1:
+            if 'edge' not in kwargs:
+                raise TypeError('Only one keyword argument is allowd, that is edge')
+            edge = kwargs['edge']
+        else:
+            raise TypeError('Too many keyword arguments. Should be at most one.')
+        s = u' '.join(unicode(w) for w in words)
+        if len(s) + 2*len(edge) > self.width:
+            raise ValueError('Line too long. center method does not support wrapping.')
+        self('%s%s%s' % (edge, s.center(self.width-2*len(edge)), edge))
+
     def blank(self):
         print >> self._file
 

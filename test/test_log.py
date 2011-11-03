@@ -37,6 +37,18 @@ def test_line_wrapping():
     f.close()
 
 
+def test_center():
+    f = StringIO()
+    timer = TimerGroup()
+    log = ScreenLog('TEST', '0.0', '', '', timer, f)
+    log._active = True
+    with log.section('NVE'):
+        log.center('Gets centered.', edge='***')
+        log.center('Gets centered.')
+    assert f.getvalue() == '\n    NVE ***                          Gets centered.                          ***\n    NVE                              Gets centered.                             \n'
+    f.close()
+
+
 def test_levels():
     timer = TimerGroup()
     log = ScreenLog('TEST', '0.0', '', '', timer)
