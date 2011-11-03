@@ -21,7 +21,7 @@
 # --
 
 
-import sys, os, datetime, getpass, time, codecs, locale
+import sys, os, datetime, getpass, time, codecs, locale, functools
 from contextlib import contextmanager
 
 from molmod.units import kjmol, kcalmol, electronvolt, angstrom, nanometer, \
@@ -208,13 +208,34 @@ class ScreenLog(object):
     do_high = property(lambda self: self._level >= self.high)
     do_debug = property(lambda self: self._level >= self.debug)
 
+    def _pass_color_code(self, code):
+        if self._file.isatty():
+            return code
+        else:
+            return ''
+
+    reset =     property(functools.partial(_pass_color_code, code="\033[0m"))
+    bold =      property(functools.partial(_pass_color_code, code="\033[01m"))
+    teal =      property(functools.partial(_pass_color_code, code="\033[36;06m"))
+    turquoise = property(functools.partial(_pass_color_code, code="\033[36;01m"))
+    fuchsia =   property(functools.partial(_pass_color_code, code="\033[35;01m"))
+    purple =    property(functools.partial(_pass_color_code, code="\033[35;06m"))
+    blue =      property(functools.partial(_pass_color_code, code="\033[34;01m"))
+    darkblue =  property(functools.partial(_pass_color_code, code="\033[34;06m"))
+    green =     property(functools.partial(_pass_color_code, code="\033[32;01m"))
+    darkgreen = property(functools.partial(_pass_color_code, code="\033[32;06m"))
+    yellow =    property(functools.partial(_pass_color_code, code="\033[33;01m"))
+    brown =     property(functools.partial(_pass_color_code, code="\033[33;06m"))
+    red =       property(functools.partial(_pass_color_code, code="\033[31;01m"))
+
+
     def set_level(self, level):
         if level < self.silent or level > self.debug:
             raise ValueError('The level must be one of the ScreenLog attributes.')
         self._level = level
 
     def __call__(self, *words):
-        s = ' '.join(str(w) for w in words)
+        s = u' '.join(unicode(w) for w in words)
         if not self.do_warning:
             raise RuntimeError('The runlevel should be at least warning when logging.')
         if not self._active:
@@ -226,9 +247,9 @@ class ScreenLog(object):
             print >> self._file
             self.add_newline = False
         # Check for alignment code '&'
-        pos = s.find('&')
+        pos = s.find(u'&')
         if pos == -1:
-            lead = ''
+            lead = u''
             rest = s
         else:
             lead = s[:pos] + ' '
@@ -249,15 +270,15 @@ class ScreenLog(object):
                     rest = rest[pos:].lstrip()
             else:
                 current = rest
-                rest = ''
-            print >> self._file, '%s %s%s' % (self.prefix, lead, current)
+                rest = u''
+            print >> self._file, u'%s %s%s' % (self.prefix, lead, current)
             if first:
-                lead = ' '*len(lead)
+                lead = u' '*len(lead)
                 first = False
         self._last_used_prefix = self.prefix
 
     def warn(self, *words):
-        self('WARNING!!&'+' '.join(words))
+        self(u'WARNING!!&'+u' '.join(unicode(w) for w in words))
 
     def hline(self, char='~'):
         self(char*self.width)

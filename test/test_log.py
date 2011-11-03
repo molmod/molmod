@@ -46,6 +46,12 @@ def test_levels():
     assert not log.do_medium
 
 
+def test_colors():
+    timer = TimerGroup()
+    log = ScreenLog('TEST', '0.0', '', '', timer)
+    assert log.red == ''
+
+
 def test_hline():
     f = StringIO()
     timer = TimerGroup()
