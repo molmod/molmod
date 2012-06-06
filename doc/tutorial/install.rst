@@ -8,9 +8,8 @@ Preparing your mind
 MolMod is developed and tested in modern Linux environments. The
 installation and usage will therefore be relatively easy on Linux. If you want
 to use MolMod on other operating systems such as Windows or OSX, you should
-have a minimal computer geek status to get it working, and this document may
-provide at best some clues. We are always interested in hearing from your
-installation adventures.
+have a minimal computer geek status to get it working. We are always interested
+in hearing from your installation adventures.
 
 Preparing your Linux system
 ---------------------------
@@ -42,11 +41,9 @@ popular Linux distributions:
     apt-get install python python-dev python-numpy gfortran gcc git-core
     exit
 
-* Fedora 12 and 13. You first have to become root because the sudo program is
-  not configured by default. ::
+* Fedora 17::
 
-    su -
-    pkcon install python-devel numpy numpy-f2py gcc-gfortran gcc git
+    sudo yum install python-devel numpy numpy-f2py gcc-gfortran gcc git
     exit
 
 * Suse 11.2::
@@ -133,7 +130,7 @@ Testing your installation
 
 For the development and testing one needs to install one additional package:
 
- * Nosetests: http://somethingaboutorange.com/mrl/projects/nose/0.11.2/
+* Nosetests >= 0.11: http://somethingaboutorange.com/mrl/projects/nose/0.11.2/
 
 Most Linux distributions can install this software with just a single command on
 the command line by the administrator.
@@ -148,12 +145,9 @@ the command line by the administrator.
     apt-get install python-nose
     exit
 
-* Fedora 12 and 13. You first have to become root because the sudo program is
-  not configured by default. ::
+* Fedora 17::
 
-    su -
-    pkcon install python-nose
-    exit
+    sudo yum install python-nose
 
 * Suse 11.2. ::
 
@@ -163,10 +157,11 @@ Once these dependecies are installed, go to the temporary directory where the
 MolMod source code was downloaded and execute the following commands::
 
     cd molmod
+    ./cleanfiles.sh
     ./setup.py build_ext -i
     nosetests -v
 
 This will run a series of tests to check the validity of the outcomes generated
-by MolMod. If some tests fail, post the output of the tests on the `mailing list
-<http://molmod.ugent.be/code/wiki/MolMod/MailingList>`_. (There are currently
-three test that are skipped.)
+by MolMod. If some tests fail, post the output of the tests on the `MolMod
+mailing list <https://groups.google.com/forum/#!forum/molmodlib>`_. (There are
+currently three test that are skipped.)

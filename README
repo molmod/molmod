@@ -1,18 +1,3 @@
-MolMod 0.004 README
-===================
-
-Contents of this README File:
- * Short description
- * Software dependencies
- * How to install
- * How to get technical support
- * Become a registered user
- * Contact information
-
-
-Short description
------------------
-
 MolMod is a python package that is used by Zeobuilder and Tracks. Zeobuilder is
 a GUI toolkit for the interactive construction of complex molecular models. 
 Tracks is a collection of molecular dynamics and monte carlo analysis scripts.
@@ -21,87 +6,8 @@ modeling simulations, and for setting op complex input files. MolMod can also
 be used as a library for batch work, independent of Zeobuilder or Tracks.
 
 More information about MolMod can be found on the CMM Code website:
-http://molmod.ugent.be/code/
-
-
-License
--------
+http://molmod.ugent.be/software
 
 MolMod is distributed as open source software under the conditions of the GPL
 license version 3. Read the file COPYING for more details, or visit
 http://www.gnu.org/licenses/
-
-
-Software dependencies
----------------------
-
-The following software has to be installed on your system before you can use
-MolMod:
- 1) Python (>=2.4, <3.0): see http://www.python.org/
- 2) Numpy (>=1.0.1): see http://www.scipy.org/
-
-
-How to install
---------------
-
-There are several ways to install MolMod, which are all documented
-at the homepage: http://molmod.ugent.be/code/
-
-
-How to get technical support
-----------------------------
-
-Technical support is availlable for all registered CMM Code users. All
-information can be found at: http://molmod.ugent.be/code/
-
-
-Become a registered user
-------------------------
-
-There are 5 good reasons to become a registered user:
-
- 1.  Through your registration, we can prove that people are really using
- softwarde developed at the Center for Molecular Modeling for their 
- scientific work. This facilitates the fund-raising process and guarantees 
- the continuity of these projects.
-
- 2. It blocks spammers from unauthorized access to all online CMM Code
- services.
- 
- 3. A registered user can subscribe to the CMM Code mailing lists.
- 
- 4. A registered user is allowed to edit the wiki pages to increase the
- visibility of his/her related work.
- 
- 5. Registered users are allowed to submit bugs. If time permits, we will fix
- your problems in the next bug-fix release of MolMod.
-
-
-If you think this software is useful, consider to register as a CMM Code user:
-https://molmod.ugent.be/code/registration/
-
-
-Contact information
--------------------
-
-Supervisors:
-
-Prof. Dr. Michel Waroquier and Prof. Dr. Ir. Veronique Van Speybroeck
-
-Center for Molecular Modeling
-Ghent University
-Proeftuinstraat 86, B-9000 GENT - BELGIUM
-Tel: +32 9 264 65 59
-Fax: +32 9 264 65 60
-Email: Michel.Waroquier@UGent.be
-Email: Veronique.VanSpeybroeck@UGent.be 
-
-Author:
-
-Toon Verstraelen <Toon.Verstraelen@UGent.be>
-Center for Molecular Modeling
-Ghent University
-Proeftuinstraat 86
-9000 Gent, Belgium
-Tel: +32 (0)9 264 65 56
-
