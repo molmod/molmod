@@ -2,8 +2,8 @@ Installation instructions
 =========================
 
 
-Preparing your mind
--------------------
+Disclaimer
+----------
 
 MolMod is developed and tested in modern Linux environments. The
 installation and usage will therefore be relatively easy on Linux. If you want
@@ -11,8 +11,9 @@ to use MolMod on other operating systems such as Windows or OSX, you should
 have a minimal computer geek status to get it working. We are always interested
 in hearing from your installation adventures.
 
-Preparing your Linux system
----------------------------
+
+External dependencies
+---------------------
 
 Some software packages should be installed before MolMod can be installed or
 used. It is recommended to use the software package management of your Linux
@@ -78,17 +79,19 @@ loaded in new terminal sessions, so close your terminal and open a new one
 before proceeding.**
 
 
-Installing the bleeding edge version of MolMod
-----------------------------------------------
+Installing the latest version of MolMod
+---------------------------------------
 
 The following series of commands will download the latest versions of the
 MolMod package, and will then install it into your home directory. Make sure you
 execute these commands in some sort of temporary directory. ::
 
+    cd ~/build/
     git clone git://molmod.ugent.be/git/molmod.git
     (cd molmod; ./setup.py install --home=~)
 
 You are now ready to start using MolMod!
+
 
 A few quick checks
 ------------------
@@ -107,21 +110,21 @@ The MolMod modules should be accessible from any Python session. This can be
 checked by starting Python interactively and loading the modules manually. There
 should be no errors when importing the modules::
 
-    toon@poony ~> python
+    $ python
     Python 2.6.5 (r265:79063, Apr 16 2010, 13:57:41)
     [GCC 4.4.3] on linux2
     Type "help", "copyright", "credits" or "license" for more information.
     >>> import molmod
     >>> quit()
-    toon@poony ~>
 
 
-Upgrading to the bleeding edge version of MolMod
-------------------------------------------------
+Upgrading to the latest version of MolMod
+-----------------------------------------
 
 In case you want to upgrade MolMod to the latests development version after a
 previous install, then execute the following commands (in the same directory)::
 
+    cd ~/build/
     (cd molmod; git pull; rm -r ~/lib*/python/molmod*; ./setup.py install --home=~)
 
 
@@ -156,6 +159,7 @@ the command line by the administrator.
 Once these dependecies are installed, go to the temporary directory where the
 MolMod source code was downloaded and execute the following commands::
 
+    cd ~/build/
     cd molmod
     ./cleanfiles.sh
     ./setup.py build_ext -i
