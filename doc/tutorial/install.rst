@@ -1,9 +1,9 @@
 Installation instructions
-=========================
+#########################
 
 
 Disclaimer
-----------
+==========
 
 MolMod is developed and tested in modern Linux environments. The
 installation and usage will therefore be relatively easy on Linux. If you want
@@ -13,7 +13,7 @@ in hearing from your installation adventures.
 
 
 External dependencies
----------------------
+=====================
 
 Some software packages should be installed before MolMod can be installed or
 used. It is recommended to use the software package management of your Linux
@@ -80,7 +80,7 @@ before proceeding.**
 
 
 Installing the latest version of MolMod
----------------------------------------
+=======================================
 
 The following series of commands will download the latest versions of the
 MolMod package, and will then install it into your home directory. Make sure you
@@ -94,7 +94,7 @@ You are now ready to start using MolMod!
 
 
 A few quick checks
-------------------
+==================
 
 It may be interesting to double check your installation before proceeding,
 unless you `feel lucky`. The MolMod files are installed in the following
@@ -119,7 +119,7 @@ should be no errors when importing the modules::
 
 
 Upgrading to the latest version of MolMod
------------------------------------------
+=========================================
 
 In case you want to upgrade MolMod to the latests development version after a
 previous install, then execute the following commands (in the same directory)::
@@ -129,7 +129,7 @@ previous install, then execute the following commands (in the same directory)::
 
 
 Testing your installation
--------------------------
+=========================
 
 For the development and testing one needs to install one additional package:
 
@@ -142,7 +142,7 @@ the command line by the administrator.
 
     sudo apt-get install python-nose
 
-* Debian 5 does not have Python 2.6. ::
+* Debian 5::
 
     su -
     apt-get install python-nose
@@ -152,12 +152,12 @@ the command line by the administrator.
 
     sudo yum install python-nose
 
-* Suse 11.2. ::
+* Suse 11.2::
 
     sudo zypper install python-nose
 
-Once these dependecies are installed, go to the temporary directory where the
-MolMod source code was downloaded and execute the following commands::
+Once these dependecies are installed, execute the following commands to run the
+tests::
 
     cd ~/build/
     cd molmod
