@@ -20,8 +20,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-# --
-# --
 #--
 
 
@@ -31,15 +29,16 @@ import os, sys
 def strip_header(lines, closing):
     # search for the header closing line, e.g. '#--\n'
     counter = 0
-    found = False
+    found = 0
     for line in lines:
         counter += 1
         if line == closing:
-            found = True
+            found = 1
+        elif found == 1:
             break
     if found:
-        del lines[:counter]
-        # If the header closing is not found, we assume it is not present.
+        del lines[:counter-1]
+        # If the header closing is not found, no headers are removed
     # add a header closing line
     lines.insert(0, closing)
 
@@ -49,7 +48,6 @@ def fix_python(lines, header_lines):
     do_shebang = lines[0].startswith('#!')
     # remove the current header
     strip_header(lines, '#--\n')
-    strip_header(lines, '# --\n')
     # add new header (insert must be in reverse order)
     for hline in header_lines[::-1]:
         lines.insert(0, ('# '+hline).strip() + '\n')
@@ -71,6 +69,18 @@ def fix_c(lines, header_lines):
         lines.insert(0, ('// '+hline).strip() + '\n')
 
 
+def fix_f77(lines, header_lines):
+    # check for an exception line
+    for line in lines:
+        if 'no_update_headers' in line:
+            return
+    # remove the current header
+    strip_header(lines, '!--\n')
+    # add new header (insert must be in reverse order)
+    for hline in header_lines[::-1]:
+        lines.insert(0, ('! '+hline).strip() + '\n')
+
+
 def main(fns):
     fixers = [
         ('.py', fix_python),
@@ -79,6 +89,7 @@ def main(fns):
         ('.c', fix_c),
         ('.cpp', fix_c),
         ('.h', fix_c),
+        ('.pyf', fix_f77),
     ]
 
     f = open('HEADER')

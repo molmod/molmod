@@ -19,9 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-# --
-# --
-# --
+#--
 """Collection of routines to handle computational chemistry file formats
 
    It is not the intention to duplicate the work done in the OpenBabel project.

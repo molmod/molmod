@@ -19,9 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-# --
-# --
-# --
+#--
 """Reference implementations of a few conventional nonbonding force fields
 
    The main purpose of this implementation is reliability, not speed. These

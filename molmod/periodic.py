@@ -19,9 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-# --
-# --
-# --
+#--
 """Database containing the periodic table
 
    An object of the ``PeriodicData`` class centralizes information about the

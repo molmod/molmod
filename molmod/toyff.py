@@ -19,9 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-# --
-# --
-# --
+#--
 """Tools to guess initial geometries quickly based on the molecular graph
 
    The ToyFF is not meant for accurate geometries, but rather to generate

@@ -19,9 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-# --
-# --
-# --
+#--
 """Evaluation of internal coordinates with first and second order derivatives
 
 This implementation is pure python and sacrifices computational efficiency on

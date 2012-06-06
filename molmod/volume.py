@@ -19,9 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-# --
-# --
-# --
+#--
 """Computation of molecular volumes with monte carlo methods
 
 This approach is slow, but robust and simple to implement.
