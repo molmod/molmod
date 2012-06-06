@@ -14,8 +14,8 @@ If you have questions about the MolMod library, post your questions on the
 `MolMod mailing list <https://groups.google.com/forum/#!forum/molmodlib>`_
 
 If you use the MolMod library for your research or for the preparation of
-publications, please cite MolMod as follows: "T. Verstraelen, Molmod software
-library, `http://molmod.ugent.be/software <http://molmod.ugent.be/software>`_"
+publications, please cite MolMod as follows: "T. Verstraelen, Molmod Software
+Library, `http://molmod.ugent.be/software <http://molmod.ugent.be/software>`_"
 
 
 Tutorial
@@ -25,6 +25,7 @@ Tutorial
    :maxdepth: 1
 
    tutorial/install.rst
+   tutorial/cite.rst
    tutorial/examples.rst
    tutorial/applications.rst
    tutorial/development.rst

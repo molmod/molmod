@@ -27,11 +27,9 @@ The following software must be installed for MolMod:
   gfortran and gcc: http://gcc.gnu.org/
 * Git: http://git-scm.com/
 
-Most Linux distributions can install this software with just a single command
-on the command line by the administrator. They are listed below for several
-popular Linux distributions:
+Most Linux distributions can install this software with just a single command:
 
-* Ubuntu 10.4::
+* Ubuntu 12.4::
 
     sudo apt-get install python python-dev python-numpy gfortran gcc git-core
 
@@ -45,7 +43,6 @@ popular Linux distributions:
 * Fedora 17::
 
     sudo yum install python-devel numpy numpy-f2py gcc-gfortran gcc git
-    exit
 
 * Suse 11.2::
 
@@ -135,33 +132,32 @@ Testing your installation
 For the development and testing one needs to install one additional package:
 
 * Nosetests >= 0.11: http://somethingaboutorange.com/mrl/projects/nose/0.11.2/
+* Sphinx >= 1.0: http://sphinx.pocoo.org/
 
-Most Linux distributions can install this software with just a single command on
-the command line by the administrator.
+Most Linux distributions can install this software with just a single terminal command:
 
-* Ubuntu 10.4::
+* Ubuntu 12.4::
 
-    sudo apt-get install python-nose
+    sudo apt-get install python-nose python-sphinx
 
 * Debian 5::
 
     su -
-    apt-get install python-nose
+    apt-get install python-nose python-sphinx
     exit
 
 * Fedora 17::
 
-    sudo yum install python-nose
+    sudo yum install python-nose sphinx
 
 * Suse 11.2::
 
-    sudo zypper install python-nose
+    sudo zypper install python-nose sphinx
 
 Once these dependecies are installed, execute the following commands to run the
 tests::
 
-    cd ~/build/
-    cd molmod
+    cd ~/build/molmod
     ./cleanfiles.sh
     ./setup.py build_ext -i
     nosetests -v
