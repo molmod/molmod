@@ -86,6 +86,7 @@ The following series of commands will download the latest versions of the
 MolMod package, and will then install it into your home directory. Make sure you
 execute these commands in some sort of temporary directory. ::
 
+    mkdir ~/build/
     cd ~/build/
     git clone git://molmod.ugent.be/git/molmod.git
     (cd molmod; ./setup.py install --home=~)
