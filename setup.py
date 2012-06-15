@@ -73,8 +73,8 @@ setup(
     ],
     ext_modules=[
         Extension("molmod.ext", ["molmod/ext.pyf", "molmod/common.c",
-            "molmod/ff.c", "molmod/graphs.c", "molmod/similarity.c", "molmod/molecules.c",
-            "molmod/unit_cells.c", "molmod/volume.c",
+            "molmod/ff.c", "molmod/graphs.c", "molmod/similarity.c",
+            "molmod/molecules.c", "molmod/unit_cells.c",
         ]),
     ],
     classifiers=[
