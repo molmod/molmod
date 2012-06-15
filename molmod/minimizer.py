@@ -854,16 +854,18 @@ class ConvergenceCondition(object):
                 status += "%s% 9.3e  %s" % (color, measure, reset)
             return stop, status
 
+        def safe_divide(a, b):
+            if b == 0.0:
+                return 0.0
+            else:
+                return a/b
+
         stop, status = check_threshold(np.sqrt((step**2).mean()), self.step_rms, stop, status)
         stop, status = check_threshold(abs(step).max(), self.step_max, stop, status)
         stop, status = check_threshold(np.sqrt((grad**2).mean()), self.grad_rms, stop, status)
         stop, status = check_threshold(abs(grad).max(), self.grad_max, stop, status)
-        if f != 0.0:
-            value = np.sqrt((grad**2).mean())/f
-        else:
-            value = 0.0
-        stop, status = check_threshold(value, self.rel_grad_rms, stop, status)
-        stop, status = check_threshold(abs(grad).max()/f, self.rel_grad_max, stop, status)
+        stop, status = check_threshold(safe_divide(np.sqrt((grad**2).mean()), f), self.rel_grad_rms, stop, status)
+        stop, status = check_threshold(safe_divide(abs(grad).max(), f), self.rel_grad_max, stop, status)
 
         return stop, status
 
