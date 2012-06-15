@@ -96,11 +96,7 @@ A few quick checks
 
 It may be interesting to double check your installation before proceeding,
 unless you `feel lucky`. The MolMod files are installed in the following
-directories:
-
-* Scripts: ``~/bin``
-* Modules: ``~/lib/python`` or ``~/lib64/python``
-* Data: ``~/share``
+directory: ``~/lib/python`` or ``~/lib64/python``.
 
 There should be at least some files present in these directories.
 
@@ -108,6 +104,7 @@ The MolMod modules should be accessible from any Python session. This can be
 checked by starting Python interactively and loading the modules manually. There
 should be no errors when importing the modules::
 
+    $ cd
     $ python
     Python 2.6.5 (r265:79063, Apr 16 2010, 13:57:41)
     [GCC 4.4.3] on linux2
@@ -123,7 +120,7 @@ In case you want to upgrade MolMod to the latests development version after a
 previous install, then execute the following commands (in the same directory)::
 
     cd ~/build/
-    (cd molmod; git pull; rm -r ~/lib*/python/molmod*; ./setup.py install --home=~)
+    (cd molmod; ./cleanfiles.sh; git pull; rm -r ~/lib*/python/molmod*; ./setup.py install --home=~)
 
 
 Testing your installation
