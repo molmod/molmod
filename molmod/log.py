@@ -240,7 +240,6 @@ class ScreenLog(object):
         if not self.do_warning:
             raise RuntimeError('The runlevel should be at least warning when logging.')
         if not self._active:
-            self.timer._start('Total')
             prefix = self.prefix
             self.print_header()
             self.prefix = prefix
@@ -289,7 +288,7 @@ class ScreenLog(object):
             edge = ''
         elif len(kwargs) == 1:
             if 'edge' not in kwargs:
-                raise TypeError('Only one keyword argument is allowd, that is edge')
+                raise TypeError('Only one keyword argument is allowed, that is edge')
             edge = kwargs['edge']
         else:
             raise TypeError('Too many keyword arguments. Should be at most one.')
@@ -337,7 +336,7 @@ class ScreenLog(object):
     def print_footer(self):
         if self.do_warning and self._active:
             self._print_basic_info()
-            self.timer._stop()
+            self.timer._stop('Total')
             self.timer.report(self)
             print >> self._file, self.foot_banner
 
@@ -369,7 +368,8 @@ class Timer(object):
 
 
 class SubTimer(object):
-    def __init__(self):
+    def __init__(self, label):
+        self.label = label
         self.total = Timer()
         self.own = Timer()
 
@@ -391,7 +391,8 @@ class SubTimer(object):
 class TimerGroup(object):
     def __init__(self):
         self.parts = {}
-        self.stack = []
+        self._stack = []
+        self._start('Total')
 
     def reset(self):
         for timer in self.parts.itervalues():
@@ -404,26 +405,27 @@ class TimerGroup(object):
         try:
             yield
         finally:
-            self._stop()
+            self._stop(label)
 
     def _start(self, label):
         # get the right timer object
         timer = self.parts.get(label)
         if timer is None:
-            timer = SubTimer()
+            timer = SubTimer(label)
             self.parts[label] = timer
         # start timing
         timer.start()
-        if len(self.stack) > 0:
-            self.stack[-1].start_sub()
+        if len(self._stack) > 0:
+            self._stack[-1].start_sub()
         # put it on the stack
-        self.stack.append(timer)
+        self._stack.append(timer)
 
-    def _stop(self):
-        timer = self.stack.pop(-1)
+    def _stop(self, label):
+        timer = self._stack.pop(-1)
+        assert timer.label == label
         timer.stop()
-        if len(self.stack) > 0:
-            self.stack[-1].stop_sub()
+        if len(self._stack) > 0:
+            self._stack[-1].stop_sub()
 
     def get_max_own_cpu(self):
         result = None
