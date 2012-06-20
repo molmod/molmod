@@ -85,7 +85,7 @@ execute these commands in some sort of temporary directory. ::
 
     mkdir ~/build/
     cd ~/build/
-    git clone git://molmod.ugent.be/git/molmod.git
+    git clone git://github.com/molmod/molmod.git
     (cd molmod; ./setup.py install --home=~)
 
 You are now ready to start using MolMod!
@@ -96,9 +96,8 @@ A few quick checks
 
 It may be interesting to double check your installation before proceeding,
 unless you `feel lucky`. The MolMod files are installed in the following
-directory: ``~/lib/python`` or ``~/lib64/python``.
-
-There should be at least some files present in these directories.
+directory: ``~/lib/python`` or ``~/lib64/python``. There should be at least some
+files present in these directories.
 
 The MolMod modules should be accessible from any Python session. This can be
 checked by starting Python interactively and loading the modules manually. There
