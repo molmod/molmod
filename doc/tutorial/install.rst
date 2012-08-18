@@ -5,7 +5,7 @@ Installation instructions
 Disclaimer
 ==========
 
-MolMod is developed and tested in modern Linux environments. The
+MolMod is developed and tested on modern Linux environments. The
 installation and usage will therefore be relatively easy on Linux. If you want
 to use MolMod on other operating systems such as Windows or OSX, you should
 have a minimal computer geek status to get it working. We are always interested
@@ -101,7 +101,9 @@ files present in these directories.
 
 The MolMod modules should be accessible from any Python session. This can be
 checked by starting Python interactively and loading the modules manually. There
-should be no errors when importing the modules::
+should be no errors when importing the modules. Just, make sure that you change
+your current directory to something else than the MolMod source tree before
+trying this test, e.g. as follows::
 
     $ cd
     $ python
