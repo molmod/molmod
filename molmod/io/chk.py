@@ -73,24 +73,25 @@ def load_chk(filename):
                 raise IOError('Unsupported kind: %s' % kind)
             shape = tuple(int(i) for i in value.split(','))
             array = np.zeros(shape, dtype)
-            work = array.ravel()
-            counter = 0
-            while True:
-                short = f.readline().split()
-                if len(short) == 0:
-                    raise IOError('Insufficient data')
-                for s in short:
-                    if dtype is bool and s.lower() in ['True', '1', 'Yes']:
-                        work[counter] = True
-                    elif dtype == np.dtype('a22'):
-                        work[counter] = s
-                    else:
-                        work[counter] = dtype(s)
-                    counter += 1
+            if array.size > 0:
+                work = array.ravel()
+                counter = 0
+                while True:
+                    short = f.readline().split()
+                    if len(short) == 0:
+                        raise IOError('Insufficient data')
+                    for s in short:
+                        if dtype is bool and s.lower() in ['True', '1', 'Yes']:
+                            work[counter] = True
+                        elif dtype == np.dtype('a22'):
+                            work[counter] = s
+                        else:
+                            work[counter] = dtype(s)
+                        counter += 1
+                        if counter == array.size:
+                            break
                     if counter == array.size:
                         break
-                if counter == array.size:
-                    break
             result[key] = array
         elif kind == 'none':
             result[key] = None
