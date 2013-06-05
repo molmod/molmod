@@ -100,4 +100,7 @@ I Sn 53 50 2.7 NA NA NA NA NA
 I Pb 53 82 2.79 NA NA NA NA NA
          
 # These are derived from various QM calculations at the CMM. Consider these values as approximative. Do not hesitate to provide us with reliable reference data.         
-O Al 8 13 1.725 NA NA NA NA NA
+O Al 8 13 1.950 NA NA NA NA NA
+H Al 1 13 1.100 NA NA NA NA NA
+Al Al 13 13 2.600 NA NA NA NA NA
+C Al 6 13 2.200 NA NA NA NA NA
