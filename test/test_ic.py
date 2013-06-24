@@ -198,6 +198,15 @@ def test_diff_opbend_cos():
 def test_diff_opbend_angle():
     check_diff_ic(ic.opbend_angle, iter_diheds)
 
+def test_diff_opbend_mcos():
+    check_diff_ic(ic.opbend_mcos, iter_diheds)
+
+def test_diff_opbend_mangle():
+    check_diff_ic(ic.opbend_mangle, iter_diheds)
+
+def test_diff_opbend_dist():
+    check_diff_ic(ic.opbend_dist, iter_diheds)
+
 
 def test_dihedral_ethene():
     mol = Molecule.from_file("input/ethene.xyz")
@@ -222,6 +231,9 @@ def test_opbend_ethene():
     c = mol.coordinates.copy()
     assert abs(ic.opbend_cos([c[0], c[5], c[4], c[3]])[0] - 1.0) < 1e-5
     assert abs(ic.opbend_angle([c[0], c[5], c[4], c[3]])[0]) < 1e-5
+    assert abs(ic.opbend_mcos([c[0], c[5], c[4], c[3]])[0] - 1.0) < 1e-5
+    assert abs(ic.opbend_mangle([c[0], c[5], c[4], c[3]])[0]) < 1e-5
+    assert abs(ic.opbend_dist([c[0], c[5], c[4], c[3]])[0]) < 1e-5
     for i in xrange(1000):
         angle = np.random.uniform(-np.pi/2, np.pi/2)
         radius = np.random.uniform(0, 5*angstrom)
