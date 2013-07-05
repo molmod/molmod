@@ -69,7 +69,7 @@ class MoleculeTestCase(BaseTestCase):
         try:
             mol.coordinates[0,1] = 5.0
             self.fail("Should have raised an error")
-        except ValueError:
+        except (ValueError, RuntimeError), e:
             pass
         self.assert_(isinstance(mol.coordinates[0,0], float))
 
