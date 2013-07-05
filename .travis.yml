@@ -1,0 +1,11 @@
+language: python
+python:
+ - "2.7"
+virtualenv:
+  system_site_packages: true
+install:
+ - "sudo apt-get --no-install-recommends install python-numpy python-scipy python-matplotlib gfortran"
+ - "mkdir -p ~/.matplotlib/; echo 'backend : Agg' > ~/.matplotlib/matplotlibrc"
+ - "python setup.py install"
+script:
+ - "cd; nosetests -v molmod"
