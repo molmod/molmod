@@ -23,10 +23,11 @@
 #--
 
 
-import glob, os
-from numpy.distutils.core import setup
+import os
+from glob import glob
+from distutils.core import setup
 from numpy.distutils.extension import Extension
-from numpy.distutils.command.install_data import install_data
+from distutils.command.install_data import install_data
 
 
 class MyInstallData(install_data):
@@ -61,15 +62,19 @@ setup(
     cmdclass={'install_data': MyInstallData},
     package_dir = {'molmod': 'molmod'},
     packages=[
-        'molmod',
-        'molmod.io',
+        'molmod', 'molmod.test',
+        'molmod.io', 'molmod.io.test',
     ],
     data_files=[
         ('share/molmod', [
-            "share/periodic.csv", "share/bonds.csv",
-            "share/mass.mas03", "share/nubtab03.asc",
-            "share/toyff_angles.txt"
+            "data/periodic.csv", "data/bonds.csv",
+            "data/mass.mas03", "data/nubtab03.asc",
+            "data/toyff_angles.txt"
         ]),
+        ('share/molmod/test', glob('data/test/*')),
+    ] + [
+        ('share/molmod/examples/%s' % os.path.basename(dn), glob('%s/*.*' % dn))
+        for dn in glob('data/examples/???_*')
     ],
     ext_modules=[
         Extension("molmod.ext", ["molmod/ext.pyf", "molmod/common.c",

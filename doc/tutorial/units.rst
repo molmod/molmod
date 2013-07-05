@@ -58,9 +58,9 @@ Energies
 This example shows, given a reactant and product energy, how one computes the
 reaction energy and prints out the result in kJ/mol.
 
-File: ``examples/000_units/a_reaction.py``
+File: ``data/examples/000_units/a_reaction.py``
 
-.. literalinclude:: ../../examples/000_units/a_reaction.py
+.. literalinclude:: ../../data/examples/000_units/a_reaction.py
 
 This example is very basic, but it demonstrates some general requirements for
 any script that uses the MolMod package:
@@ -93,9 +93,9 @@ Given the mass and force constant of a harmonic spring the following script
 computes the spectroscopic wavenumber of the oscillation. The mass and the force
 constant are an approximate model for a C-H bond.
 
-File: ``examples/000_units/b_chbond.py``
+File: ``data/examples/000_units/b_chbond.py``
 
-.. literalinclude:: ../../examples/000_units/b_chbond.py
+.. literalinclude:: ../../data/examples/000_units/b_chbond.py
 
 
 Rotational partition function of Hydrogen
@@ -107,9 +107,9 @@ temperature of 300 K. Approximate the Hydrogen molecule as a rigid rotor". The
 parameters are included in the source code below. The constant ``boltzmann`` is
 defined in :mod:`molmod.constants`.
 
-File: ``examples/000_units/c_h2rot.py``
+File: ``data/examples/000_units/c_h2rot.py``
 
-.. literalinclude:: ../../examples/000_units/c_h2rot.py
+.. literalinclude:: ../../data/examples/000_units/c_h2rot.py
 
 
 Problems

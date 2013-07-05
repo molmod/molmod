@@ -26,7 +26,7 @@
    instance can be used to retrieve shared files::
 
    >>> from molmod import context
-   >>> context.get_share_filename("periodic.csv")
+   >>> context.get_fn("periodic.csv")
 """
 
 
@@ -50,22 +50,22 @@ class Context(object):
             f = file(fn_datadir)
             datadir = f.readline().strip()
             f.close()
-            self.share_dir = os.path.join(datadir, "share", "molmod")
+            self.data_dir = os.path.join(datadir, "share", "molmod")
         else:
             # When running from the build directory for the tests.
-            self.share_dir = os.path.join(os.path.dirname(__file__), "../share")
-        if not os.path.isdir(self.share_dir):
-            raise RuntimeError("Share dir '%s' does not exist." % self.share_dir)
+            self.data_dir = os.path.join(os.path.dirname(__file__), "../data")
+        if not os.path.isdir(self.data_dir):
+            raise RuntimeError("Data dir '%s' does not exist." % self.data_dir)
 
-    def get_share_filename(self, filename):
+    def get_fn(self, filename):
         """Retrieve the full path for a given filename in the share folder
 
            Argument:
             | filename  --  A file from the share directory (without the
                             ``share/`` prefix)
         """
-        result = os.path.join(self.share_dir, filename)
-        if not os.path.isfile(result):
+        result = os.path.join(self.data_dir, filename)
+        if not os.path.exists(result):
             raise ValueError("Data file '%s' not found." % result)
         return result
 

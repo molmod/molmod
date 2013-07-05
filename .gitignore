@@ -1,0 +1,16 @@
+# Never check in binary files!
+*.bz2
+*.gz
+
+# Ignore (in-place) build results
+molmod/extmodule.c
+*.so
+*.pyc
+build
+MANIFEST
+doc/_build
+doctrees
+
+# Output of the examples
+data/examples/001_molecules/ibuprofen.xyz
+data/examples/001_molecules/ibuprofen_com.xyz

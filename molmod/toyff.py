@@ -293,7 +293,7 @@ class SpecialAngles(object):
     """A database with precomputed valence angles from small molecules"""
     def __init__(self):
         self._angle_dict = {}
-        f = open(context.get_share_filename('toyff_angles.txt'))
+        f = open(context.get_fn('toyff_angles.txt'))
         for line in f:
             if line[0] != '#':
                 key = tuple(int(word) for word in line[0:line.index(':')].split(","))

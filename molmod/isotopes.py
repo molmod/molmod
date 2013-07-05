@@ -104,7 +104,7 @@ class Ame2003(object):
         f.close()
 
 
-ame2003 = Ame2003(context.get_share_filename("mass.mas03"))
+ame2003 = Ame2003(context.get_fn("mass.mas03"))
 
 
 class NubTab03(object):
@@ -150,4 +150,4 @@ class NubTab03(object):
         f.close()
 
 
-nubtab03 = NubTab03(context.get_share_filename("nubtab03.asc"))
+nubtab03 = NubTab03(context.get_fn("nubtab03.asc"))

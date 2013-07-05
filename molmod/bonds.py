@@ -192,4 +192,4 @@ class BondData(object):
         return dataset.get(frozenset([n1, n2]))
 
 
-bonds = BondData(context.get_share_filename("bonds.csv"))
+bonds = BondData(context.get_fn("bonds.csv"))
