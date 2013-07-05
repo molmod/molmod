@@ -1,7 +1,2 @@
 include COPYING
 include README
-include debian/*
-include share/*.csv
-include test/input/*
-include test/*.py
-include test/io/*.py
