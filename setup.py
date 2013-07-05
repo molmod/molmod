@@ -25,7 +25,7 @@
 
 import os
 from glob import glob
-from distutils.core import setup
+from numpy.distutils.core import setup
 from numpy.distutils.extension import Extension
 from distutils.command.install_data import install_data
 
@@ -53,8 +53,8 @@ class MyInstallData(install_data):
 
 
 setup(
-    name='MolMod',
-    version='0.004',
+    name='molmod',
+    version='1.0',
     description='MolMod is a collection of molecular modelling tools for python.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',

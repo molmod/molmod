@@ -46,6 +46,9 @@
 """
 
 
+__version__ = '1.0'
+
+
 import numpy as np
 np.seterr(divide='raise', invalid='raise')
 
