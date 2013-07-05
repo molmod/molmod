@@ -18,8 +18,8 @@ publications, please cite MolMod as follows: "T. Verstraelen, Molmod Software
 Library, `http://molmod.ugent.be/software <http://molmod.ugent.be/software>`_"
 
 
-Tutorial
---------
+Tutorials
+---------
 
 .. toctree::
    :maxdepth: 1
@@ -28,7 +28,17 @@ Tutorial
    tutorial/cite.rst
    tutorial/examples.rst
    tutorial/applications.rst
-   tutorial/development.rst
+
+
+Development
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   development/authors.rst
+   development/releases.rst
+   development/development.rst
 
 
 Library reference
