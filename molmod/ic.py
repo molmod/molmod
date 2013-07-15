@@ -379,7 +379,7 @@ def dihed_angle(rs, deriv=0):
 
 
 def opbend_dist(rs, deriv=0):
-    """Compute the out-of-plane distance, i.e. the distance between atom rs[0] and plane rs[1],rs[2],rs[3]
+    """Compute the out-of-plane distance, i.e. the distance between atom rs[3] and plane rs[0],rs[1],rs[2]
 
        Arguments:
         | ``rs``  --  four numpy array with three elements
