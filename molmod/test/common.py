@@ -22,7 +22,7 @@
 #--
 
 
-import unittest, numpy, os, tempfile, shutil
+import unittest, tempfile, shutil
 from contextlib import contextmanager
 
 
@@ -66,7 +66,7 @@ class BaseTestCase(unittest.TestCase):
 
 @contextmanager
 def tmpdir():
-    dn = tempfile.mkdtemp('horton.io.test.test_chk.test_consistency_file')
+    dn = tempfile.mkdtemp('molmod')
     try:
         yield dn
     finally:
