@@ -27,27 +27,26 @@ from glob import glob
 import os, sys
 
 def strip_header(lines, closing):
-    # search for the header closing line, e.g. '#--\n'
+    # search for the header closing line, e.g. '#--'
     counter = 0
     found = 0
     for line in lines:
         counter += 1
-        if line == closing:
+        if line == closing+'\n':
             found = 1
-        elif found == 1:
             break
     if found:
-        del lines[:counter-1]
+        del lines[:counter]
         # If the header closing is not found, no headers are removed
     # add a header closing line
-    lines.insert(0, closing)
+    lines.insert(0, closing+'\n')
 
 
 def fix_python(lines, header_lines):
     # check if a shebang is present
     do_shebang = lines[0].startswith('#!')
     # remove the current header
-    strip_header(lines, '#--\n')
+    strip_header(lines, '#--')
     # add new header (insert must be in reverse order)
     for hline in header_lines[::-1]:
         lines.insert(0, ('# '+hline).strip() + '\n')
@@ -63,7 +62,7 @@ def fix_c(lines, header_lines):
         if 'no_update_headers' in line:
             return
     # remove the current header
-    strip_header(lines, '//--\n')
+    strip_header(lines, '//--')
     # add new header (insert must be in reverse order)
     for hline in header_lines[::-1]:
         lines.insert(0, ('// '+hline).strip() + '\n')
@@ -75,7 +74,7 @@ def fix_f77(lines, header_lines):
         if 'no_update_headers' in line:
             return
     # remove the current header
-    strip_header(lines, '!--\n')
+    strip_header(lines, '!--')
     # add new header (insert must be in reverse order)
     for hline in header_lines[::-1]:
         lines.insert(0, ('! '+hline).strip() + '\n')
