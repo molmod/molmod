@@ -100,6 +100,8 @@ class ScreenLog(object):
         Unit('acceleration', angstrom/femtosecond**2, 'A/fs**2', '%10.5f'),
         Unit('angle', deg, 'deg', '%10.5f'),
         Unit('c6', 1, 'E_h*a_0**6', '%10.5f'),
+        Unit('c8', 1, 'E_h*a_0**6', '%10.5f'),
+        Unit('c12', 1, 'E_h*a_0**12', '%10.5f'),
         Unit('diffconst', angstrom**2/picosecond, 'A**2/ps', '%10.5f'),
         Unit('density', gram/centimeter**3, 'g/cm^3', '%10.3f'),
     )
@@ -119,6 +121,8 @@ class ScreenLog(object):
         Unit('acceleration', angstrom/femtosecond**2, 'A/fs**2', '%10.5f'),
         Unit('angle', deg, 'deg', '%10.5f'),
         Unit('c6', 1, 'E_h*a_0**6', '%10.5f'),
+        Unit('c8', 1, 'E_h*a_0**6', '%10.5f'),
+        Unit('c12', 1, 'E_h*a_0**12', '%10.5f'),
         Unit('diffconst', angstrom**2/femtosecond, 'A**2/fs', '%10.5f'),
         Unit('density', gram/centimeter**3, 'g/cm^3', '%10.3f'),
     )
@@ -138,6 +142,8 @@ class ScreenLog(object):
         Unit('acceleration', angstrom/femtosecond**2, 'A/fs**2', '%10.5f'),
         Unit('angle', deg, 'deg', '%10.5f'),
         Unit('c6', 1, 'E_h*a_0**6', '%10.5f'),
+        Unit('c8', 1, 'E_h*a_0**6', '%10.5f'),
+        Unit('c12', 1, 'E_h*a_0**12', '%10.5f'),
         Unit('diffconst', angstrom**2/femtosecond, 'A**2/fs', '%10.5f'),
         Unit('density', gram/centimeter**3, 'g/cm^3', '%10.3f'),
     )
@@ -157,6 +163,8 @@ class ScreenLog(object):
         Unit('acceleration', angstrom/picosecond**2, 'A/ps**2', '%10.5f'),
         Unit('angle', deg, 'deg', '%10.5f'),
         Unit('c6', 1, 'E_h*a_0**6', '%10.5f'),
+        Unit('c8', 1, 'E_h*a_0**6', '%10.5f'),
+        Unit('c12', 1, 'E_h*a_0**12', '%10.5f'),
         Unit('diffconst', nanometer**2/picosecond, 'nm**2/ps', '%10.2f'),
         Unit('density', gram/centimeter**3, 'g/cm^3', '%10.3f'),
     )
@@ -176,6 +184,8 @@ class ScreenLog(object):
         Unit('acceleration', 1, 'a_0/aut**2', '%10.5f'),
         Unit('angle', 1, 'rad', '%10.7f'),
         Unit('c6', 1, 'E_h*a_0**6', '%10.5f'),
+        Unit('c8', 1, 'E_h*a_0**6', '%10.5f'),
+        Unit('c12', 1, 'E_h*a_0**12', '%10.5f'),
         Unit('diffconst', 1, 'a_0**2/aut', '%10.2f'),
         Unit('density', 1, 'aum/a_0^3', '%10.3f'),
     )
@@ -200,8 +210,7 @@ class ScreenLog(object):
             _file = sys.stdout
         else:
             _file = f
-        # Wrap sys.stdout into a StreamWriter to allow writing unicode.
-        self._file = codecs.getwriter(locale.getpreferredencoding())(_file)
+        self.set_file(_file)
 
     do_warning = property(lambda self: self._level >= self.warning)
     do_low = property(lambda self: self._level >= self.low)
@@ -229,6 +238,10 @@ class ScreenLog(object):
     brown =     property(functools.partial(_pass_color_code, code="\033[33;06m"))
     red =       property(functools.partial(_pass_color_code, code="\033[31;01m"))
 
+    def set_file(self, f):
+        # Wrap sys.stdout into a StreamWriter to allow writing unicode.
+        self._file = codecs.getwriter(locale.getpreferredencoding())(f)
+        self.add_newline = False
 
     def set_level(self, level):
         if level < self.silent or level > self.debug:
