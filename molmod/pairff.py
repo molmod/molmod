@@ -185,7 +185,7 @@ class CoulombFF(PairFF):
              scaling  --  symmetric NxN array with pairwise scaling factors.
                           When an element is set to zero, it will be excluded.
 
-           Optional arguments:
+           Optio1nal arguments:
              charges  --  the atomic partial charges
              dipoles  --  atomic dipole moments
              coordinates  --  the initial Cartesian coordinates of the system,
