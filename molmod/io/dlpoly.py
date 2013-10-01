@@ -73,9 +73,10 @@ class DLPolyHistoryReader(SlicedReader):
         self.time_unit = time_unit
         self.mass_unit = mass_unit
         if restart is not None:
-            self.keytrj, self.imcon, self.num_atoms = (restart[0],restart[1],restart[2])
-            # TODO
-            # verify consistency? or do this in yaff
+            self.header = ''
+            if len(restart) != 3:
+                raise TypeError('The restart list must contain three integers.')
+            self.keytrj, self.imcon, self.num_atoms = restart
         else:
             try:
                 self.header = self._f.next()[:-1]
