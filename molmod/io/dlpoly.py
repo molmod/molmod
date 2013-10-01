@@ -44,7 +44,7 @@ class DLPolyHistoryReader(SlicedReader):
     """
     def __init__(self, f, sub=slice(None), pos_unit=angstrom,
         vel_unit=angstrom/picosecond, frc_unit=amu*angstrom/picosecond**2,
-        time_unit=picosecond, mass_unit=amu
+        time_unit=picosecond, mass_unit=amu, restart=None,
     ):
         """
            Arguments:
@@ -56,6 +56,13 @@ class DLPolyHistoryReader(SlicedReader):
                ``mass_unit``  --  The conversion factors for the unit conversion
                 from the units in the data file to atomic units. The defaults of
                 these optional arguments correspond to the defaults of dlpoly.
+             | ``restart``  --  If given in the format in the format of a list of
+                three integers [int1,int2,int3], the HISTORY file is assumed to
+                come from a restarted calculation (has two lines less).
+                Integers are: int1=keytrj (index of the trajectory),
+                int2=imcon (DL_POLY periodic boundary setting),
+                int3=num_atoms (number of atoms).
+
 
         """
         SlicedReader.__init__(self, f, sub)
@@ -65,16 +72,21 @@ class DLPolyHistoryReader(SlicedReader):
         self.frc_unit = frc_unit
         self.time_unit = time_unit
         self.mass_unit = mass_unit
-        try:
-            self.header = self._f.next()[:-1]
-            integers = tuple(int(word) for word in self._f.next().split())
-            if len(integers) != 3:
+        if restart is not None:
+            self.keytrj, self.imcon, self.num_atoms = (restart[0],restart[1],restart[2])
+            # TODO
+            # verify consistency? or do this in yaff
+        else:
+            try:
+                self.header = self._f.next()[:-1]
+                integers = tuple(int(word) for word in self._f.next().split())
+                if len(integers) != 3:
+                    raise FileFormatError("Second line must contain three integers.")
+                self.keytrj, self.imcon, self.num_atoms = integers
+            except StopIteration:
+                raise FileFormatError("File is too short. Could not read header.")
+            except ValueError:
                 raise FileFormatError("Second line must contain three integers.")
-            self.keytrj, self.imcon, self.num_atoms = integers
-        except StopIteration:
-            raise FileFormatError("File is too short. Could not read header.")
-        except ValueError:
-            raise FileFormatError("Second line must contain three integers.")
         self._frame_size = 4 + self.num_atoms*(self.keytrj+2)
 
     def _read_frame(self):
