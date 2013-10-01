@@ -12,3 +12,4 @@ version of MolMod:
 * Louis Vanduyfhuys
 * Wouter Smet
 * An Ghysels
+* Steven Vandenbrande
