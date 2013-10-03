@@ -44,7 +44,7 @@ class DLPolyHistoryReader(SlicedReader):
     """
     def __init__(self, f, sub=slice(None), pos_unit=angstrom,
         vel_unit=angstrom/picosecond, frc_unit=amu*angstrom/picosecond**2,
-        time_unit=picosecond, mass_unit=amu, restart=None,
+        time_unit=picosecond, mass_unit=amu, restart=False,
     ):
         """
            Arguments:
@@ -56,14 +56,14 @@ class DLPolyHistoryReader(SlicedReader):
                ``mass_unit``  --  The conversion factors for the unit conversion
                 from the units in the data file to atomic units. The defaults of
                 these optional arguments correspond to the defaults of dlpoly.
-             | ``restart``  --  If given in the format in the format of a list of
-                three integers [int1,int2,int3], the HISTORY file is assumed to
-                come from a restarted calculation (has two lines less).
-                Integers are: int1=keytrj (index of the trajectory),
-                int2=imcon (DL_POLY periodic boundary setting),
-                int3=num_atoms (number of atoms).
 
+           When the file starts with a line that satisfies the following
+           conditions, it is assumed that this is a history restart file:
 
+           * line consists of 6 words
+           * first word equals 'timestep'
+           * the following for words are integers
+           * the last word is a float
         """
         SlicedReader.__init__(self, f, sub)
         self._counter = 1 # make our counter compatible with dlpoly
@@ -72,12 +72,8 @@ class DLPolyHistoryReader(SlicedReader):
         self.frc_unit = frc_unit
         self.time_unit = time_unit
         self.mass_unit = mass_unit
-        if restart is not None:
-            self.header = ''
-            if len(restart) != 3:
-                raise TypeError('The restart list must contain three integers.')
-            self.keytrj, self.imcon, self.num_atoms = restart
-        else:
+        restart = self._detect_restart()
+        if restart is None:
             try:
                 self.header = self._f.next()[:-1]
                 integers = tuple(int(word) for word in self._f.next().split())
@@ -88,7 +84,27 @@ class DLPolyHistoryReader(SlicedReader):
                 raise FileFormatError("File is too short. Could not read header.")
             except ValueError:
                 raise FileFormatError("Second line must contain three integers.")
+        else:
+            self.header = ''
+            self.num_atoms, self.keytrj, self.imcon = restart
         self._frame_size = 4 + self.num_atoms*(self.keytrj+2)
+
+    def _detect_restart(self):
+        words = self._f.next().split()
+        self._f.seek(0)
+        if len(words) != 6:
+            return
+        if words[0] != 'timestep':
+            return
+        for i in 1, 2, 3, 4:
+            if not words[i].isdigit():
+                return
+        try:
+            float(words[5])
+        except ValueError:
+            return
+        return int(words[2]), int(words[3]), int(words[4])
+
 
     def _read_frame(self):
         """Read a single frame from the trajectory"""

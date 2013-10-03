@@ -50,6 +50,15 @@ class DLPolyTestCase(BaseTestCase):
         frame = hr.next()
         self.assertEqual(frame["step"], 4050)
 
+    def test_history_reader_restart(self):
+        hr = DLPolyHistoryReader(context.get_fn("test/dlpoly_HISTORY_an2"))
+        assert hr.num_atoms == 24
+        frame = hr.next()
+        self.assertEqual(frame["step"], 10381000)
+        self.assertAlmostEqual(frame["timestep"]/picosecond, 0.001)
+        frame = hr.next()
+        self.assertEqual(frame["step"], 10382000)
+
     def test_output_reader(self):
         outr = DLPolyOutputReader(context.get_fn("test/dlpoly_OUTPUT"), skip_equi_period=False)
         row = outr.next()
