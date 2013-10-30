@@ -31,26 +31,11 @@ from distutils.command.install_data import install_data
 
 
 class MyInstallData(install_data):
-    """Add a datadir.txt file that points to the root for the data files. It is
-       otherwise impossible to figure out the location of these data files at
-       runtime.
+    """Ensure data is store at root-level
     """
     def run(self):
         # Do the normal install_data
         install_data.run(self)
-        # Create the file datadir.txt. It's exact content is only known
-        # at installation time.
-        dist = self.distribution
-        libdir = dist.command_obj["install_lib"].install_dir
-        for name in dist.packages:
-            if '.' not in name:
-                destination = os.path.join(libdir, name, "datadir.txt")
-                print "Creating %s" % destination
-                if not self.dry_run:
-                    f = file(destination, "w")
-                    print >> f, self.install_dir
-                    f.close()
-
 
 setup(
     name='molmod',
