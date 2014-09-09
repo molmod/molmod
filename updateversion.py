@@ -32,8 +32,8 @@ rules = [
     ('molmod/__init__.py', '^__version__ = \'(...+)\'$'),
     ('doc/conf.py', '^version = \'(...+)\'$'),
     ('doc/conf.py', '^release = \'(...+)\'$'),
-    ('doc/tutorial/install.rst', '^    http://users.ugent.be/~tovrstra/molmod/molmod-(...+).tar.gz.$'),
-    ('doc/tutorial/install.rst', '^    wget http://users.ugent.be/~tovrstra/molmod/molmod-(...+).tar.gz$'),
+    ('doc/tutorial/install.rst', '^    http://github.com/molmod/molmod/releases/download/v(...+)/molmod-(...+).tar.gz$'),
+    ('doc/tutorial/install.rst', '^    wget http://github.com/molmod/molmod/releases/download/v(...+)/molmod-(...+).tar.gz$'),
     ('doc/tutorial/install.rst', '^    tar -xvzf molmod-(...+).tar.gz$'),
     ('doc/tutorial/install.rst', '^    cd molmod-(...+)$'),
 ]
@@ -46,10 +46,12 @@ if __name__ == '__main__':
         r = re.compile(regex)
         with open(fn) as f:
             lines = f.readlines()
-        for i in xrange(len(lines)):
-            line = lines[i]
+        for iline in xrange(len(lines)):
+            line = lines[iline]
             m = r.match(line)
             if m is not None:
-                lines[i] = line[:m.start(1)] + newversion + line[m.end(1):]
+                for igroup in xrange(m.lastindex, 0, -1):
+                    line = line[:m.start(igroup)] + newversion + line[m.end(igroup):]
+                lines[iline] = line
         with open(fn, 'w') as f:
             f.writelines(lines)
