@@ -60,15 +60,15 @@ Stable release
 
 The latest stable release of MolMod can be downloaded here:
 
-    http://users.ugent.be/~tovrstra/molmod/molmod-1.0.tar.gz.
+    http://users.ugent.be/~tovrstra/molmod/molmod-1.1.tar.gz.
 
 Choose a suitable directory, e.g. ``~/build``, download and unpack the archive::
 
     mkdir -p ~/build
     cd ~/build
-    wget http://users.ugent.be/~tovrstra/molmod/molmod-1.0.tar.gz
-    tar -xvzf molmod-1.0.tar.gz
-    cd molmod-1.0
+    wget http://users.ugent.be/~tovrstra/molmod/molmod-1.1.tar.gz
+    tar -xvzf molmod-1.1.tar.gz
+    cd molmod-1.1
 
 Latest development code (experts only)
 --------------------------------------

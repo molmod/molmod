@@ -54,7 +54,7 @@ class MyInstallData(install_data):
 
 setup(
     name='molmod',
-    version='1.0',
+    version='1.1',
     description='MolMod is a collection of molecular modelling tools for python.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
