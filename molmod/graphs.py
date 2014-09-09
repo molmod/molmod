@@ -639,23 +639,23 @@ class Graph(ReadOnly):
 
            Returns the vertices in both halfs.
         """
-        vertex1_new = set(self.neighbors[vertex1])
-        vertex1_new.discard(vertex2)
-        vertex1_part = set([vertex1])
+        def grow(origin, other):
+            frontier = set(self.neighbors[origin])
+            frontier.discard(other)
+            result = set([origin])
+            while len(frontier) > 0:
+                pivot = frontier.pop()
+                if pivot == other:
+                    raise GraphError("The graph can not be separated in two halfs "
+                                     "by disconnecting vertex1 and vertex2.")
+                pivot_neighbors = set(self.neighbors[pivot])
+                pivot_neighbors -= result
+                frontier |= pivot_neighbors
+                result.add(pivot)
+            return result
 
-        while len(vertex1_new) > 0:
-            pivot = vertex1_new.pop()
-            if pivot == vertex2:
-                raise GraphError("The graph can not be separated in two halfs "
-                                 "by disconnecting vertex1 and vertex2.")
-            pivot_neighbors = set(self.neighbors[pivot])
-            pivot_neighbors -= vertex1_part
-            vertex1_new |= pivot_neighbors
-            vertex1_part.add(pivot)
-
-        # find vertex_b_part: easy, is just the rest
-        vertex2_part = set(xrange(self.num_vertices)) - vertex1_part
-
+        vertex1_part = grow(vertex1, vertex2)
+        vertex2_part = grow(vertex2, vertex1)
         return vertex1_part, vertex2_part
 
     def get_part(self, vertex_in, vertices_border):
