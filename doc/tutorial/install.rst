@@ -21,7 +21,7 @@ distribution to install these dependencies.
 
 The following software must be installed for MolMod:
 
-* Python >= 2.7 (including the header files): http://www.python.org/doc/
+* Python >= 2.7, < 3.0 (including the header files): http://www.python.org/doc/
 * Numpy >= 1.0 or later: http://numpy.scipy.org/
 * A Fortran and a C compiler supported by the F2PY module in Numpy, e.g.
   gfortran and gcc: http://gcc.gnu.org/
