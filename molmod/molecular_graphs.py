@@ -602,7 +602,7 @@ class NRingPattern(CustomPattern):
                 # even ring
                 for i in xrange(self.size/2):
                     vertex1_start = match.forward[i]
-                    vertex1_stop = match.forward[i+self.size/2]
+                    vertex1_stop = match.forward[(i+self.size/2)%self.size]
                     paths = list(subject_graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) != 2:
                         #print "Even ring must have two paths between opposite vertices"
@@ -615,13 +615,13 @@ class NRingPattern(CustomPattern):
                 # odd ring
                 for i in xrange(self.size/2+1):
                     vertex1_start = match.forward[i]
-                    vertex1_stop = match.forward[i+self.size/2]
+                    vertex1_stop = match.forward[(i+self.size/2)%self.size]
                     paths = list(subject_graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) > 1:
                         return False
                     if len(paths[0]) != self.size/2+1:
                         return False
-                    vertex1_stop = match.forward[i+self.size/2+1]
+                    vertex1_stop = match.forward[(i+self.size/2+1)%self.size]
                     paths = list(subject_graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) > 1:
                         return False
