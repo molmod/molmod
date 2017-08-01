@@ -39,4 +39,4 @@ install:
 - conda install --use-local molmod
 script:
 # Run tests out of source tree, to make sure that installed version is tested.
-- "(cd; nosetests molmod -v --processes=2 --detailed-errors)"
+- "(cd; nosetests molmod -v --processes=2 --detailed-errors --process-timeout=600)"
