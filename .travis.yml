@@ -1,11 +1,40 @@
-language: python
-python:
- - "2.7"
-virtualenv:
-  system_site_packages: true
+sudo: false
+# Do not use Travis Python to save some time.
+language: generic
+env:
+  matrix:
+  - MYCONDAPY=2.7
+  global:
 install:
- - "sudo apt-get --no-install-recommends install python-numpy python-scipy python-matplotlib gfortran"
- - "mkdir -p ~/.matplotlib/; echo 'backend : Agg' > ~/.matplotlib/matplotlibrc"
- - "python setup.py install"
+# Get miniconda. Take the right version, so re-installing python is only needed for 3.5.
+- if [[ "$MYCONDAPY" == "2.7" ]]; then
+     wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+  else
+     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+  fi
+- bash miniconda.sh -b -p $HOME/miniconda
+- export PATH="$HOME/miniconda/bin:$PATH"
+- hash -r
+
+# Configure conda and get a few essentials
+- conda config --set always_yes yes --set changeps1 no
+- conda update -q conda
+# Get the right python version for building. This only does something for 3.5
+- conda install python=${MYCONDAPY}
+# Install building/running/testing dependencies for package molmod
+- conda install
+# Install conda tools for packaging and uploading
+- conda install conda-build anaconda-client
+- conda info -a
+
+# Build the conda package
+- conda build -q conda.recipe
+
+# Build source package, should work too and needed for deployment.
+- python setup.py sdist
+
+# Install Conda package
+- conda install --use-local molmod
 script:
- - "cd; nosetests -v molmod"
+# Run tests out of source tree, to make sure that installed version is tested.
+- "(cd; nosetests molmod -v --processes=2 --detailed-errors"
