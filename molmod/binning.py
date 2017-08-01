@@ -154,7 +154,7 @@ class PairSearchIntra(PairSearchBase):
        Example usage::
 
            coordinates = numpy.random.uniform(0,10,(10,3))
-           for i, j, distance, delta in PairSearchIntra(coordinates, 2.5):
+           for i, j, delta, distance in PairSearchIntra(coordinates, 2.5):
                print i, j, distance
 
        Note that for periodic systems the minimum image convention is applied.
@@ -214,7 +214,7 @@ class PairSearchInter(PairSearchBase):
 
            coordinates0 = numpy.random.uniform(0,10,(10,3))
            coordinates1 = numpy.random.uniform(0,10,(10,3))
-           for i, j, distance, delta in PairSearchInter(coordinates0, coordinates1, 2.5):
+           for i, j, delta, distance in PairSearchInter(coordinates0, coordinates1, 2.5):
                print i, j, distance
 
        Note that for periodic systems the minimum image convention is applied.
