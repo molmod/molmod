@@ -22,7 +22,7 @@ install:
 # Get the right python version for building. This only does something for 3.5
 - conda install python=${MYCONDAPY}
 # Install extra package building/running/testing dependencies for package molmod, not
-# included in the list of "official" dependencies
+# included in the list of "official" dependencies in setup.py and meta.yaml.
 # - conda install
 # Install conda tools for packaging and uploading
 - conda install conda-build anaconda-client
@@ -32,7 +32,8 @@ install:
 - conda build -q conda.recipe
 
 # Build source package, should work too and needed for deployment.
-- python setup.py sdist
+# TODO: activate this again as soon as we are using setuptools
+#- python setup.py sdist
 
 # Install Conda package
 - conda install --use-local molmod
