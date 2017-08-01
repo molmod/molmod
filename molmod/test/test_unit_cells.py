@@ -306,6 +306,7 @@ class UnitCellTestCase(BaseTestCase):
         self.assertArraysEqual(indexes, expected_indexes)
 
     def test_radius_indexes_2d_graphical(self):
+        raise SkipTest
         #uc = UnitCell(numpy.array([
         #    [2.0, 1.0, 0.0],
         #    [0.0, 0.2, 0.0],
