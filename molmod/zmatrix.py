@@ -23,10 +23,10 @@
 """Conversion between Cartesian coordinates and ZMatrices"""
 
 
+import numpy as np
+
 import molmod.ic as ic
 from molmod.vectors import random_orthonormal
-
-import numpy
 
 
 __all__ = ["ZMatrixGenerator", "zmat_to_cart"]
@@ -80,8 +80,8 @@ class ZMatrixGenerator(object):
             else:
                 remaining.insert(0, pivot)
         # store the orders as indexes
-        self.old_index = numpy.array(new_order)
-        self.new_index = numpy.zeros(self.old_index.shape, int)
+        self.old_index = np.array(new_order)
+        self.new_index = np.zeros(self.old_index.shape, int)
         for i, j in enumerate(self.old_index):
             self.new_index[j] = i
 
@@ -128,7 +128,7 @@ class ZMatrixGenerator(object):
         N = len(self.graph.numbers)
         if coordinates.shape != (N, 3):
             raise ValueError("The shape of the coordinates must be (%i, 3)" % N)
-        result = numpy.zeros(N, dtype=self.dtype)
+        result = np.zeros(N, dtype=self.dtype)
         for i in xrange(N):
             ref0 = self.old_index[i]
             rel1 = -1
@@ -139,7 +139,7 @@ class ZMatrixGenerator(object):
             dihed = 0
             if i > 0:
                 ref1 = self._get_new_ref([ref0])
-                distance = numpy.linalg.norm(coordinates[ref0]-coordinates[ref1])
+                distance = np.linalg.norm(coordinates[ref0]-coordinates[ref1])
                 rel1 = i - self.new_index[ref1]
             if i > 1:
                 ref2 = self._get_new_ref([ref0, ref1])
@@ -158,7 +158,7 @@ def zmat_to_cart(zmat):
 
     numbers = zmat["number"]
     N = len(numbers)
-    coordinates = numpy.zeros((N, 3), float)
+    coordinates = np.zeros((N, 3), float)
 
     # special cases for the first coordinates
     coordinates[1, 2] = zmat["distance"][1]
@@ -166,8 +166,8 @@ def zmat_to_cart(zmat):
         sign = -1
     else:
         sign = 1
-    coordinates[2, 2] = zmat["distance"][2]*sign*numpy.cos(zmat["angle"][2])
-    coordinates[2, 1] = zmat["distance"][2]*sign*numpy.sin(zmat["angle"][2])
+    coordinates[2, 2] = zmat["distance"][2]*sign*np.cos(zmat["angle"][2])
+    coordinates[2, 1] = zmat["distance"][2]*sign*np.sin(zmat["angle"][2])
     coordinates[2] += coordinates[2-zmat["rel1"][2]]
 
     ref0 = 3
@@ -181,26 +181,26 @@ def zmat_to_cart(zmat):
         # define frame axes
         origin = coordinates[ref1]
         new_z = coordinates[ref2] - origin
-        norm_z = numpy.linalg.norm(new_z)
+        norm_z = np.linalg.norm(new_z)
         if norm_z < 1e-15:
-            new_z = numpy.array([0, 0, 1], float)
+            new_z = np.array([0, 0, 1], float)
         else:
-            new_z /= numpy.linalg.norm(new_z)
+            new_z /= np.linalg.norm(new_z)
         new_x = coordinates[ref3] - origin
-        new_x -= numpy.dot(new_x, new_z)*new_z
-        norm_x = numpy.linalg.norm(new_x)
+        new_x -= np.dot(new_x, new_z)*new_z
+        norm_x = np.linalg.norm(new_x)
         if norm_x < 1e-15:
             new_x = random_orthonormal(new_z)
         else:
-            new_x /= numpy.linalg.norm(new_x)
+            new_x /= np.linalg.norm(new_x)
         # we must make our axes frame left handed due to the poor IUPAC
         # definition of the sign of a dihedral angle.
-        new_y = -numpy.cross(new_z, new_x)
+        new_y = -np.cross(new_z, new_x)
 
         # coordinates of new atom:
-        x = distance*numpy.cos(dihed)*numpy.sin(angle)
-        y = distance*numpy.sin(dihed)*numpy.sin(angle)
-        z = distance*numpy.cos(angle)
+        x = distance*np.cos(dihed)*np.sin(angle)
+        y = distance*np.sin(dihed)*np.sin(angle)
+        z = distance*np.cos(angle)
         coordinates[ref0] = origin + x*new_x + y*new_y + z*new_z
         # loop
         ref0 += 1

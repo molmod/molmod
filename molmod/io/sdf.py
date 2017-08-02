@@ -27,13 +27,13 @@
 """
 
 
+import numpy as np
+
 from molmod.units import angstrom
 from molmod.periodic import periodic
 from molmod.molecules import Molecule
 from molmod.molecular_graphs import MolecularGraph
 from molmod.io.common import FileFormatError
-
-import numpy
 
 
 __all__ = ["SDFReader"]
@@ -91,8 +91,8 @@ class SDFReader(object):
             except ValueError:
                 raise FileFormatError("Expecting at least two numbers at fourth line.")
 
-            numbers = numpy.zeros(num_atoms, int)
-            coordinates = numpy.zeros((num_atoms, 3), float)
+            numbers = np.zeros(num_atoms, int)
+            coordinates = np.zeros((num_atoms, 3), float)
             for i in xrange(num_atoms):
                 words = self.f.next().split()
                 if len(words) < 4:
@@ -110,7 +110,7 @@ class SDFReader(object):
             coordinates *= angstrom
 
             edges = []
-            orders = numpy.zeros(num_bonds, int)
+            orders = np.zeros(num_bonds, int)
             for i in xrange(num_bonds):
                 words = self.f.next().split()
                 if len(words) < 3:
@@ -121,7 +121,7 @@ class SDFReader(object):
                 except ValueError:
                     raise FileFormatError("Expecting at least three numbers on a bond line.")
 
-            formal_charges = numpy.zeros(len(numbers), int)
+            formal_charges = np.zeros(len(numbers), int)
 
             line = self.f.next()
             while line != "M  END\n":

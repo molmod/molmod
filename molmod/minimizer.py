@@ -60,7 +60,9 @@
 """
 
 
-import numpy as np, time
+import time
+
+import numpy as np
 
 
 __all__ = [
@@ -1545,7 +1547,8 @@ class Minimizer(object):
             return True
         else:
             if self.debug_line:
-                import matplotlib.pyplot as pt, datetime
+                import matplotlib.pyplot as pt
+                import datetime
                 pt.clf()
                 qs = np.arange(0.0, 100.1)*(5*self.initial_step_size/100.0)
                 fs = np.array([self.line(q) for q in qs])

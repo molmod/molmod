@@ -53,5 +53,3 @@ Library reference
    reference/data.rst
    reference/algo.rst
    reference/internals.rst
-
-

@@ -24,7 +24,7 @@
 
 import unittest
 
-import numpy
+import numpy as np
 import pkg_resources
 
 from molmod import *
@@ -54,7 +54,7 @@ class BinningTestCase(unittest.TestCase):
             delta = coord1 - coord0
             if unit_cell is not None:
                 delta = unit_cell.shortest_vector(delta)
-            distance = numpy.linalg.norm(delta)
+            distance = np.linalg.norm(delta)
             if distance < cutoff:
                 num_total += 1
                 identifier = idcls([id0, id1])
@@ -139,8 +139,8 @@ class BinningTestCase(unittest.TestCase):
         coordinates = XYZFile(pkg_resources.resource_filename(__name__, "../data/test/lau.xyz")).geometries[0]
         cutoff = periodic.max_radius*2
         unit_cell = UnitCell.from_parameters3(
-            numpy.array([14.59, 12.88, 7.61])*angstrom,
-            numpy.array([ 90.0, 111.0, 90.0])*deg,
+            np.array([14.59, 12.88, 7.61])*angstrom,
+            np.array([ 90.0, 111.0, 90.0])*deg,
         )
 
         pair_search = PairSearchIntra(coordinates, cutoff, unit_cell)
@@ -156,8 +156,8 @@ class BinningTestCase(unittest.TestCase):
 
     def test_distances_intra_random(self):
         for i in xrange(10):
-            coordinates = numpy.random.uniform(0,5,(20,3))
-            cutoff = numpy.random.uniform(1, 6)
+            coordinates = np.random.uniform(0,5,(20,3))
+            cutoff = np.random.uniform(1, 6)
             distances = [
                 (frozenset([i0, i1]), distance)
                 for i0, i1, delta, distance
@@ -167,16 +167,16 @@ class BinningTestCase(unittest.TestCase):
 
     def test_distances_intra_random_periodic(self):
         for i in xrange(10):
-            coordinates = numpy.random.uniform(0,1,(20,3))
+            coordinates = np.random.uniform(0,1,(20,3))
             while True:
                 unit_cell = UnitCell(
-                    numpy.random.uniform(0,5,(3,3)),
-                    numpy.random.randint(0,2,3).astype(bool),
+                    np.random.uniform(0,5,(3,3)),
+                    np.random.randint(0,2,3).astype(bool),
                 )
                 if unit_cell.spacings.min() > 0.5:
                     break
             coordinates = unit_cell.to_cartesian(coordinates)*3-unit_cell.matrix.sum(axis=1)
-            cutoff = numpy.random.uniform(1, 6)
+            cutoff = np.random.uniform(1, 6)
 
             pair_search = PairSearchIntra(coordinates, cutoff, unit_cell)
             self.verify_bins_intra_periodic(pair_search.bins)
@@ -190,9 +190,9 @@ class BinningTestCase(unittest.TestCase):
 
     def test_distances_inter_random(self):
         for i in xrange(10):
-            coordinates0 = numpy.random.uniform(0,5,(20,3))
-            coordinates1 = numpy.random.uniform(0,5,(20,3))
-            cutoff = numpy.random.uniform(1, 6)
+            coordinates0 = np.random.uniform(0,5,(20,3))
+            coordinates1 = np.random.uniform(0,5,(20,3))
+            cutoff = np.random.uniform(1, 6)
             distances = [
                 ((i0, i1), distance)
                 for i0, i1, delta, distance
@@ -202,18 +202,18 @@ class BinningTestCase(unittest.TestCase):
 
     def test_distances_inter_random_periodic(self):
         for i in xrange(10):
-            fractional0 = numpy.random.uniform(0,1,(20,3))
-            fractional1 = numpy.random.uniform(0,1,(20,3))
+            fractional0 = np.random.uniform(0,1,(20,3))
+            fractional1 = np.random.uniform(0,1,(20,3))
             while True:
                 unit_cell = UnitCell(
-                    numpy.random.uniform(0,5,(3,3)),
-                    numpy.random.randint(0,2,3).astype(bool),
+                    np.random.uniform(0,5,(3,3)),
+                    np.random.randint(0,2,3).astype(bool),
                 )
                 if unit_cell.spacings.min() > 0.5:
                     break
             coordinates0 = unit_cell.to_cartesian(fractional0)*3-unit_cell.matrix.sum(axis=1)
             coordinates1 = unit_cell.to_cartesian(fractional1)*3-unit_cell.matrix.sum(axis=1)
-            cutoff = numpy.random.uniform(1, 6)
+            cutoff = np.random.uniform(1, 6)
 
             pair_search = PairSearchInter(coordinates0, coordinates1, cutoff, unit_cell)
             self.verify_bins_inter_periodic(pair_search.bins0, pair_search.bins1)

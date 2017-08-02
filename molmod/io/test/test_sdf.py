@@ -24,7 +24,6 @@
 
 import unittest
 
-import numpy
 import pkg_resources
 
 from molmod.io import *

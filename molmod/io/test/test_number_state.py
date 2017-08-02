@@ -22,10 +22,10 @@
 #--
 
 
+import numpy as np
+
 from molmod.test.common import *
 from molmod.io import *
-
-import numpy, unittest
 
 
 __all__ = ["NumberStateTestCase"]
@@ -33,10 +33,10 @@ __all__ = ["NumberStateTestCase"]
 
 class TestObject(object):
     def __init__(self):
-        self.a = numpy.random.normal(0, 1, (5, 3))
-        self.b = numpy.random.randint(0, 40, (4, 7, 9))
-        self.c = numpy.random.normal(0, 2)
-        self.d = numpy.random.randint(0, 10)
+        self.a = np.random.normal(0, 1, (5, 3))
+        self.b = np.random.randint(0, 40, (4, 7, 9))
+        self.c = np.random.normal(0, 2)
+        self.d = np.random.randint(0, 10)
         self.state = NumberState(self, ["a", "b", "c", "d"])
 
 

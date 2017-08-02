@@ -22,9 +22,7 @@
 #--
 
 
-import unittest
-
-import numpy
+import numpy as np
 import pkg_resources
 
 from molmod.test.common import *
@@ -40,18 +38,18 @@ class MoleculeTestCase(BaseTestCase):
         molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/tpa.xyz"))
         dm = 0
         for i in 0,1,2:
-            dm += numpy.subtract.outer(molecule.coordinates[:,i],molecule.coordinates[:,i])**2
-        dm = numpy.sqrt(dm)
+            dm += np.subtract.outer(molecule.coordinates[:,i],molecule.coordinates[:,i])**2
+        dm = np.sqrt(dm)
         self.assert_((abs(molecule.distance_matrix - dm) < 1e-5).all(), "Wrong distance matrix")
 
     def test_distance_matrix_periodic(self):
         for i in xrange(1000):
             N = 6
             unit_cell = UnitCell(
-                numpy.random.uniform(0,1,(3,3)),
-                numpy.random.randint(0,2,3).astype(bool),
+                np.random.uniform(0,1,(3,3)),
+                np.random.randint(0,2,3).astype(bool),
             )
-            fractional = numpy.random.uniform(0,1,(N,3))
+            fractional = np.random.uniform(0,1,(N,3))
             coordinates = unit_cell.to_cartesian(fractional)
             from molmod.ext import molecules_distance_matrix
             dm = molecules_distance_matrix(coordinates, unit_cell.matrix,
@@ -60,7 +58,7 @@ class MoleculeTestCase(BaseTestCase):
                 for j in xrange(i,N):
                     delta = coordinates[j]-coordinates[i]
                     delta = unit_cell.shortest_vector(delta)
-                    distance = numpy.linalg.norm(delta)
+                    distance = np.linalg.norm(delta)
                     self.assertAlmostEqual(dm[i,j], distance)
 
     def test_read_only(self):
@@ -77,7 +75,7 @@ class MoleculeTestCase(BaseTestCase):
         #    pass
         self.assert_(isinstance(mol.coordinates[0,0], float))
 
-        coordinates = numpy.array(coordinates)
+        coordinates = np.array(coordinates)
         mol = Molecule(numbers, coordinates)
         coordinates[0,1] = 5.0
         self.assertAlmostEqual(mol.coordinates[0,1], 1.0)
@@ -100,7 +98,7 @@ class MoleculeTestCase(BaseTestCase):
         molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
         molecule.set_default_masses()
         expected_result = sum(
-            m*(numpy.identity(3)*(r**2).sum()-numpy.outer(r,r))
+            m*(np.identity(3)*(r**2).sum()-np.outer(r,r))
             for m, r in zip(molecule.masses, (molecule.coordinates-molecule.com))
         )
         self.assertArraysAlmostEqual(molecule.inertia_tensor, expected_result)
@@ -125,8 +123,8 @@ class MoleculeTestCase(BaseTestCase):
     def test_default_graph_periodic(self):
         molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/lau.xyz"))
         uc = UnitCell.from_parameters3(
-            numpy.array([14.587, 12.877, 7.613])*angstrom,
-            numpy.array([90.000, 111.159, 90.000])*deg
+            np.array([14.587, 12.877, 7.613])*angstrom,
+            np.array([90.000, 111.159, 90.000])*deg
         )
         uc = uc.alignment_c*uc
         molecule = molecule.copy_with(unit_cell=uc)
@@ -177,8 +175,8 @@ class MoleculeTestCase(BaseTestCase):
     def test_copy_with(self):
         mol0 = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
         mol1 = mol0.copy_with(numbers=[3,4,5])
-        self.assertArraysEqual(mol0.numbers, numpy.array([8,1,1]))
-        self.assertArraysEqual(mol1.numbers, numpy.array([3,4,5]))
+        self.assertArraysEqual(mol0.numbers, np.array([8,1,1]))
+        self.assertArraysEqual(mol1.numbers, np.array([3,4,5]))
         self.assertArraysAlmostEqual(mol0.coordinates, mol1.coordinates)
 
     def test_default_symbols(self):

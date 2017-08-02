@@ -23,12 +23,12 @@
 """Basic support for the PDB format"""
 
 
+import numpy as np
+
 from molmod.periodic import periodic
 from molmod.units import angstrom
 from molmod.molecules import Molecule
 from molmod.io.common import FileFormatError
-
-import numpy
 
 
 __all__ = ["load_pdb", "dump_pdb"]
@@ -124,8 +124,8 @@ def load_pdb(filename):
     f.close()
     if len(numbers) > 0:
         molecule = Molecule(numbers, coordinates)
-        molecule.occupancies = numpy.array(occupancies)
-        molecule.betas = numpy.array(betas)
+        molecule.occupancies = np.array(occupancies)
+        molecule.betas = np.array(betas)
         return molecule
     else:
         raise FileFormatError("No molecule found in pdb file %s" % filename)

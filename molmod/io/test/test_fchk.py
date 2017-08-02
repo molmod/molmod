@@ -22,7 +22,7 @@
 #--
 
 
-import numpy
+import numpy as np
 import pkg_resources
 
 from molmod.test.common import BaseTestCase
@@ -35,7 +35,7 @@ __all__ = ["FCHKTestCase"]
 
 class FCHKTestCase(BaseTestCase):
     def test_fchk(self):
-        expected_coordinates = numpy.array([
+        expected_coordinates = np.array([
             -1.22166133E-01, -7.76846132E-02,  2.18269387E-02,  2.73897634E-04,
             -7.83119835E-04,  3.12916345E+00,  2.85013528E+00,  7.51246138E-02,
              4.37365470E+00, -1.32111802E+00, -2.63535370E+00,  4.12342635E+00,

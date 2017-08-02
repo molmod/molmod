@@ -22,10 +22,7 @@
 #--
 
 
-import os
-import unittest
-
-import numpy
+import numpy as np
 import pkg_resources
 
 from molmod.test.common import BaseTestCase
@@ -43,8 +40,8 @@ class ZMatrixTestCase(BaseTestCase):
             mol.set_default_graph()
             zmat_gen = ZMatrixGenerator(mol.graph)
             if reorder is False:
-                self.assertArraysEqual(zmat_gen.new_index, numpy.arange(mol.size))
-                self.assertArraysEqual(zmat_gen.old_index, numpy.arange(mol.size))
+                self.assertArraysEqual(zmat_gen.new_index, np.arange(mol.size))
+                self.assertArraysEqual(zmat_gen.old_index, np.arange(mol.size))
 
             zmat0 = zmat_gen.cart_to_zmat(mol.coordinates)
             for field, index, value in checks:
@@ -55,8 +52,8 @@ class ZMatrixTestCase(BaseTestCase):
             #mol0.write_to_file("zmat_%s" % os.path.basename(xyz_fn))
             mol0.set_default_graph()
             zmat_gen0 = ZMatrixGenerator(mol0.graph)
-            self.assertArraysEqual(zmat_gen0.new_index, numpy.arange(mol.size))
-            self.assertArraysEqual(zmat_gen0.old_index, numpy.arange(mol.size))
+            self.assertArraysEqual(zmat_gen0.new_index, np.arange(mol.size))
+            self.assertArraysEqual(zmat_gen0.old_index, np.arange(mol.size))
 
             zmat1 = zmat_gen0.cart_to_zmat(mol0.coordinates)
             for field, index, value in checks:

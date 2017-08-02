@@ -45,7 +45,7 @@
 """Utilities that are used in all parts of the MolMod library"""
 
 
-import numpy, types
+import numpy as np
 
 
 __all__ = ["cached", "ReadOnlyAttribute", "ReadOnly", "compute_rmsd"]
@@ -89,7 +89,7 @@ class cached(object):
             value = self.fn(instance)
             setattr(instance, self.attribute_name, value)
             #Disabled because not strictly enforcable and incompatible with Cython memoryviews.
-            #if isinstance(value, numpy.ndarray):
+            #if isinstance(value, np.ndarray):
             #    value.setflags(write=False)
         return value
 
@@ -141,7 +141,7 @@ class ReadOnlyAttribute(object):
             if issubclass(ptype, list):
                 raise TypeError("ptype can not be a subclass of list because "
                     "lists are mutable.")
-            if issubclass(ptype, numpy.ndarray):
+            if issubclass(ptype, np.ndarray):
                 if not (npdim is None or isinstance(npdim, int)):
                     raise TypeError("npdim must be None or and integer.")
                 if not (npshape is None or (isinstance(npshape, tuple) and
@@ -154,7 +154,7 @@ class ReadOnlyAttribute(object):
                 self.npdtype = npdtype
         elif not (npdim is None and npshape is None and npdtype is None):
             raise ValueError("The arguments npdim, npshape and npdtype are "
-                "only allowed when ptype is a subclass of numpy.ndarray.")
+                "only allowed when ptype is a subclass of np.ndarray.")
         # make a nice docstring
         self.__doc__ = "*Read-only attribute:* %s.\n\n" % doc
         check_lines = []
@@ -162,7 +162,7 @@ class ReadOnlyAttribute(object):
             check_lines.append("* May not be None.")
         if self.ptype is not None:
             check_lines.append("* Must be an instance of ``%s``" % self.ptype)
-            if issubclass(ptype, numpy.ndarray):
+            if issubclass(ptype, np.ndarray):
                 if self.npdim is not None:
                     check_lines.append("* Must have dimension %i." % self.npdim)
                 if self.npshape is not None:
@@ -189,7 +189,7 @@ class ReadOnlyAttribute(object):
             return self
         # just get the value, or return None if not present
         result = getattr(instance, self.attribute_name, None)
-        if isinstance(result, numpy.ndarray):
+        if isinstance(result, np.ndarray):
             result = result.view()
         return result
 
@@ -201,10 +201,10 @@ class ReadOnlyAttribute(object):
             value = tuple(value)
         if not (self.ptype is None or value is None):
             # Only type check if there is one and the value is not None.
-            if issubclass(self.ptype, numpy.ndarray):
+            if issubclass(self.ptype, np.ndarray):
                 if hasattr(value, "__len__"):
                     # try to turn non-arrays into arrays.
-                    value = numpy.array(value, dtype=self.npdtype, copy=False)
+                    value = np.array(value, dtype=self.npdtype, copy=False)
                 else:
                     raise TypeError("Single values are not automatically "
                         "converted into arrays.")
@@ -223,19 +223,19 @@ class ReadOnlyAttribute(object):
                                     "not allowed. Got %i. Expected %i." %
                                     (i, value.shape[i], s))
                 if self.npdtype is not None:
-                    if not numpy.issubdtype(value.dtype, self.npdtype):
+                    if not np.issubdtype(value.dtype, self.npdtype):
                         raise ValueError("The dtype must be a subdtype of %s. "
                             "Got %s." % (self.npdtype, value.dtype))
             if not isinstance(value, self.ptype):
                 raise TypeError("Value (%s) does not have the expected type "
                     "(%s)." % (value, self.ptype))
         #Disabled because not strictly enforcable and incompatible with Cython memoryviews.
-        #if isinstance(value, numpy.ndarray):
+        #if isinstance(value, np.ndarray):
             #if value.flags.writeable:
             #    value = value.copy()
             #    value.setflags(write=False)
         #else:
-        if not isinstance(value, numpy.ndarray):
+        if not isinstance(value, np.ndarray):
             # Call the hash function. If that does not work, the object is
             # mutable, which we don't like in case the object is not a numpy
             # array.
@@ -334,4 +334,4 @@ def compute_rmsd(a, b):
        Arguments:
          a, b  --  Two numpy arrays with the same shape
     """
-    return numpy.sqrt(((a-b)**2).mean())
+    return np.sqrt(((a-b)**2).mean())

@@ -26,8 +26,8 @@
    routines can be used to validate an efficient low level implementation.
 """
 
-import numpy as np
 
+import numpy as np
 
 __all__ = [
     "PairFF", "CoulombFF", "DispersionFF", "PauliFF", "ExpRepFF",

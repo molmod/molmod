@@ -22,7 +22,8 @@
 #--
 """Cartesian vector manipulation routines"""
 
-import numpy
+
+import numpy as np
 
 
 __all__ = [
@@ -36,8 +37,8 @@ def cosine(a, b):
 
        The result is clipped within the range [-1, 1]
     """
-    result = numpy.dot(a, b) / numpy.linalg.norm(a) / numpy.linalg.norm(b)
-    return numpy.clip(result, -1, 1)
+    result = np.dot(a, b) / np.linalg.norm(a) / np.linalg.norm(b)
+    return np.clip(result, -1, 1)
 
 
 def angle(a, b):
@@ -45,7 +46,7 @@ def angle(a, b):
 
        The result is clipped within the range [-1, 1]
     """
-    return numpy.arccos(cosine(a, b))
+    return np.arccos(cosine(a, b))
 
 
 def random_unit(size=3):
@@ -55,26 +56,26 @@ def random_unit(size=3):
          size  --  the number of dimensions of the unit vector [default=3]
     """
     while True:
-        result = numpy.random.normal(0, 1, size)
-        length = numpy.linalg.norm(result)
+        result = np.random.normal(0, 1, size)
+        length = np.linalg.norm(result)
         if length > 1e-3:
             return result/length
 
 
 normal_fns = [
-    lambda a: numpy.array([0.0, -a[2], a[1]]),
-    lambda a: numpy.array([a[2], 0.0, -a[0]]),
-    lambda a: numpy.array([-a[1], a[0], 0.0])
+    lambda a: np.array([0.0, -a[2], a[1]]),
+    lambda a: np.array([a[2], 0.0, -a[0]]),
+    lambda a: np.array([-a[1], a[0], 0.0])
 ]
 
 def random_orthonormal(normal):
     """Return a random normalized vector orthogonal to the given vector"""
-    u = normal_fns[numpy.argmin(numpy.fabs(normal))](normal)
-    u /= numpy.linalg.norm(u)
-    v = numpy.cross(normal, u)
-    v /= numpy.linalg.norm(v)
-    alpha = numpy.random.uniform(0.0, numpy.pi*2)
-    return numpy.cos(alpha)*u + numpy.sin(alpha)*v
+    u = normal_fns[np.argmin(np.fabs(normal))](normal)
+    u /= np.linalg.norm(u)
+    v = np.cross(normal, u)
+    v /= np.linalg.norm(v)
+    alpha = np.random.uniform(0.0, np.pi*2)
+    return np.cos(alpha)*u + np.sin(alpha)*v
 
 def triangle_normal(a, b, c):
     """Return a vector orthogonal to the given triangle
@@ -82,6 +83,6 @@ def triangle_normal(a, b, c):
        Arguments:
          a, b, c  --  three 3D numpy vectors
     """
-    normal = numpy.cross(a - c, b - c)
-    norm = numpy.linalg.norm(normal)
+    normal = np.cross(a - c, b - c)
+    norm = np.linalg.norm(normal)
     return normal/norm

@@ -22,10 +22,11 @@
 #--
 """Tools for reading Gaussian03 formatted checkpoint files"""
 
-from molmod.molecules import Molecule
-from molmod.io.common import FileFormatError
 
 import numpy as np
+
+from molmod.molecules import Molecule
+from molmod.io.common import FileFormatError
 
 
 __all__ = ["FCHKFile"]

@@ -38,10 +38,10 @@ a1 = SimilarityDescriptor(distance_matrix, labels)
 """
 
 
+import numpy as np
+
 from molmod.ext import similarity_table_labels, similarity_table_distances, \
     similarity_measure
-
-import numpy
 
 
 __all__ = ["SimilarityDescriptor", "compute_similarity"]
@@ -61,7 +61,7 @@ class SimilarityDescriptor(object):
         self.table_distances = similarity_table_distances(distance_matrix.astype(float))
         self.table_labels = similarity_table_labels(labels.astype(int))
         print len(labels), len(distance_matrix)
-        order = numpy.lexsort([self.table_labels[:, 1], self.table_labels[:, 0]])
+        order = np.lexsort([self.table_labels[:, 1], self.table_labels[:, 0]])
         self.table_labels = self.table_labels[order]
         self.table_distances = self.table_distances[order]
 
@@ -124,7 +124,7 @@ def compute_similarity(a, b, margin=1.0, cutoff=10.0):
 
        When the delta is within the margin and dav is below the cutoff:
 
-         (1-dav/cutoff)*(cos(delta/margin/numpy.pi)+1)/2
+         (1-dav/cutoff)*(cos(delta/margin/np.pi)+1)/2
 
        and zero otherwise. The returned value is the sum of such terms over all
        distance pairs with matching atom types. When comparing similarities it

@@ -23,9 +23,9 @@
 """Tools for parsing LAMMPS data files"""
 
 
-from molmod.io.common import SlicedReader, FileFormatError
+import numpy as np
 
-import numpy
+from molmod.io.common import SlicedReader, FileFormatError
 
 
 __all__ = ["LAMMPSDumpReader"]
@@ -109,7 +109,7 @@ class LAMMPSDumpReader(SlicedReader):
             words = line.split()[1:]
             for j in xrange(len(fields)):
                 fields[j].append(float(words[j]))
-        fields = [step] + [numpy.array(field)*unit for field, unit in zip(fields, self.units)]
+        fields = [step] + [np.array(field)*unit for field, unit in zip(fields, self.units)]
 
         return fields
 

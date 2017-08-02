@@ -25,5 +25,3 @@
 cdef extern from "unit_cells.h":
     size_t unit_cell_get_radius_indexes(double *matrix, double *reciprocal, double radius,
                                         long *max_ranges, long *indexes);
-
-

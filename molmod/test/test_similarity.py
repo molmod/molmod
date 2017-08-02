@@ -24,7 +24,7 @@
 
 import unittest
 
-import numpy
+import numpy as np
 import pkg_resources
 
 from molmod import *
@@ -86,6 +86,6 @@ class SimilarityTestCase(unittest.TestCase):
                 row.append(similarity)
                 if verbose: print ("%14.5f" % similarity),
             if verbose: print
-        result = numpy.array(result)
-        self.assert_((abs(numpy.diag(result) - 1) < 1e-5).all(), "Diagonal must be unity.")
+        result = np.array(result)
+        self.assert_((abs(np.diag(result) - 1) < 1e-5).all(), "Diagonal must be unity.")
         self.assert_((abs(result - result.transpose()) < 1e-5).all(), "Result must be symmetric.")

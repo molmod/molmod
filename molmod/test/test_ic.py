@@ -22,9 +22,6 @@
 #--
 
 
-import unittest
-import sys
-
 import numpy as np
 import pkg_resources
 

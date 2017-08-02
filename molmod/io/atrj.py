@@ -23,7 +23,7 @@
 """Reader for ATRJ files, i.e. Cerius2 Trajectory files."""
 
 
-import numpy
+import numpy as np
 
 from molmod.units import picosecond, angstrom, kcalmol
 from molmod.io.common import SlicedReader
@@ -116,7 +116,7 @@ class ATRJReader(SlicedReader):
         frame.total_energy = float(energy_words[2])*kcalmol
         # Read the coordinates
         coord_lines = self._secfile.get_next("Coordinates")
-        frame.coordinates = numpy.zeros((self.num_atoms, 3), float)
+        frame.coordinates = np.zeros((self.num_atoms, 3), float)
         for index, line in enumerate(coord_lines):
             words = line.split()
             frame.coordinates[index, 0] = float(words[1])

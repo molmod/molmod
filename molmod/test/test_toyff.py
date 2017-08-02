@@ -22,10 +22,9 @@
 #--
 
 
-import os
 import unittest
 
-import numpy
+import numpy as np
 import pkg_resources
 
 from molmod import *
@@ -72,7 +71,7 @@ class ToyFFTestCase(unittest.TestCase):
     def get_random_ff(self):
         N = 6
 
-        mask = numpy.zeros((N,N), bool)
+        mask = np.zeros((N,N), bool)
         for i in xrange(N):
             for j in xrange(i):
                 mask[i,j] = True
@@ -80,12 +79,12 @@ class ToyFFTestCase(unittest.TestCase):
         from molmod.ext import molecules_distance_matrix
         while True:
             unit_cell = UnitCell(
-                numpy.random.uniform(0,3,(3,3)),
-                numpy.random.randint(0,2,3).astype(bool),
+                np.random.uniform(0,3,(3,3)),
+                np.random.randint(0,2,3).astype(bool),
             )
-            fractional = numpy.random.uniform(0,1,(N,3))
+            fractional = np.random.uniform(0,1,(N,3))
             coordinates = unit_cell.to_cartesian(fractional)
-            if numpy.random.randint(0,2):
+            if np.random.randint(0,2):
                 unit_cell = None
                 dm = molecules_distance_matrix(coordinates)
             else:
@@ -96,14 +95,14 @@ class ToyFFTestCase(unittest.TestCase):
 
         edges = set([])
         while len(edges) < 2*N:
-            v1 = numpy.random.randint(N)
+            v1 = np.random.randint(N)
             while True:
-                v2 = numpy.random.randint(N)
+                v2 = np.random.randint(N)
                 if v2 != v1:
                     break
             edges.add(frozenset([v1,v2]))
         edges = tuple(edges)
-        numbers = numpy.random.randint(6, 10, N)
+        numbers = np.random.randint(6, 10, N)
         graph = MolecularGraph(edges, numbers)
         ff = ToyFF(graph, unit_cell)
 
@@ -111,11 +110,11 @@ class ToyFFTestCase(unittest.TestCase):
 
     def check_toyff_gradient(self, ff, coordinates):
         energy0, gradient0 = ff(coordinates, True)
-        eps = numpy.random.uniform(-1e-6, 1e-6, coordinates.shape)
+        eps = np.random.uniform(-1e-6, 1e-6, coordinates.shape)
         energy1, gradient1 = ff(coordinates+eps, True)
 
         delta_energy = energy1 - energy0
-        approx_delta_energy = 0.5*numpy.dot(gradient0 + gradient1, eps.ravel())
+        approx_delta_energy = 0.5*np.dot(gradient0 + gradient1, eps.ravel())
 
         error = abs(delta_energy - approx_delta_energy)
         oom = abs(delta_energy)
@@ -143,9 +142,9 @@ class ToyFFTestCase(unittest.TestCase):
             ff, coordinates, dm, mask, unit_cell = self.get_random_ff()
             ff.dm_reci = 1.0
             energy = ff(coordinates, False)
-            r0 = numpy.add.outer(ff.vdw_radii, ff.vdw_radii)
+            r0 = np.add.outer(ff.vdw_radii, ff.vdw_radii)
             d = dm/r0
-            numpy.ravel(d)[::len(d)+1] = 1.0
+            np.ravel(d)[::len(d)+1] = 1.0
             my_terms = (d-1)*(d-1)/d
             my_terms[ff.dm<=1] = 0.0
             my_terms[d>=1] = 0.0
@@ -163,7 +162,7 @@ class ToyFFTestCase(unittest.TestCase):
             ff, coordinates, dm, mask, unit_cell = self.get_random_ff()
             ff.bond_quad = 1.0
             energy = ff(coordinates, False)
-            lengths = numpy.array([dm[i,j] for i,j in ff.bond_edges])
+            lengths = np.array([dm[i,j] for i,j in ff.bond_edges])
             my_terms = (lengths - ff.bond_lengths)**2
             self.assertAlmostEqual(energy, my_terms.sum())
 
@@ -178,8 +177,8 @@ class ToyFFTestCase(unittest.TestCase):
             ff, coordinates, dm, mask, unit_cell = self.get_random_ff()
             ff.bond_hyper = 1.0
             energy = ff(coordinates, False)
-            lengths = numpy.array([dm[i,j] for i,j in ff.bond_edges])
-            my_terms = numpy.cosh((lengths - ff.bond_lengths)*ff.bond_hyper_scale)-1
+            lengths = np.array([dm[i,j] for i,j in ff.bond_edges])
+            my_terms = np.cosh((lengths - ff.bond_lengths)*ff.bond_hyper_scale)-1
             self.assertAlmostEqual(energy/my_terms.sum(), 1.0)
 
     def test_bond_hyper_gradient(self):
@@ -191,14 +190,14 @@ class ToyFFTestCase(unittest.TestCase):
     def test_example_periodic(self):
         mol = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/caplayer.cml"))
         unit_cell = UnitCell(
-            numpy.array([
+            np.array([
                 [14.218,  7.109,  0.0],
                 [ 0.0  , 12.313,  0.0],
                 [ 0.0  ,  0.0  , 10.0],
             ])*angstrom,
-            numpy.array([True, True, False]),
+            np.array([True, True, False]),
         )
         dm = mol.distance_matrix
-        dm = dm + dm.max()*numpy.identity(len(dm))
+        dm = dm + dm.max()*np.identity(len(dm))
         mol = tune_geometry(mol.graph, mol, unit_cell)
         #mol.write_to_file("caplayer.xyz")

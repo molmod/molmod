@@ -15,5 +15,5 @@ dist
 molmod.egg-info
 
 # Output of the examples
-examples/001_molecules/ibuprofen.xyz
-examples/001_molecules/ibuprofen_com.xyz
+molmod/examples/001_molecules/ibuprofen.xyz
+molmod/examples/001_molecules/ibuprofen_com.xyz

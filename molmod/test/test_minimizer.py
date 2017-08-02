@@ -22,11 +22,11 @@
 #--
 
 
+import numpy as np
+from nose.plugins.skip import SkipTest
+
 from molmod.test.common import BaseTestCase
 from molmod import *
-
-import unittest, numpy as np
-from nose.plugins.skip import SkipTest
 
 
 __all__ = ["MinimizerTestCase"]

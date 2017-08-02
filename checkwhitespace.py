@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
 # Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
@@ -20,8 +21,24 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 #--
+#!/usr/bin/env python
+"""Script to check for incorrect whitespace in a list of files."""
 
+from __future__ import print_function
 
-cdef extern from "molecules.h":
-    void molecules_distance_matrix(size_t natom, double *cor, int periodic, double *matrix,
-                                   double *reciprocal, double *dm);
+import sys
+
+for fn in sys.argv[1:]:
+    with open(fn) as f:
+        lines = f.readlines()
+    bad = False
+    for line in lines:
+        if line.endswith(' \n'):
+            bad = True
+            break
+        if '\t' in line:
+            bad = True
+            break
+    bad |= (lines[-1] == '\n')
+    if bad:
+        print('Whitespace errors in {}'.format(fn))

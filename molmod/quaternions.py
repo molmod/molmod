@@ -28,8 +28,8 @@ values. The routines below focus on the link between quaternions and three-
 dimensional rotations.
 """
 
-import numpy
 
+import numpy as np
 
 __all__ = [
   "quaternion_product", "conjugate", "quaternion_rotation",
@@ -39,8 +39,8 @@ __all__ = [
 
 def quaternion_product(quat1, quat2):
     """Return the quaternion product of the two arguments"""
-    return numpy.array([
-        quat1[0]*quat2[0] - numpy.dot(quat1[1:], quat2[1:]),
+    return np.array([
+        quat1[0]*quat2[0] - np.dot(quat1[1:], quat2[1:]),
         quat1[0]*quat2[1] + quat2[0]*quat1[1] + quat1[2]*quat2[3] - quat1[3]*quat2[2],
         quat1[0]*quat2[2] + quat2[0]*quat1[2] + quat1[3]*quat2[1] - quat1[1]*quat2[3],
         quat1[0]*quat2[3] + quat2[0]*quat1[3] + quat1[1]*quat2[2] - quat1[2]*quat2[1]
@@ -60,9 +60,9 @@ def quaternion_rotation(quat, vector):
 
        Warning: This only works correctly for normalized quaternions.
     """
-    dp = numpy.dot(quat[1:], vector)
+    dp = np.dot(quat[1:], vector)
     cos = (2*quat[0]*quat[0] - 1)
-    return numpy.array([
+    return np.array([
         2 * (quat[0] * (quat[2] * vector[2] - quat[3] * vector[1]) + quat[1] * dp) + cos * vector[0],
         2 * (quat[0] * (quat[3] * vector[0] - quat[1] * vector[2]) + quat[2] * dp) + cos * vector[1],
         2 * (quat[0] * (quat[1] * vector[1] - quat[2] * vector[0]) + quat[3] * dp) + cos * vector[2]
@@ -73,35 +73,35 @@ off_diagonals = [[2, 1], [0, 2], [1, 0]]
 
 def rotation_matrix_to_quaternion(rotation_matrix):
     """Compute the quaternion representing the rotation given by the matrix"""
-    invert = (numpy.linalg.det(rotation_matrix) < 0)
+    invert = (np.linalg.det(rotation_matrix) < 0)
     if invert:
         factor = -1
     else:
         factor = 1
-    c2 = 0.25*(factor*numpy.trace(rotation_matrix) + 1)
+    c2 = 0.25*(factor*np.trace(rotation_matrix) + 1)
     if c2 < 0:
         #print c2
         c2 = 0.0
-    c = numpy.sqrt(c2)
-    r2 = 0.5*(1 + factor*numpy.diagonal(rotation_matrix)) - c2
+    c = np.sqrt(c2)
+    r2 = 0.5*(1 + factor*np.diagonal(rotation_matrix)) - c2
     #print "check", r2.sum()+c2
-    r = numpy.zeros(3, float)
+    r = np.zeros(3, float)
     for index, r2_comp in enumerate(r2):
         if r2_comp < 0:
             continue
         else:
             row, col = off_diagonals[index]
             if (rotation_matrix[row, col] - rotation_matrix[col, row] < 0):
-                r[index] = -numpy.sqrt(r2_comp)
+                r[index] = -np.sqrt(r2_comp)
             else:
-                r[index] = +numpy.sqrt(r2_comp)
-    return factor, numpy.array([c, r[0], r[1], r[2]], float)
+                r[index] = +np.sqrt(r2_comp)
+    return factor, np.array([c, r[0], r[1], r[2]], float)
 
 
 def quaternion_to_rotation_matrix(quaternion):
     """Compute the rotation matrix representated by the quaternion"""
     c, x, y, z = quaternion
-    return numpy.array([
+    return np.array([
         [c*c + x*x - y*y - z*z, 2*x*y - 2*c*z,         2*x*z + 2*c*y        ],
         [2*x*y + 2*c*z,         c*c - x*x + y*y - z*z, 2*y*z - 2*c*x        ],
         [2*x*z - 2*c*y,         2*y*z + 2*c*x,         c*c - x*x - y*y + z*z]
