@@ -329,11 +329,10 @@ class PSFFile(object):
     def _add_graph_bonds(self, molecular_graph, offset, atom_types, molecule):
         # add bonds
         match_generator = GraphSearch(BondPattern([CriteriaSet()]))
-        tmp = [(
+        tmp = sorted([(
             match.get_destination(0),
             match.get_destination(1),
-        ) for match in match_generator(molecular_graph)]
-        tmp.sort()
+        ) for match in match_generator(molecular_graph)])
         new = len(tmp)
         if new > 0:
             prev = len(self.bonds)
@@ -344,12 +343,11 @@ class PSFFile(object):
     def _add_graph_bends(self, molecular_graph, offset, atom_types, molecule):
         # add bends
         match_generator = GraphSearch(BendingAnglePattern([CriteriaSet()]))
-        tmp = [(
+        tmp = sorted([(
             match.get_destination(0),
             match.get_destination(1),
             match.get_destination(2),
-        ) for match in match_generator(molecular_graph)]
-        tmp.sort()
+        ) for match in match_generator(molecular_graph)])
         new = len(tmp)
         if new > 0:
             prev = len(self.bends)
@@ -360,13 +358,12 @@ class PSFFile(object):
     def _add_graph_dihedrals(self, molecular_graph, offset, atom_types, molecule):
         # add dihedrals
         match_generator = GraphSearch(DihedralAnglePattern([CriteriaSet()]))
-        tmp = [(
+        tmp = sorted([(
             match.get_destination(0),
             match.get_destination(1),
             match.get_destination(2),
             match.get_destination(3),
-        ) for match in match_generator(molecular_graph)]
-        tmp.sort()
+        ) for match in match_generator(molecular_graph)])
         new = len(tmp)
         if new > 0:
             prev = len(self.dihedrals)
@@ -379,13 +376,12 @@ class PSFFile(object):
         match_generator = GraphSearch(OutOfPlanePattern([CriteriaSet(
             vertex_criteria={0: HasNumNeighbors(3)},
         )], vertex_tags={1:1}))
-        tmp = [(
+        tmp = sorted([(
             match.get_destination(0),
             match.get_destination(1),
             match.get_destination(2),
             match.get_destination(3),
-        ) for match in match_generator(molecular_graph)]
-        tmp.sort()
+        ) for match in match_generator(molecular_graph)])
         new = len(tmp)
         if new > 0:
             prev = len(self.impropers)
