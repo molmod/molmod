@@ -259,7 +259,7 @@ class ReadOnlyType(type):
     def __init__(cls, name, bases, dct):
         super(ReadOnlyType, cls).__init__(name, bases, dct)
         for base in bases:
-            for key, descriptor in base.__dict__.iteritems():
+            for key, descriptor in base.__dict__.items():
                 if isinstance(descriptor, ReadOnlyAttribute):
                     setattr(cls, key, descriptor)
 
@@ -286,14 +286,14 @@ class ReadOnly(object):
     def __getstate__(self):
         """Part of the pickle protocol"""
         result = {}
-        for key, descriptor in self.__class__.__dict__.iteritems():
+        for key, descriptor in self.__class__.__dict__.items():
             if isinstance(descriptor, ReadOnlyAttribute):
                 result[key] = descriptor.__get__(self)
         return result
 
     def __setstate__(self, state):
         """Part of the pickle protocol"""
-        for key, val in state.iteritems():
+        for key, val in state.items():
             descriptor = self.__class__.__dict__.get(key)
             if not isinstance(descriptor, ReadOnlyAttribute):
                 # Got wrong class attribute during unpickling. Just ignore.
@@ -302,7 +302,7 @@ class ReadOnly(object):
             # are assigned.
             descriptor.__set__(self, val, do_check=False)
         # Now do the custon checks
-        for key, val in state.iteritems():
+        for key, val in state.items():
             descriptor = self.__class__.__dict__.get(key)
             if not isinstance(descriptor, ReadOnlyAttribute):
                 # Got wrong class attribute during unpickling. Just ignore.
@@ -318,7 +318,7 @@ class ReadOnly(object):
            (read-only) attributes as arguments.
         """
         attrs = {}
-        for key, descriptor in self.__class__.__dict__.iteritems():
+        for key, descriptor in self.__class__.__dict__.items():
             if isinstance(descriptor, ReadOnlyAttribute):
                 attrs[key] = descriptor.__get__(self)
         for key in kwargs:

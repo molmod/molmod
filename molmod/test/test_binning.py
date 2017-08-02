@@ -76,7 +76,7 @@ class BinningTestCase(unittest.TestCase):
         for wrong_distance in wrong_distances:
             message += "%10s %10s: \t % 10.7f != % 10.7f\n" % wrong_distance
         message += "UNWANTED PAIRS: %i\n" % len(distances)
-        for identifier, fast_distance in distances.iteritems():
+        for identifier, fast_distance in distances.items():
             message += "%10s %10s: \t % 10.7f\n" % (identifier, fast_distance)
         message += "TOTAL PAIRS: %i\n" % num_total
         message += "CORRECT PAIRS: %i\n" % num_correct

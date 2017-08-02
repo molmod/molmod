@@ -77,9 +77,9 @@ class BondData(object):
         self._load_bond_data()
         self._approximate_unkown_bond_lengths()
         self.max_length = max(
-            max(lengths.itervalues())
+            max(lengths.values())
             for lengths
-            in self.lengths.itervalues()
+            in self.lengths.values()
             if len(lengths) > 0
         )
 

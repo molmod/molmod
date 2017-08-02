@@ -61,7 +61,7 @@ class MolecularGraphTestCase(unittest.TestCase):
     # graph search tests
 
     def verify_graph_search(self, graph, expected_results, test_results, iter_alternatives):
-        for key in test_results.iterkeys():
+        for key in test_results.keys():
             unsatisfied = expected_results[key]
             test = test_results[key]
             correct = []
@@ -320,7 +320,7 @@ class MolecularGraphTestCase(unittest.TestCase):
             l = all_rings.setdefault(len(match.ring_vertices), set([]))
             l.add(match.ring_vertices)
 
-        for size, solutions in all_rings.iteritems():
+        for size, solutions in all_rings.items():
             tag = '%i-ring' % size
             pattern = NRingPattern(size, [CriteriaSet(tag=tag)], strong=True)
             expected_results = {tag: solutions}
@@ -418,7 +418,7 @@ class MolecularGraphTestCase(unittest.TestCase):
             (49,67): set([(49,2,53,6,56,7,60,9,59,8,67),(49,4,54,10,61,11,65,13,64,12,67)]),
             (49,49): set([(49,)]), # just check wether the function doesn't crash on weird input
         }
-        for (i,j), expected_results in cases.iteritems():
+        for (i,j), expected_results in cases.items():
             shortest_paths = set(molecule.graph.iter_shortest_paths(i,j))
             self.assertEqual(shortest_paths, expected_results)
 

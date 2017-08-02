@@ -126,7 +126,7 @@ class MolecularGraph(Graph):
         # are eliminated first
         slated_for_removal = set([])
         threshold = 0.5**0.5
-        for c, ns in result.neighbors.iteritems():
+        for c, ns in result.neighbors.items():
             lengths_ns = []
             for n in ns:
                 delta = molecule.coordinates[n] - molecule.coordinates[c]
@@ -572,7 +572,7 @@ class NRingPattern(CustomPattern):
         if self.strong:
             # can this ever become a strong ring?
             vertex1_start = match.forward[self.pattern_graph.central_vertex]
-            for vertex1 in new_relations.itervalues():
+            for vertex1 in new_relations.values():
                 paths = list(subject_graph.iter_shortest_paths(vertex1, vertex1_start))
                 if self.size % 2 == 0 and len(match) == self.size:
                     if len(paths) != 2:

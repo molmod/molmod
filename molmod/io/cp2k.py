@@ -62,11 +62,11 @@ class CP2KSection(object):
 
     def _consistent(self):
         """Checks the constency between self.__index and self.__order"""
-        if len(self.__order) != sum(len(values) for values in self.__index.itervalues()):
+        if len(self.__order) != sum(len(values) for values in self.__index.values()):
             return False
         import copy
         tmp = copy.copy(self.__order)
-        for key, values in self.__index.iteritems():
+        for key, values in self.__index.items():
             for value in values:
                 if value.name != key:
                     return False
@@ -88,7 +88,7 @@ class CP2KSection(object):
         if len(self.__index) != len(other.__index):
             #print "len(self.__index) != len(other.__index)"
             return False
-        for key, lself in self.__index.iteritems():
+        for key, lself in self.__index.items():
             lother = other.__index.get(key)
             if lother is None:
                 #print "lother==None"

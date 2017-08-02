@@ -116,7 +116,7 @@ def dump_chk(filename, data):
        feature that the shapes of the arrays are also stored.
     '''
     f = file(filename, 'w')
-    for key, value in sorted(data.iteritems()):
+    for key, value in sorted(data.items()):
         if not isinstance(key, str):
             raise TypeError('The keys must be strings.')
         if len(key) > 40:

@@ -200,7 +200,7 @@ class ToyFF(object):
 
         span_edges = []
         span_lengths = []
-        for i, neighbors in graph.neighbors.iteritems():
+        for i, neighbors in graph.neighbors.items():
             number_i = graph.numbers[i]
             if (number_i >= 5 and number_i <=8):
                 valence = len(neighbors) + abs(number_i-6)

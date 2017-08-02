@@ -216,9 +216,9 @@ class NumberState(object):
                               in the result
         """
         if subset is None:
-            return dict((name, attr.get(copy=True)) for name, attr in self._fields.iteritems())
+            return dict((name, attr.get(copy=True)) for name, attr in self._fields.items())
         else:
-            return dict((name, attr.get(copy=True)) for name, attr in self._fields.iteritems() if name in subset)
+            return dict((name, attr.get(copy=True)) for name, attr in self._fields.items() if name in subset)
 
     def set(self, new_fields, subset=None):
         """Assign the registered fields based on a dictionary
@@ -243,7 +243,7 @@ class NumberState(object):
         if subset is None:
             if len(new_fields) != len(self._fields):
                 raise ValueError("new_fields contains too many fields.")
-        for name, attr in self._fields.iteritems():
+        for name, attr in self._fields.items():
             if name in subset:
                 attr.set(new_fields[name])
 

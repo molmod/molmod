@@ -86,7 +86,7 @@ class Binning(object):
 
     def __iter__(self):
         """Iterate over (key,bin) pairs"""
-        return self._bins.iteritems()
+        return iter(self._bins.items())
 
     def iter_surrounding(self, center_key):
         """Iterate over all bins surrounding the given bin"""

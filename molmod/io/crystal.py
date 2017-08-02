@@ -132,7 +132,7 @@ class CrystalAPIOut(object):
         # Compute the total number of basis functions (and orbitals).
         self.num_basis = 0
         subshell_counts = {'S': 1, 'P': 3, 'SP': 4, 'D': 5, 'F': 7, 'G': 9}
-        for symbol, basis in self.basisset.iteritems():
+        for symbol, basis in self.basisset.items():
             symbol_count = symbols.count(symbol)
             for subshell, contraction in basis:
                 self.num_basis += symbol_count*subshell_counts[subshell]

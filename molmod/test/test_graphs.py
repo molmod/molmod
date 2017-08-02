@@ -300,7 +300,7 @@ class GraphTestCase(unittest.TestCase):
         for case in self.iter_cases():
             g = case.graph
             counter = 0
-            for central, neighbors in g.neighbors.iteritems():
+            for central, neighbors in g.neighbors.items():
                 for neighbor in neighbors:
                     counter += 1
                     self.assert_(frozenset([central,neighbor]) in g.edges)
@@ -653,7 +653,7 @@ class GraphTestCase(unittest.TestCase):
             b = match.forward[1]
             s = collection.setdefault(a, set([]))
             s.add(b)
-        for bs in collection.itervalues():
+        for bs in collection.values():
             self.assertEqual(len(bs), 3)
 
     def test_rings_zeolite(self):

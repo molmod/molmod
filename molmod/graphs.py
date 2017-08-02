@@ -213,7 +213,7 @@ class Graph(ReadOnly):
             neighbors[a].append(b)
             neighbors[b].append(a)
         # turn lists into frozensets
-        neighbors = dict((key, frozenset(val)) for key, val in neighbors.iteritems())
+        neighbors = dict((key, frozenset(val)) for key, val in neighbors.items())
         return neighbors
 
     @cached
@@ -316,7 +316,7 @@ class Graph(ReadOnly):
             else:
                 l.add(i)
         level2 = {}
-        for key, vertices in level1.iteritems():
+        for key, vertices in level1.items():
             for vertex in vertices:
                 level2[vertex] = vertices
         return level2
@@ -820,7 +820,7 @@ class Graph(ReadOnly):
 
         result = OneToOne()
         for match in matches:
-            result.add_relations(match.forward.iteritems())
+            result.add_relations(match.forward.items())
         return result
 
 
@@ -849,14 +849,14 @@ class OneToOne(object):
 
     def __str__(self):
         result = "|"
-        for source, destination in self.forward.iteritems():
+        for source, destination in self.forward.items():
             result += " %s -> %s |" % (source, destination)
         return result
 
     def __mul__(self, other):
         """Return the result of the 'after' operator."""
         result = OneToOne()
-        for source, mid in other.forward.iteritems():
+        for source, mid in other.forward.items():
             destination = self.forward[mid]
             result.forward[source] = destination
             result.reverse[destination] = source
@@ -932,9 +932,9 @@ class Match(OneToOne):
 
     def copy_with_new_relations(self, new_relations):
         """Create a new match object extended with new relations"""
-        result = self.__class__(self.forward.iteritems())
-        result.add_relations(new_relations.iteritems())
-        result.previous_ends1 = set(new_relations.itervalues())
+        result = self.__class__(self.forward.items())
+        result.add_relations(new_relations.items())
+        result.previous_ends1 = set(new_relations.values())
         return result
 
 
@@ -1036,11 +1036,11 @@ class CriteriaSet(object):
 
     def test_match(self, match, pattern_graph, subject_graph):
         """Test if a match satisfies the criteria"""
-        for vertex0, c in self.vertex_criteria.iteritems():
+        for vertex0, c in self.vertex_criteria.items():
             vertex1 = match.forward[vertex0]
             if not c(vertex1, subject_graph):
                 return False
-        for edge0_index, c in self.edge_criteria.iteritems():
+        for edge0_index, c in self.edge_criteria.items():
             vertex0a, vertex0b = pattern_graph.edges[edge0_index]
             edge1_index = subject_graph.edge_index[frozenset([
                 match.forward[vertex0a],
@@ -1445,12 +1445,12 @@ class RingPattern(Pattern):
                 #print "RingPattern.check_next_match: duplicate order", match.forward[1], match.forward[2]
                 return False
         # avoid duplicate rings (starting point)
-        for vertex1 in new_relations.itervalues():
+        for vertex1 in new_relations.values():
             if vertex1 < match.forward[0]:
                 #print "RingPattern.check_next_match: duplicate start", vertex1, match.forward[0]
                 return False
         # can this ever become a strong ring?
-        for vertex1 in new_relations.itervalues():
+        for vertex1 in new_relations.values():
             paths = list(subject_graph.iter_shortest_paths(vertex1, match.forward[0]))
             if len(paths) != 1:
                 #print "RingPattern.check_next_match: not strong 1"
@@ -1603,7 +1603,7 @@ class GraphSearch(object):
             start_vertex0 = init_match.reverse[start_vertex1]
             l = dests.setdefault(start_vertex0, [])
             l.append(end_vertex1)
-        for start_vertex0, end_vertices0 in sources.iteritems():
+        for start_vertex0, end_vertices0 in sources.items():
             end_vertices1 = dests.get(start_vertex0, [])
             yield end_vertices0, end_vertices1
 

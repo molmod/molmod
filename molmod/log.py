@@ -423,7 +423,7 @@ class TimerGroup(object):
         self._start('Total')
 
     def reset(self):
-        for timer in self.parts.itervalues():
+        for timer in self.parts.values():
             timer.total.cpu = 0.0
             timer.own.cpu = 0.0
 
@@ -457,7 +457,7 @@ class TimerGroup(object):
 
     def get_max_own_cpu(self):
         result = None
-        for part in self.parts.itervalues():
+        for part in self.parts.values():
             if result is None or result < part.own.cpu:
                 result = part.own.cpu
         return result
@@ -472,7 +472,7 @@ class TimerGroup(object):
             log('Label             Total      Own')
             log.hline()
             bar_width = log.width-33
-            for label, timer in sorted(self.parts.iteritems()):
+            for label, timer in sorted(self.parts.items()):
                 #if timer.total.cpu == 0.0:
                 #    continue
                 if max_own_cpu > 0:
