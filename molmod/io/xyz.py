@@ -261,5 +261,5 @@ class XYZFile(object):
                                  [default=angstrom]
         """
         xyz_writer = XYZWriter(f, self.symbols, file_unit=file_unit)
-        for title, coordinates in izip(self.titles, self.geometries):
+        for title, coordinates in zip(self.titles, self.geometries):
             xyz_writer.dump(title, coordinates)
