@@ -54,7 +54,7 @@ class SDFReader(object):
            Argument:
             | ``f``  --  a filename or a file-like object
         """
-        if isinstance(f, basestring):
+        if isinstance(f, str):
             self.filename = f
             self.f = file(f)
             self._auto_close = True

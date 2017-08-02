@@ -68,7 +68,7 @@ class CMLMoleculeLoader(ContentHandler):
         #print "START", name
         # If it's not a comic element, ignore it
         if name == 'molecule':
-            self.current_title = attrs.get('id', 'No Title')
+            self.current_title = str(attrs.get('id', 'No Title'))
             self.current_numbers = []
             self.current_coordinates = []
             self.current_atom_names = []
@@ -78,17 +78,20 @@ class CMLMoleculeLoader(ContentHandler):
         elif self.current_title is not None:
             if name == 'atom':
                 atom_name = attrs.get('id', None)
-                if atom_name is None: return
+                if atom_name is None:
+                    return
                 symbol = attrs.get('elementType', None)
-                if symbol is None: return
+                if symbol is None:
+                    return
                 try:
                     x = float(attrs.get('x3', None))
                     y = float(attrs.get('y3', None))
                     z = float(attrs.get('z3', None))
                 except ValueError:
                     return
-                atom_record = periodic[symbol]
-                if atom_record is None: return
+                atom_record = periodic[str(symbol)]
+                if atom_record is None:
+                    return
                 self.current_atom_names.append(atom_name)
                 self.current_numbers.append(atom_record.number)
                 self.current_coordinates.append([x, y, z])
@@ -97,16 +100,17 @@ class CMLMoleculeLoader(ContentHandler):
                 if len(extra) > 0:
                     self.current_atoms_extra[len(self.current_numbers)-1] = extra
             elif name == 'bond':
-                refs = attrs.get('atomRefs2', None)
-                if not isinstance(refs, basestring): return
-                if refs.count(" ") != 1: return
-                name1, name2 = refs.split(" ")
+                refs = str(attrs.get('atomRefs2', ''))
+                if refs.count(' ') != 1:
+                    return
+                name1, name2 = refs.split(' ')
                 extra = self._get_extra(attrs, self.bond_exclude)
                 self.current_bonds.append((name1, name2, extra))
 
     def endElement(self, name):
         #print "END", name
         if name == 'molecule':
+            print 'HERE', self.current_numbers
             if len(self.current_numbers) > 0:
                 self.current_coordinates = np.array(self.current_coordinates)*angstrom
                 molecule = Molecule(self.current_numbers, self.current_coordinates, self.current_title)
@@ -196,7 +200,7 @@ def dump_cml(f, molecules):
         | ``f``  --  a filename of a CML file or a file-like object
         | ``molecules``  --  a list of molecule objects.
     """
-    if isinstance(f, basestring):
+    if isinstance(f, str):
         f = file(f, "w")
         close = True
     else:

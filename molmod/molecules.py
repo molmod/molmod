@@ -75,7 +75,7 @@ class Molecule(ReadOnly):
             raise TypeError("The number of symbols in the graph does not "
                 "match the length of the atomic numbers array.")
         for symbol in symbols:
-            if not isinstance(symbol, basestring):
+            if not isinstance(symbol, str):
                 raise TypeError("All symbols must be strings.")
 
     numbers = ReadOnlyAttribute(np.ndarray, none=False, npdim=1, npdtype=int,
@@ -83,7 +83,7 @@ class Molecule(ReadOnly):
     coordinates = ReadOnlyAttribute(np.ndarray, npdim=2, npshape=(None,3),
         npdtype=float, check=_check_coordinates, doc="atomic Cartesian "
         "coordinates")
-    title = ReadOnlyAttribute(basestring, doc="a short description of the system")
+    title = ReadOnlyAttribute(str, doc="a short description of the system")
     masses = ReadOnlyAttribute(np.ndarray, npdim=1, npdtype=float,
         check=_check_masses, doc="the atomic masses")
     graph = ReadOnlyAttribute(MolecularGraph, check=_check_graph,

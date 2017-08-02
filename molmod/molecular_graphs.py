@@ -23,11 +23,11 @@
 """Extension of the graphs module with molecular features"""
 
 
+import numpy as np
+
 from molmod.graphs import cached, Graph, CustomPattern
 from molmod.utils import ReadOnlyAttribute
 from molmod.binning import PairSearchIntra
-
-import numpy as np
 
 
 __all__ = [
@@ -66,7 +66,7 @@ class MolecularGraph(Graph):
             raise TypeError("The number of symbols in the graph does not "
                 "match the length of the atomic numbers array.")
         for symbol in symbols:
-            if not isinstance(symbol, basestring):
+            if not isinstance(symbol, str):
                 raise TypeError("All symbols must be strings.")
 
     numbers = ReadOnlyAttribute(np.ndarray, none=False, check=_check_numbers,
