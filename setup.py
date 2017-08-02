@@ -89,11 +89,12 @@ setup(
     install_requires=['numpy', 'nose', 'cython'],
     classifiers=[
         'Environment :: Console',
-        'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
-        'Topic :: Science/Engineering :: Molecular Science'
+        'Topic :: Scientific/Engineering :: Physics',
+        'Topic :: Scientific/Engineering :: Chemistry',
+        'Intended Audience :: Science/Research',
     ],
 )
