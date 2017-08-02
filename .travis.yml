@@ -95,6 +95,7 @@ deploy:
     condition: "$TRAVIS_TAG != *[ab]*"
 - provider: pypi
   skip_cleanup: true
+  user: tovrstra
   password:
     # Encrypted PyPI password
     secure: "FqhLt9p9lWnI7XsAZjJfdRKwdteHSCIR/7f87QQ1ZnLRxjML33ndz++Me2P0Ceps1Z8qgRuOQstPvlhyCVk9aKVoAhwOtHSmcBz/IHsYTIo0PVmZqPSGqDqhF1zkTudTVDYRBHlR8bCNQW82hIxNhNBaRCeKbku/nBBdYxTWrG8="
