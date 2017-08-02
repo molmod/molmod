@@ -266,7 +266,7 @@ class ScreenLog(object):
             self.print_header()
             self.prefix = prefix
         if self.add_newline and self.prefix != self._last_used_prefix:
-            print(file=self._file)
+            self._file.write(u'\n')
             self.add_newline = False
         # Check for alignment code '&'
         pos = s.find(u'&')
@@ -293,7 +293,7 @@ class ScreenLog(object):
             else:
                 current = rest
                 rest = u''
-            print(u'%s %s%s' % (self.prefix, lead, current), file=self._file)
+            self._file.write(u'%s %s%s\n' % (self.prefix, lead, current))
             if first:
                 lead = u' '*len(lead)
                 first = False
@@ -320,7 +320,7 @@ class ScreenLog(object):
         self('%s%s%s' % (edge, s.center(self.width-2*len(edge)), edge))
 
     def blank(self):
-        print(file=self._file)
+        self._file.write(u'\n')
 
     def _enter(self, prefix):
         if len(prefix) > self.margin-1:

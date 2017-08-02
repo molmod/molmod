@@ -22,9 +22,10 @@
 #--
 
 
-from future import standard_library
-standard_library.install_aliases()
-from io import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from molmod import *
 
