@@ -31,7 +31,7 @@ install:
 - conda info -a
 
 # Build the conda package
-- conda build -q conda.recipe
+- conda build -q conda.recipe 2> /dev/null
 
 # Build source package, should work too and needed for deployment.
 - python setup.py sdist
@@ -105,7 +105,7 @@ deploy:
 - provider: pages
   skip_cleanup: true
   github_token:
-    secure: "GmlF0TK3pw0OE8oNWhvjrzbkJhcYZje1hpw5OT17kjZoEd7IjZelgFCYXhwRsNu8Iq3oooxwlQ/19w/0KYDn1cdY5uBsAKD6baJUMMj6sbhg8crgO/2mmFx0PIiqRw7m+JR3auprAltTWtpzlTadlZDZE+lwVwOBNHh8OWJAqvE="
+    secure: cfs7wOx9Q4LXFIvZvxSDVtCT1dNpuMQHMODK50CS4mstR0ppZab62YpJLLEQVfhLsaqNVdBM3fCWm03LndbUcdB9dHkKnELh+Gj6Y/E9zA/1QkQau4yTjVG2Pb16If4doHwMrny08m1daOcpDFNfpXFszNieidOs6dsLw/ZbbEQ=
   project_name: molmod
   local_dir: doc/_build/html
   on:
