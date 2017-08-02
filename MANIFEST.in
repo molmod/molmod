@@ -1,5 +1,12 @@
+recursive-include molmod *.pyx *.pxd *.h *.c
+recursive-exclude molmod ext.c
+
+recursive-include doc *.rst *.png
+include doc/conf.py
+include doc/Makefile
+
 include LICENSE.txt
-include README
+include README.rst
 include molmod/data/*.*
 include molmod/data/test/*
 recursive-include molmod/examples *
