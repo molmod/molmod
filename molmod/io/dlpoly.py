@@ -78,8 +78,8 @@ class DLPolyHistoryReader(SlicedReader):
         restart = self._detect_restart()
         if restart is None:
             try:
-                self.header = self._f.next()[:-1]
-                integers = tuple(int(word) for word in self._f.next().split())
+                self.header = next(self._f)[:-1]
+                integers = tuple(int(word) for word in next(self._f).split())
                 if len(integers) != 3:
                     raise FileFormatError("Second line must contain three integers.")
                 self.keytrj, self.imcon, self.num_atoms = integers
@@ -93,7 +93,7 @@ class DLPolyHistoryReader(SlicedReader):
         self._frame_size = 4 + self.num_atoms*(self.keytrj+2)
 
     def _detect_restart(self):
-        words = self._f.next().split()
+        words = next(self._f).split()
         self._f.seek(0)
         if len(words) != 6:
             return
@@ -122,7 +122,7 @@ class DLPolyHistoryReader(SlicedReader):
 
         frame = {}
         # read the frame header line
-        words = self._f.next().split()
+        words = next(self._f).split()
         if len(words) != 6:
             raise FileFormatError("The first line of each time frame must contain 6 words. (%i'th frame)" % self._counter)
         if words[0] != "timestep":
@@ -164,7 +164,7 @@ class DLPolyHistoryReader(SlicedReader):
             frame["frc"] = frc
         for i in range(self.num_atoms):
             # the atom header line
-            words = self._f.next().split()
+            words = next(self._f).split()
             if len(words) != 4:
                 raise FileFormatError("The atom header line must contain 4 words. (%i'th frame, %i'th step, %i'th atom)" % (self._counter, step, i+1))
             symbols.append(words[0])
@@ -254,7 +254,7 @@ class DLPolyOutputReader(SlicedReader):
         """Continue reading until the next frame is reached"""
         marked = False
         while True:
-            line = self._f.next()[:-1]
+            line = next(self._f)[:-1]
             if marked and len(line) > 0 and not line.startswith(" --------"):
                 try:
                     step = int(line[:10])
@@ -281,11 +281,11 @@ class DLPolyOutputReader(SlicedReader):
             row = [step]
             for i in range(9):
                 row.append(float(line[10+i*12:10+(i+1)*12]))
-            line = self._f.next()[:-1]
+            line = next(self._f)[:-1]
             row.append(float(line[:10]))
             for i in range(9):
                 row.append(float(line[10+i*12:10+(i+1)*12]))
-            line = self._f.next()[:-1]
+            line = next(self._f)[:-1]
             row.append(float(line[:10]))
             for i in range(9):
                 row.append(float(line[10+i*12:10+(i+1)*12]))

@@ -164,12 +164,12 @@ class XYZWriter(object):
             | ``file_unit``  --  the unit of the values written to file
                                  [default=angstrom]
         """
-        if isinstance(f, file):
+        if isinstance(f, str):
+            self._auto_close = True
+            self._f = open(f, 'w')
+        else:
             self._auto_close = False
             self._f = f
-        else:
-            self._auto_close = True
-            self._f = file(f, 'w')
         self.symbols = symbols
         self.file_unit = file_unit
 

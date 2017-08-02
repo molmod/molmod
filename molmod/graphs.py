@@ -123,10 +123,10 @@ class Graph(ReadOnly):
             if len(edge) != 2:
                 raise TypeError("The edges must be a iterable with 2 elements")
             i, j = edge
+            i = int(i)
+            j = int(j)
             if i == j:
                 raise ValueError("A edge must contain two different values.")
-            if not (isinstance(i, int) and isinstance(j, int)):
-                raise TypeError("The edges must contain integers.")
             if i < 0 or j < 0:
                 raise TypeError("The edges must contain positive integers.")
             tmp.append(frozenset([i, j]))
@@ -309,7 +309,7 @@ class Graph(ReadOnly):
         """A dictionary with symmetrically equivalent vertices."""
         level1 = {}
         for i, row in enumerate(self.vertex_fingerprints):
-            key = str(buffer(row))
+            key = row.tobytes()
             l = level1.get(key)
             if l is None:
                 l = set([i])
@@ -373,7 +373,7 @@ class Graph(ReadOnly):
             (
                 -len(self.equivalent_vertices[vertex]),
                 self.get_vertex_string(vertex),
-                str(buffer(self.vertex_fingerprints[vertex])),
+                self.vertex_fingerprints[vertex].tobytes(),
                 vertex
             ) for vertex in self.central_vertices
         )[-1]
@@ -392,7 +392,7 @@ class Graph(ReadOnly):
                 -distance,
                 -len(self.equivalent_vertices[vertex]),
                 self.get_vertex_string(vertex),
-                str(buffer(self.vertex_fingerprints[vertex])),
+                self.vertex_fingerprints[vertex].tobytes(),
                 vertex
             ] for vertex, distance in self.iter_breadth_first(starting_vertex)
             if len(self.neighbors[vertex]) > 0
@@ -606,12 +606,12 @@ class Graph(ReadOnly):
         """Return an array with fingerprints for each vertex"""
         import hashlib
         def str2array(x):
-            """convert a has string to a numpy array of bytes"""
+            """convert a hash string to a numpy array of bytes"""
             if len(x) == 0:
                 return np.zeros(0, np.ubyte)
             else:
-                return np.frombuffer(x, np.ubyte)
-        hashrow = lambda x: np.frombuffer(hashlib.sha1(x.data).digest(), np.ubyte)
+                return np.fromstring(x, np.ubyte)
+        hashrow = lambda x: np.fromstring(hashlib.sha1(x.data).digest(), np.ubyte)
         # initialization
         result = np.zeros((self.num_vertices, 20), np.ubyte)
         for i in range(self.num_vertices):

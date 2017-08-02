@@ -295,8 +295,8 @@ class SpecialAngles(object):
         with pkg_resources.resource_stream(__name__, 'data/toyff_angles.txt') as f:
             for line in f:
                 if line[0] != '#':
-                    key = tuple(int(word) for word in line[0:line.index(':')].split(","))
-                    value = np.pi/180.0*float(line[line.index(':')+1:-1])
+                    key = tuple(int(word) for word in line[0:line.index(b':')].split(b","))
+                    value = np.pi/180.0*float(line[line.index(b':')+1:-1])
                     self._angle_dict[key] = value
 
     def get_angle(self, triplet):

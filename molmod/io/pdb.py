@@ -66,44 +66,43 @@ def dump_pdb(filename, molecule, atomnames=None, resnames=None, chain_ids=None, 
        =======        ============  ==========   ==========================================
     """
 
-    f = file(filename, "w")
-    res_id = 1
-    old_resname = None
+    with open(filename, "w") as f:
+        res_id = 1
+        old_resname = None
 
-    for i in range(molecule.size):
-        symbol = periodic[molecule.numbers[i]].symbol
-        if atomnames is None:
-            atomname = symbol
-        else:
-            atomname = atomnames[i]
-        if resnames is None:
-            resname = "OXO"
-        else:
-            resname = resnames[i]
-        if resname != old_resname:
-            res_id += 1
-        if chain_ids is None:
-            chain_id = "A"
-        else:
-            chain_id = chain_ids[i]
-        if occupancies is None:
-            occupancy = 1.0
-        else:
-            occupancy = occupancies[i]
-        if betas is None:
-            beta = 1.0
-        else:
-            beta = betas[i]
+        for i in range(molecule.size):
+            symbol = periodic[molecule.numbers[i]].symbol
+            if atomnames is None:
+                atomname = symbol
+            else:
+                atomname = atomnames[i]
+            if resnames is None:
+                resname = "OXO"
+            else:
+                resname = resnames[i]
+            if resname != old_resname:
+                res_id += 1
+            if chain_ids is None:
+                chain_id = "A"
+            else:
+                chain_id = chain_ids[i]
+            if occupancies is None:
+                occupancy = 1.0
+            else:
+                occupancy = occupancies[i]
+            if betas is None:
+                beta = 1.0
+            else:
+                beta = betas[i]
 
-        print("ATOM   %4i  %3s %3s %1s%4i    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s  " % (
-            i+1, atomname.ljust(3), resname.ljust(3), chain_id, res_id,
-            molecule.coordinates[i, 0]/angstrom,
-            molecule.coordinates[i, 1]/angstrom,
-            molecule.coordinates[i, 2]/angstrom,
-            occupancy, beta, symbol.ljust(2)
-        ), file=f)
-        old_resname = resname
-    f.close()
+            print("ATOM   %4i  %3s %3s %1s%4i    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s  " % (
+                i+1, atomname.ljust(3), resname.ljust(3), chain_id, res_id,
+                molecule.coordinates[i, 0]/angstrom,
+                molecule.coordinates[i, 1]/angstrom,
+                molecule.coordinates[i, 2]/angstrom,
+                occupancy, beta, symbol.ljust(2)
+            ), file=f)
+            old_resname = resname
 
 
 def load_pdb(filename):
@@ -112,19 +111,18 @@ def load_pdb(filename):
        This function does support only a small fragment from the pdb specification.
        It assumes that there is only one molecular geometry in the pdb file.
     """
-    f = file(filename)
-    numbers = []
-    coordinates = []
-    occupancies = []
-    betas = []
-    for line in f:
-        if line.startswith("ATOM"):
-            symbol = line[76:78].strip()
-            numbers.append(periodic[symbol].number)
-            coordinates.append([float(line[30:38])*angstrom, float(line[38:46])*angstrom, float(line[46:54])*angstrom])
-            occupancies.append(float(line[54:60]))
-            betas.append(float(line[60:66]))
-    f.close()
+    with open(filename) as f:
+        numbers = []
+        coordinates = []
+        occupancies = []
+        betas = []
+        for line in f:
+            if line.startswith("ATOM"):
+                symbol = line[76:78].strip()
+                numbers.append(periodic[symbol].number)
+                coordinates.append([float(line[30:38])*angstrom, float(line[38:46])*angstrom, float(line[46:54])*angstrom])
+                occupancies.append(float(line[54:60]))
+                betas.append(float(line[60:66]))
     if len(numbers) > 0:
         molecule = Molecule(numbers, coordinates)
         molecule.occupancies = np.array(occupancies)

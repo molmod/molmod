@@ -142,20 +142,18 @@ class FCHKFile(object):
             return True
 
         self.fields = {}
-        f = file(filename, 'r')
-        self.title = f.readline()[:-1].strip()
-        words = f.readline().split()
-        if len(words) == 3:
-            self.command, self.lot, self.basis = words
-        elif len(words) == 2:
-            self.command, self.lot = words
-        else:
-            raise FileFormatError('The second line of the FCHK file should contain two or three words.')
+        with open(filename, 'r') as f:
+            self.title = f.readline()[:-1].strip()
+            words = f.readline().split()
+            if len(words) == 3:
+                self.command, self.lot, self.basis = words
+            elif len(words) == 2:
+                self.command, self.lot = words
+            else:
+                raise FileFormatError('The second line of the FCHK file should contain two or three words.')
 
-        while read_field(f):
-            pass
-
-        f.close()
+            while read_field(f):
+                pass
 
     def _analyze(self):
         """Convert a few elementary fields into a molecule object"""

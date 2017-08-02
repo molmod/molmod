@@ -54,7 +54,7 @@ class FCHKTestCase(BaseTestCase):
         self.assertEqual(fchk.fields["Number of independant functions"], 142)
         self.assertAlmostEqual(fchk.fields["Virial Ratio"], 2.002408027154329)
         self.assertArraysAlmostEqual(fchk.fields["Current cartesian coordinates"], expected_coordinates)
-        self.assert_(isinstance(fchk.fields["Shell to atom map"][0], int))
+        self.assert_(isinstance(fchk.fields["Shell to atom map"][0], np.integer))
         self.assertEqual(fchk.fields["Shell to atom map"][-1], 9)
 
         fchk = FCHKFile(pkg_resources.resource_filename(__name__, "../../data/test/1TOH.b3lyp.trim.fchk"), ignore_errors=True)

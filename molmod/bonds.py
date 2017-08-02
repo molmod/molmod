@@ -116,7 +116,7 @@ class BondData(object):
 
         with pkg_resources.resource_stream(__name__, 'data/bonds.csv') as f:
             for line in f:
-                words = line.split()
+                words = line.decode('utf-8').split()
                 if (len(words) > 0) and (words[0][0] != "#"):
                     if words[0] == "unit":
                         conversions = read_units(words[1:])

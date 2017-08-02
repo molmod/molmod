@@ -203,7 +203,7 @@ def dump_cml(f, molecules):
         | ``molecules``  --  a list of molecule objects.
     """
     if isinstance(f, str):
-        f = file(f, "w")
+        f = open(f, "w")
         close = True
     else:
         close = False

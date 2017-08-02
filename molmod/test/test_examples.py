@@ -40,7 +40,7 @@ def check_example(dirname, fn_py, fns_data):
     try:
         for fn in [fn_py] + fns_data:
             with pkg_resources.resource_stream(__name__, "../examples/{}/{}".format(dirname, fn)) as fin:
-                with open(os.path.join(dntmp, fn), 'w') as fout:
+                with open(os.path.join(dntmp, fn), 'wb') as fout:
                     fout.write(fin.read())
         env = dict(os.environ)
         root_dir = os.getcwd()
@@ -52,8 +52,8 @@ def check_example(dirname, fn_py, fns_data):
         outdata, errdata = proc.communicate()
         if proc.returncode != 0:
             lines = [
-                'Command faild', str(command), 'Standard output', '+'*80, outdata,
-                '+'*80, 'Standard error', '+'*80, errdata, '+'*80]
+                'Command faild', str(command), 'Standard output', '+'*80, outdata.decode('utf-8'),
+                '+'*80, 'Standard error', '+'*80, errdata.decode('utf-8'), '+'*80]
             raise AssertionError('\n'.join(lines))
     finally:
         shutil.rmtree(dntmp)

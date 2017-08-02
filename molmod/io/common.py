@@ -71,12 +71,12 @@ class SlicedReader(object):
             | ``sub``  --  a slice indicating which frames to read/skip
 
         """
-        if isinstance(f, file):
+        if isinstance(f, str):
+            self._auto_close = True
+            self._f = open(f)
+        else:
             self._auto_close = False
             self._f = f
-        else:
-            self._auto_close = True
-            self._f = file(f)
         self._sub = sub
         self._counter = 0
 

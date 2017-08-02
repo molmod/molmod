@@ -84,28 +84,27 @@ class PSFFile(object):
     def read_from_file(self, filename):
         """Load a PSF file"""
         self.clear()
-        f = file(filename)
-        # A) check the first line
-        line = next(f)
-        if not line.startswith("PSF"):
-            raise FileFormatError("Error while reading: A PSF file must start with a line 'PSF'.")
-        # B) read in all the sections, without interpreting them
-        current_section = None
-        sections = {}
-        for line in f:
-            line = line.strip()
-            if line == "":
-                continue
-            elif "!N" in line:
-                words = line.split()
-                current_section = []
-                section_name = words[1][2:]
-                if section_name.endswith(":"):
-                    section_name = section_name[:-1]
-                sections[section_name] = current_section
-            else:
-                current_section.append(line)
-        f.close()
+        with open(filename) as f:
+            # A) check the first line
+            line = next(f)
+            if not line.startswith("PSF"):
+                raise FileFormatError("Error while reading: A PSF file must start with a line 'PSF'.")
+            # B) read in all the sections, without interpreting them
+            current_section = None
+            sections = {}
+            for line in f:
+                line = line.strip()
+                if line == "":
+                    continue
+                elif "!N" in line:
+                    words = line.split()
+                    current_section = []
+                    section_name = words[1][2:]
+                    if section_name.endswith(":"):
+                        section_name = section_name[:-1]
+                    sections[section_name] = current_section
+                else:
+                    current_section.append(line)
         # C) interpret the supported sections
         # C.1) The title
         self.title = sections['TITLE'][0]
@@ -155,7 +154,7 @@ class PSFFile(object):
         if group is not None:
             graph = graph.get_subgraph(group, normalize=True)
 
-        fingerprint = str(buffer(graph.fingerprint))
+        fingerprint = graph.fingerprint.tobytes()
         name = self.name_cache.get(fingerprint)
         if name is None:
             name = "NM%02i" % len(self.name_cache)
@@ -164,9 +163,8 @@ class PSFFile(object):
 
     def write_to_file(self, filename):
         """Write the data structure to a file"""
-        f = file(filename, 'w')
-        self.dump(f)
-        f.close()
+        with open(filename, 'w') as f:
+            self.dump(f)
 
     def dump(self, f):
         """Dump the data structure to a file-like object"""

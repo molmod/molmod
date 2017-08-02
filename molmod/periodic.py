@@ -93,7 +93,7 @@ class PeriodicData(object):
         with pkg_resources.resource_stream(__name__, 'data/periodic.csv') as f:
             lines_read = 0
             for line in f:
-                words = line.split()
+                words = line.decode('utf-8').split()
                 if (len(words) > 0) and (words[0][0] != "#"):
                     if lines_read == 0:
                         # load all the attribute names

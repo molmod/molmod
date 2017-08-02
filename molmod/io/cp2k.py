@@ -331,14 +331,13 @@ class CP2KInputFile(CP2KSection):
              >>> for section in if:
              ...     print section.name
         """
-        f = file(filename)
-        result = CP2KInputFile()
-        try:
-            while True:
-                result.load_children(f)
-        except EOFError:
-            pass
-        f.close()
+        with open(filename) as f:
+            result = CP2KInputFile()
+            try:
+                while True:
+                    result.load_children(f)
+            except EOFError:
+                pass
         return result
 
     def __init__(self, children=None):
@@ -347,9 +346,8 @@ class CP2KInputFile(CP2KSection):
 
     def write_to_file(self, filename):
         """Write the CP2KInput data structure to a file"""
-        f = file(filename, "w")
-        self.dump(f)
-        f.close()
+        with open(filename, "w") as f:
+            self.dump(f)
 
     def dump(self, f, indent=''):
         """Dump the CP2KInput data structure to a file-like object"""

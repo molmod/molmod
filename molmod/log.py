@@ -249,7 +249,7 @@ class ScreenLog(object):
 
     def set_file(self, f):
         # Wrap sys.stdout into a StreamWriter to allow writing unicode.
-        self._file = codecs.getwriter(locale.getpreferredencoding())(f)
+        self._file = f
         self.add_newline = False
 
     def set_level(self, level):

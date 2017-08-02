@@ -59,9 +59,8 @@ class MolecularDistortion(object):
     @classmethod
     def read_from_file(cls, filename):
         """Construct a MolecularDistortion object from a file"""
-        f = file(filename)
-        lines = list(line for line in f if line[0] != '#')
-        f.close()
+        with open(filename) as f:
+            lines = list(line for line in f if line[0] != '#')
         r = []
         t = []
         for line in lines[:3]:
@@ -91,16 +90,15 @@ class MolecularDistortion(object):
         """Write the object to a file"""
         r = self.transformation.r
         t = self.transformation.t
-        f = file(filename, "w")
-        print("# A (random) transformation of a part of a molecule:", file=f)
-        print("# The translation vector is in atomic units.", file=f)
-        print("#     Rx             Ry             Rz              T", file=f)
-        print("% 15.9e % 15.9e % 15.9e % 15.9e" % (r[0, 0], r[0, 1], r[0, 2], t[0]), file=f)
-        print("% 15.9e % 15.9e % 15.9e % 15.9e" % (r[1, 0], r[1, 1], r[1, 2], t[1]), file=f)
-        print("% 15.9e % 15.9e % 15.9e % 15.9e" % (r[2, 0], r[2, 1], r[2, 2], t[2]), file=f)
-        print("# The indexes of the affected atoms:", file=f)
-        print(" ".join(str(i) for i in self.affected_atoms), file=f)
-        f.close()
+        with open(filename, "w") as f:
+            print("# A (random) transformation of a part of a molecule:", file=f)
+            print("# The translation vector is in atomic units.", file=f)
+            print("#     Rx             Ry             Rz              T", file=f)
+            print("% 15.9e % 15.9e % 15.9e % 15.9e" % (r[0, 0], r[0, 1], r[0, 2], t[0]), file=f)
+            print("% 15.9e % 15.9e % 15.9e % 15.9e" % (r[1, 0], r[1, 1], r[1, 2], t[1]), file=f)
+            print("% 15.9e % 15.9e % 15.9e % 15.9e" % (r[2, 0], r[2, 1], r[2, 2], t[2]), file=f)
+            print("# The indexes of the affected atoms:", file=f)
+            print(" ".join(str(i) for i in self.affected_atoms), file=f)
 
 
 

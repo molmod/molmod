@@ -96,7 +96,7 @@ class Ame2003(object):
             for line in f:
                 N = int(line[ 5:10])
                 Z = int(line[10:15])
-                mass = float(line[96:114].replace(" ", "").replace("#", ""))*1e-6*amu
+                mass = float(line[96:114].replace(b" ", b"").replace(b"#", b""))*1e-6*amu
                 add_mass(N, Z, mass)
 
 
@@ -137,8 +137,8 @@ class NubTab03(object):
             for line in f:
                 Z = int(line[0:3])
                 A = int(line[4:7])
-                properties = dict(word.split("=") for word in line[106:].split(";") if word.count("=")==1)
-                abundance = properties.get('IS')
+                properties = dict(word.split(b"=") for word in line[106:].split(b";") if word.count(b"=")==1)
+                abundance = properties.get(b'IS')
                 if abundance is None: continue
                 abundance = float(abundance.split()[0])
                 add_abundance(A, Z, abundance)
