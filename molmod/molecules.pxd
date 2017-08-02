@@ -25,4 +25,3 @@
 cdef extern from "molecules.h":
     void molecules_distance_matrix(size_t natom, double *cor, int periodic, double *matrix,
                                    double *reciprocal, double *dm);
-

@@ -68,18 +68,6 @@ def fix_c(lines, header_lines):
         lines.insert(0, ('// '+hline).strip() + '\n')
 
 
-def fix_f77(lines, header_lines):
-    # check for an exception line
-    for line in lines:
-        if 'no_update_headers' in line:
-            return
-    # remove the current header
-    strip_header(lines, '!--')
-    # add new header (insert must be in reverse order)
-    for hline in header_lines[::-1]:
-        lines.insert(0, ('! '+hline).strip() + '\n')
-
-
 def main(fns):
     fixers = [
         ('.py', fix_python),
@@ -88,7 +76,6 @@ def main(fns):
         ('.c', fix_c),
         ('.cpp', fix_c),
         ('.h', fix_c),
-        ('.pyf', fix_f77),
     ]
 
     f = open('HEADER')
@@ -100,7 +87,7 @@ def main(fns):
             continue
         for ext, fixer in fixers:
             if fn.endswith(ext):
-                print 'Fixing  ', fn
+                print 'HEADER  ', fn
                 f = file(fn)
                 lines = f.readlines()
                 f.close()

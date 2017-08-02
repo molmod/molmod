@@ -101,5 +101,3 @@ setup(
         'Topic :: Science/Engineering :: Molecular Science'
     ],
 )
-
-

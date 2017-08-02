@@ -27,4 +27,3 @@ cdef extern from "similarity.h":
     void similarity_table_distances(size_t n, double *distance_matrix, double *distances_table);
     double similarity_measure(size_t n1, long *labels1, double *distances1, size_t n2, long *labels2,
                               double *distances2, double margin, double cutoff);
-
