@@ -47,7 +47,7 @@ The installation can be tested as follows:
 
 .. code:: bash
 
-    (cd; nosetests -v molmod)
+    nosetests molmod
 
 This will run a series of tests to check the validity of the outcomes generated
 by MolMod. If some tests fail, post an issue on https://github.com/molmod/molmod/issues
