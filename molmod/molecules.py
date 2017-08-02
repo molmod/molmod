@@ -144,11 +144,11 @@ class Molecule(ReadOnly):
             return load_pdb(filename)
         elif filename.endswith(".sdf"):
             from molmod.io import SDFReader
-            return SDFReader(filename).next()
+            return next(SDFReader(filename))
         elif filename.endswith(".xyz"):
             from molmod.io import XYZReader
             xyz_reader = XYZReader(filename)
-            title, coordinates = xyz_reader.next()
+            title, coordinates = next(xyz_reader)
             return Molecule(xyz_reader.numbers, coordinates, title, symbols=xyz_reader.symbols)
         else:
             raise ValueError("Could not determine file format for %s." % filename)

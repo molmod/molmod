@@ -23,6 +23,8 @@
 """Tools for randomizing molecular geometries with reasonable distortions"""
 
 
+from __future__ import print_function
+
 from random import shuffle, sample
 import copy
 
@@ -89,14 +91,14 @@ class MolecularDistortion(object):
         r = self.transformation.r
         t = self.transformation.t
         f = file(filename, "w")
-        print >> f, "# A (random) transformation of a part of a molecule:"
-        print >> f, "# The translation vector is in atomic units."
-        print >> f, "#     Rx             Ry             Rz              T"
-        print >> f, "% 15.9e % 15.9e % 15.9e % 15.9e" % (r[0, 0], r[0, 1], r[0, 2], t[0])
-        print >> f, "% 15.9e % 15.9e % 15.9e % 15.9e" % (r[1, 0], r[1, 1], r[1, 2], t[1])
-        print >> f, "% 15.9e % 15.9e % 15.9e % 15.9e" % (r[2, 0], r[2, 1], r[2, 2], t[2])
-        print >> f, "# The indexes of the affected atoms:"
-        print >> f, " ".join(str(i) for i in self.affected_atoms)
+        print("# A (random) transformation of a part of a molecule:", file=f)
+        print("# The translation vector is in atomic units.", file=f)
+        print("#     Rx             Ry             Rz              T", file=f)
+        print("% 15.9e % 15.9e % 15.9e % 15.9e" % (r[0, 0], r[0, 1], r[0, 2], t[0]), file=f)
+        print("% 15.9e % 15.9e % 15.9e % 15.9e" % (r[1, 0], r[1, 1], r[1, 2], t[1]), file=f)
+        print("% 15.9e % 15.9e % 15.9e % 15.9e" % (r[2, 0], r[2, 1], r[2, 2], t[2]), file=f)
+        print("# The indexes of the affected atoms:", file=f)
+        print(" ".join(str(i) for i in self.affected_atoms), file=f)
         f.close()
 
 

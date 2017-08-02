@@ -44,10 +44,10 @@ class CubeTestCase(BaseTestCase):
         self.assertEqual(cr.nuclear_charges[-1], 8.0)
         self.assertAlmostEqual(cr.molecule.coordinates[0,0], -1.020557*angstrom, 5)
         self.assertAlmostEqual(cr.molecule.coordinates[7,2], 0.256423*angstrom, 5)
-        vector, value = cr.next()
+        vector, value = next(cr)
         self.assertAlmostEqual(value, 1.16792E-14)
         self.assertArraysAlmostEqual(vector, np.array([-9.375592, -8.571340, -6.768095]))
-        vector, value = cr.next()
+        vector, value = next(cr)
         self.assertAlmostEqual(value, 2.77030E-13)
         self.assertArraysAlmostEqual(vector, np.array([-9.375592, -8.571340, -4.994197]))
 

@@ -22,6 +22,8 @@
 #--
 
 
+from __future__ import print_function
+
 import sys
 import os
 import datetime
@@ -264,7 +266,7 @@ class ScreenLog(object):
             self.print_header()
             self.prefix = prefix
         if self.add_newline and self.prefix != self._last_used_prefix:
-            print >> self._file
+            print(file=self._file)
             self.add_newline = False
         # Check for alignment code '&'
         pos = s.find(u'&')
@@ -291,7 +293,7 @@ class ScreenLog(object):
             else:
                 current = rest
                 rest = u''
-            print >> self._file, u'%s %s%s' % (self.prefix, lead, current)
+            print(u'%s %s%s' % (self.prefix, lead, current), file=self._file)
             if first:
                 lead = u' '*len(lead)
                 first = False
@@ -318,7 +320,7 @@ class ScreenLog(object):
         self('%s%s%s' % (edge, s.center(self.width-2*len(edge)), edge))
 
     def blank(self):
-        print >> self._file
+        print(file=self._file)
 
     def _enter(self, prefix):
         if len(prefix) > self.margin-1:
@@ -355,7 +357,7 @@ class ScreenLog(object):
 
         if self.do_warning and not self._active:
             self._active = True
-            print >> self._file, self.head_banner
+            print(self.head_banner, file=self._file)
             self._print_basic_info()
             self.unitsys.log_info(self)
 
@@ -364,7 +366,7 @@ class ScreenLog(object):
             self._print_basic_info()
             self.timer._stop('Total')
             self.timer.report(self)
-            print >> self._file, self.foot_banner
+            print(self.foot_banner, file=self._file)
 
     def _print_basic_info(self):
         if self.do_low:

@@ -75,13 +75,13 @@ class SDFReader(object):
            This method is part of the iterator protocol.
         """
         while True:
-            title = self.f.next()
+            title = next(self.f)
             if len(title) == 0:
                 raise StopIteration
             else:
                 title = title.strip()
-            self.f.next() # skip line
-            self.f.next() # skip empty line
+            next(self.f) # skip line
+            next(self.f) # skip empty line
             words = self.f.next().split()
             if len(words) < 2:
                 raise FileFormatError("Expecting at least two numbers at fourth line.")
@@ -123,7 +123,7 @@ class SDFReader(object):
 
             formal_charges = np.zeros(len(numbers), int)
 
-            line = self.f.next()
+            line = next(self.f)
             while line != "M  END\n":
                 if line.startswith("M  CHG"):
                     words = line[6:].split()[1:] # drop the first number which is the number of charges
@@ -134,7 +134,7 @@ class SDFReader(object):
                         except ValueError:
                             raise FileFormatError("Expecting only integer formal charges.")
                         i += 2
-                line = self.f.next()
+                line = next(self.f)
 
             # Read on to the next molecule
             for line in self.f:

@@ -22,6 +22,8 @@
 #--
 
 
+from __future__ import print_function
+
 import copy
 import unittest
 
@@ -578,21 +580,21 @@ class GraphTestCase(unittest.TestCase):
     # match generator related tests
 
     def check_graph_search(self, pattern, verbose=False, debug=False, callback=None):
-        if verbose: print
+        if verbose: print()
         graph_search = GraphSearch(
             pattern,
             debug=debug
         )
         cases = self.iter_cases()
         for case in cases:
-            if verbose: print
-            if verbose: print
-            if verbose: print "GRAPH %s" % case.name
+            if verbose: print()
+            if verbose: print()
+            if verbose: print("GRAPH %s" % case.name)
             matches = []
             try:
                 for match in graph_search(case.graph):
                     matches.append(match)
-                    if verbose: print "_ _ _ _ _", match, "_ _ _ _ _"
+                    if verbose: print("_ _ _ _ _", match, "_ _ _ _ _")
                 if callback is not None:
                     callback(case, matches)
             except SubgraphPatternError:
@@ -619,7 +621,7 @@ class GraphTestCase(unittest.TestCase):
                 if len(case.graph.independent_vertices) == 1:
                     raise
 
-            graph_search(case.graph).next()
+            next(graph_search(case.graph))
 
     def test_start_vertex(self):
         subject_graph = Graph([(0,1),(1,2),(1,3),(2,4)])

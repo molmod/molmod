@@ -38,6 +38,8 @@ a1 = SimilarityDescriptor(distance_matrix, labels)
 """
 
 
+from __future__ import print_function
+
 import numpy as np
 
 from molmod.ext import similarity_table_labels, similarity_table_distances, \
@@ -60,7 +62,7 @@ class SimilarityDescriptor(object):
         """
         self.table_distances = similarity_table_distances(distance_matrix.astype(float))
         self.table_labels = similarity_table_labels(labels.astype(int))
-        print len(labels), len(distance_matrix)
+        print(len(labels), len(distance_matrix))
         order = np.lexsort([self.table_labels[:, 1], self.table_labels[:, 0]])
         self.table_labels = self.table_labels[order]
         self.table_distances = self.table_distances[order]

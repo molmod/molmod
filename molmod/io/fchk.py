@@ -23,6 +23,8 @@
 """Tools for reading Gaussian03 formatted checkpoint files"""
 
 
+from __future__ import print_function
+
 import numpy as np
 
 from molmod.molecules import Molecule
@@ -123,8 +125,8 @@ class FCHKFile(object):
                         for word in line.split():
                             try:
                                 value[counter] = datatype(word)
-                            except (ValueError, OverflowError), e:
-                                print 'WARNING: could not interpret word while reading %s: %s' % (word, self.filename)
+                            except (ValueError, OverflowError) as e:
+                                print('WARNING: could not interpret word while reading %s: %s' % (word, self.filename))
                                 if self.ignore_errors:
                                     value[counter] = unreadable
                                 else:

@@ -23,6 +23,8 @@
 """Persistance, i.e. storage on disk, for objects with numerical attributes"""
 
 
+from __future__ import print_function
+
 import numpy as np
 
 from molmod.io.common import FileFormatError
@@ -81,7 +83,7 @@ class ScalarAttr(StateAttr):
         # print the header line
         value = self.get()
         kind = self.get_kind(value)
-        print >> f, "% 40s  kind=%s  value=%s" % (name, kind, value)
+        print("% 40s  kind=%s  value=%s" % (name, kind, value), file=f)
 
 
 class ArrayAttr(StateAttr):
@@ -119,20 +121,20 @@ class ArrayAttr(StateAttr):
         """Write the attribute to a file-like object"""
         array = self.get()
         # print the header line
-        print >> f, "% 40s  kind=%s  shape=%s" % (
+        print("% 40s  kind=%s  shape=%s" % (
             name,
             array.dtype.kind,
             ("%s" % (array.shape, )).replace(" ", ""),
-        )
+        ), file=f)
         # print the numbers
         counter = 0
         for value in array.flat:
             counter += 1
-            print >> f, "% 20s" % value,
+            print("% 20s" % value, end=' ', file=f)
             if counter % 4 == 0:
-                print >> f
+                print(file=f)
         if counter % 4 != 0:
-            print >> f
+            print(file=f)
 
     def load(self, f, skip):
         """Load the array data from a file-like object"""

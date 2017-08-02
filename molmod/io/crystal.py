@@ -23,9 +23,11 @@
 """Tools for reading output from the Crystal 06 example API program."""
 
 
+from __future__ import absolute_import
+
 import numpy as np
 
-from common import FileFormatError
+from .common import FileFormatError
 from molmod import UnitCell, Molecule
 
 

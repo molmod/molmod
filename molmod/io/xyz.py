@@ -23,6 +23,8 @@
 """Tools for reading and writing XYZ trajectory files"""
 
 
+from __future__ import print_function
+
 from itertools import izip
 
 import numpy as np
@@ -180,10 +182,10 @@ class XYZWriter(object):
             | ``title``  --  the title of the frame
             | ``coordinates``  --  a numpy array with coordinates in atomic units
         """
-        print >> self._f, "% 8i" % len(self.symbols)
-        print >> self._f, str(title)
+        print("% 8i" % len(self.symbols), file=self._f)
+        print(str(title), file=self._f)
         for symbol, coordinate in zip(self.symbols, coordinates):
-            print >> self._f, "% 2s % 12.9f % 12.9f % 12.9f" % ((symbol, ) + tuple(coordinate/self.file_unit))
+            print("% 2s % 12.9f % 12.9f % 12.9f" % ((symbol, ) + tuple(coordinate/self.file_unit)), file=self._f)
 
 
 class XYZFile(object):

@@ -22,6 +22,8 @@
 #--
 
 
+from __future__ import print_function
+
 import unittest
 
 import pkg_resources
@@ -49,7 +51,7 @@ class CP2KTestCase(unittest.TestCase):
         del cp2k_input["MOTION"]["MD"]["ENSEMBLE"]
         self.assert_(cp2k_input._consistent())
         try:
-            print cp2k_input["MOTION"]["MD"]["ENSEMBLE"].value
+            print(cp2k_input["MOTION"]["MD"]["ENSEMBLE"].value)
             self.fail("CP2KKeyword ENSEMBLE should no longer exist.")
         except KeyError:
             pass

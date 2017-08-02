@@ -23,6 +23,8 @@
 """Reader for the cube format"""
 
 
+from __future__ import print_function
+
 import numpy as np
 
 from molmod.molecules import Molecule
@@ -223,40 +225,37 @@ class Cube(object):
 
     def write_to_file(self, fn):
         '''Write the cube to a file in the Gaussian cube format.'''
-        f = open(fn, 'w')
-        print >> f, ' ' + self.molecule.title
-        print >> f, ' ' + self.subtitle
+        with open(fn, 'w') as f:
+            f.write(' {}\n'.format(self.molecule.title))
+            f.write(' {}\n'.format(self.subtitle))
 
-        def write_grid_line(n, v):
-            print >> f, '%5i % 11.6f % 11.6f % 11.6f' % (n, v[0], v[1], v[2])
+            def write_grid_line(n, v):
+                f.write('%5i % 11.6f % 11.6f % 11.6f\n' % (n, v[0], v[1], v[2]))
 
-        write_grid_line(self.molecule.size, self.origin)
-        write_grid_line(self.data.shape[0], self.axes[0])
-        write_grid_line(self.data.shape[1], self.axes[1])
-        write_grid_line(self.data.shape[2], self.axes[2])
+            write_grid_line(self.molecule.size, self.origin)
+            write_grid_line(self.data.shape[0], self.axes[0])
+            write_grid_line(self.data.shape[1], self.axes[1])
+            write_grid_line(self.data.shape[2], self.axes[2])
 
-        def write_atom_line(n, nc, v):
-            print >> f, '%5i % 11.6f % 11.6f % 11.6f % 11.6f' % (n, nc, v[0], v[1], v[2])
+            def write_atom_line(n, nc, v):
+                f.write('%5i % 11.6f % 11.6f % 11.6f % 11.6f\n' % (n, nc, v[0], v[1], v[2]))
 
-        for i in xrange(self.molecule.size):
-            write_atom_line(self.molecule.numbers[i], self.nuclear_charges[i],
-                            self.molecule.coordinates[i])
+            for i in xrange(self.molecule.size):
+                write_atom_line(self.molecule.numbers[i], self.nuclear_charges[i],
+                                self.molecule.coordinates[i])
 
-        for i0 in xrange(self.data.shape[0]):
-            for i1 in xrange(self.data.shape[1]):
-                col = 0
-                for i2 in xrange(self.data.shape[2]):
-                    value = self.data[i0, i1, i2]
-                    if col % 6 == 0:
-                        print >> f, ' % 12.5e' % value,
-                    elif col % 6 == 5:
-                        print >> f, '% 12.5e' % value
-                    else:
-                        print >> f, '% 12.5e' % value,
-                    col += 1
-                if col % 6 != 5:
-                    print >> f
-        f.close()
+            for i0 in xrange(self.data.shape[0]):
+                for i1 in xrange(self.data.shape[1]):
+                    col = 0
+                    for i2 in xrange(self.data.shape[2]):
+                        value = self.data[i0, i1, i2]
+                        if col % 6 == 5:
+                            f.write(' % 12.5e\n' % value)
+                        else:
+                            f.write(' % 12.5e' % value)
+                        col += 1
+                    if col % 6 != 5:
+                        f.write('\n')
 
     def copy(self, newdata=None):
         '''Return a copy of the cube with optionally new data.'''

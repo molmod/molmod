@@ -23,6 +23,8 @@
 """Tools for generating CP2K input files and a Reader for unit cell trajectories"""
 
 
+from __future__ import print_function
+
 from molmod.io.common import FileFormatError
 
 
@@ -195,9 +197,9 @@ class CP2KSection(object):
 
     def dump(self, f, indent=''):
         """Dump this section and its children to a file-like object"""
-        print >> f, ("%s&%s %s" % (indent, self.__name, self.section_parameters)).rstrip()
+        print(("%s&%s %s" % (indent, self.__name, self.section_parameters)).rstrip(), file=f)
         self.dump_children(f, indent)
-        print >> f, "%s&END %s" % (indent, self.__name)
+        print("%s&END %s" % (indent, self.__name), file=f)
 
     def readline(self, f):
         """A helper method that only reads uncommented lines"""
@@ -271,9 +273,9 @@ class CP2KKeyword(object):
     def dump(self, f, indent=''):
         """Dump this keyword to a file-like object"""
         if self.__unit is None:
-            print >> f, ("%s%s %s" % (indent, self.__name, self.__value)).rstrip()
+            print(("%s%s %s" % (indent, self.__name, self.__value)).rstrip(), file=f)
         else:
-            print >> f, ("%s%s [%s] %s" % (indent, self.__name, self.__unit, self.__value)).rstrip()
+            print(("%s%s [%s] %s" % (indent, self.__name, self.__unit, self.__value)).rstrip(), file=f)
 
     def load(self, line):
         """Load this keyword from a file-like object"""

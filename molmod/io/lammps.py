@@ -55,11 +55,11 @@ class LAMMPSDumpReader(SlicedReader):
         # first read the number of atoms
         try:
             while True:
-                line = self._f.next()
+                line = next(self._f)
                 if line == "ITEM: NUMBER OF ATOMS\n":
                     break
             try:
-                line = self._f.next()
+                line = next(self._f)
                 self.num_atoms = int(line)
             except ValueError:
                 raise FileFormatError("Could not read the number of atoms. Expected an integer. Got '%s'" % line)
@@ -73,22 +73,22 @@ class LAMMPSDumpReader(SlicedReader):
         # Read one frame, we assume that the current file position is at the
         # line 'ITEM: TIMESTEP' and that this line marks the beginning of a
         # time frame.
-        line = self._f.next()
+        line = next(self._f)
         if line != 'ITEM: TIMESTEP\n':
             raise FileFormatError("Expecting line 'ITEM: TIMESTEP' at the beginning of a time frame.")
         try:
-            line = self._f.next()
+            line = next(self._f)
             step = int(line)
         except ValueError:
             raise FileFormatError("Could not read the step number. Expected an integer. Got '%s'" % line[:-1])
 
         # Now we assume that the next section contains (again) the number of
         # atoms.
-        line = self._f.next()
+        line = next(self._f)
         if line != 'ITEM: NUMBER OF ATOMS\n':
             raise FileFormatError("Expecting line 'ITEM: NUMBER OF ATOMS'.")
         try:
-            line = self._f.next()
+            line = next(self._f)
             num_atoms = int(line)
         except ValueError:
             raise FileFormatError("Could not read the number of atoms. Expected an integer. Got '%s'" % line[:-1])
@@ -97,15 +97,15 @@ class LAMMPSDumpReader(SlicedReader):
 
         # The next section contains the box boundaries. We will skip it
         for i in xrange(4):
-            self._f.next()
+            next(self._f)
 
         # The next and last section contains the atom related properties
-        line = self._f.next()
+        line = next(self._f)
         if line != 'ITEM: ATOMS\n':
             raise FileFormatError("Expecting line 'ITEM: ATOMS'.")
         fields = [list() for i in xrange(len(self.units))]
         for i in xrange(self.num_atoms):
-            line = self._f.next()
+            line = next(self._f)
             words = line.split()[1:]
             for j in xrange(len(fields)):
                 fields[j].append(float(words[j]))
@@ -119,4 +119,4 @@ class LAMMPSDumpReader(SlicedReader):
             if line == 'ITEM: ATOMS\n':
                 break
         for i in xrange(self.num_atoms):
-            self._f.next()
+            next(self._f)

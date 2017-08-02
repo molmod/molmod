@@ -60,6 +60,8 @@
 """
 
 
+from __future__ import print_function
+
 import time
 
 import numpy as np
@@ -1079,8 +1081,8 @@ class Constraints(object):
         signs = []
         error = 0.0
         if verbose:
-            print
-            print ' '.join('% 10.3e' % val for val in x),
+            print()
+            print(' '.join('% 10.3e' % val for val in x), end=' ')
             active_str = ''
         for i, (sign, equation) in enumerate(self.equations):
             value, normal = equation(x)
@@ -1102,11 +1104,11 @@ class Constraints(object):
         values = np.array(values, float)
         signs = np.array(signs, int)
         if verbose:
-            print '[%s]' % active_str,
+            print('[%s]' % active_str, end=' ')
             if error < self.threshold:
-                print 'OK'
+                print('OK')
             else:
-                print '%.5e' % error
+                print('%.5e' % error)
         return normals, values, error, signs
 
     def _rough_shake(self, x, normals, values, error):
@@ -1514,9 +1516,9 @@ class Minimizer(object):
         """Print something on screen when self.verbose == True"""
         if self.verbose:
             if newline:
-                print s
+                print(s)
             else:
-                print s,
+                print(s, end=' ')
 
     def _line_opt(self):
         """Perform a line search along the current direction"""

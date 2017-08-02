@@ -88,10 +88,10 @@ class UtilsTestCase(unittest.TestCase):
         try:
             test = fn(*args, **kwargs)
             self.fail("Should have raised a TypeError")
-        except TypeError, e:
+        except TypeError as e:
             #print e
             pass
-        except Exception, e:
+        except Exception as e:
             self.fail("Should have raised a TypeError. Got %s" % e)
 
     def test_assign_none(self):

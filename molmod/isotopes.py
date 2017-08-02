@@ -91,7 +91,7 @@ class Ame2003(object):
 
         with pkg_resources.resource_stream(__name__, 'data/mass.mas03') as f:
             for i in xrange(39):
-                f.next()
+                next(f)
             for line in f:
                 N = int(line[ 5:10])
                 Z = int(line[10:15])

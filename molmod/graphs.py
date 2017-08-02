@@ -50,6 +50,8 @@
 """
 
 
+from __future__ import print_function
+
 import copy
 
 import numpy as np
@@ -1583,10 +1585,10 @@ class GraphSearch(object):
         """Only prints debug info on screen when self.debug == True."""
         if self.debug:
             if indent > 0:
-                print " "*self.debug, text
+                print(" "*self.debug, text)
             self.debug += indent
             if indent <= 0:
-                print " "*self.debug, text
+                print(" "*self.debug, text)
 
     def _iter_candidate_groups(self, init_match, edges0, edges1):
         """Divide the edges into groups"""

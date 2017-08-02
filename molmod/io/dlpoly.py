@@ -111,7 +111,7 @@ class DLPolyHistoryReader(SlicedReader):
         # auxiliary read function
         def read_three(msg):
             """Read three words as floating point numbers"""
-            line = self._f.next()
+            line = next(self._f)
             try:
                 return [float(line[:12]), float(line[12:24]), float(line[24:])]
             except ValueError:
@@ -189,7 +189,7 @@ class DLPolyHistoryReader(SlicedReader):
     def _skip_frame(self):
         """Skip a single frame from the trajectory"""
         for i in xrange(self._frame_size):
-            self._f.next()
+            next(self._f)
 
 
 class DLPolyOutputReader(SlicedReader):
@@ -238,7 +238,7 @@ class DLPolyOutputReader(SlicedReader):
         # find the line that gives the number of equilibration steps:
         try:
             while True:
-                line = self._f.next()
+                line = next(self._f)
                 if line.startswith(" equilibration period"):
                     self.equi_period = int(line[30:])
                     break

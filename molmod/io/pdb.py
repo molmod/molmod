@@ -23,6 +23,8 @@
 """Basic support for the PDB format"""
 
 
+from __future__ import print_function
+
 import numpy as np
 
 from molmod.periodic import periodic
@@ -92,13 +94,13 @@ def dump_pdb(filename, molecule, atomnames=None, resnames=None, chain_ids=None, 
         else:
             beta = betas[i]
 
-        print >> f, "ATOM   %4i  %3s %3s %1s%4i    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s  " % (
+        print("ATOM   %4i  %3s %3s %1s%4i    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s  " % (
             i+1, atomname.ljust(3), resname.ljust(3), chain_id, res_id,
             molecule.coordinates[i, 0]/angstrom,
             molecule.coordinates[i, 1]/angstrom,
             molecule.coordinates[i, 2]/angstrom,
             occupancy, beta, symbol.ljust(2)
-        )
+        ), file=f)
         old_resname = resname
     f.close()
 

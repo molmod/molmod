@@ -51,7 +51,7 @@ class UnitCellTestCase(BaseTestCase):
             in_angles = np.random.uniform(0.3, np.pi/2, (3,))
             try:
                 uc = UnitCell.from_parameters3(in_lengths, in_angles)
-            except ValueError, e:
+            except ValueError as e:
                 continue
             out_lengths, out_angles = uc.parameters
             self.assertArraysAlmostEqual(in_lengths, out_lengths)

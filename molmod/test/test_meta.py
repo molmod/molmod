@@ -22,6 +22,8 @@
 #--
 
 
+from __future__ import print_function
+
 import os
 import unittest
 
@@ -37,11 +39,11 @@ __all__ = ["MetaTestCase"]
 class MetaTestCase(unittest.TestCase):
     def check_example(self, dirname, fn_py):
         root = pkg_resources.resource_filename(__name__, "../examples")
-        print root
+        print(root)
         assert os.path.isdir(root)
         cwd = os.getcwd()
         command = "cd %s/%s; PYTHONPATH=%s:${PYTHONPATH} ./%s 1> /dev/null 2> /dev/null" % (root, dirname, cwd, fn_py)
-        print command
+        print(command)
         retcode = os.system(command)
         self.assertEqual(retcode, 0)
 
