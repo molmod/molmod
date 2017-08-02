@@ -112,7 +112,6 @@ class CMLMoleculeLoader(ContentHandler):
     def endElement(self, name):
         #print "END", name
         if name == 'molecule':
-            print 'HERE', self.current_numbers
             if len(self.current_numbers) > 0:
                 self.current_coordinates = np.array(self.current_coordinates)*angstrom
                 molecule = Molecule(self.current_numbers, self.current_coordinates, self.current_title)
