@@ -27,6 +27,7 @@
 """
 
 
+from builtins import object
 import numpy as np
 
 from molmod.units import angstrom
@@ -69,7 +70,7 @@ class SDFReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         """Load the next molecule from the SDF file
 
            This method is part of the iterator protocol.

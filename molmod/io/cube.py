@@ -25,6 +25,7 @@
 
 from __future__ import print_function
 
+from builtins import object
 import numpy as np
 
 from molmod.molecules import Molecule
@@ -131,7 +132,7 @@ class CubeReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         """Read the next datapoint from the cube file
 
            This method is part of the iterator protocol.

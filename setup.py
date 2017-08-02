@@ -88,7 +88,7 @@ setup(
                  "molmod/unit_cells.pxd"],
         include_dirs=[np.get_include()],
     )],
-    install_requires=['numpy', 'nose', 'cython'],
+    install_requires=['numpy', 'nose', 'cython', 'future'],
     classifiers=[
         'Environment :: Console',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',

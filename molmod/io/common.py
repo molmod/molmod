@@ -23,6 +23,9 @@
 """Common functionality used by the molmod.io package."""
 
 
+from builtins import object
+
+
 __all__ = ["slice_match", "FileFormatError", "SlicedReader"]
 
 
@@ -93,7 +96,7 @@ class SlicedReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         """Get the next frame from the file, taking into account the slice
 
            This method is part of the iterator protocol.
