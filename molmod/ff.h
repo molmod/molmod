@@ -21,23 +21,31 @@
 //--
 
 
-#include "molecules.h"
+#ifndef MOLMOD_FF_H_
+#define MOLMOD_FF_H_
 
-#include <math.h>
-#include "common.h"
 
-void molecules_distance_matrix(size_t natom, double *cor, int periodic, double *matrix, double *reciprocal, double *dm) {
-  size_t i, j;
-  double d;
-  for (i=0; i<natom; i++) {
-    for (j=0; j<i; j++) {
-      if (periodic) {
-        d = distance_periodic(cor + 3*i, cor + 3*j, matrix, reciprocal);
-      } else {
-        d = distance(cor + 3*i, cor + 3*j);
-      }
-      dm[i*natom+j] = d;
-      dm[j*natom+i] = d;
-    }
-  }
-}
+#include <stddef.h>
+
+double ff_dm_quad(
+  size_t natom, int periodic, double *cor, double *dm0, double *dmk,
+  double amp, double *gradient, double *matrix, double *reciprocal
+);
+
+double ff_dm_reci(
+  size_t natom, int periodic, double *cor, double *radii, long *dm0,
+  double amp, double *gradient, double *matrix, double *reciprocal
+);
+
+double ff_bond_quad(
+  size_t npair, int periodic, double *cor, long *pairs, double *lengths,
+  double amp, double *gradient, double *matrix, double *reciprocal
+);
+
+double ff_bond_hyper(
+  size_t npair, int periodic, double *cor, long *pairs, double *lengths,
+  double scale, double amp, double *gradient, double *matrix, double *reciprocal
+);
+
+
+#endif  // MOLMOD_FF_H_

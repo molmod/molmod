@@ -58,8 +58,9 @@ class SimilarityDescriptor(object):
              labels  --  a list with integer labels used to identify atoms of
                          the same type
         """
-        self.table_distances = similarity_table_distances(distance_matrix)
-        self.table_labels = similarity_table_labels(labels.astype(numpy.int32))
+        self.table_distances = similarity_table_distances(distance_matrix.astype(float))
+        self.table_labels = similarity_table_labels(labels.astype(int))
+        print len(labels), len(distance_matrix)
         order = numpy.lexsort([self.table_labels[:, 1], self.table_labels[:, 0]])
         self.table_labels = self.table_labels[order]
         self.table_distances = self.table_distances[order]
@@ -89,7 +90,7 @@ class SimilarityDescriptor(object):
                          the molecular graph are used.
         """
         if labels is None:
-            labels = molecular_graph.numbers.astype(numpy.int32)
+            labels = molecular_graph.numbers.astype(int)
         return cls(molecular_graph.distances, labels)
 
     @classmethod

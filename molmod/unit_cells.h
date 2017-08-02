@@ -21,23 +21,13 @@
 //--
 
 
-#include "molecules.h"
+#ifndef MOLMOD_UNIT_CELLS_H_
+#define MOLMOD_UNIT_CELLS_H_
 
-#include <math.h>
-#include "common.h"
 
-void molecules_distance_matrix(size_t natom, double *cor, int periodic, double *matrix, double *reciprocal, double *dm) {
-  size_t i, j;
-  double d;
-  for (i=0; i<natom; i++) {
-    for (j=0; j<i; j++) {
-      if (periodic) {
-        d = distance_periodic(cor + 3*i, cor + 3*j, matrix, reciprocal);
-      } else {
-        d = distance(cor + 3*i, cor + 3*j);
-      }
-      dm[i*natom+j] = d;
-      dm[j*natom+i] = d;
-    }
-  }
-}
+#include <stddef.h>
+
+size_t unit_cell_get_radius_indexes(double *matrix, double *reciprocal, double radius,
+                                 long *max_ranges, long *indexes);
+
+#endif  // MOLMOD_UNIT_CELLS_H_

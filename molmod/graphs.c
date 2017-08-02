@@ -21,8 +21,12 @@
 //--
 
 
-void graphs_floyd_warshall(int n, int* dm) {
-  int i, j, k, d_ik, d_kj, d_orig, d_new;
+#include "graphs.h"
+
+
+void graphs_floyd_warshall(size_t n, long* dm) {
+  size_t i, j, k;
+  long d_ik, d_kj, d_orig, d_new;
 
   for (k=0; k<n; k++) {
     for (j=0; j<n; j++) {

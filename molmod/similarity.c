@@ -21,10 +21,12 @@
 //--
 
 
+#include "similarity.h"
+
 #include <math.h>
 
-void similarity_table_labels(int n, int *labels, int* labels_table) {
-  int i,j;
+void similarity_table_labels(size_t n, long *labels, long* labels_table) {
+  size_t i,j;
   for (i=0; i<n; i++) {
     for (j=0; j<i; j++) {
       (*labels_table) = labels[i];
@@ -35,8 +37,8 @@ void similarity_table_labels(int n, int *labels, int* labels_table) {
   }
 }
 
-void similarity_table_distances(int n, double *distance_matrix, double *distances_table) {
-  int i,j;
+void similarity_table_distances(size_t n, double *distance_matrix, double *distances_table) {
+  size_t i,j;
   for (i=0; i<n; i++) {
     for (j=0; j<i; j++) {
       (*distances_table) = distance_matrix[i*n+j];
@@ -49,10 +51,11 @@ void similarity_table_distances(int n, double *distance_matrix, double *distance
 #define PAIR_GREATER(l1,l2) (l1[0]==l2[0]?(l1[1]>l2[1]):(l1[0]>l2[0]))
 #define PAIR_EQUAL(l1,l2) (l1[0]==l2[0]&&l1[1]==l2[1])
 
-double similarity_measure(int n1, int *labels1, double *distances1, int n2, int *labels2, double *distances2, double margin, double cutoff) {
+double similarity_measure(size_t n1, long *labels1, double *distances1, size_t n2, long *labels2,
+                          double *distances2, double margin, double cutoff) {
   double result, dav, delta;
-  int i1, i2, c2;
-  int *c_labels2;
+  size_t i1, i2, c2;
+  long *c_labels2;
   double *c_distances2;
 
   result = 0.0;

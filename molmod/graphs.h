@@ -21,23 +21,12 @@
 //--
 
 
-#include "molecules.h"
+#ifndef MOLMOD_GRAPHS_H_
+#define MOLMOD_GRAPHS_H_
 
-#include <math.h>
-#include "common.h"
+#include <stddef.h>
 
-void molecules_distance_matrix(size_t natom, double *cor, int periodic, double *matrix, double *reciprocal, double *dm) {
-  size_t i, j;
-  double d;
-  for (i=0; i<natom; i++) {
-    for (j=0; j<i; j++) {
-      if (periodic) {
-        d = distance_periodic(cor + 3*i, cor + 3*j, matrix, reciprocal);
-      } else {
-        d = distance(cor + 3*i, cor + 3*j);
-      }
-      dm[i*natom+j] = d;
-      dm[j*natom+i] = d;
-    }
-  }
-}
+void graphs_floyd_warshall(size_t n, long* dm);
+
+
+#endif  // MOLMOD_GRAPHS_H_

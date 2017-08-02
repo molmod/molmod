@@ -363,7 +363,7 @@ class UnitCell(ReadOnly):
         mask = (max_ranges != -1) & (max_ranges < ranges)
         ranges[mask] = max_ranges[mask]
         max_size = numpy.product(self.get_radius_ranges(radius)*2 + 1)
-        indexes = numpy.zeros((max_size, 3), numpy.int32)
+        indexes = numpy.zeros((max_size, 3), int)
 
         from molmod.ext import unit_cell_get_radius_indexes
         reciprocal = self.reciprocal*self.active
