@@ -5,6 +5,8 @@ env:
   matrix:
   - MYCONDAPY=2.7
   global:
+    # ANACONDA_TOKEN encrypted
+    secure: "P5oCCSZgfntpxwYm0pe7J0EWebQ3iF7p7+XGeE5FJoOqfQAZBZXujcaHMcej0UtyLq/IkfHabX+DURuqc8OWKQBCgy224UD+qdYnlZclfrz5M8DMp/iplbkzJsXj3zjug/br5R2YBN5tVyFQPBbJAKQ0A52rZj+avOhOt1qKEpM="
 install:
 # Get miniconda. Take the right version, so re-installing python is only needed for 3.5.
 - if [[ "$MYCONDAPY" == "2.7" ]]; then
@@ -43,3 +45,58 @@ script:
 
 # Basic code checks
 - ./checkwhitespace.py $(find . -type f | egrep '(\.py$)|(\.c$)|(\.pyx$)|(\.pxd$)|(\.h$)|(\.rst$)|(\.in$)|(\.yml$)|(\.yaml$)')
+
+# In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
+deploy:
+- provider: releases
+  skip_cleanup: true
+  api_key:
+    # Encrypted github token
+    secure: cfs7wOx9Q4LXFIvZvxSDVtCT1dNpuMQHMODK50CS4mstR0ppZab62YpJLLEQVfhLsaqNVdBM3fCWm03LndbUcdB9dHkKnELh+Gj6Y/E9zA/1QkQau4yTjVG2Pb16If4doHwMrny08m1daOcpDFNfpXFszNieidOs6dsLw/ZbbEQ=
+  file: dist/molmod-${TRAVIS_TAG}.tar.gz
+  on:
+    repo: molmod/molmod
+    tags: true
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
+  prerelease: false
+- provider: releases
+  skip_cleanup: true
+  api_key:
+    # Encrypted github token
+    secure: cfs7wOx9Q4LXFIvZvxSDVtCT1dNpuMQHMODK50CS4mstR0ppZab62YpJLLEQVfhLsaqNVdBM3fCWm03LndbUcdB9dHkKnELh+Gj6Y/E9zA/1QkQau4yTjVG2Pb16If4doHwMrny08m1daOcpDFNfpXFszNieidOs6dsLw/ZbbEQ=
+  file: dist/molmod-${TRAVIS_TAG}.tar.gz
+  on:
+    repo: molmod/molmod
+    tags: true
+    condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7"
+  prerelease: true
+- provider: script
+  skip_cleanup: true
+  script: anaconda -t $ANACONDA_TOKEN upload -l alpha ${HOME}/miniconda/conda-bld/linux-64/molmod-*.tar.bz2
+  on:
+    repo: molmod/molmod
+    tags: true
+    condition: "$TRAVIS_TAG == *a*"
+- provider: script
+  skip_cleanup: true
+  script: anaconda -t $ANACONDA_TOKEN upload -l beta ${HOME}/miniconda/conda-bld/linux-64/molmod-*.tar.bz2
+  on:
+    repo: molmod/molmod
+    tags: true
+    condition: "$TRAVIS_TAG == *b"
+- provider: script
+  skip_cleanup: true
+  script: anaconda -t $ANACONDA_TOKEN upload -l main ${HOME}/miniconda/conda-bld/linux-64/molmod-*.tar.bz2
+  on:
+    repo: molmod/molmod
+    tags: true
+    condition: "$TRAVIS_TAG != *[ab]*"
+- provider: pypi
+  skip_cleanup: true
+  password:
+    # Encrypted PyPI password
+    secure: "FqhLt9p9lWnI7XsAZjJfdRKwdteHSCIR/7f87QQ1ZnLRxjML33ndz++Me2P0Ceps1Z8qgRuOQstPvlhyCVk9aKVoAhwOtHSmcBz/IHsYTIo0PVmZqPSGqDqhF1zkTudTVDYRBHlR8bCNQW82hIxNhNBaRCeKbku/nBBdYxTWrG8="
+  on:
+    repo: molmod/molmod
+    tags: true
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
