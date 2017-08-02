@@ -258,7 +258,7 @@ class ScreenLog(object):
         self._level = level
 
     def __call__(self, *words):
-        s = u' '.join(unicode(w) for w in words)
+        s = u' '.join(str(w) for w in words)
         if not self.do_warning:
             raise RuntimeError('The runlevel should be at least warning when logging.')
         if not self._active:
@@ -300,7 +300,7 @@ class ScreenLog(object):
         self._last_used_prefix = self.prefix
 
     def warn(self, *words):
-        self(u'WARNING!!&'+u' '.join(unicode(w) for w in words))
+        self(u'WARNING!!&'+u' '.join(str(w) for w in words))
 
     def hline(self, char='~'):
         self(char*self.width)
@@ -314,7 +314,7 @@ class ScreenLog(object):
             edge = kwargs['edge']
         else:
             raise TypeError('Too many keyword arguments. Should be at most one.')
-        s = u' '.join(unicode(w) for w in words)
+        s = u' '.join(str(w) for w in words)
         if len(s) + 2*len(edge) > self.width:
             raise ValueError('Line too long. center method does not support wrapping.')
         self('%s%s%s' % (edge, s.center(self.width-2*len(edge)), edge))
