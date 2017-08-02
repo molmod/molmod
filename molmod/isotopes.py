@@ -51,7 +51,8 @@
 """
 
 
-from molmod import context
+import pkg_resources
+
 from molmod.units import amu
 
 
@@ -76,11 +77,8 @@ class Ame2003(object):
        The AME2003 atomic mass evaluation (II). Tables, graphs, and references. G.
        Audi, A.H. Wapstra, and C. Thibault. Nuclear Physics A729, 337 (2003).
     """
-    def __init__(self, filename):
+    def __init__(self):
         """
-           Argument:
-            | ``filename``  --  the ame2003 data file
-
            An object of this type is created in this module, so there is not
            need to construct it manually.
         """
@@ -91,20 +89,17 @@ class Ame2003(object):
             n_masses = self.masses.setdefault(Z, {})
             n_masses[Z+N] = mass
 
-        f = file(filename)
-        for i in xrange(39):
-            f.next()
-
-        for line in f:
-            N = int(line[ 5:10])
-            Z = int(line[10:15])
-            mass = float(line[96:114].replace(" ", "").replace("#", ""))*1e-6*amu
-            add_mass(N, Z, mass)
-
-        f.close()
+        with pkg_resources.resource_stream(__name__, 'data/mass.mas03') as f:
+            for i in xrange(39):
+                f.next()
+            for line in f:
+                N = int(line[ 5:10])
+                Z = int(line[10:15])
+                mass = float(line[96:114].replace(" ", "").replace("#", ""))*1e-6*amu
+                add_mass(N, Z, mass)
 
 
-ame2003 = Ame2003(context.get_fn("mass.mas03"))
+ame2003 = Ame2003()
 
 
 class NubTab03(object):
@@ -122,7 +117,7 @@ class NubTab03(object):
        J. Blachot and A.H. Wapstra, Nuclear Physics A729, 3-128 (2003)
     """
 
-    def __init__(self, filename):
+    def __init__(self):
         """
            Argument:
             | ``filename``  --  the nubtab03 data file
@@ -137,17 +132,15 @@ class NubTab03(object):
             n_abundances = self.abundances.setdefault(Z, {})
             n_abundances[A] = abundance
 
-        f = file(filename)
-        for line in f:
-            Z = int(line[0:3])
-            A = int(line[4:7])
-            properties = dict(word.split("=") for word in line[106:].split(";") if word.count("=")==1)
-            abundance = properties.get('IS')
-            if abundance is None: continue
-            abundance = float(abundance.split()[0])
-            add_abundance(A, Z, abundance)
-
-        f.close()
+        with pkg_resources.resource_stream(__name__, 'data/nubtab03.asc') as f:
+            for line in f:
+                Z = int(line[0:3])
+                A = int(line[4:7])
+                properties = dict(word.split("=") for word in line[106:].split(";") if word.count("=")==1)
+                abundance = properties.get('IS')
+                if abundance is None: continue
+                abundance = float(abundance.split()[0])
+                add_abundance(A, Z, abundance)
 
 
-nubtab03 = NubTab03(context.get_fn("nubtab03.asc"))
+nubtab03 = NubTab03()

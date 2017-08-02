@@ -21,11 +21,15 @@
 #
 #--
 
+
+import unittest
+
+import numpy
+import pkg_resources
+
 from molmod.test.common import BaseTestCase
 from molmod.io import *
 from molmod import *
-
-import numpy, unittest
 
 
 __all__ = ["ATRJTestCase"]
@@ -34,7 +38,7 @@ __all__ = ["ATRJTestCase"]
 class ATRJTestCase(BaseTestCase):
     def test_load(self):
         # A) normal
-        atrj_reader = ATRJReader(context.get_fn("test/bartek.atrj"))
+        atrj_reader = ATRJReader(pkg_resources.resource_filename(__name__, "../../data/test/bartek.atrj"))
         self.assertEqual(atrj_reader.num_atoms, 1293)
         frames = list(atrj_reader)
         self.assertEqual(len(frames), 3)
@@ -56,7 +60,7 @@ class ATRJTestCase(BaseTestCase):
         self.assertAlmostEqual(frames[-1].coordinates[-5,-1]/angstrom, 2.1392983758428979e1)
 
         # B) sliced
-        atrj_reader = ATRJReader(context.get_fn("test/bartek.atrj"), slice(None, None, 2))
+        atrj_reader = ATRJReader(pkg_resources.resource_filename(__name__, "../../data/test/bartek.atrj"), slice(None, None, 2))
         self.assertEqual(atrj_reader.num_atoms, 1293)
         frames = list(atrj_reader)
         self.assertEqual(len(frames), 2)

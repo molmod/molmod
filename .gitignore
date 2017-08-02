@@ -4,13 +4,16 @@
 
 # Ignore (in-place) build results
 molmod/ext.c
+molmod/version.py
 *.so
 *.pyc
 build
 MANIFEST
 doc/_build
 doctrees
+dist
+molmod.egg-info
 
 # Output of the examples
-data/examples/001_molecules/ibuprofen.xyz
-data/examples/001_molecules/ibuprofen_com.xyz
+examples/001_molecules/ibuprofen.xyz
+examples/001_molecules/ibuprofen_com.xyz

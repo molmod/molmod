@@ -22,11 +22,12 @@
 #--
 
 
+import numpy
+import pkg_resources
+
 from molmod.test.common import BaseTestCase
 from molmod.io import *
 from molmod import *
-
-import numpy
 
 
 __all__ = ["LAMMPSTestCase"]
@@ -34,7 +35,7 @@ __all__ = ["LAMMPSTestCase"]
 
 class LAMMPSTestCase(BaseTestCase):
     def test_dump_reader(self):
-        ldr = LAMMPSDumpReader(context.get_fn("test/lammps_dump.txt"), [angstrom]*3 + [angstrom/femtosecond]*3)
+        ldr = LAMMPSDumpReader(pkg_resources.resource_filename(__name__, "../../data/test/lammps_dump.txt"), [angstrom]*3 + [angstrom/femtosecond]*3)
         for fields in ldr:
             self.assertAlmostEqual(fields[0], 0)
             self.assertAlmostEqual(fields[1][11]/angstrom, -1.68253)
@@ -45,8 +46,8 @@ class LAMMPSTestCase(BaseTestCase):
             self.assertAlmostEqual(fields[6][8]/angstrom*femtosecond, -0.00390626)
             break
 
-        ldr = LAMMPSDumpReader(context.get_fn("test/lammps_dump.txt"), [angstrom]*3 + [angstrom/femtosecond]*3)
+        ldr = LAMMPSDumpReader(pkg_resources.resource_filename(__name__, "../../data/test/lammps_dump.txt"), [angstrom]*3 + [angstrom/femtosecond]*3)
         self.assertEqual(len(list(ldr)), 7)
 
-        ldr = LAMMPSDumpReader(context.get_fn("test/lammps_dump.txt"), [angstrom]*3 + [angstrom/femtosecond]*3, sub=slice(1,5,2))
+        ldr = LAMMPSDumpReader(pkg_resources.resource_filename(__name__, "../../data/test/lammps_dump.txt"), [angstrom]*3 + [angstrom/femtosecond]*3, sub=slice(1,5,2))
         self.assertEqual(len(list(ldr)), 2)

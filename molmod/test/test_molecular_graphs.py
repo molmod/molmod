@@ -21,11 +21,18 @@
 #
 #--
 
+
+import os
+import unittest
+
+import numpy
+
+from nose.plugins.skip import SkipTest
+import pkg_resources
+
 from molmod import *
 from molmod.bonds import BOND_SINGLE
 
-import unittest, numpy, os
-from nose.plugins.skip import SkipTest
 
 
 __all__ = ["MolecularGraphTestCase"]
@@ -35,7 +42,7 @@ class MolecularGraphTestCase(unittest.TestCase):
     # auxiliary routines
 
     def load_molecule(self, fn):
-        molecule = Molecule.from_file(context.get_fn(os.path.join("test", fn)))
+        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/" + fn))
         if molecule.graph is None:
             molecule.set_default_graph()
         return molecule
@@ -381,8 +388,8 @@ class MolecularGraphTestCase(unittest.TestCase):
             ('SID_31646548.sdf', 'SID_31646545.sdf')
         ]
         for fn0, fn1 in cases:
-            g0 = Molecule.from_file(context.get_fn(os.path.join("test", fn0))).graph
-            g1 = Molecule.from_file(context.get_fn(os.path.join("test", fn1))).graph
+            g0 = Molecule.from_file(pkg_resources.resource_filename("../data/test/" + fn0))
+            g1 = Molecule.from_file(pkg_resources.resource_filename("../data/test/" + fn1))
             self.assertNotEqual(str(g0.fingerprint.data), str(g1.fingerprint.data))
 
     def test_subgraph(self):
@@ -523,16 +530,16 @@ class MolecularGraphTestCase(unittest.TestCase):
         HasNeighbors(HasAtomNumber(1), HasAtomNumber(6))
 
     def test_zirconium(self):
-        mol = Molecule.from_file(context.get_fn('test/oh3siozroh3.xyz'))
+        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, '../data/test/oh3siozroh3.xyz'))
         mol.set_default_graph()
         assert len(mol.graph.edges)==14
-        mol = Molecule.from_file(context.get_fn('test/osih2osihosih2osih2ozrh2oh.xyz'))
+        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, '../data/test/osih2osihosih2osih2ozrh2oh.xyz'))
         mol.set_default_graph()
         assert len(mol.graph.edges)==21
-        mol = Molecule.from_file(context.get_fn('test/h3zrosihohosioh3.xyz'))
+        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, '../data/test/h3zrosihohosioh3.xyz'))
         mol.set_default_graph()
         assert len(mol.graph.edges)==16
-        mol = Molecule.from_file(context.get_fn('test/zr4o8-3.xyz'))
+        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, '../data/test/zr4o8-3.xyz'))
         mol.set_default_graph()
         assert len(mol.graph.edges)==12
 

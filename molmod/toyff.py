@@ -29,7 +29,8 @@
 """
 
 
-from molmod import context
+import pkg_resources
+
 from molmod.molecules import Molecule
 from molmod.periodic import periodic
 
@@ -293,12 +294,12 @@ class SpecialAngles(object):
     """A database with precomputed valence angles from small molecules"""
     def __init__(self):
         self._angle_dict = {}
-        f = open(context.get_fn('toyff_angles.txt'))
-        for line in f:
-            if line[0] != '#':
-                key = tuple(int(word) for word in line[0:line.index(':')].split(","))
-                value = numpy.pi/180.0*float(line[line.index(':')+1:-1])
-                self._angle_dict[key] = value
+        with pkg_resources.resource_stream(__name__, 'data/toyff_angles.txt') as f:
+            for line in f:
+                if line[0] != '#':
+                    key = tuple(int(word) for word in line[0:line.index(':')].split(","))
+                    value = numpy.pi/180.0*float(line[line.index(':')+1:-1])
+                    self._angle_dict[key] = value
 
     def get_angle(self, triplet):
         """Get a rest angle for a given triplet

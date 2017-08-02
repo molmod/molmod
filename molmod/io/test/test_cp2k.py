@@ -22,11 +22,14 @@
 #--
 
 
+import unittest
+
+import numpy
+import pkg_resources
+
 from molmod.test.common import *
 from molmod.io import *
 from molmod import *
-
-import numpy, unittest
 
 
 __all__ = ["CP2KTestCase"]
@@ -34,7 +37,7 @@ __all__ = ["CP2KTestCase"]
 
 class CP2KTestCase(unittest.TestCase):
     def test_input_file(self):
-        cp2k_input = CP2KInputFile.read_from_file(context.get_fn("test/water_md.inp"))
+        cp2k_input = CP2KInputFile.read_from_file(pkg_resources.resource_filename(__name__, "../../data/test/water_md.inp"))
         self.assert_(cp2k_input._consistent())
 
         # test that the read_from_file works
@@ -116,10 +119,10 @@ class CP2KTestCase(unittest.TestCase):
         self.assertEqual(cp2k_input, cp2k_input_check)
 
         # test dump-load consistency, part 2: no reordering of sections and keywords should be allowed
-        cp2k_input = CP2KInputFile.read_from_file(context.get_fn("test/water_md.inp"))
+        cp2k_input = CP2KInputFile.read_from_file(pkg_resources.resource_filename(__name__, "../../data/test/water_md.inp"))
         with tmpdir() as dn:
             cp2k_input.write_to_file("%s/water_md.inp" % dn)
-            f1 = file(context.get_fn("test/water_md.inp"))
+            f1 = file(pkg_resources.resource_filename(__name__, "../../data/test/water_md.inp"))
             f2 = file("%s/water_md.inp" % dn)
             for line1, line2 in zip(f1, f2):
                 self.assertEqual(line1, line2)

@@ -107,9 +107,9 @@ The script below detects all atom types in propane by looping over all atoms and
 testing which atom type function returns True for each atom. If some atom has
 zero or more than two matching atom types, the program raises an error.
 
-File: ``data/examples/004_patterns/a_propane_types.py``
+File: ``molmod/examples/004_patterns/a_propane_types.py``
 
-.. literalinclude:: ../../data/examples/004_patterns/a_propane_types.py
+.. literalinclude:: ../../molmod/examples/004_patterns/a_propane_types.py
 
 
 
@@ -122,9 +122,9 @@ The script below detects just a few atom types in the dopamine molecule.
 - ``csp2``: sp2 carbons
 - ``hoh``: hydroxyl hydrogens
 
-File: ``data/examples/004_patterns/b_dopamine_types.py``
+File: ``molmod/examples/004_patterns/b_dopamine_types.py``
 
-.. literalinclude:: ../../data/examples/004_patterns/b_dopamine_types.py
+.. literalinclude:: ../../molmod/examples/004_patterns/b_dopamine_types.py
 
 This script does not complain when some atoms could not be labeled.
 

@@ -22,9 +22,14 @@
 #--
 
 
+import os
+import unittest
+
+import numpy
+import pkg_resources
+
 from molmod import *
 
-import unittest, numpy, os
 
 
 __all__ = ["ToyFFTestCase"]
@@ -32,7 +37,7 @@ __all__ = ["ToyFFTestCase"]
 
 class ToyFFTestCase(unittest.TestCase):
     def load_molecule(self, fn):
-        molecule = Molecule.from_file(context.get_fn(os.path.join("test", fn)))
+        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/" + fn))
         if molecule.graph is None:
             molecule.set_default_graph()
         return molecule
@@ -184,7 +189,7 @@ class ToyFFTestCase(unittest.TestCase):
             self.check_toyff_gradient(ff, coordinates)
 
     def test_example_periodic(self):
-        mol = Molecule.from_file(context.get_fn("test/caplayer.cml"))
+        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/caplayer.cml"))
         unit_cell = UnitCell(
             numpy.array([
                 [14.218,  7.109,  0.0],

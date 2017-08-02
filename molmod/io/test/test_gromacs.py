@@ -22,11 +22,12 @@
 #--
 
 
+import numpy
+import pkg_resources
+
 from molmod.test.common import BaseTestCase
 from molmod.io import *
 from molmod import *
-
-import numpy
 
 
 __all__ = ["GromacsTestCase"]
@@ -34,7 +35,7 @@ __all__ = ["GromacsTestCase"]
 
 class GromacsTestCase(BaseTestCase):
     def test_reader(self):
-        gr = GroReader(context.get_fn("test/water2.gro"))
+        gr = GroReader(pkg_resources.resource_filename(__name__, "../../data/test/water2.gro"))
         gr.next() # skip one
         for time, pos, vel, cell in gr:
             self.assertAlmostEqual(time/picosecond, 1.0)

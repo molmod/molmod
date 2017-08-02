@@ -26,20 +26,21 @@
 import os
 import subprocess
 import sys
-from glob import glob
 
 import numpy as np
-from distutils.core import setup
-from distutils.extension import Extension
-from distutils.command.install_data import install_data
+from setuptools import setup
+from setuptools.extension import Extension
 import Cython.Build
 
 
 # Try to get the version from git describe
 __version__ = None
 try:
-    __version__ = subprocess.check_output(["git", "describe", "--tags"])
-    __version__ = __version__.decode('utf-8').strip().replace('-', '_')
+    git_describe = subprocess.check_output(["git", "describe", "--tags"])
+    version_words = git_describe.decode('utf-8').strip().split('-')
+    __version__ = version_words[0]
+    if len(version_words) > 1:
+        __version__ += '.dev' + version_words[1]
 except subprocess.CalledProcessError:
     pass
 
@@ -63,28 +64,6 @@ else:
         fh.write(version_template.format(__version__))
 
 
-class MyInstallData(install_data):
-    """Add a datadir.txt file that points to the root for the data files. It is
-       otherwise impossible to figure out the location of these data files at
-       runtime.
-    """
-    def run(self):
-        # Do the normal install_data
-        install_data.run(self)
-        # Create the file datadir.txt. It's exact content is only known
-        # at installation time.
-        dist = self.distribution
-        libdir = dist.command_obj["install_lib"].install_dir
-        for name in dist.packages:
-            if '.' not in name:
-                destination = os.path.join(libdir, name, "datadir.txt")
-                print "Creating %s" % destination
-                if not self.dry_run:
-                    f = file(destination, "w")
-                    print >> f, self.install_dir
-                    f.close()
-
-
 setup(
     name='molmod',
     version=__version__,
@@ -92,23 +71,13 @@ setup(
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
     url='http://molmod.ugent.be/code/',
-    cmdclass={'install_data': MyInstallData, 'build_ext': Cython.Build.build_ext},
+    cmdclass={'build_ext': Cython.Build.build_ext},
     package_dir = {'molmod': 'molmod'},
     packages=[
         'molmod', 'molmod.test',
         'molmod.io', 'molmod.io.test',
     ],
-    data_files=[
-        ('share/molmod', [
-            "data/periodic.csv", "data/bonds.csv",
-            "data/mass.mas03", "data/nubtab03.asc",
-            "data/toyff_angles.txt"
-        ]),
-        ('share/molmod/test', glob('data/test/*')),
-    ] + [
-        ('share/molmod/examples/%s' % os.path.basename(dn), glob('%s/*.*' % dn))
-        for dn in glob('data/examples/???_*')
-    ],
+    include_package_data=True,
     ext_modules=[
         Extension(
             "molmod.ext",

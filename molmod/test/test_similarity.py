@@ -22,9 +22,13 @@
 #--
 
 
+import unittest
+
+import numpy
+import pkg_resources
+
 from molmod import *
 
-import unittest, numpy
 
 
 __all__ = ["SimilarityTestCase"]
@@ -32,10 +36,10 @@ __all__ = ["SimilarityTestCase"]
 
 class SimilarityTestCase(unittest.TestCase):
     def get_molecules(self):
-        tpa = Molecule.from_file(context.get_fn("test/tpa.xyz"))
-        tea = Molecule.from_file(context.get_fn("test/tea.xyz"))
-        water = Molecule.from_file(context.get_fn("test/water.xyz"))
-        cyclopentane = Molecule.from_file(context.get_fn("test/cyclopentane.xyz"))
+        tpa = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/tpa.xyz"))
+        tea = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/tea.xyz"))
+        water = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
+        cyclopentane = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/cyclopentane.xyz"))
 
         return [tpa, tea, water, cyclopentane]
         #return [water, cyclopentane]

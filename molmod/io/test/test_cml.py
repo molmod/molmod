@@ -22,11 +22,14 @@
 #--
 
 
+import unittest
+
+import numpy
+import pkg_resources
+
 from molmod.test.common import *
 from molmod.io import *
 from molmod import *
-
-import numpy, unittest
 
 
 __all__ = ["CMLTestCase"]
@@ -35,8 +38,8 @@ __all__ = ["CMLTestCase"]
 class CMLTestCase(unittest.TestCase):
     def test_consistency(self):
         molecules = [
-            Molecule.from_file(context.get_fn("test/cyclopentane.xyz")),
-            Molecule.from_file(context.get_fn("test/funny.xyz")),
+            Molecule.from_file(pkg_resources.resource_filename(__name__, "../../data/test/cyclopentane.xyz")),
+            Molecule.from_file(pkg_resources.resource_filename(__name__, "../../data/test/funny.xyz")),
         ]
         for m in molecules:
             m.set_default_graph()
@@ -51,7 +54,7 @@ class CMLTestCase(unittest.TestCase):
             self.assertEqual(set(m1.graph.edges), set(m2.graph.edges))
 
     def test_load(self):
-        l = load_cml(context.get_fn("test/1LJL_Cys10.cml"))
+        l = load_cml(pkg_resources.resource_filename(__name__, "../../data/test/1LJL_Cys10.cml"))
         self.assertEqual(l[0].title, "Kalium [+]")
         self.assertEqual(l[2].title, "Acetic acid [-]")
         self.assert_((l[2].numbers==numpy.array([6,6,8,8,1,1,1])).all())

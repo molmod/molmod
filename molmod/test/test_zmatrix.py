@@ -22,10 +22,15 @@
 #--
 
 
+import os
+import unittest
+
+import numpy
+import pkg_resources
+
 from molmod.test.common import BaseTestCase
 from molmod import *
 
-import unittest, numpy, os
 
 
 __all__ = ["ZMatrixTestCase"]
@@ -34,7 +39,7 @@ __all__ = ["ZMatrixTestCase"]
 class ZMatrixTestCase(BaseTestCase):
     def test_constency(self):
         def test_one(xyz_fn, checks, reorder=False):
-            mol = Molecule.from_file(context.get_fn(os.path.join('test', xyz_fn)))
+            mol = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/" + xyz_fn))
             mol.set_default_graph()
             zmat_gen = ZMatrixGenerator(mol.graph)
             if reorder is False:

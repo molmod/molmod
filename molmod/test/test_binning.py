@@ -22,11 +22,14 @@
 #--
 
 
+import unittest
+
+import numpy
+import pkg_resources
+
 from molmod import *
 from molmod.io import *
 from molmod.periodic import periodic
-
-import numpy, unittest
 
 
 __all__ = ["BinningTestCase"]
@@ -123,7 +126,7 @@ class BinningTestCase(unittest.TestCase):
         self.verify_distances(iter_pairs, cutoff, distances, tuple, unit_cell)
 
     def test_distances_intra_lau(self):
-        coordinates = XYZFile(context.get_fn("test/lau.xyz")).geometries[0]
+        coordinates = XYZFile(pkg_resources.resource_filename(__name__, "../data/test/lau.xyz")).geometries[0]
         cutoff = periodic.max_radius*2
         distances = [
             (frozenset([i0, i1]), distance)
@@ -133,7 +136,7 @@ class BinningTestCase(unittest.TestCase):
         self.verify_distances_intra(coordinates, cutoff, distances)
 
     def test_distances_intra_lau_periodic(self):
-        coordinates = XYZFile(context.get_fn("test/lau.xyz")).geometries[0]
+        coordinates = XYZFile(pkg_resources.resource_filename(__name__, "../data/test/lau.xyz")).geometries[0]
         cutoff = periodic.max_radius*2
         unit_cell = UnitCell.from_parameters3(
             numpy.array([14.59, 12.88, 7.61])*angstrom,

@@ -21,12 +21,18 @@
 #
 #--
 
+
+import os
+import unittest
+
+import numpy
+import pkg_resources
+
 from molmod.test.common import *
 from molmod import *
 
-import unittest, numpy, os
-
 __all__ = ["RandomizeTestCase"]
+
 
 # These threshold values are not good for serious applications!!!
 # Just for testing the code, they are OK.
@@ -47,7 +53,7 @@ nonbond_thresholds = {
 class RandomizeTestCase(BaseTestCase):
     def iter_test_molecules(self):
         for filename in ["tpa.xyz", "water.xyz", "thf_single.xyz"]:
-            molecule = Molecule.from_file(context.get_fn(os.path.join("test", filename)))
+            molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/" + filename))
             molecule.filename = filename
             molecule.set_default_graph()
             yield molecule
