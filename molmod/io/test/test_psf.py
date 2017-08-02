@@ -22,11 +22,12 @@
 #--
 
 
+import numpy
+import pkg_resources
+
 from molmod.test.common import *
 from molmod.io import *
 from molmod import *
-
-import numpy
 
 
 __all__ = ["PSFTestCase"]
@@ -34,28 +35,28 @@ __all__ = ["PSFTestCase"]
 
 class PSFTestCase(BaseTestCase):
     def test_load(self):
-        psf = PSFFile(context.get_fn("test/thf.psf"))
+        psf = PSFFile(pkg_resources.resource_filename(__name__, "../../data/test/thf.psf"))
         self.assert_(psf.bonds.shape[0] == 832)
         self.assert_(psf.bends.shape[0] == 1600)
         self.assert_(psf.dihedrals.shape[0] == 2112)
         g = psf.get_graph()
 
     def test_load_vmd(self):
-        psf = PSFFile(context.get_fn("test/pentapeptide.psf"))
+        psf = PSFFile(pkg_resources.resource_filename(__name__, "../../data/test/pentapeptide.psf"))
         self.assert_(psf.bonds.shape[0] == 44)
         self.assert_(psf.bends.shape[0] == 75)
         self.assert_(psf.dihedrals.shape[0] == 98)
         g = psf.get_graph()
 
     def test_dump(self):
-        m = Molecule.from_file(context.get_fn("test/thf.xyz"))
+        m = Molecule.from_file(pkg_resources.resource_filename(__name__, "../../data/test/thf.xyz"))
         psf = PSFFile()
         psf.add_molecule(m)
         with tmpdir() as dn:
             psf.write_to_file("%s/thf.psf" % dn)
 
     def test_tetra(self):
-        molecule = Molecule.from_file(context.get_fn("test/tetra.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../../data/test/tetra.xyz"))
         psf = PSFFile()
         psf.add_molecule(molecule)
         self.assert_(psf.bonds.shape[0] == 4)
@@ -65,16 +66,16 @@ class PSFTestCase(BaseTestCase):
 
     def test_many_separate(self):
         psf = PSFFile()
-        molecule = Molecule.from_file(context.get_fn("test/ethene.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../../data/test/ethene.xyz"))
         psf.add_molecule(molecule)
         psf.add_molecule(molecule)
-        molecule = Molecule.from_file(context.get_fn("test/tea.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../../data/test/tea.xyz"))
         psf.add_molecule(molecule)
         with tmpdir() as dn:
             psf.write_to_file("%s/many_separate.psf" % dn)
 
     def test_improper(self):
-        molecule = Molecule.from_file(context.get_fn("test/formol.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../../data/test/formol.xyz"))
         psf = PSFFile()
         psf.add_molecule(molecule)
         self.assertEqual(psf.impropers.shape, (3,4))

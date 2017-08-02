@@ -22,11 +22,12 @@
 #--
 
 
+import numpy
+import pkg_resources
+
 from molmod.test.common import BaseTestCase
 from molmod.io import *
 from molmod import *
-
-import numpy
 
 
 __all__ = ["CPMDTestCase"]
@@ -34,14 +35,14 @@ __all__ = ["CPMDTestCase"]
 
 class CPMDTestCase(BaseTestCase):
     def test_trajectory_reader(self):
-        ctr = CPMDTrajectoryReader(context.get_fn("test/TRAJECTORY_H2_CPMD"))
+        ctr = CPMDTrajectoryReader(pkg_resources.resource_filename(__name__, "../../data/test/TRAJECTORY_H2_CPMD"))
         self.assertEqual(ctr.num_atoms, 2)
         for pos, vel in ctr:
             self.assertAlmostEqual(pos[0,2], 7.55931800897628)
             self.assertAlmostEqual(vel[-1,0], 0.00025263238305)
             break
 
-        ctr = CPMDTrajectoryReader(context.get_fn("test/TRAJECTORY_H2_CPMD"), slice(2,10,2))
+        ctr = CPMDTrajectoryReader(pkg_resources.resource_filename(__name__, "../../data/test/TRAJECTORY_H2_CPMD"), slice(2,10,2))
         self.assertEqual(ctr.num_atoms, 2)
         pos, vel = ctr.next()
         self.assertAlmostEqual(pos[0,0], 8.28262598957809)

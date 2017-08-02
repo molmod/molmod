@@ -22,11 +22,12 @@
 #--
 
 
+import numpy
+import pkg_resources
+
 from molmod.test.common import BaseTestCase
 from molmod.io import *
 from molmod import *
-
-import numpy
 
 
 __all__ = ["FCHKTestCase"]
@@ -44,7 +45,7 @@ class FCHKTestCase(BaseTestCase):
              3.76723726E+00, -1.48292907E+00,  4.52735777E+00,
         ])
 
-        fchk = FCHKFile(context.get_fn("test/1TOH.b3lyp.fchk"))
+        fchk = FCHKFile(pkg_resources.resource_filename(__name__, "../../data/test/1TOH.b3lyp.fchk"))
         self.assertEqual(fchk.title, "opt")
         self.assertEqual(fchk.command, "FOpt")
         self.assertEqual(fchk.lot, "RB3LYP")
@@ -56,7 +57,7 @@ class FCHKTestCase(BaseTestCase):
         self.assert_(isinstance(fchk.fields["Shell to atom map"][0], int))
         self.assertEqual(fchk.fields["Shell to atom map"][-1], 9)
 
-        fchk = FCHKFile(context.get_fn("test/1TOH.b3lyp.trim.fchk"), ignore_errors=True)
+        fchk = FCHKFile(pkg_resources.resource_filename(__name__, "../../data/test/1TOH.b3lyp.trim.fchk"), ignore_errors=True)
         self.assertEqual(fchk.title, "opt")
         self.assertEqual(fchk.command, "FOpt")
         self.assertEqual(fchk.lot, "RB3LYP")
@@ -65,5 +66,5 @@ class FCHKTestCase(BaseTestCase):
         self.assertEqual(fchk.fields["Number of independant functions"], 142)
         self.assertAlmostEqual(fchk.fields["Virial Ratio"], 2.002408027154329)
 
-        fchk = FCHKFile(context.get_fn("test/1TOH.b3lyp.trim.fchk"), ignore_errors=True, field_labels=["Virial Ratio"])
+        fchk = FCHKFile(pkg_resources.resource_filename(__name__, "../../data/test/1TOH.b3lyp.trim.fchk"), ignore_errors=True, field_labels=["Virial Ratio"])
         self.assertAlmostEqual(fchk.fields["Virial Ratio"], 2.002408027154329)

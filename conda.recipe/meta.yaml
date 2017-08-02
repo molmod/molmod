@@ -1,5 +1,5 @@
 package:
-  version: '{{ GIT_DESCRIBE_TAG }}'
+  version: "{{ load_setup_py_data().version }}"
   name: 'molmod'
 
 source:

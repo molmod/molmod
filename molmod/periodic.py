@@ -34,8 +34,9 @@
 """
 
 
+import pkg_resources
+
 import molmod.units as units
-from molmod import context
 
 
 __all__ = ["AtomInfo", "PeriodicData", "periodic"]
@@ -49,11 +50,8 @@ class AtomInfo(object):
 class PeriodicData(object):
     """The entire periodic system"""
 
-    def __init__(self, filename):
+    def __init__(self):
         """
-           Argument:
-            | ``filename``  --  the file to load the periodic system from
-
            This object is created when importing this module. There is no need
            to do it a second time manually.
         """
@@ -92,31 +90,30 @@ class PeriodicData(object):
                 else:
                     raise TypeError("Can not interpret unit %s." % word)
 
-        f = file(filename)
-        lines_read = 0
-        for line in f:
-            words = line.split()
-            if (len(words) > 0) and (words[0][0] != "#"):
-                if lines_read == 0:
-                    # load all the attribute names
-                    names = words
-                elif lines_read == 1:
-                    # load all the conversion factors
-                    for word in words:
-                        append_convertor(word)
-                else:
-                    atom_info = AtomInfo()
-                    for name, convertor, word in zip(names, convertors, words):
-                        if word == "NA":
-                            setattr(atom_info, name, None)
-                        else:
-                            value = convertor(word)
-                            setattr(atom_info, name, value)
-                            if name.endswith("radius") and self.max_radius < value:
-                                self.max_radius = value
-                    self._add_atom_info(atom_info)
-                lines_read += 1
-        f.close()
+        with pkg_resources.resource_stream(__name__, 'data/periodic.csv') as f:
+            lines_read = 0
+            for line in f:
+                words = line.split()
+                if (len(words) > 0) and (words[0][0] != "#"):
+                    if lines_read == 0:
+                        # load all the attribute names
+                        names = words
+                    elif lines_read == 1:
+                        # load all the conversion factors
+                        for word in words:
+                            append_convertor(word)
+                    else:
+                        atom_info = AtomInfo()
+                        for name, convertor, word in zip(names, convertors, words):
+                            if word == "NA":
+                                setattr(atom_info, name, None)
+                            else:
+                                value = convertor(word)
+                                setattr(atom_info, name, value)
+                                if name.endswith("radius") and self.max_radius < value:
+                                    self.max_radius = value
+                        self._add_atom_info(atom_info)
+                    lines_read += 1
 
     def _add_atom_info(self, atom_info):
         """Add an atom info object to the database"""
@@ -146,4 +143,4 @@ class PeriodicData(object):
             yield number
 
 
-periodic = PeriodicData(context.get_fn("periodic.csv"))
+periodic = PeriodicData()

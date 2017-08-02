@@ -7,6 +7,7 @@ rm -fvr dist
 rm -fvr build
 rm -fvr doctrees
 rm -fv molmod/ext.c
+rm -fv molmod/version.py
 
 # Output of the examples
 rm -fv data/examples/001_molecules/ibuprofen.xyz

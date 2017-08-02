@@ -113,9 +113,9 @@ Although the conversion of files with molecular systems from one format to the
 other is easily done with the babel program, the example is still useful for
 didactic purposes.
 
-File: ``data/examples/001_molecules/a_convert.py``
+File: ``molmod/examples/001_molecules/a_convert.py``
 
-.. literalinclude:: ../../data/examples/001_molecules/a_convert.py
+.. literalinclude:: ../../molmod/examples/001_molecules/a_convert.py
 
 
 Center of mass to origin
@@ -123,9 +123,9 @@ Center of mass to origin
 
 This example shows how a modified molecule object is made.
 
-File: ``data/examples/001_molecules/b_com.py``
+File: ``molmod/examples/001_molecules/b_com.py``
 
-.. literalinclude:: ../../data/examples/001_molecules/b_com.py
+.. literalinclude:: ../../molmod/examples/001_molecules/b_com.py
 
 
 All carbons
@@ -134,9 +134,9 @@ All carbons
 The following program prints the X-, Y- and Z-coordinates of all Carbon atoms in
 the ibuprofen molecule.
 
-File: ``data/examples/001_molecules/c_carbon.py``
+File: ``molmod/examples/001_molecules/c_carbon.py``
 
-.. literalinclude:: ../../data/examples/001_molecules/c_carbon.py
+.. literalinclude:: ../../molmod/examples/001_molecules/c_carbon.py
 
 
 Size of a molecule
@@ -145,9 +145,9 @@ Size of a molecule
 One can define the size of a molecule in several ways. The following program
 prints out the largest inter-atomic distance in Ångström.
 
-File: ``data/examples/001_molecules/d_size.py``
+File: ``molmod/examples/001_molecules/d_size.py``
 
-.. literalinclude:: ../../data/examples/001_molecules/d_size.py
+.. literalinclude:: ../../molmod/examples/001_molecules/d_size.py
 
 
 Shape of a molecule
@@ -158,9 +158,9 @@ coordinates with respect to their geometric center. Some shape categories were
 introduced by `Zingg <http://en.wikipedia.org/wiki/Equidimensional>`_. The
 following program computes the shape category for the ibuprofen molecule
 
-File: ``data/examples/001_molecules/e_shape.py``
+File: ``molmod/examples/001_molecules/e_shape.py``
 
-.. literalinclude:: ../../data/examples/001_molecules/e_shape.py
+.. literalinclude:: ../../molmod/examples/001_molecules/e_shape.py
 
 
 Problems

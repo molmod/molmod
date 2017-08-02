@@ -41,9 +41,10 @@
 """
 
 
+import pkg_resources
+
 from molmod.periodic import periodic
 import molmod.units as units
-from molmod import context
 
 
 __all__ = [
@@ -67,16 +68,13 @@ class BondData(object):
     """Database with bond lengths"""
     bond_tolerance = 1.2
 
-    def __init__(self, filename):
+    def __init__(self):
         """
-           Arguments:
-            | ``filename``  --  the file to load the bond lengths from
-
            This object is created when importing this module. There is no need
            to do it a second time manually.
         """
         self.lengths = dict([bond_type, {}] for bond_type in bond_types)
-        self._load_bond_data(filename)
+        self._load_bond_data()
         self._approximate_unkown_bond_lengths()
         self.max_length = max(
             max(lengths.itervalues())
@@ -85,7 +83,7 @@ class BondData(object):
             if len(lengths) > 0
         )
 
-    def _load_bond_data(self, filename):
+    def _load_bond_data(self):
         """Load the bond data from the given file
 
            It's assumed that the uncommented lines in the data file have the
@@ -113,17 +111,16 @@ class BondData(object):
                     self.lengths[BOND_TYPE][frozenset([nlow, nhigh])] = float(word)*conversion
                     return
 
-        f = file(filename)
-        for line in f:
-            words = line.split()
-            if (len(words) > 0) and (words[0][0] != "#"):
-                if words[0] == "unit":
-                    conversions = read_units(words[1:])
-                else:
-                    read_length(BOND_SINGLE, words, 1)
-                    read_length(BOND_DOUBLE, words, 2)
-                    read_length(BOND_TRIPLE, words, 3)
-        f.close()
+        with pkg_resources.resource_stream(__name__, 'data/bonds.csv') as f:
+            for line in f:
+                words = line.split()
+                if (len(words) > 0) and (words[0][0] != "#"):
+                    if words[0] == "unit":
+                        conversions = read_units(words[1:])
+                    else:
+                        read_length(BOND_SINGLE, words, 1)
+                        read_length(BOND_DOUBLE, words, 2)
+                        read_length(BOND_TRIPLE, words, 3)
 
     def _approximate_unkown_bond_lengths(self):
         """Completes the bond length database with approximations based on VDW radii"""
@@ -192,4 +189,4 @@ class BondData(object):
         return dataset.get(frozenset([n1, n2]))
 
 
-bonds = BondData(context.get_fn("bonds.csv"))
+bonds = BondData()

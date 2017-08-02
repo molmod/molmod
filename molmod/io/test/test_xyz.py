@@ -22,11 +22,14 @@
 #--
 
 
+import unittest
+
+import numpy
+import pkg_resources
+
 from molmod.test.common import *
 from molmod.io import *
 from molmod import *
-
-import numpy as np, unittest
 
 
 __all__ = ["XYZTestCase"]
@@ -34,7 +37,7 @@ __all__ = ["XYZTestCase"]
 
 class XYZTestCase(BaseTestCase):
     def test_xyz_reader(self):
-        xr = XYZReader(context.get_fn("test/water.xyz"))
+        xr = XYZReader(pkg_resources.resource_filename(__name__, "../../data/test/water.xyz"))
         mol = xr.get_first_molecule()
         self.assertEqual(mol.symbols, ("O", "H", "H"))
         self.assertArraysEqual(mol.numbers, np.array([8,1,1]))
@@ -49,7 +52,7 @@ class XYZTestCase(BaseTestCase):
         self.assertAlmostEqual(coordinates[2,2]/angstrom, -0.7649930856)
 
     def test_xyz_writer(self):
-        xr = XYZReader(context.get_fn("test/water.xyz"))
+        xr = XYZReader(pkg_resources.resource_filename(__name__, "../../data/test/water.xyz"))
         with tmpdir() as dn:
             xw = XYZWriter("%s/test.xyz" % dn, xr.symbols)
             for title, coordinates in xr:
@@ -64,7 +67,7 @@ class XYZTestCase(BaseTestCase):
             self.assertAlmostEqual(coordinates[2,2]/angstrom, -0.7649930856)
 
     def test_xyz_file(self):
-        xf = XYZFile(context.get_fn("test/water.xyz"))
+        xf = XYZFile(pkg_resources.resource_filename(__name__, "../../data/test/water.xyz"))
         self.assertEqual(xf.symbols, ("O", "H", "H"))
         self.assertArraysEqual(xf.numbers, np.array([8,1,1]))
         self.assertEqual(xf.titles[0], "water")
@@ -88,11 +91,11 @@ class XYZTestCase(BaseTestCase):
             self.assertAlmostEqual(xf.geometries[0,2,2]/angstrom, -0.7649930856)
 
     def test_probes(self):
-        xyz = XYZFile(context.get_fn("test/probes.xyz"))
+        xyz = XYZFile(pkg_resources.resource_filename(__name__, "../../data/test/probes.xyz"))
         self.assertEqual(xyz.numbers[-1], 0)
 
     def test_dopamine(self):
-        xyz = XYZFile(context.get_fn("test/dopamine.xyz"))
+        xyz = XYZFile(pkg_resources.resource_filename(__name__, "../../data/test/dopamine.xyz"))
         self.assertEqual(xyz.symbols[0], "O")
         self.assertEqual(xyz.numbers[0], 8)
         self.assertEqual(xyz.symbols[5], "C")

@@ -6,9 +6,3 @@ Internals of the MolMod package
 
 .. automodule:: molmod.utils
    :members: cached, ReadOnly
-
-:mod:`molmod.context` -- Runtime context information
-----------------------------------------------------
-
-.. automodule:: molmod.context
-   :members:

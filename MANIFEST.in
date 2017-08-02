@@ -1,2 +1,5 @@
 include LICENSE.txt
 include README
+include molmod/data/*.*
+include molmod/data/test/*
+recursive-include molmod/examples *

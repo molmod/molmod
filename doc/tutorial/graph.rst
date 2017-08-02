@@ -26,9 +26,9 @@ The first example shows how one creates a molecular graph.. The most important
 attribute of a graph object is ``edges``. This is (in most cases) a list of
 bonds in the molecule, but more edges may be included if that would be useful.
 
-File: ``data/examples/002_graphs/a_graphs.py``
+File: ``molmod/examples/002_graphs/a_graphs.py``
 
-.. literalinclude:: ../../data/examples/002_graphs/a_graphs.py
+.. literalinclude:: ../../molmod/examples/002_graphs/a_graphs.py
 
 From the edges many related properties can be derived. They are accessible
 as attributes of a graph object and are only constructed the first time they
@@ -41,9 +41,9 @@ The ``neighbors`` attribute is a dictionary that relates each vertex, i.e atom,
 in the graph with its direct neighbors. It can be used to get the direct
 chemical environment of an atom, or just to count the number of bonds.
 
-File: ``data/examples/002_graphs/b_neighbors.py``
+File: ``molmod/examples/002_graphs/b_neighbors.py``
 
-.. literalinclude:: ../../data/examples/002_graphs/b_neighbors.py
+.. literalinclude:: ../../molmod/examples/002_graphs/b_neighbors.py
 
 Distances
 ---------
@@ -53,9 +53,9 @@ vertex. Each element contains the (minimal) number of bonds between two atoms.
 The matrix is constructed with the `Floyd-Warshall algorithm
 <http://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm>`_.
 
-File: ``data/examples/002_graphs/c_distances.py``
+File: ``molmod/examples/002_graphs/c_distances.py``
 
-.. literalinclude:: ../../data/examples/002_graphs/c_distances.py
+.. literalinclude:: ../../molmod/examples/002_graphs/c_distances.py
 
 
 Symmetries
@@ -64,9 +64,9 @@ Symmetries
 All isomorphisms of a molecular graph can be requested. For molecular graphs,
 only those isomorphisms are considered that do not alter the atomic numbers.
 
-File: ``data/examples/002_graphs/d_symmetries.py``
+File: ``molmod/examples/002_graphs/d_symmetries.py``
 
-.. literalinclude:: ../../data/examples/002_graphs/d_symmetries.py
+.. literalinclude:: ../../molmod/examples/002_graphs/d_symmetries.py
 
 
 Problems

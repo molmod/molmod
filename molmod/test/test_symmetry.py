@@ -22,10 +22,11 @@
 #--
 
 
+import numpy
+import pkg_resources
+
 from molmod.test.common import BaseTestCase
 from molmod import *
-
-import numpy
 
 
 __all__ = ["SymmetryTestCase"]
@@ -33,43 +34,43 @@ __all__ = ["SymmetryTestCase"]
 
 class SymmetryTestCase(BaseTestCase):
     def test_rotsym_butane(self):
-        molecule = Molecule.from_file(context.get_fn("test/butane.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/butane.xyz"))
         molecule.set_default_graph()
         rotsym = compute_rotsym(molecule, molecule.graph)
         self.assertEqual(rotsym, 2)
 
     def test_rotsym_cyclopentane(self):
-        molecule = Molecule.from_file(context.get_fn("test/cyclopentane.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/cyclopentane.xyz"))
         molecule.set_default_graph()
         rotsym = compute_rotsym(molecule, molecule.graph)
         self.assertEqual(rotsym, 1)
 
     def test_rotsym_octane(self):
-        molecule = Molecule.from_file(context.get_fn("test/octane.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/octane.xyz"))
         molecule.set_default_graph()
         rotsym = compute_rotsym(molecule, molecule.graph, threshold=0.01)
         self.assertEqual(rotsym, 2)
 
     def test_rotsym_tetra(self):
-        molecule = Molecule.from_file(context.get_fn("test/tetra.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/tetra.xyz"))
         molecule.set_default_graph()
         rotsym = compute_rotsym(molecule, molecule.graph, threshold=0.01)
         self.assertEqual(rotsym, 12)
 
     def test_rotsym_water(self):
-        molecule = Molecule.from_file(context.get_fn("test/water.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
         molecule.set_default_graph()
         rotsym = compute_rotsym(molecule, molecule.graph, threshold=0.01)
         self.assertEqual(rotsym, 2)
 
     def test_rotsym_benzene(self):
-        molecule = Molecule.from_file(context.get_fn("test/benzene.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/benzene.xyz"))
         molecule.set_default_graph()
         rotsym = compute_rotsym(molecule, molecule.graph, threshold=0.01)
         self.assertEqual(rotsym, 12)
 
     def test_rotsym_ethane(self):
-        molecule = Molecule.from_file(context.get_fn("test/ethane.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/ethane.xyz"))
         molecule.set_default_graph()
         rotsym = compute_rotsym(molecule, molecule.graph, threshold=0.01)
         self.assertEqual(rotsym, 6)

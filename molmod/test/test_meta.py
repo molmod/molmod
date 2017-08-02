@@ -22,9 +22,14 @@
 #--
 
 
+import glob
+import os
+import unittest
+
+import pkg_resources
+
 from molmod import *
 
-import unittest, os, glob
 
 
 __all__ = ["MetaTestCase"]
@@ -32,8 +37,9 @@ __all__ = ["MetaTestCase"]
 
 class MetaTestCase(unittest.TestCase):
     def check_example(self, dirname, fn_py):
-        root = context.get_fn("examples")
-        self.assert_(os.path.isdir(root))
+        root = pkg_resources.resource_filename(__name__, "../examples")
+        print root
+        assert os.path.isdir(root)
         cwd = os.getcwd()
         command = "cd %s/%s; PYTHONPATH=%s:${PYTHONPATH} ./%s 1> /dev/null 2> /dev/null" % (root, dirname, cwd, fn_py)
         print command
@@ -67,14 +73,3 @@ class MetaTestCase(unittest.TestCase):
     def test_example_004(self):
         self.check_example("004_patterns", "a_propane_types.py")
         self.check_example("004_patterns", "b_dopamine_types.py")
-
-    def test_code_quality(self):
-        if context.data_dir == os.path.abspath('data/') and os.path.isdir('.git'):
-            white = (" ", "\t")
-            fns = glob.glob("molmod/*.py") + glob.glob("molmod/*.c") + glob.glob("molmod/test/*.py") + \
-                  glob.glob("molmod/io/*.py") + glob.glob("molmod/io/test/*.py")
-            for fn in fns:
-                f = file(fn)
-                for line in f:
-                    if line[-2] in white:
-                        self.fail("Trailing whitespace in %s." % fn)
