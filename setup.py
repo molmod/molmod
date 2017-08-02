@@ -26,7 +26,6 @@
 import os
 import subprocess
 import sys
-from glob import glob
 
 import numpy as np
 from setuptools import setup
