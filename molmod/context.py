@@ -31,6 +31,7 @@
 
 
 import os
+import sys
 
 
 __all__ = ["Context", "context"]
@@ -45,13 +46,13 @@ class Context(object):
            to do this manually a second time.
         """
         # find the data files
-        fn_datadir = os.path.join(os.path.dirname(__file__), "datadir.txt")
-        if os.path.isfile(fn_datadir):
-            f = file(fn_datadir)
-            datadir = f.readline().strip()
-            f.close()
-            self.data_dir = os.path.join(datadir, "share", "molmod")
-        else:
+        datadir = sys.prefix
+        self.data_dir = os.path.join(datadir, "share", "molmod")
+        try:
+            direc_exists = os.path.isdir(self.data_dir)
+        except OSError:
+            direc_exists = False
+        if not direc_exists:
             # When running from the build directory for the tests.
             self.data_dir = os.path.join(os.path.dirname(__file__), "../data")
         if not os.path.isdir(self.data_dir):
