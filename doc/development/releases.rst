@@ -1,7 +1,7 @@
 Release history
 ###############
 
-**Version 1.3.0**
+**Version 1.3.0** August 3, 2017
 
 - Python 3 support.
 
