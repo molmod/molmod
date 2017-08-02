@@ -28,6 +28,7 @@ from __future__ import print_function
 
 from __future__ import division
 
+from builtins import range
 import numpy as np
 
 from molmod.io.common import SlicedReader, FileFormatError
@@ -103,7 +104,7 @@ class XYZReader(SlicedReader):
         if self.symbols is None:
             symbols = []
         coordinates = np.zeros((size, 3), float)
-        for counter in xrange(size):
+        for counter in range(size):
             line = self._f.readline()
             if len(line) == 0:
                 raise StopIteration
@@ -126,7 +127,7 @@ class XYZReader(SlicedReader):
     def _skip_frame(self):
         """Skip a single frame from the trajectory"""
         size = self.read_size()
-        for i in xrange(size+1):
+        for i in range(size+1):
             line = self._f.readline()
             if len(line) == 0:
                 raise StopIteration

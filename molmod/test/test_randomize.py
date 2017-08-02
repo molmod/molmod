@@ -22,6 +22,7 @@
 #--
 
 
+from builtins import range
 import os
 
 import pkg_resources
@@ -85,7 +86,7 @@ class RandomizeTestCase(BaseTestCase):
     def test_single_manipulation(self):
         for molecule in self.iter_test_molecules():
             manipulations = generate_manipulations(molecule)
-            for i in xrange(100):
+            for i in range(100):
                 randomized_molecule, mol_transformation = single_random_manipulation(molecule, manipulations, nonbond_thresholds)
                 with tmpdir() as dn:
                     randomized_molecule.write_to_file(os.path.join(dn, molecule.filename))

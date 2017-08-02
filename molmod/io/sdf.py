@@ -27,6 +27,7 @@
 """
 
 
+from builtins import range
 from builtins import object
 import numpy as np
 
@@ -94,7 +95,7 @@ class SDFReader(object):
 
             numbers = np.zeros(num_atoms, int)
             coordinates = np.zeros((num_atoms, 3), float)
-            for i in xrange(num_atoms):
+            for i in range(num_atoms):
                 words = self.f.next().split()
                 if len(words) < 4:
                     raise FileFormatError("Expecting at least four words on an atom line.")
@@ -112,7 +113,7 @@ class SDFReader(object):
 
             edges = []
             orders = np.zeros(num_bonds, int)
-            for i in xrange(num_bonds):
+            for i in range(num_bonds):
                 words = self.f.next().split()
                 if len(words) < 3:
                     raise FileFormatError("Expecting at least three numbers on a bond line.")

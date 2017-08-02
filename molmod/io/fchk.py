@@ -25,6 +25,7 @@
 
 from __future__ import print_function
 
+from builtins import range
 import numpy as np
 
 from molmod.molecules import Molecule
@@ -220,7 +221,7 @@ class FCHKFile(object):
         N = len(self.molecule.numbers)
         result = np.zeros((3*N, 3*N), float)
         counter = 0
-        for row in xrange(3*N):
+        for row in range(3*N):
             result[row, :row+1] = force_const[counter:counter+row+1]
             result[:row+1, row] = force_const[counter:counter+row+1]
             counter += row + 1

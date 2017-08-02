@@ -25,7 +25,7 @@
 
 from __future__ import print_function
 
-from builtins import object
+from builtins import range, object
 import numpy as np
 
 from molmod.molecules import Molecule
@@ -91,7 +91,7 @@ def read_cube_header(f):
     numbers = np.zeros(natom, int)
     nuclear_charges = np.zeros(natom, float)
     coordinates = np.zeros((natom, 3), float)
-    for i in xrange(natom):
+    for i in range(natom):
         numbers[i], nuclear_charges[i], coordinates[i] = read_coordinate_line(f.readline())
 
     molecule = Molecule(numbers, coordinates, title=title)
@@ -241,14 +241,14 @@ class Cube(object):
             def write_atom_line(n, nc, v):
                 f.write('%5i % 11.6f % 11.6f % 11.6f % 11.6f\n' % (n, nc, v[0], v[1], v[2]))
 
-            for i in xrange(self.molecule.size):
+            for i in range(self.molecule.size):
                 write_atom_line(self.molecule.numbers[i], self.nuclear_charges[i],
                                 self.molecule.coordinates[i])
 
-            for i0 in xrange(self.data.shape[0]):
-                for i1 in xrange(self.data.shape[1]):
+            for i0 in range(self.data.shape[0]):
+                for i1 in range(self.data.shape[1]):
                     col = 0
-                    for i2 in xrange(self.data.shape[2]):
+                    for i2 in range(self.data.shape[2]):
                         value = self.data[i0, i1, i2]
                         if col % 6 == 5:
                             f.write(' % 12.5e\n' % value)

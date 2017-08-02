@@ -43,6 +43,7 @@
 
 from __future__ import division
 
+from builtins import range
 import pkg_resources
 
 from molmod.periodic import periodic
@@ -107,7 +108,7 @@ class BondData(object):
             """Read the bondlengths from a single line in the data file"""
             nlow = int(words[2])
             nhigh = int(words[3])
-            for i, conversion in zip(xrange((len(words) - 4) // 3), conversions):
+            for i, conversion in zip(range((len(words) - 4) // 3), conversions):
                 word = words[col + 3 + i*3]
                 if word != 'NA':
                     self.lengths[BOND_TYPE][frozenset([nlow, nhigh])] = float(word)*conversion

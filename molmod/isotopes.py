@@ -51,6 +51,7 @@
 """
 
 
+from builtins import range
 import pkg_resources
 
 from molmod.units import amu
@@ -90,7 +91,7 @@ class Ame2003(object):
             n_masses[Z+N] = mass
 
         with pkg_resources.resource_stream(__name__, 'data/mass.mas03') as f:
-            for i in xrange(39):
+            for i in range(39):
                 next(f)
             for line in f:
                 N = int(line[ 5:10])

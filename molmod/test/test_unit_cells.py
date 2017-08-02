@@ -24,6 +24,7 @@
 
 from __future__ import division
 
+from builtins import range
 import numpy as np
 from nose.plugins.skip import SkipTest
 
@@ -48,7 +49,7 @@ class UnitCellTestCase(BaseTestCase):
                 return result
 
     def test_parameters(self):
-        for counter in xrange(100):
+        for counter in range(100):
             in_lengths = np.random.uniform(0.5, 1, (3,))
             in_angles = np.random.uniform(0.3, np.pi/2, (3,))
             try:
@@ -60,7 +61,7 @@ class UnitCellTestCase(BaseTestCase):
             self.assertArraysAlmostEqual(in_angles, out_angles)
 
     def test_reciprocal(self):
-        for counter in xrange(100):
+        for counter in range(100):
             uc = self.get_random_uc(full=False)
             if uc.active[0]:
                 self.assertAlmostEqual(np.dot(uc.matrix[:,0], uc.reciprocal[:,0]), 1.0)
@@ -76,7 +77,7 @@ class UnitCellTestCase(BaseTestCase):
                 self.assertAlmostEqual(np.dot(uc.matrix[:,2], uc.reciprocal[:,2]), 1.0)
 
     def test_reciprocal_bis(self):
-        for i in xrange(100):
+        for i in range(100):
             uc = self.get_random_uc(full=False)
             active, inactive = uc.active_inactive
             for i in inactive:
@@ -100,43 +101,43 @@ class UnitCellTestCase(BaseTestCase):
                 self.assertArraysEqual(uc.reciprocal, uc.reciprocal)
 
     def test_to_fractional(self):
-        for i in xrange(100):
+        for i in range(100):
             uc = self.get_random_uc()
             fractional = np.random.uniform(-0.5, 0.5, 3)
             cartesian = fractional[0]*uc.matrix[:,0] + fractional[1]*uc.matrix[:,1] + fractional[2]*uc.matrix[:,2]
             fractional_bis = uc.to_fractional(cartesian)
             self.assertArraysAlmostEqual(fractional, fractional_bis)
-        for i in xrange(100):
+        for i in range(100):
             uc = self.get_random_uc()
             cartesian = np.random.uniform(-3, 3, (10,3))
             fractional = uc.to_fractional(cartesian)
-            for i in xrange(10):
+            for i in range(10):
                 fractional_bis = uc.to_fractional(cartesian[i])
                 self.assertArraysAlmostEqual(fractional[i], fractional_bis)
 
     def test_to_cartesian(self):
-        for i in xrange(100):
+        for i in range(100):
             uc = self.get_random_uc()
             cartesian = np.random.uniform(-3, 3, 3)
             fractional = cartesian[0]*uc.reciprocal[0] + cartesian[1]*uc.reciprocal[1] + cartesian[2]*uc.reciprocal[2]
             cartesian_bis = uc.to_cartesian(fractional)
             self.assertArraysAlmostEqual(cartesian, cartesian_bis)
-        for i in xrange(100):
+        for i in range(100):
             uc = self.get_random_uc()
             fractional = np.random.uniform(-0.5, 0.5, (10,3))
             cartesian = uc.to_cartesian(fractional)
-            for i in xrange(10):
+            for i in range(10):
                 cartesian_bis = uc.to_cartesian(fractional[i])
                 self.assertArraysAlmostEqual(cartesian[i], cartesian_bis)
 
     def test_consistency(self):
-        for i in xrange(100):
+        for i in range(100):
             uc = self.get_random_uc()
             cartesian = np.random.uniform(-3, 3, 3)
             fractional = uc.to_fractional(cartesian)
             cartesian_bis = uc.to_cartesian(fractional)
             self.assertArraysAlmostEqual(cartesian, cartesian_bis)
-        for i in xrange(100):
+        for i in range(100):
             uc = self.get_random_uc()
             fractional = np.random.uniform(-0.5, 0.5, (10,3))
             cartesian = uc.to_cartesian(fractional)
@@ -144,7 +145,7 @@ class UnitCellTestCase(BaseTestCase):
             self.assertArraysAlmostEqual(fractional, fractional_bis)
 
     def test_add_periodicities(self):
-        for counter in xrange(100):
+        for counter in range(100):
             uc0 = UnitCell(np.identity(3, float), np.zeros(3,bool))
             uc1 = uc0.add_cell_vector(np.random.uniform(-2,2,3))
             uc2 = uc1.add_cell_vector(np.random.uniform(-2,2,3))
@@ -164,9 +165,9 @@ class UnitCellTestCase(BaseTestCase):
         self.assertArraysAlmostEqual(uc.shortest_vector([3, 0, 1]), np.array([0, 0, 1]))
         self.assertArraysAlmostEqual(uc.shortest_vector([3, 0, 3]), np.array([0, 0, 3]))
         # random tests
-        for uc_counter in xrange(1000):
+        for uc_counter in range(1000):
             uc = self.get_random_uc(full=False)
-            for r_counter in xrange(10):
+            for r_counter in range(10):
                 r0 = np.random.normal(0, 10, 3)
                 r1 = uc.shortest_vector(r0)
                 change = r1 - r0
@@ -179,7 +180,7 @@ class UnitCellTestCase(BaseTestCase):
                 self.assert_(index.max()>=-0.5)
             r0 = np.random.normal(0, 10, (10,3))
             r1 = uc.shortest_vector(r0)
-            for i in xrange(10):
+            for i in range(10):
                 r1_row_bis = uc.shortest_vector(r0[i])
                 self.assertArraysAlmostEqual(r1_row_bis, r1[i], doabs=True)
 
@@ -192,7 +193,7 @@ class UnitCellTestCase(BaseTestCase):
     def test_spacings(self):
         uc = UnitCell(np.identity(3,float)*3)
         self.assertArraysAlmostEqual(uc.spacings, np.ones(3, float)*3.0)
-        for i in xrange(100):
+        for i in range(100):
             uc = self.get_random_uc()
             a = uc.matrix[:,0]
             b = uc.matrix[:,1]
@@ -204,11 +205,11 @@ class UnitCellTestCase(BaseTestCase):
             self.assertAlmostEqual(uc.spacings[0], spacing)
 
     def test_radius_ranges(self):
-        for i in xrange(20):
+        for i in range(20):
             uc = self.get_random_uc()
             radius = np.random.uniform(1,5)
             ranges = uc.get_radius_ranges(radius)
-            for j in xrange(100):
+            for j in range(100):
                 c0 = uc.to_cartesian(np.random.uniform(-0.5, 0.5, 3))
                 c1 = c0 + radius*random_unit()
                 f1 = uc.to_fractional(c1)
@@ -219,7 +220,7 @@ class UnitCellTestCase(BaseTestCase):
         self.assertArraysEqual(uc.get_radius_ranges(3), np.array([3,3,0]))
 
     def test_radius_indexes(self):
-        for i in xrange(20):
+        for i in range(20):
             uc = self.get_random_uc()
             radius = np.random.uniform(1,2)*abs(uc.volume)**(0.333)
 
@@ -246,16 +247,16 @@ class UnitCellTestCase(BaseTestCase):
             indexes = uc.get_radius_indexes(radius)
             self.assert_(len(indexes)*abs(uc.volume) > 4.0/3.0*np.pi*radius**3)
             #print "testing distances"
-            for j in xrange(20):
+            for j in range(20):
                 c0 = uc.to_cartesian(np.random.uniform(-0.5, 0.5, 3))
                 c1 = uc.to_cartesian(np.random.uniform(-0.5, 0.5, 3))
                 relative = c1 - c0
                 # compute all distances between c0 and c1 based on radius
                 # ranges
                 distances_slow = []
-                for i0 in xrange(-ranges[0], ranges[0]+1):
-                    for i1 in xrange(-ranges[1], ranges[1]+1):
-                        for i2 in xrange(-ranges[2], ranges[2]+1):
+                for i0 in range(-ranges[0], ranges[0]+1):
+                    for i1 in range(-ranges[1], ranges[1]+1):
+                        for i2 in range(-ranges[2], ranges[2]+1):
                             delta = uc.to_cartesian([i0,i1,i2])
                             distance = np.linalg.norm(relative + delta)
                             if distance <= radius:
@@ -343,22 +344,22 @@ class UnitCellTestCase(BaseTestCase):
         ranges = uc.get_radius_ranges(radius)
         indexes = uc.get_radius_indexes(radius)
 
-        for i in xrange(-ranges[0]-1, ranges[0]+1):
+        for i in range(-ranges[0]-1, ranges[0]+1):
             start = uc.to_cartesian([i+0.5, -ranges[1]-0.5, 0])
             end = uc.to_cartesian([i+0.5, ranges[1]+0.5, 0])
             pylab.gca().add_artist(Line2D([start[0], end[0]], [start[1], end[1]], color="k", linewidth=1))
 
-        for i in xrange(-ranges[1]-1, ranges[1]+1):
+        for i in range(-ranges[1]-1, ranges[1]+1):
             start = uc.to_cartesian([-ranges[0]-0.5, i+0.5, 0])
             end = uc.to_cartesian([ranges[0]+0.5, i+0.5, 0])
             pylab.gca().add_artist(Line2D([start[0], end[0]], [start[1], end[1]], color="k", linewidth=1))
 
-        for i in xrange(-ranges[0], ranges[0]+1):
+        for i in range(-ranges[0], ranges[0]+1):
             start = uc.to_cartesian([i, -ranges[1]-0.5, 0])
             end = uc.to_cartesian([i, ranges[1]+0.5, 0])
             pylab.gca().add_artist(Line2D([start[0], end[0]], [start[1], end[1]], color="k", linewidth=0.5, linestyle="--"))
 
-        for i in xrange(-ranges[1], ranges[1]+1):
+        for i in range(-ranges[1], ranges[1]+1):
             start = uc.to_cartesian([-ranges[0]-0.5, i, 0])
             end = uc.to_cartesian([ranges[0]+0.5, i, 0])
             pylab.gca().add_artist(Line2D([start[0], end[0]], [start[1], end[1]], color="k", linewidth=0.5, linestyle="--"))
@@ -387,7 +388,7 @@ class UnitCellTestCase(BaseTestCase):
         #pylab.savefig("radius_indexes_2d.png")
 
     def test_div(self):
-        for i in xrange(20):
+        for i in range(20):
             uc0 = self.get_random_uc(full=False)
             x = np.random.uniform(1,2,3)
             uc1 = uc0/x
@@ -410,7 +411,7 @@ class UnitCellTestCase(BaseTestCase):
             )
 
     def test_mul(self):
-        for i in xrange(20):
+        for i in range(20):
             uc0 = self.get_random_uc(full=False)
             x = np.random.uniform(1,2,3)
             uc1 = uc0*x
@@ -478,7 +479,7 @@ class UnitCellTestCase(BaseTestCase):
         self.assertArraysAlmostEqual(shortest, expected)
 
     def test_ordered(self):
-        for i in xrange(10):
+        for i in range(10):
             uc0 = self.get_random_uc(full=False)
             uc1 = uc0.ordered
             self.assertAlmostEqual(uc0.volume, uc1.volume)

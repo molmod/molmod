@@ -25,6 +25,7 @@
 
 from __future__ import print_function
 
+from builtins import range
 from random import shuffle, sample
 import copy
 
@@ -216,7 +217,7 @@ def iter_halfs_bond(graph):
 
 def iter_halfs_bend(graph):
     """Select randomly two consecutive bonds that divide the molecule in two"""
-    for atom2 in xrange(graph.num_vertices):
+    for atom2 in range(graph.num_vertices):
         neighbors = list(graph.neighbors[atom2])
         for index1, atom1 in enumerate(neighbors):
             for atom3 in neighbors[index1+1:]:
@@ -342,8 +343,8 @@ def check_nonbond(molecule, thresholds):
     """
 
     # check that no atoms overlap
-    for atom1 in xrange(molecule.graph.num_vertices):
-        for atom2 in xrange(atom1):
+    for atom1 in range(molecule.graph.num_vertices):
+        for atom2 in range(atom1):
             if molecule.graph.distances[atom1, atom2] > 2:
                 distance = np.linalg.norm(molecule.coordinates[atom1] - molecule.coordinates[atom2])
                 if distance < thresholds[frozenset([molecule.numbers[atom1], molecule.numbers[atom2]])]:
@@ -359,7 +360,7 @@ def randomize_molecule(molecule, manipulations, nonbond_thresholds, max_tries=10
        the randomized molecule is returned. The original molecule is not
        altered.
     """
-    for m in xrange(max_tries):
+    for m in range(max_tries):
         random_molecule = randomize_molecule_low(molecule, manipulations)
         if check_nonbond(random_molecule, nonbond_thresholds):
             return random_molecule
@@ -384,7 +385,7 @@ def single_random_manipulation(molecule, manipulations, nonbond_thresholds, max_
        the randomized molecule and the corresponding transformation is returned.
        The original molecule is not altered.
     """
-    for m in xrange(max_tries):
+    for m in range(max_tries):
         random_molecule, transformation = single_random_manipulation_low(molecule, manipulations)
         if check_nonbond(random_molecule, nonbond_thresholds):
             return random_molecule, transformation

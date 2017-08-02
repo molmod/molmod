@@ -25,6 +25,7 @@
 
 from __future__ import division
 
+from builtins import range
 import numpy as np
 
 from molmod.units import angstrom, amu
@@ -151,7 +152,7 @@ class CoordinateParser(PunchParser):
         if coordinates is None:
             coordinates = np.zeros((N,3), float)
             data["coordinates"] = coordinates
-        for i in xrange(N):
+        for i in range(N):
             words = f.readline().split()
             numbers[i] = int(float(words[1]))
             coordinates[i,0] = float(words[2])*angstrom
@@ -175,7 +176,7 @@ class EnergyGradParser(PunchParser):
         if gradient is None:
             gradient = np.zeros((N,3), float)
             data["gradient"] = gradient
-        for i in xrange(N):
+        for i in range(N):
             words = f.readline().split()
             gradient[i,0] = float(words[2])
             gradient[i,1] = float(words[3])
@@ -217,7 +218,7 @@ class HessianParser(PunchParser):
             if line == " $END\n":
                 break
             line = line[5:-1]
-            for j in xrange(len(line)//15):
+            for j in range(len(line)//15):
                 tmp[counter] = float(line[j*15:(j+1)*15])
                 counter += 1
         data["hessian"] = hessian

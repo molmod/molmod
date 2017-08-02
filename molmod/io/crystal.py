@@ -25,6 +25,7 @@
 
 from __future__ import absolute_import
 
+from builtins import range
 import numpy as np
 
 from .common import FileFormatError
@@ -63,7 +64,7 @@ class CrystalAPIOut(object):
         f.readline()
         f.readline()
         vectors = []
-        for i in xrange(3):
+        for i in range(3):
             line = f.readline()
             vectors.append([float(word) for word in line.split()[1:]])
         vectors = np.array(vectors)
@@ -149,7 +150,7 @@ class CrystalAPIOut(object):
             f.readline()
             f.readline()
             f.readline()
-            for i in xrange(self.num_basis):
+            for i in range(self.num_basis):
                 line = f.readline()
                 words = line.split()[1:]
                 for j1, word in enumerate(words):

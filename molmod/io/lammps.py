@@ -23,6 +23,7 @@
 """Tools for parsing LAMMPS data files"""
 
 
+from builtins import range
 import numpy as np
 
 from molmod.io.common import SlicedReader, FileFormatError
@@ -96,18 +97,18 @@ class LAMMPSDumpReader(SlicedReader):
             raise FileFormatError("A variable number of atoms is not supported.")
 
         # The next section contains the box boundaries. We will skip it
-        for i in xrange(4):
+        for i in range(4):
             next(self._f)
 
         # The next and last section contains the atom related properties
         line = next(self._f)
         if line != 'ITEM: ATOMS\n':
             raise FileFormatError("Expecting line 'ITEM: ATOMS'.")
-        fields = [list() for i in xrange(len(self.units))]
-        for i in xrange(self.num_atoms):
+        fields = [list() for i in range(len(self.units))]
+        for i in range(self.num_atoms):
             line = next(self._f)
             words = line.split()[1:]
-            for j in xrange(len(fields)):
+            for j in range(len(fields)):
                 fields[j].append(float(words[j]))
         fields = [step] + [np.array(field)*unit for field, unit in zip(fields, self.units)]
 
@@ -118,5 +119,5 @@ class LAMMPSDumpReader(SlicedReader):
         for line in self._f:
             if line == 'ITEM: ATOMS\n':
                 break
-        for i in xrange(self.num_atoms):
+        for i in range(self.num_atoms):
             next(self._f)

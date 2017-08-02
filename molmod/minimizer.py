@@ -62,6 +62,7 @@
 
 from __future__ import print_function, division
 
+from builtins import range
 import time
 
 import numpy as np
@@ -672,7 +673,7 @@ class DiagonalPreconditioner(Preconditioner):
             N = len(x_orig)
             if self.scales is None:
                 self.scales = np.ones(N, float)
-            for i in xrange(N):
+            for i in range(N):
                 epsilon = self.epsilon/self.scales[i]
                 xh = x_orig.copy()
                 xh[i] += 0.5*epsilon
@@ -1007,7 +1008,7 @@ class FunWrapper(object):
                 return self.fun(x, do_gradient=True)
             else:
                 g = np.zeros(x.shape)
-                for j in xrange(len(x)):
+                for j in range(len(x)):
                     xh = x.copy()
                     xh[j] += 0.5*self.epsilon
                     xl = x.copy()
@@ -1125,7 +1126,7 @@ class Constraints(object):
         counter = 0
         while error > self.threshold and counter < self.max_iter:
             dxs = []
-            for i in xrange(len(normals)):
+            for i in range(len(normals)):
                 dx = -normals[i]*values[i]/np.dot(normals[i], normals[i])
                 dxs.append(dx)
             dxs = np.array(dxs)
@@ -1594,7 +1595,7 @@ def check_anagrad(fun, x0, epsilon, threshold):
     """
     N = len(x0)
     f0, ana_grad = fun(x0, do_gradient=True)
-    for i in xrange(N):
+    for i in range(N):
         xh = x0.copy()
         xh[i] += 0.5*epsilon
         xl = x0.copy()
@@ -1702,7 +1703,7 @@ def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
             return fun(x, do_gradient=True)[1]
         else:
             gradient = np.zeros(N, float)
-            for i in xrange(N):
+            for i in range(N):
                 xh = x.copy()
                 xh[i] += 0.5*epsilon
                 xl = x.copy()
@@ -1711,7 +1712,7 @@ def compute_fd_hessian(fun, x0, epsilon, anagrad=True):
             return gradient
 
     hessian = np.zeros((N,N), float)
-    for i in xrange(N):
+    for i in range(N):
         xh = x0.copy()
         xh[i] += 0.5*epsilon
         xl = x0.copy()

@@ -23,6 +23,7 @@
 """Conversion between Cartesian coordinates and ZMatrices"""
 
 
+from builtins import range
 import numpy as np
 
 import molmod.ic as ic
@@ -64,7 +65,7 @@ class ZMatrixGenerator(object):
         new_order = [0]
         # We will try to take the original order as long as it satisfies the
         # constraint.
-        for i in xrange(1, graph.num_vertices):
+        for i in range(1, graph.num_vertices):
             if (graph.distances[i][new_order] == 1).any():
                 new_order.append(i)
             else:
@@ -72,7 +73,7 @@ class ZMatrixGenerator(object):
         # If not all atoms are listed in new_order, we continue adding the
         # remaining atoms in an order that satisfies the constraint. This will
         # break the original order.
-        remaining = range(len(new_order), graph.num_vertices)
+        remaining = list(range(len(new_order), graph.num_vertices))
         while len(remaining) > 0:
             pivot = remaining.pop()
             if (graph.distances[pivot][new_order] == 1).any():
@@ -129,7 +130,7 @@ class ZMatrixGenerator(object):
         if coordinates.shape != (N, 3):
             raise ValueError("The shape of the coordinates must be (%i, 3)" % N)
         result = np.zeros(N, dtype=self.dtype)
-        for i in xrange(N):
+        for i in range(N):
             ref0 = self.old_index[i]
             rel1 = -1
             rel2 = -1

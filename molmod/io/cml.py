@@ -33,6 +33,7 @@
 
 from __future__ import division
 
+from builtins import range
 import numpy as np
 
 from xml.sax import make_parser
@@ -174,7 +175,7 @@ def _dump_cml_molecule(f, molecule):
     f.write(" <molecule id='%s' %s>\n" % (molecule.title, attr_str))
     f.write("  <atomArray>\n")
     atoms_extra = getattr(molecule, "atoms_extra", {})
-    for counter, number, coordinate in zip(xrange(molecule.size), molecule.numbers, molecule.coordinates/angstrom):
+    for counter, number, coordinate in zip(range(molecule.size), molecule.numbers, molecule.coordinates/angstrom):
         atom_extra = atoms_extra.get(counter, {})
         attr_str = " ".join("%s='%s'" % (key, value) for key, value in atom_extra.items())
         f.write("   <atom id='a%i' elementType='%s' x3='%s' y3='%s' z3='%s' %s />\n" % (

@@ -25,6 +25,7 @@
 
 from __future__ import division
 
+from builtins import range
 import numpy as np
 
 from molmod.periodic import periodic
@@ -178,7 +179,7 @@ class Molecule(ReadOnly):
     def inertia_tensor(self):
         """the intertia tensor of the molecule"""
         result = np.zeros((3,3), float)
-        for i in xrange(self.size):
+        for i in range(self.size):
             r = self.coordinates[i] - self.com
             # the diagonal term
             result.ravel()[::4] += self.masses[i]*(r**2).sum()

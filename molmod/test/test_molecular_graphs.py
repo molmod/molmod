@@ -22,6 +22,7 @@
 #--
 
 
+from builtins import range
 import unittest
 
 import numpy as np
@@ -123,7 +124,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         test_results = dict((key, []) for key in expected_results)
         graph_search = GraphSearch(pattern, debug=False)
         for match in graph_search(molecule.graph):
-            test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
+            test_results[match.tag].append(tuple(match.get_destination(index) for index in range(len(match))))
 
         def iter_alternatives(test_item, key):
             yield test_item
@@ -176,7 +177,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         test_results = dict((key, []) for key in expected_results)
         graph_search = GraphSearch(pattern, debug=False)
         for match in graph_search(molecule.graph):
-            test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
+            test_results[match.tag].append(tuple(match.get_destination(index) for index in range(len(match))))
 
         def iter_alternatives(test_item, key):
             yield test_item
@@ -222,7 +223,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         test_results = dict((key, []) for key in expected_results)
         graph_search = GraphSearch(pattern, debug=False)
         for match in graph_search(molecule.graph):
-            test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
+            test_results[match.tag].append(tuple(match.get_destination(index) for index in range(len(match))))
 
         def iter_alternatives(test_item, key):
             yield test_item
@@ -246,7 +247,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         test_results = dict((key, []) for key in expected_results)
         graph_search = GraphSearch(pattern, debug=False)
         for match in graph_search(molecule.graph):
-            test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
+            test_results[match.tag].append(tuple(match.get_destination(index) for index in range(len(match))))
 
 
         def iter_alternatives(test_item, key):
@@ -282,7 +283,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         test_results = dict((key, []) for key in expected_results)
         graph_search = GraphSearch(pattern, debug=False)
         for match in graph_search(molecule.graph):
-            test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
+            test_results[match.tag].append(tuple(match.get_destination(index) for index in range(len(match))))
 
         def iter_alternatives(test_item, key):
             yield test_item
@@ -301,10 +302,10 @@ class MolecularGraphTestCase(unittest.TestCase):
         test_results = dict((key, []) for key in expected_results)
         graph_search = GraphSearch(pattern, debug=False)
         for match in graph_search(molecule.graph):
-            test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
+            test_results[match.tag].append(tuple(match.get_destination(index) for index in range(len(match))))
 
         def iter_alternatives(test_item, key):
-            for i in xrange(10):
+            for i in range(10):
                 test_item = (test_item[-1],) + test_item[:-1]
                 yield test_item
                 yield tuple(reversed(test_item))
@@ -328,10 +329,10 @@ class MolecularGraphTestCase(unittest.TestCase):
             test_results = {tag: []}
             graph_search = GraphSearch(pattern, debug=False)
             for match in graph_search(molecule.graph):
-                test_results[match.tag].append(tuple(match.get_destination(index) for index in xrange(len(match))))
+                test_results[match.tag].append(tuple(match.get_destination(index) for index in range(len(match))))
 
             def iter_alternatives(test_item, key):
-                for i in xrange(size):
+                for i in range(size):
                     test_item = (test_item[-1],) + test_item[:-1]
                     yield test_item
                     yield tuple(reversed(test_item))
@@ -368,7 +369,7 @@ class MolecularGraphTestCase(unittest.TestCase):
             g0 = mol.graph
             permutation = np.random.permutation(g0.num_vertices)
             g1 = g0.get_subgraph(permutation, normalize=True)
-            for i in xrange(g0.num_vertices):
+            for i in range(g0.num_vertices):
                 self.assert_((g0.vertex_fingerprints[permutation[i]]==g1.vertex_fingerprints[i]).all())
             self.assert_((g0.fingerprint==g1.fingerprint).all())
 
@@ -432,7 +433,7 @@ class MolecularGraphTestCase(unittest.TestCase):
                     length = len(path)
                 else:
                     self.assertEqual(length, len(path))
-                for i in xrange(len(path)-1):
+                for i in range(len(path)-1):
                     self.assert_(path[i] in molecule.graph.neighbors[path[i+1]])
 
     def test_full_match_on_self(self):

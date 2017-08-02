@@ -29,6 +29,7 @@
 
 from __future__ import division
 
+from builtins import range
 import numpy as np
 
 __all__ = [
@@ -102,8 +103,8 @@ class PairFF(object):
     def energy(self):
         """Compute the energy of the system"""
         result = 0.0
-        for index1 in xrange(self.numc):
-            for index2 in xrange(index1):
+        for index1 in range(self.numc):
+            for index2 in range(index1):
                 if self.scaling[index1, index2] > 0:
                     for se, ve in self.yield_pair_energies(index1, index2):
                         result += se*ve*self.scaling[index1, index2]
@@ -112,7 +113,7 @@ class PairFF(object):
     def gradient_component(self, index1):
         """Compute the gradient of the energy for one atom"""
         result = np.zeros(3, float)
-        for index2 in xrange(self.numc):
+        for index2 in range(self.numc):
             if self.scaling[index1, index2] > 0:
                 for (se, ve), (sg, vg) in zip(self.yield_pair_energies(index1, index2), self.yield_pair_gradients(index1, index2)):
                     result += (sg*self.directions[index1, index2]*ve + se*vg)*self.scaling[index1, index2]
@@ -121,7 +122,7 @@ class PairFF(object):
     def gradient(self):
         """Compute the gradient of the energy for all atoms"""
         result = np.zeros((self.numc, 3), float)
-        for index1 in xrange(self.numc):
+        for index1 in range(self.numc):
             result[index1] = self.gradient_component(index1)
         return result
 
@@ -129,7 +130,7 @@ class PairFF(object):
         """Compute the hessian of the energy for one atom pair"""
         result = np.zeros((3, 3), float)
         if index1 == index2:
-            for index3 in xrange(self.numc):
+            for index3 in range(self.numc):
                 if self.scaling[index1, index3] > 0:
                     d_1 = 1/self.distances[index1, index3]
                     for (se, ve), (sg, vg), (sh, vh) in zip(
@@ -163,8 +164,8 @@ class PairFF(object):
     def hessian(self):
         """Compute the hessian of the energy"""
         result = np.zeros((self.numc, 3, self.numc, 3), float)
-        for index1 in xrange(self.numc):
-            for index2 in xrange(self.numc):
+        for index1 in range(self.numc):
+            for index2 in range(self.numc):
                 result[index1, :, index2, :] = self.hessian_component(index1, index2)
         return result
 
@@ -257,7 +258,7 @@ class CoulombFF(PairFF):
 
     def esp_point(self, point):
         result = 0.0
-        for index2 in xrange(self.numc):
+        for index2 in range(self.numc):
             delta = point - self.coordinates[index2]
             d = np.linalg.norm(delta)
             if self.charges is not None:
@@ -269,7 +270,7 @@ class CoulombFF(PairFF):
 
     def esp_component(self, index1):
         result = 0.0
-        for index2 in xrange(self.numc):
+        for index2 in range(self.numc):
             if self.scaling[index1, index2] > 0:
                 d = self.distances[index1, index2]
                 if self.charges is not None:
@@ -281,13 +282,13 @@ class CoulombFF(PairFF):
     def esp(self):
         """Compute the electrostatic potential at each atom due to other atoms"""
         result = np.zeros(self.numc, float)
-        for index1 in xrange(self.numc):
+        for index1 in range(self.numc):
             result[index1] = self.esp_component(index1)
         return result
 
     def efield_point(self, point):
         result = 0.0
-        for index2 in xrange(self.numc):
+        for index2 in range(self.numc):
             delta = point - self.coordinates[index2]
             d = np.linalg.norm(delta)
             direction = delta/d
@@ -300,7 +301,7 @@ class CoulombFF(PairFF):
 
     def efield_component(self, index1):
         result = 0.0
-        for index2 in xrange(self.numc):
+        for index2 in range(self.numc):
             if self.scaling[index1, index2] > 0:
                 d = self.distances[index1, index2]
                 direction = self.directions[index1, index2]
@@ -314,7 +315,7 @@ class CoulombFF(PairFF):
     def efield(self):
         """Compute the electrostatic potential at each atom due to other atoms"""
         result = np.zeros((self.numc,3), float)
-        for index1 in xrange(self.numc):
+        for index1 in range(self.numc):
             result[index1] = self.efield_component(index1)
         return result
 

@@ -45,6 +45,7 @@
 """Utilities that are used in all parts of the MolMod library"""
 
 
+from builtins import range
 import numpy as np
 from future.utils import with_metaclass
 
@@ -213,7 +214,7 @@ class ReadOnlyAttribute(object):
                     raise TypeError("Value does not have the right dimension. "
                         "Got %i. Expected %i" % (len(value.shape), self.npdim))
                 if self.npshape is not None:
-                    for i in xrange(len(self.npshape)):
+                    for i in range(len(self.npshape)):
                         s = self.npshape[i]
                         if s is not None:
                             if len(value.shape) < i+1:

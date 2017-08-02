@@ -25,6 +25,7 @@
 
 from __future__ import print_function, division
 
+from builtins import range
 import numpy as np
 
 from molmod.periodic import periodic
@@ -69,7 +70,7 @@ def dump_pdb(filename, molecule, atomnames=None, resnames=None, chain_ids=None, 
     res_id = 1
     old_resname = None
 
-    for i in xrange(molecule.size):
+    for i in range(molecule.size):
         symbol = periodic[molecule.numbers[i]].symbol
         if atomnames is None:
             atomname = symbol

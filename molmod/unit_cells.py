@@ -25,6 +25,7 @@
 
 from __future__ import division
 
+from builtins import range
 import numpy as np
 
 from molmod.utils import cached, ReadOnly, ReadOnlyAttribute
@@ -170,7 +171,7 @@ class UnitCell(ReadOnly):
         """
         U, S, Vt = np.linalg.svd(self.matrix*self.active)
         Sinv = np.zeros(S.shape, float)
-        for i in xrange(3):
+        for i in range(3):
             if abs(S[i]) < self.eps:
                 Sinv[i] = 0.0
             else:
@@ -239,7 +240,7 @@ class UnitCell(ReadOnly):
         """Computes the distances between neighboring crystal planes"""
         result_invsq = (self.reciprocal**2).sum(axis=0)
         result = np.zeros(3, float)
-        for i in xrange(3):
+        for i in range(3):
             if result_invsq[i] > 0:
                 result[i] = result_invsq[i]**(-0.5)
         return result
@@ -329,7 +330,7 @@ class UnitCell(ReadOnly):
            `radius` from the center of the reference cell.
         """
         result = np.zeros(3, int)
-        for i in xrange(3):
+        for i in range(3):
             if self.spacings[i] > 0:
                 if mic:
                     result[i] = np.ceil(radius/self.spacings[i]-0.5)

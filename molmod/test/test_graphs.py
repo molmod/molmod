@@ -24,6 +24,7 @@
 
 from __future__ import print_function
 
+from builtins import range
 import copy
 import unittest
 
@@ -328,7 +329,7 @@ class GraphTestCase(unittest.TestCase):
             new_edges = tuple((permutation[i], permutation[j]) for i,j in g0.edges)
             g1 = Graph(new_edges, g0.num_vertices)
             self.assert_((g0.fingerprint==g1.fingerprint).all())
-            for i in xrange(g0.num_vertices):
+            for i in range(g0.num_vertices):
                 self.assert_((g0.vertex_fingerprints[i]==g1.vertex_fingerprints[permutation[i]]).all())
 
     def test_symmetries(self):
@@ -350,7 +351,7 @@ class GraphTestCase(unittest.TestCase):
                         # all cycles lengths must have a common divisor > 1
                         max_cycle_len = max(len(cycle) for cycle in cycles)
                         #print max_cycle_len
-                        for divisor in xrange(2, max_cycle_len+1):
+                        for divisor in range(2, max_cycle_len+1):
                             ok = True
                             for cycle in cycles:
                                 if len(cycle)%divisor != 0:
@@ -392,7 +393,7 @@ class GraphTestCase(unittest.TestCase):
                     for vertex in sub:
                         s = equivalent_vertices.setdefault(vertex, set([]))
                         s.update(sub)
-            for vertex in xrange(g.num_vertices):
+            for vertex in range(g.num_vertices):
                 equivalent_vertices.setdefault(vertex, set([vertex]))
             self.assertEqual(equivalent_vertices, g.equivalent_vertices)
 
