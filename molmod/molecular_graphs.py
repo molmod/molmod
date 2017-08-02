@@ -134,7 +134,7 @@ class MolecularGraph(Graph):
                     delta = unit_cell.shortest_vector(delta)
                 length = np.linalg.norm(delta)
                 lengths_ns.append([length, delta, n])
-            lengths_ns.sort(reverse=True, cmp=(lambda r0, r1: cmp(r0[0], r1[0])))
+            lengths_ns.sort(reverse=True, key=(lambda r: r[0]))
             for i0, (length0, delta0, n0) in enumerate(lengths_ns):
                 for i1, (length1, delta1, n1) in enumerate(lengths_ns[:i0]):
                     if length1 == 0.0:

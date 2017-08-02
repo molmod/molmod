@@ -59,7 +59,7 @@ class ClusterTestCase(unittest.TestCase):
         cf.add_related(RuleCluster(["u", "v"], ["u=v"]))
         clusters = list(cf.get_clusters())
         self.assertEqual(len(clusters), 2)
-        clusters.sort(lambda x,y: cmp(len(x.items),len(y.items)))
+        clusters.sort(key=lambda x: len(x.items))
         for cluster in clusters:
             cluster.rules.sort()
         self.assertEqual(clusters[0].items, set(["u", "v"]))
