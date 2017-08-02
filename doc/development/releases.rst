@@ -1,8 +1,22 @@
 Release history
 ###############
 
-* **June 5, 2013. Version 1.0**
+**. Version 1.2**
 
-   - First stable release of MolMod.
+- Switch to setuptools in setup.py.
+- Use Cython to compile the extension instead of f2py.
+- Use Conda for testing on Travis-CI.
+- Automatic deployment of new version on PyPI, Github and anaconda.org
+- Simplified installation.
+- Many cleanups.
+- Fix mistake in the Kabsch algorithm.
 
-* **
+**September 09, 2014. Version 1.1**
+
+- DLPoly history reader also works for restarted calculation.
+- Testing on Travis-CI
+- Various small improvements
+
+**June 5, 2013. Version 1.0**
+
+- First stable release of MolMod on Github.
