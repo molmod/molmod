@@ -27,9 +27,9 @@ about:
   license: GNU General Public License (GPL)
   license_family: GPL
   summary: MolMod is a collection of molecular modelling tools for python.
-  home: https://github.com/molmod/molmod
+  home: http://molmod.github.io/molmod/
   license_file: LICENSE.txt
-  doc_url: https://github.com/molmod/molmod
+  doc_url: http://molmod.github.io/molmod/
 
 extra:
   recipe-maintainers: Toon Verstraelen <toon.verstraelen@gmail.com>
