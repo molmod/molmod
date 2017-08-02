@@ -21,12 +21,14 @@
 //--
 
 
+#include "ff.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include "common.h"
 
 inline void add_grad(
-  int i, int j, double s, double *cor, double *delta,
+  size_t i, size_t j, double s, double *cor, double *delta,
   double *gradient
 ) {
   gradient[i*3  ] += s*delta[0];
@@ -38,18 +40,18 @@ inline void add_grad(
 }
 
 double ff_dm_quad(
-  int n, int periodic, double *cor, double *dm0, double *dmk,
+  size_t natom, int periodic, double *cor, double *dm0, double *dmk,
   double amp, double *gradient, double *matrix, double *reciprocal
 ) {
-  int i,j;
+  size_t i, j;
   double delta[3], d, d0, k, tmp, result;
 
   result = 0.0;
-  //printf("n=%i\n", n);
-  for (i=0; i<n; i++) {
+  //printf("natom=%i\n", natom);
+  for (i=0; i<natom; i++) {
     for (j=0; j<i; j++) {
-      d0 = dm0[i*n+j];
-      k = dmk[i*n+j];
+      d0 = dm0[i*natom+j];
+      k = dmk[i*natom+j];
       //printf("i=%i  j=%i  d0=%i\n", i,j,d0);
       if (d0>0) {
         if (periodic) {
@@ -74,16 +76,16 @@ double ff_dm_quad(
 
 
 double ff_dm_reci(
-  int n, int periodic, double *cor, double *radii, int *dm0,
+  size_t natom, int periodic, double *cor, double *radii, long *dm0,
   double amp, double *gradient, double *matrix, double *reciprocal
 ) {
-  int i, j;
+  size_t i, j;
   double delta[3], d, r0, tmp, result;
 
   result = 0.0;
-  for (i=0; i<n; i++) {
+  for (i=0; i<natom; i++) {
     for (j=0; j<i; j++) {
-      if (dm0[i*n+j]>1) {
+      if (dm0[i*natom+j]>1) {
         if (periodic) {
           d = distance_delta_periodic(cor + 3*i, cor + 3*j, delta, matrix, reciprocal);
         } else {
@@ -106,14 +108,14 @@ double ff_dm_reci(
 
 
 double ff_bond_quad(
-  int m, int n, int periodic, double *cor, int *pairs, double *lengths,
+  size_t npair, int periodic, double *cor, long *pairs, double *lengths,
   double amp, double *gradient, double *matrix, double *reciprocal
 ) {
-  int b, i, j;
+  size_t b, i, j;
   double delta[3], result, d, tmp;
 
   result = 0.0;
-  for (b=0; b<m; b++) {
+  for (b=0; b<npair; b++) {
     i = pairs[2*b  ];
     j = pairs[2*b+1];
     if (periodic) {
@@ -134,14 +136,14 @@ double ff_bond_quad(
 }
 
 double ff_bond_hyper(
-  int m, int n, int periodic, double *cor, int *pairs, double *lengths,
+  size_t npair, int periodic, double *cor, long *pairs, double *lengths,
   double scale, double amp, double *gradient, double *matrix, double *reciprocal
 ) {
-  int b, i, j;
+  size_t b, i, j;
   double delta[3], result, d, tmp;
 
   result = 0.0;
-  for (b=0; b<m; b++) {
+  for (b=0; b<npair; b++) {
     i = pairs[2*b  ];
     j = pairs[2*b+1];
     if (periodic) {

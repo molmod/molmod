@@ -23,8 +23,8 @@ The following software must be installed for MolMod:
 
 * Python >= 2.7, < 3.0 (including the header files): http://www.python.org/doc/
 * Numpy >= 1.0 or later: http://numpy.scipy.org/
-* A Fortran and a C compiler supported by the F2PY module in Numpy, e.g.
-  gfortran and gcc: http://gcc.gnu.org/
+* A C compiler e.g. gcc: http://gcc.gnu.org/
+* Cython >= 0.24.1: http://cython.org/
 * Git: http://git-scm.com/
 * Nosetests >= 0.11: http://somethingaboutorange.com/mrl/projects/nose/0.11.2/
 * Sphinx >= 1.0: http://sphinx.pocoo.org/
@@ -34,22 +34,18 @@ Most Linux distributions can install this software with just a single command:
 
 * Ubuntu 12.4::
 
-    sudo apt-get install python python-dev python-numpy gfortran gcc git-core python-nose python-sphinx
+    sudo apt-get install python python-dev python-numpy cython gcc git-core python-nose python-sphinx
 
 * Debian 5. You first have to become root because the sudo program is not
   configured by default. ::
 
     su -
-    apt-get install python python-dev python-numpy gfortran gcc git-core python-nose python-sphinx
+    apt-get install python python-dev python-numpy cython gcc git-core python-nose python-sphinx
     exit
 
-* Fedora 17::
+* Fedora 26::
 
-    sudo yum install python-devel numpy numpy-f2py gcc-gfortran gcc git python-nose sphinx
-
-* Suse 11.2::
-
-    sudo zypper install python-devel python-numpy gcc gcc-fortran git python-nose sphinx
+    sudo yum install python-devel numpy numpy-f2py python-Cython gcc git python-nose sphinx
 
 
 Download MolMod
@@ -69,6 +65,7 @@ Choose a suitable directory, e.g. ``~/build``, download and unpack the archive::
     wget http://github.com/molmod/molmod/releases/download/v1.1/molmod-1.1.tar.gz
     tar -xvzf molmod-1.1.tar.gz
     cd molmod-1.1
+
 
 Latest development code (experts only)
 --------------------------------------

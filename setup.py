@@ -28,9 +28,11 @@ import subprocess
 import sys
 from glob import glob
 
+import numpy as np
 from numpy.distutils.core import setup
 from numpy.distutils.extension import Extension
 from distutils.command.install_data import install_data
+import Cython.Build
 
 
 # Try to get the version from git describe
@@ -90,7 +92,7 @@ setup(
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
     url='http://molmod.ugent.be/code/',
-    cmdclass={'install_data': MyInstallData},
+    cmdclass={'install_data': MyInstallData, 'build_ext': Cython.Build.build_ext},
     package_dir = {'molmod': 'molmod'},
     packages=[
         'molmod', 'molmod.test',
@@ -108,10 +110,17 @@ setup(
         for dn in glob('data/examples/???_*')
     ],
     ext_modules=[
-        Extension("molmod.ext", ["molmod/ext.pyf", "molmod/common.c",
-            "molmod/ff.c", "molmod/graphs.c", "molmod/similarity.c",
-            "molmod/molecules.c", "molmod/unit_cells.c",
-        ]),
+        Extension(
+            "molmod.ext",
+            sources=["molmod/ext.pyx", "molmod/common.c", "molmod/ff.c",
+                     "molmod/graphs.c", "molmod/similarity.c", "molmod/molecules.c",
+                     "molmod/unit_cells.c"],
+            depends=["molmod/common.h", "molmod/ff.h", "molmod/ff.pxd", "molmod/graphs.h",
+                     "molmod/graphs.pxd", "molmod/similarity.h", "molmod/similarity.pxd",
+                     "molmod/molecules.h", "molmod/molecules.pxd", "molmod/unit_cells.h",
+                     "molmod/unit_cells.pxd"],
+            include_dirs=[np.get_include()],
+         ),
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',

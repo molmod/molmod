@@ -182,7 +182,7 @@ class ToyFF(object):
             self.matrix = unit_cell.matrix
             self.reciprocal = unit_cell.reciprocal
 
-        self.dm = graph.distances.astype(numpy.int32)
+        self.dm = graph.distances.astype(int)
         dm = self.dm.astype(float)
         self.dm0 = dm**2
         self.dmk = (dm+0.1)**(-3)
@@ -194,7 +194,7 @@ class ToyFF(object):
         for i, j in graph.edges:
             bond_edges.append((i, j))
             bond_lengths.append(bonds.get_length(graph.numbers[i], graph.numbers[j]))
-        self.bond_edges = numpy.array(bond_edges, numpy.int32)
+        self.bond_edges = numpy.array(bond_edges, int)
         self.bond_lengths = numpy.array(bond_lengths, float)
 
         special_angles = SpecialAngles()
@@ -242,7 +242,7 @@ class ToyFF(object):
                         d = numpy.sqrt(dj**2+dk**2-2*dj*dk*numpy.cos(angle))
                         span_edges.append((j, k))
                         span_lengths.append(d)
-        self.span_edges = numpy.array(span_edges, numpy.int32)
+        self.span_edges = numpy.array(span_edges, int)
         self.span_lengths = numpy.array(span_lengths, float)
 
         self.dm_quad = 0.0

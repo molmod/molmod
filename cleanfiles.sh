@@ -1,13 +1,13 @@
 #!/bin/bash
-for i in $(find molmod test examples | egrep "\.pyc$|\.py~$|\.pyc~$|\.bak$|\.so$") ; do rm -v ${i}; done
-rm -vr doc/_build/
-rm -vr output
-rm -v MANIFEST
-rm -vr dist
-rm -vr build
-rm -vr doctrees
-rm -v molmod/extmodule.c
+for i in $(find molmod data | egrep "\.pyc$|\.py~$|\.pyc~$|\.bak$|\.so$") ; do rm -fv ${i}; done
+rm -fvr doc/_build/
+rm -fvr output
+rm -fv MANIFEST
+rm -fvr dist
+rm -fvr build
+rm -fvr doctrees
+rm -fv molmod/ext.c
 
 # Output of the examples
-rm -v data/examples/001_molecules/ibuprofen.xyz
-rm -v data/examples/001_molecules/ibuprofen_com.xyz
+rm -fv data/examples/001_molecules/ibuprofen.xyz
+rm -fv data/examples/001_molecules/ibuprofen_com.xyz

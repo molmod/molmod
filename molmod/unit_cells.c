@@ -21,14 +21,19 @@
 //--
 
 
+#include "unit_cells.h"
+
 #include <math.h>
 #include <stdlib.h>
+
 #include "common.h"
 
 
-int unit_cell_get_radius_indexes(int n, double *matrix, double *reciprocal, double radius, int *max_ranges, int *indexes) {
-  int lowlim[3], uplim[3], index[3], side[3];
-  int i0, i1, i2, counter, j0, j1, j2, k, sum;
+size_t unit_cell_get_radius_indexes(double *matrix, double *reciprocal, double radius,
+                                    long *max_ranges, long *indexes) {
+  long lowlim[3], uplim[3], index[3], side[3];
+  long i0, i1, i2, j0, j1, j2;
+  size_t counter, k, sum;
   double center[3], corner[3], pos[3], frac[3];
   double scale, d;
 

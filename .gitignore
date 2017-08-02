@@ -3,7 +3,7 @@
 *.gz
 
 # Ignore (in-place) build results
-molmod/extmodule.c
+molmod/ext.c
 *.so
 *.pyc
 build

@@ -88,8 +88,9 @@ class cached(object):
             #print "COMPUTING %s" % self.attribute_name
             value = self.fn(instance)
             setattr(instance, self.attribute_name, value)
-            if isinstance(value, numpy.ndarray):
-                value.setflags(write=False)
+            #Disabled because not strictly enforcable and incompatible with Cython memoryviews.
+            #if isinstance(value, numpy.ndarray):
+            #    value.setflags(write=False)
         return value
 
 
@@ -228,11 +229,13 @@ class ReadOnlyAttribute(object):
             if not isinstance(value, self.ptype):
                 raise TypeError("Value (%s) does not have the expected type "
                     "(%s)." % (value, self.ptype))
-        if isinstance(value, numpy.ndarray):
-            if value.flags.writeable:
-                value = value.copy()
-                value.setflags(write=False)
-        else:
+        #Disabled because not strictly enforcable and incompatible with Cython memoryviews.
+        #if isinstance(value, numpy.ndarray):
+            #if value.flags.writeable:
+            #    value = value.copy()
+            #    value.setflags(write=False)
+        #else:
+        if not isinstance(value, numpy.ndarray):
             # Call the hash function. If that does not work, the object is
             # mutable, which we don't like in case the object is not a numpy
             # array.
