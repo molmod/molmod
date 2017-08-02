@@ -23,10 +23,10 @@
 """Readers for DLPoly file formats"""
 
 
+import numpy as np
+
 from molmod.units import picosecond, amu, angstrom, atm, deg
 from molmod.io.common import SlicedReader, FileFormatError
-
-import numpy
 
 
 __all__ = ["DLPolyHistoryReader", "DLPolyOutputReader"]
@@ -138,7 +138,7 @@ class DLPolyHistoryReader(SlicedReader):
         except ValueError:
             raise FileFormatError("Could not convert all numbers on the first line of the current time frame. (%i'th frame)" % self._counter)
         # the three cell lines
-        cell = numpy.zeros((3, 3), float)
+        cell = np.zeros((3, 3), float)
         frame["cell"] = cell
         cell_msg = "The cell lines must consist of three floating point values. (%i'th frame, %i'th step)" % (self._counter, step)
         for i in xrange(3):
@@ -147,17 +147,17 @@ class DLPolyHistoryReader(SlicedReader):
         # the atoms
         symbols = []
         frame["symbols"] = symbols
-        masses = numpy.zeros(self.num_atoms, float)
+        masses = np.zeros(self.num_atoms, float)
         frame["masses"] = masses
-        charges = numpy.zeros(self.num_atoms, float)
+        charges = np.zeros(self.num_atoms, float)
         frame["charges"] = charges
-        pos = numpy.zeros((self.num_atoms, 3), float)
+        pos = np.zeros((self.num_atoms, 3), float)
         frame["pos"] = pos
         if self.keytrj > 0:
-            vel = numpy.zeros((self.num_atoms, 3), float)
+            vel = np.zeros((self.num_atoms, 3), float)
             frame["vel"] = vel
         if self.keytrj > 1:
-            frc = numpy.zeros((self.num_atoms, 3), float)
+            frc = np.zeros((self.num_atoms, 3), float)
             frame["frc"] = frc
         for i in xrange(self.num_atoms):
             # the atom header line

@@ -24,7 +24,7 @@
 
 import unittest
 
-import numpy
+import numpy as np
 import pkg_resources
 
 from molmod.test.common import *
@@ -57,5 +57,5 @@ class CMLTestCase(unittest.TestCase):
         l = load_cml(pkg_resources.resource_filename(__name__, "../../data/test/1LJL_Cys10.cml"))
         self.assertEqual(l[0].title, "Kalium [+]")
         self.assertEqual(l[2].title, "Acetic acid [-]")
-        self.assert_((l[2].numbers==numpy.array([6,6,8,8,1,1,1])).all())
+        self.assert_((l[2].numbers==np.array([6,6,8,8,1,1,1])).all())
         self.assertEqual(l[2].extra["charge"],"-1.0")

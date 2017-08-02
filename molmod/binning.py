@@ -32,8 +32,9 @@
 """
 
 
+import numpy as np
+
 from molmod.unit_cells import UnitCell
-import numpy
 
 
 __all__ = ["PairSearchIntra", "PairSearchInter"]
@@ -79,7 +80,7 @@ class Binning(object):
         if self.integer_cell is None:
             self.neighbor_indexes = grid_cell.get_radius_indexes(cutoff)
         else:
-            max_ranges = numpy.diag(self.integer_cell.matrix).astype(int)
+            max_ranges = np.diag(self.integer_cell.matrix).astype(int)
             max_ranges[True^self.integer_cell.active] = -1
             self.neighbor_indexes = grid_cell.get_radius_indexes(cutoff, max_ranges)
 
@@ -90,7 +91,7 @@ class Binning(object):
     def iter_surrounding(self, center_key):
         """Iterate over all bins surrounding the given bin"""
         for shift in self.neighbor_indexes:
-            key = tuple(numpy.add(center_key, shift).astype(int))
+            key = tuple(np.add(center_key, shift).astype(int))
             if self.integer_cell is not None:
                 key = self.wrap_key(key)
             bin = self._bins.get(key)
@@ -102,7 +103,7 @@ class Binning(object):
 
            This method is only applicable in case of a periodic system.
         """
-        return tuple(numpy.round(
+        return tuple(np.round(
             self.integer_cell.shortest_vector(key)
         ).astype(int))
 
@@ -119,12 +120,12 @@ class PairSearchBase(object):
                 # The following would be faster, but it is not reliable
                 # enough yet.
                 #grid = unit_cell.get_optimal_subcell(cutoff/2.0)
-                divisions = numpy.ceil(unit_cell.spacings/cutoff)
+                divisions = np.ceil(unit_cell.spacings/cutoff)
                 divisions[divisions<1] = 1
                 grid = unit_cell/divisions
 
         if isinstance(grid, float):
-            grid_cell = UnitCell(numpy.array([
+            grid_cell = UnitCell(np.array([
                 [grid, 0, 0],
                 [0, grid, 0],
                 [0, 0, grid]
@@ -138,7 +139,7 @@ class PairSearchBase(object):
             # The columns of integer_matrix are the unit cell vectors in
             # fractional coordinates of the grid cell.
             integer_matrix = grid_cell.to_fractional(unit_cell.matrix.transpose()).transpose()
-            if abs((integer_matrix - numpy.round(integer_matrix))*self.unit_cell.active).max() > 1e-6:
+            if abs((integer_matrix - np.round(integer_matrix))*self.unit_cell.active).max() > 1e-6:
                 raise ValueError("The unit cell vectors are not an integer linear combination of grid cell vectors.")
             integer_matrix = integer_matrix.round()
             integer_cell = UnitCell(integer_matrix, unit_cell.active)
@@ -153,7 +154,7 @@ class PairSearchIntra(PairSearchBase):
 
        Example usage::
 
-           coordinates = numpy.random.uniform(0,10,(10,3))
+           coordinates = np.random.uniform(0,10,(10,3))
            for i, j, delta, distance in PairSearchIntra(coordinates, 2.5):
                print i, j, distance
 
@@ -203,7 +204,7 @@ class PairSearchIntra(PairSearchBase):
                         delta = c1 - c0
                         if self.unit_cell is not None:
                             delta = self.unit_cell.shortest_vector(delta)
-                        distance = numpy.linalg.norm(delta)
+                        distance = np.linalg.norm(delta)
                         if distance <= self.cutoff:
                             yield i0, i1, delta, distance
 
@@ -212,8 +213,8 @@ class PairSearchInter(PairSearchBase):
 
        Example usage::
 
-           coordinates0 = numpy.random.uniform(0,10,(10,3))
-           coordinates1 = numpy.random.uniform(0,10,(10,3))
+           coordinates0 = np.random.uniform(0,10,(10,3))
+           coordinates1 = np.random.uniform(0,10,(10,3))
            for i, j, delta, distance in PairSearchInter(coordinates0, coordinates1, 2.5):
                print i, j, distance
 
@@ -262,6 +263,6 @@ class PairSearchInter(PairSearchBase):
                         delta = c1 - c0
                         if self.unit_cell is not None:
                             delta = self.unit_cell.shortest_vector(delta)
-                        distance = numpy.linalg.norm(delta)
+                        distance = np.linalg.norm(delta)
                         if distance <= self.cutoff:
                             yield i0, i1, delta, distance

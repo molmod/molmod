@@ -23,10 +23,10 @@
 """Data structure & tools to work with periodic systems"""
 
 
+import numpy as np
+
 from molmod.units import angstrom
 from molmod.utils import cached, ReadOnly, ReadOnlyAttribute
-
-import numpy
 
 
 __all__ = ["UnitCell"]
@@ -42,10 +42,10 @@ class UnitCell(ReadOnly):
        a significant computational overhead.
     """
     eps = 1e-6 # small positive number, below this value is approximately zero
-    matrix = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=2,
+    matrix = ReadOnlyAttribute(np.ndarray, none=False, npdim=2,
         npshape=(3,3), npdtype=float, doc="matrix whose columns are the "
         "primitive cell vectors")
-    active = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1, npshape=(3,),
+    active = ReadOnlyAttribute(np.ndarray, none=False, npdim=1, npshape=(3,),
         npdtype=bool, doc="the active cell vectors")
 
     def __init__(self, matrix, active=None):
@@ -60,13 +60,13 @@ class UnitCell(ReadOnly):
                               True]
         """
         if active is None:
-            active = numpy.array([True, True, True])
+            active = np.array([True, True, True])
         self.matrix = matrix
         self.active = active
         # sanity checks for the unit cell
         for col, name in enumerate(["a", "b", "c"]):
             if self.active[col]:
-                norm = numpy.linalg.norm(matrix[:, col])
+                norm = np.linalg.norm(matrix[:, col])
                 if norm < self.eps:
                     raise ValueError("The length of ridge %s is (nearly) zero." % name)
         if abs(self.volume) < self.eps:
@@ -91,35 +91,35 @@ class UnitCell(ReadOnly):
             if length <= 0:
                 raise ValueError("The length parameters must be strictly positive.")
         for angle in angles:
-            if angle <= 0 or angle >= numpy.pi:
+            if angle <= 0 or angle >= np.pi:
                 raise ValueError("The angle parameters must lie in the range ]0 deg, 180 deg[.")
         del length
         del angle
 
-        matrix = numpy.zeros((3, 3), float)
+        matrix = np.zeros((3, 3), float)
 
         # first cell vector along x-axis
         matrix[0, 0] = lengths[0]
 
         # second cell vector in x-y plane
-        matrix[0, 1] = numpy.cos(angles[2])*lengths[1]
-        matrix[1, 1] = numpy.sin(angles[2])*lengths[1]
+        matrix[0, 1] = np.cos(angles[2])*lengths[1]
+        matrix[1, 1] = np.sin(angles[2])*lengths[1]
 
         # Finding the third cell vector is slightly more difficult. :-)
         # It works like this:
         # The dot products of a with c, b with c and c with c are known. the
         # vector a has only an x component, b has no z component. This results
         # in the following equations:
-        u_a = lengths[0]*lengths[2]*numpy.cos(angles[1])
-        u_b = lengths[1]*lengths[2]*numpy.cos(angles[0])
+        u_a = lengths[0]*lengths[2]*np.cos(angles[1])
+        u_b = lengths[1]*lengths[2]*np.cos(angles[0])
         matrix[0, 2] = u_a/matrix[0, 0]
         matrix[1, 2] = (u_b - matrix[0, 1]*matrix[0, 2])/matrix[1, 1]
         u_c = lengths[2]**2 - matrix[0, 2]**2 - matrix[1, 2]**2
         if u_c < 0:
             raise ValueError("The given cell parameters do not correspond to a unit cell.")
-        matrix[2, 2] = numpy.sqrt(u_c)
+        matrix[2, 2] = np.sqrt(u_c)
 
-        active = numpy.ones(3, bool)
+        active = np.ones(3, bool)
         return cls(matrix, active)
 
     @cached
@@ -138,11 +138,11 @@ class UnitCell(ReadOnly):
         if len(active) == 0:
             return -1
         elif len(active) == 1:
-            return numpy.linalg.norm(self.matrix[:, active[0]])
+            return np.linalg.norm(self.matrix[:, active[0]])
         elif len(active) == 2:
-            return numpy.linalg.norm(numpy.cross(self.matrix[:, active[0]], self.matrix[:, active[1]]))
+            return np.linalg.norm(np.cross(self.matrix[:, active[0]], self.matrix[:, active[1]]))
         elif len(active) == 3:
-            return abs(numpy.linalg.det(self.matrix))
+            return abs(np.linalg.det(self.matrix))
 
     @cached
     def active_inactive(self):
@@ -167,27 +167,27 @@ class UnitCell(ReadOnly):
            the active columns span the same sub space as the original cell
            vectors.
         """
-        U, S, Vt = numpy.linalg.svd(self.matrix*self.active)
-        Sinv = numpy.zeros(S.shape, float)
+        U, S, Vt = np.linalg.svd(self.matrix*self.active)
+        Sinv = np.zeros(S.shape, float)
         for i in xrange(3):
             if abs(S[i]) < self.eps:
                 Sinv[i] = 0.0
             else:
                 Sinv[i] = 1.0/S[i]
-        return numpy.dot(U*Sinv, Vt)*self.active
+        return np.dot(U*Sinv, Vt)*self.active
 
     @cached
     def parameters(self):
         """The cell parameters (lengths and angles)"""
-        length_a = numpy.linalg.norm(self.matrix[:, 0])
-        length_b = numpy.linalg.norm(self.matrix[:, 1])
-        length_c = numpy.linalg.norm(self.matrix[:, 2])
-        alpha = numpy.arccos(numpy.dot(self.matrix[:, 1], self.matrix[:, 2]) / (length_b * length_c))
-        beta = numpy.arccos(numpy.dot(self.matrix[:, 2], self.matrix[:, 0]) / (length_c * length_a))
-        gamma = numpy.arccos(numpy.dot(self.matrix[:, 0], self.matrix[:, 1]) / (length_a * length_b))
+        length_a = np.linalg.norm(self.matrix[:, 0])
+        length_b = np.linalg.norm(self.matrix[:, 1])
+        length_c = np.linalg.norm(self.matrix[:, 2])
+        alpha = np.arccos(np.dot(self.matrix[:, 1], self.matrix[:, 2]) / (length_b * length_c))
+        beta = np.arccos(np.dot(self.matrix[:, 2], self.matrix[:, 0]) / (length_c * length_a))
+        gamma = np.arccos(np.dot(self.matrix[:, 0], self.matrix[:, 1]) / (length_a * length_b))
         return (
-            numpy.array([length_a, length_b, length_c], float),
-            numpy.array([alpha, beta, gamma], float)
+            np.array([length_a, length_b, length_c], float),
+            np.array([alpha, beta, gamma], float)
         )
 
     @cached
@@ -208,12 +208,12 @@ class UnitCell(ReadOnly):
         """
         from molmod.transformations import Rotation
         new_x = self.matrix[:, 0].copy()
-        new_x /= numpy.linalg.norm(new_x)
-        new_z = numpy.cross(new_x, self.matrix[:, 1])
-        new_z /= numpy.linalg.norm(new_z)
-        new_y = numpy.cross(new_z, new_x)
-        new_y /= numpy.linalg.norm(new_y)
-        return Rotation(numpy.array([new_x, new_y, new_z]))
+        new_x /= np.linalg.norm(new_x)
+        new_z = np.cross(new_x, self.matrix[:, 1])
+        new_z /= np.linalg.norm(new_z)
+        new_y = np.cross(new_z, new_x)
+        new_y /= np.linalg.norm(new_y)
+        return Rotation(np.array([new_x, new_y, new_z]))
 
     @cached
     def alignment_c(self):
@@ -226,18 +226,18 @@ class UnitCell(ReadOnly):
         """
         from molmod.transformations import Rotation
         new_z = self.matrix[:, 2].copy()
-        new_z /= numpy.linalg.norm(new_z)
-        new_x = numpy.cross(self.matrix[:, 1], new_z)
-        new_x /= numpy.linalg.norm(new_x)
-        new_y = numpy.cross(new_z, new_x)
-        new_y /= numpy.linalg.norm(new_y)
-        return Rotation(numpy.array([new_x, new_y, new_z]))
+        new_z /= np.linalg.norm(new_z)
+        new_x = np.cross(self.matrix[:, 1], new_z)
+        new_x /= np.linalg.norm(new_x)
+        new_y = np.cross(new_z, new_x)
+        new_y /= np.linalg.norm(new_y)
+        return Rotation(np.array([new_x, new_y, new_z]))
 
     @cached
     def spacings(self):
         """Computes the distances between neighboring crystal planes"""
         result_invsq = (self.reciprocal**2).sum(axis=0)
-        result = numpy.zeros(3, float)
+        result = np.zeros(3, float)
         for i in xrange(3):
             if result_invsq[i] > 0:
                 result[i] = result_invsq[i]**(-0.5)
@@ -253,7 +253,7 @@ class UnitCell(ReadOnly):
            The return value has the same shape as the argument. This function is
            the inverse of to_cartesian.
         """
-        return numpy.dot(cartesian, self.reciprocal)
+        return np.dot(cartesian, self.reciprocal)
 
     def to_cartesian(self, fractional):
         """Converts fractional to Cartesian coordinates
@@ -265,7 +265,7 @@ class UnitCell(ReadOnly):
            The return value has the same shape as the argument. This function is
            the inverse of to_fractional.
         """
-        return numpy.dot(fractional, self.matrix.transpose())
+        return np.dot(fractional, self.matrix.transpose())
 
     def shortest_vector(self, delta):
         """Compute the relative vector under periodic boundary conditions.
@@ -280,7 +280,7 @@ class UnitCell(ReadOnly):
            the shortest vector for orthorombic cells.
         """
         fractional = self.to_fractional(delta)
-        fractional = numpy.floor(fractional + 0.5)
+        fractional = np.floor(fractional + 0.5)
         return delta - self.to_cartesian(fractional)
 
     def add_cell_vector(self, vector):
@@ -288,8 +288,8 @@ class UnitCell(ReadOnly):
         act = self.active_inactive[0]
         if len(act) == 3:
             raise ValueError("The unit cell already has three active cell vectors.")
-        matrix = numpy.zeros((3, 3), float)
-        active = numpy.zeros(3, bool)
+        matrix = np.zeros((3, 3), float)
+        active = np.zeros(3, bool)
         if len(act) == 0:
             # Add the new vector
             matrix[:, 0] = vector
@@ -327,13 +327,13 @@ class UnitCell(ReadOnly):
            are considered that have at least one point withing a distance below
            `radius` from the center of the reference cell.
         """
-        result = numpy.zeros(3, int)
+        result = np.zeros(3, int)
         for i in xrange(3):
             if self.spacings[i] > 0:
                 if mic:
-                    result[i] = numpy.ceil(radius/self.spacings[i]-0.5)
+                    result[i] = np.ceil(radius/self.spacings[i]-0.5)
                 else:
-                    result[i] = numpy.ceil(radius/self.spacings[i])
+                    result[i] = np.ceil(radius/self.spacings[i])
         return result
 
     def get_radius_indexes(self, radius, max_ranges=None):
@@ -358,12 +358,12 @@ class UnitCell(ReadOnly):
 
         """
         if max_ranges is None:
-            max_ranges = numpy.array([-1, -1, -1])
+            max_ranges = np.array([-1, -1, -1])
         ranges = self.get_radius_ranges(radius)*2+1
         mask = (max_ranges != -1) & (max_ranges < ranges)
         ranges[mask] = max_ranges[mask]
-        max_size = numpy.product(self.get_radius_ranges(radius)*2 + 1)
-        indexes = numpy.zeros((max_size, 3), int)
+        max_size = np.product(self.get_radius_ranges(radius)*2 + 1)
+        indexes = np.zeros((max_size, 3), int)
 
         from molmod.ext import unit_cell_get_radius_indexes
         reciprocal = self.reciprocal*self.active

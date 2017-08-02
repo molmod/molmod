@@ -60,7 +60,9 @@
 """
 
 
-import numpy as np, time
+import time
+
+import numpy as np
 
 
 __all__ = [

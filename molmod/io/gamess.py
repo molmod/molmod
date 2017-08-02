@@ -23,10 +23,10 @@
 """Tools for reading Gamess punch files"""
 
 
+import numpy as np
+
 from molmod.molecules import Molecule
 from molmod.units import angstrom, amu
-
-import numpy
 
 
 __all__ = ["PunchFile"]
@@ -144,11 +144,11 @@ class CoordinateParser(PunchParser):
         # if the data are already read before, just overwrite them
         numbers = data.get("numbers")
         if numbers is None:
-            numbers = numpy.zeros(N, int)
+            numbers = np.zeros(N, int)
             data["numbers"] = numbers
         coordinates = data.get("coordinates")
         if coordinates is None:
-            coordinates = numpy.zeros((N,3), float)
+            coordinates = np.zeros((N,3), float)
             data["coordinates"] = coordinates
         for i in xrange(N):
             words = f.readline().split()
@@ -172,7 +172,7 @@ class EnergyGradParser(PunchParser):
         # if the data are already read before, just overwrite them
         gradient = data.get("gradient")
         if gradient is None:
-            gradient = numpy.zeros((N,3), float)
+            gradient = np.zeros((N,3), float)
             data["gradient"] = gradient
         for i in xrange(N):
             words = f.readline().split()
@@ -208,7 +208,7 @@ class HessianParser(PunchParser):
         assert("hessian" not in data)
         f.readline()
         N = len(data["symbols"])
-        hessian = numpy.zeros((3*N, 3*N), float)
+        hessian = np.zeros((3*N, 3*N), float)
         tmp = hessian.ravel()
         counter = 0
         while True:
@@ -232,7 +232,7 @@ class MassParser(PunchParser):
     def read(self, line, f, data):
         """See :meth:`PunchParser.read`"""
         N = len(data["symbols"])
-        masses = numpy.zeros(N, float)
+        masses = np.zeros(N, float)
         counter = 0
         while counter < N:
             words = f.readline().split()

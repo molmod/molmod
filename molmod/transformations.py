@@ -27,11 +27,12 @@ functions are provided: rotation_around_center and superpose. The latter is an
 implementation of the Kabsch algorithm.
 """
 
+
+import numpy as np
+
 from molmod.utils import cached, ReadOnly, ReadOnlyAttribute, compute_rmsd
 from molmod.vectors import random_unit
 from molmod.unit_cells import UnitCell
-
-import numpy
 
 
 __all__ = [
@@ -57,7 +58,7 @@ class Translation(ReadOnly):
        The attribute t contains the actual translation vector, which is a numpy
        array with three elements.
     """
-    t = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1, npshape=(3,),
+    t = ReadOnlyAttribute(np.ndarray, none=False, npdim=1, npshape=(3,),
         npdtype=float, doc="the translation vector")
 
     def __init__(self, t):
@@ -77,12 +78,12 @@ class Translation(ReadOnly):
     @classmethod
     def identity(cls):
         """Return the identity transformation"""
-        return cls(numpy.zeros(3, float))
+        return cls(np.zeros(3, float))
 
     @cached
     def matrix(self):
         """The 4x4 matrix representation of this translation"""
-        result = numpy.identity(4, float)
+        result = np.identity(4, float)
         result[0:3, 3] = self.t
         return result
 
@@ -98,9 +99,9 @@ class Translation(ReadOnly):
 
            The argument can be several sorts of objects:
 
-           * ``numpy.array`` with shape (3, )
-           * ``numpy.array`` with shape (N, 3)
-           * ``numpy.array`` with shape (3, N), use ``columns=True``
+           * ``np.array`` with shape (3, )
+           * ``np.array`` with shape (N, 3)
+           * ``np.array`` with shape (3, N), use ``columns=True``
            * ``Translation``
            * ``Rotation``
            * ``Complete``
@@ -113,9 +114,9 @@ class Translation(ReadOnly):
 
            This method is equivalent to ``self*x``.
         """
-        if isinstance(x, numpy.ndarray) and len(x.shape) == 2 and x.shape[0] == 3 and columns:
+        if isinstance(x, np.ndarray) and len(x.shape) == 2 and x.shape[0] == 3 and columns:
             return x + self.t.reshape((3,1))
-        if isinstance(x, numpy.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)) and not columns:
+        if isinstance(x, np.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)) and not columns:
             return x + self.t
         elif isinstance(x, Complete):
             return Complete(x.r, x.t + self.t)
@@ -148,16 +149,16 @@ class Rotation(ReadOnly):
     """
     def _check_r(self, r):
         """the columns must orthogonal"""
-        if abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
-            abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
-            abs(numpy.dot(r[:, 0], r[:, 0]) - 1) > eps or \
-            numpy.dot(r[:, 0], r[:, 1]) > eps or \
-            numpy.dot(r[:, 1], r[:, 2]) > eps or \
-            numpy.dot(r[:, 2], r[:, 0]) > eps:
+        if abs(np.dot(r[:, 0], r[:, 0]) - 1) > eps or \
+            abs(np.dot(r[:, 0], r[:, 0]) - 1) > eps or \
+            abs(np.dot(r[:, 0], r[:, 0]) - 1) > eps or \
+            np.dot(r[:, 0], r[:, 1]) > eps or \
+            np.dot(r[:, 1], r[:, 2]) > eps or \
+            np.dot(r[:, 2], r[:, 0]) > eps:
             raise ValueError("The rotation matrix is significantly non-orthonormal.")
 
 
-    r = ReadOnlyAttribute(numpy.ndarray, none=False, check=_check_r, npdim=2,
+    r = ReadOnlyAttribute(np.ndarray, none=False, check=_check_r, npdim=2,
         npshape=(3,3), npdtype=float, doc="the rotation matrix")
 
     def __init__(self, r):
@@ -176,67 +177,67 @@ class Rotation(ReadOnly):
     @classmethod
     def identity(cls):
         """Return the identity transformation"""
-        return cls(numpy.identity(3, float))
+        return cls(np.identity(3, float))
 
     @classmethod
     def random(cls):
         """Return a random rotation"""
         axis = random_unit()
-        angle = numpy.random.uniform(0,2*numpy.pi)
-        invert = bool(numpy.random.randint(0,2))
+        angle = np.random.uniform(0,2*np.pi)
+        invert = bool(np.random.randint(0,2))
         return Rotation.from_properties(angle, axis, invert)
 
     @classmethod
     def from_properties(cls, angle, axis, invert):
         """Initialize a rotation based on the properties"""
-        norm = numpy.linalg.norm(axis)
+        norm = np.linalg.norm(axis)
         if norm > 0:
             x = axis[0] / norm
             y = axis[1] / norm
             z = axis[2] / norm
-            c = numpy.cos(angle)
-            s = numpy.sin(angle)
-            r = (1-2*invert) * numpy.array([
+            c = np.cos(angle)
+            s = np.sin(angle)
+            r = (1-2*invert) * np.array([
                 [x*x*(1-c)+c  , x*y*(1-c)-z*s, x*z*(1-c)+y*s],
                 [x*y*(1-c)+z*s, y*y*(1-c)+c  , y*z*(1-c)-x*s],
                 [x*z*(1-c)-y*s, y*z*(1-c)+x*s, z*z*(1-c)+c  ]
             ])
         else:
-            r = numpy.identity(3) * (1-2*invert)
+            r = np.identity(3) * (1-2*invert)
         return cls(r)
 
     @cached
     def properties(self):
         """Rotation properties: angle, axis, invert"""
         # determine wether an inversion rotation has been applied
-        invert = (numpy.linalg.det(self.r) < 0)
+        invert = (np.linalg.det(self.r) < 0)
         factor = {True: -1, False: 1}[invert]
         # get the rotation data
         # trace(r) = 1+2*cos(angle)
-        cos_angle = 0.5*(factor*numpy.trace(self.r) - 1)
+        cos_angle = 0.5*(factor*np.trace(self.r) - 1)
         if cos_angle > 1: cos_angle = 1.0
         if cos_angle < -1: cos_angle = -1.0
         # the antisymmetric part of the non-diagonal vector tell us something
         # about sin(angle) and n.
-        axis = 0.5*factor*numpy.array([-self.r[1, 2] + self.r[2, 1], self.r[0, 2] - self.r[2, 0], -self.r[0, 1] + self.r[1, 0]])
-        sin_angle = numpy.linalg.norm(axis)
+        axis = 0.5*factor*np.array([-self.r[1, 2] + self.r[2, 1], self.r[0, 2] - self.r[2, 0], -self.r[0, 1] + self.r[1, 0]])
+        sin_angle = np.linalg.norm(axis)
         # look for the best way to normalize the
         if (sin_angle == 0.0) and (cos_angle > 0):
             axis[2] = 1.0
         elif abs(sin_angle) < (1-cos_angle):
             for index in range(3):
-                axis[index] = {True: -1, False: 1}[axis[index] < 0] * numpy.sqrt(abs((factor*self.r[index, index] - cos_angle) / (1 - cos_angle)))
+                axis[index] = {True: -1, False: 1}[axis[index] < 0] * np.sqrt(abs((factor*self.r[index, index] - cos_angle) / (1 - cos_angle)))
         else:
             axis = axis / sin_angle
 
         # Finally calculate the angle:
-        angle = numpy.arctan2(sin_angle, cos_angle)
+        angle = np.arctan2(sin_angle, cos_angle)
         return angle, axis, invert
 
     @cached
     def matrix(self):
         """The 4x4 matrix representation of this rotation"""
-        result = numpy.identity(4, float)
+        result = np.identity(4, float)
         result[0:3, 0:3] = self.r
         return result
 
@@ -252,9 +253,9 @@ class Rotation(ReadOnly):
 
            The argument can be several sorts of objects:
 
-           * ``numpy.array`` with shape (3, )
-           * ``numpy.array`` with shape (N, 3)
-           * ``numpy.array`` with shape (3, N), use ``columns=True``
+           * ``np.array`` with shape (3, )
+           * ``np.array`` with shape (N, 3)
+           * ``np.array`` with shape (3, N), use ``columns=True``
            * ``Translation``
            * ``Rotation``
            * ``Complete``
@@ -267,18 +268,18 @@ class Rotation(ReadOnly):
 
            This method is equivalent to ``self*x``.
         """
-        if isinstance(x, numpy.ndarray) and len(x.shape) == 2 and x.shape[0] == 3 and columns:
-            return numpy.dot(self.r, x)
-        if isinstance(x, numpy.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)) and not columns:
-            return numpy.dot(x, self.r.transpose())
+        if isinstance(x, np.ndarray) and len(x.shape) == 2 and x.shape[0] == 3 and columns:
+            return np.dot(self.r, x)
+        if isinstance(x, np.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)) and not columns:
+            return np.dot(x, self.r.transpose())
         elif isinstance(x, Complete):
-            return Complete(numpy.dot(self.r, x.r), numpy.dot(self.r, x.t))
+            return Complete(np.dot(self.r, x.r), np.dot(self.r, x.t))
         elif isinstance(x, Translation):
-            return Complete(self.r, numpy.dot(self.r, x.t))
+            return Complete(self.r, np.dot(self.r, x.t))
         elif isinstance(x, Rotation):
-            return Rotation(numpy.dot(self.r, x.r))
+            return Rotation(np.dot(self.r, x.r))
         elif isinstance(x, UnitCell):
-            return UnitCell(numpy.dot(self.r, x.matrix), x.active)
+            return UnitCell(np.dot(self.r, x.matrix), x.active)
         else:
             raise ValueError("Can not apply this rotation to %s" % x)
 
@@ -323,7 +324,7 @@ class Complete(Translation, Rotation):
     @classmethod
     def identity(cls):
         """Return the identity transformation"""
-        return cls(numpy.identity(3, float), numpy.zeros(3, float))
+        return cls(np.identity(3, float), np.zeros(3, float))
 
     @classmethod
     def from_properties(cls, angle, axis, invert, translation):
@@ -337,9 +338,9 @@ class Complete(Translation, Rotation):
         if isinstance(c, Complete):
             return c
         elif isinstance(c, Translation):
-            return Complete(numpy.identity(3, float), c.t)
+            return Complete(np.identity(3, float), c.t)
         elif isinstance(c, Rotation):
-            return Complete(c.r, numpy.zeros(3, float))
+            return Complete(c.r, np.zeros(3, float))
 
     @classmethod
     def about_axis(cls, center, angle, axis, invert=False):
@@ -359,7 +360,7 @@ class Complete(Translation, Rotation):
     @cached
     def matrix(self):
         """The 4x4 matrix representation of this transformation"""
-        result = numpy.identity(4, float)
+        result = np.identity(4, float)
         result[0:3, 3] = self.t
         result[0:3, 0:3] = self.r
         return result
@@ -374,7 +375,7 @@ class Complete(Translation, Rotation):
     @cached
     def inv(self):
         """The inverse transformation"""
-        result = Complete(self.r.transpose(), numpy.dot(self.r.transpose(), -self.t))
+        result = Complete(self.r.transpose(), np.dot(self.r.transpose(), -self.t))
         result._cache_inv = self
         return result
 
@@ -383,9 +384,9 @@ class Complete(Translation, Rotation):
 
            The argument can be several sorts of objects:
 
-           * ``numpy.array`` with shape (3, )
-           * ``numpy.array`` with shape (N, 3)
-           * ``numpy.array`` with shape (3, N), use ``columns=True``
+           * ``np.array`` with shape (3, )
+           * ``np.array`` with shape (N, 3)
+           * ``np.array`` with shape (3, N), use ``columns=True``
            * ``Translation``
            * ``Rotation``
            * ``Complete``
@@ -399,18 +400,18 @@ class Complete(Translation, Rotation):
 
            This method is equivalent to self*x.
         """
-        if isinstance(x, numpy.ndarray) and len(x.shape) == 2 and x.shape[0] == 3 and columns:
-            return numpy.dot(self.r, x) + self.t.reshape((3,1))
-        if isinstance(x, numpy.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)) and not columns:
-            return numpy.dot(x, self.r.transpose()) + self.t
+        if isinstance(x, np.ndarray) and len(x.shape) == 2 and x.shape[0] == 3 and columns:
+            return np.dot(self.r, x) + self.t.reshape((3,1))
+        if isinstance(x, np.ndarray) and (x.shape == (3, ) or (len(x.shape) == 2 and x.shape[1] == 3)) and not columns:
+            return np.dot(x, self.r.transpose()) + self.t
         elif isinstance(x, Complete):
-            return Complete(numpy.dot(self.r, x.r), numpy.dot(self.r, x.t) + self.t)
+            return Complete(np.dot(self.r, x.r), np.dot(self.r, x.t) + self.t)
         elif isinstance(x, Translation):
-            return Complete(self.r, numpy.dot(self.r, x.t) + self.t)
+            return Complete(self.r, np.dot(self.r, x.t) + self.t)
         elif isinstance(x, Rotation):
-            return Complete(numpy.dot(self.r, x.r), self.t)
+            return Complete(np.dot(self.r, x.r), self.t)
         elif isinstance(x, UnitCell):
-            return UnitCell(numpy.dot(self.r, x.matrix), x.active)
+            return UnitCell(np.dot(self.r, x.matrix), x.active)
         else:
             raise ValueError("Can not apply this rotation to %s" % x)
 
@@ -431,9 +432,9 @@ def superpose(ras, rbs, weights=None):
     """Compute the transformation that minimizes the RMSD between the points ras and rbs
 
        Arguments:
-        | ``ras``  --  a ``numpy.array`` with 3D coordinates of geometry A,
+        | ``ras``  --  a ``np.array`` with 3D coordinates of geometry A,
                        shape=(N,3)
-        | ``rbs``  --  a ``numpy.array`` with 3D coordinates of geometry B,
+        | ``rbs``  --  a ``np.array`` with 3D coordinates of geometry B,
                        shape=(N,3)
 
        Optional arguments:
@@ -455,24 +456,24 @@ def superpose(ras, rbs, weights=None):
         mb = rbs.mean(axis=0)
     else:
         total_weight = weights.sum()
-        ma = numpy.dot(weights, ras)/total_weight
-        mb = numpy.dot(weights, rbs)/total_weight
+        ma = np.dot(weights, ras)/total_weight
+        mb = np.dot(weights, rbs)/total_weight
 
 
     # Kabsch
     if weights is None:
-        A = numpy.dot((rbs-mb).transpose(), ras-ma)
+        A = np.dot((rbs-mb).transpose(), ras-ma)
     else:
         weights = weights.reshape((-1, 1))
-        A = numpy.dot(((rbs-mb)*weights).transpose(), (ras-ma)*weights)
-    U, W, Vt = numpy.linalg.svd(A)
+        A = np.dot(((rbs-mb)*weights).transpose(), (ras-ma)*weights)
+    U, W, Vt = np.linalg.svd(A)
     W[0] = 1
     W[1] = 1
     W[2] = 1
-    if numpy.linalg.det(A) < 0:
+    if np.linalg.det(A) < 0:
         W[2] = -1
-    r = numpy.dot(Vt.transpose()*W, U.transpose())
-    return Complete(r, numpy.dot(r, -mb) + ma)
+    r = np.dot(Vt.transpose()*W, U.transpose())
+    return Complete(r, np.dot(r, -mb) + ma)
 
 
 def fit_rmsd(ras, rbs, weights=None):

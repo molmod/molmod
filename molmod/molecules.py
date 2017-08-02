@@ -23,6 +23,10 @@
 """Representation, analysis and manipulation of molecular systems."""
 
 
+from StringIO import StringIO
+
+import numpy as np
+
 from molmod.periodic import periodic
 from molmod.units import angstrom
 from molmod.utils import cached, ReadOnly, ReadOnlyAttribute
@@ -30,10 +34,6 @@ from molmod.molecular_graphs import MolecularGraph
 from molmod.unit_cells import UnitCell
 from molmod.transformations import fit_rmsd
 from molmod.symmetry import compute_rotsym
-
-from StringIO import StringIO
-
-import numpy
 
 
 __all__ = ["Molecule"]
@@ -80,13 +80,13 @@ class Molecule(ReadOnly):
             if not isinstance(symbol, basestring):
                 raise TypeError("All symbols must be strings.")
 
-    numbers = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1, npdtype=int,
+    numbers = ReadOnlyAttribute(np.ndarray, none=False, npdim=1, npdtype=int,
         doc="the atomic numbers")
-    coordinates = ReadOnlyAttribute(numpy.ndarray, npdim=2, npshape=(None,3),
+    coordinates = ReadOnlyAttribute(np.ndarray, npdim=2, npshape=(None,3),
         npdtype=float, check=_check_coordinates, doc="atomic Cartesian "
         "coordinates")
     title = ReadOnlyAttribute(basestring, doc="a short description of the system")
-    masses = ReadOnlyAttribute(numpy.ndarray, npdim=1, npdtype=float,
+    masses = ReadOnlyAttribute(np.ndarray, npdim=1, npdtype=float,
         check=_check_masses, doc="the atomic masses")
     graph = ReadOnlyAttribute(MolecularGraph, check=_check_graph,
         doc="the molecular graph with the atom connectivity")
@@ -177,13 +177,13 @@ class Molecule(ReadOnly):
     @cached
     def inertia_tensor(self):
         """the intertia tensor of the molecule"""
-        result = numpy.zeros((3,3), float)
+        result = np.zeros((3,3), float)
         for i in xrange(self.size):
             r = self.coordinates[i] - self.com
             # the diagonal term
             result.ravel()[::4] += self.masses[i]*(r**2).sum()
             # the outer product term
-            result -= self.masses[i]*numpy.outer(r,r)
+            result -= self.masses[i]*np.outer(r,r)
         return result
 
     @cached
@@ -202,7 +202,7 @@ class Molecule(ReadOnly):
 
     def set_default_masses(self):
         """Set self.masses based on self.numbers and periodic table."""
-        self.masses = numpy.array([periodic[n].mass for n in self.numbers])
+        self.masses = np.array([periodic[n].mass for n in self.numbers])
 
     def set_default_graph(self):
         """Set self.graph to the default graph.

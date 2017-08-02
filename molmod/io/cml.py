@@ -31,15 +31,15 @@
 """
 
 
+import numpy as np
+
+from xml.sax import make_parser
+from xml.sax.handler import feature_namespaces, ContentHandler
+
 from molmod.units import angstrom
 from molmod.molecules import Molecule
 from molmod.molecular_graphs import MolecularGraph
 from molmod.periodic import periodic
-
-import numpy
-
-from xml.sax import make_parser
-from xml.sax.handler import feature_namespaces, ContentHandler
 
 
 __all__ = ["load_cml", "dump_cml"]
@@ -108,7 +108,7 @@ class CMLMoleculeLoader(ContentHandler):
         #print "END", name
         if name == 'molecule':
             if len(self.current_numbers) > 0:
-                self.current_coordinates = numpy.array(self.current_coordinates)*angstrom
+                self.current_coordinates = np.array(self.current_coordinates)*angstrom
                 molecule = Molecule(self.current_numbers, self.current_coordinates, self.current_title)
                 molecule.extra = self.current_extra
                 molecule.atoms_extra = self.current_atoms_extra

@@ -22,10 +22,12 @@
 #--
 
 
+import unittest
+
+import numpy as np
+
 from molmod.test.common import BaseTestCase
 from molmod import *
-
-import unittest, numpy as np
 
 
 __all__ = ["PairFFTestCase", "CoulombFFTestCase"]

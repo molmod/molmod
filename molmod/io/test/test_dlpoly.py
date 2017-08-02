@@ -22,7 +22,7 @@
 #--
 
 
-import numpy
+import numpy as np
 import pkg_resources
 
 from molmod.test.common import *
@@ -45,9 +45,9 @@ class DLPolyTestCase(BaseTestCase):
         self.assertEqual(frame["symbols"][0], "O")
         self.assertAlmostEqual(frame["masses"][0]/amu, 16.000000)
         self.assertAlmostEqual(frame["charges"][0], -1.2)
-        self.assertArraysAlmostEqual(frame["pos"][0]/angstrom, numpy.array([1.3522E+00, 1.3159E+00, 1.4312E+00]))
-        self.assertArraysAlmostEqual(frame["vel"][0]/angstrom*picosecond, numpy.array([1.5113E+01, 1.0559E+00, 1.2843E-01]))
-        self.assertArraysAlmostEqual(frame["frc"][0]/(amu*angstrom/picosecond**2), numpy.array([1.7612E+03, 3.6680E+03, 2.4235E+03]))
+        self.assertArraysAlmostEqual(frame["pos"][0]/angstrom, np.array([1.3522E+00, 1.3159E+00, 1.4312E+00]))
+        self.assertArraysAlmostEqual(frame["vel"][0]/angstrom*picosecond, np.array([1.5113E+01, 1.0559E+00, 1.2843E-01]))
+        self.assertArraysAlmostEqual(frame["frc"][0]/(amu*angstrom/picosecond**2), np.array([1.7612E+03, 3.6680E+03, 2.4235E+03]))
         frame = hr.next()
         self.assertEqual(frame["step"], 4050)
 

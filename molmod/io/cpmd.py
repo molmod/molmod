@@ -23,9 +23,9 @@
 """Tools for parsing CPMD trajectory files"""
 
 
-from molmod.io.common import SlicedReader, FileFormatError
+import numpy as np
 
-import numpy
+from molmod.io.common import SlicedReader, FileFormatError
 
 
 __all__ = ["CPMDTrajectoryReader"]
@@ -62,8 +62,8 @@ class CPMDTrajectoryReader(SlicedReader):
 
     def _read_frame(self):
         """Read and return the next time frame"""
-        pos = numpy.zeros((self.num_atoms, 3), float)
-        vel = numpy.zeros((self.num_atoms, 3), float)
+        pos = np.zeros((self.num_atoms, 3), float)
+        vel = np.zeros((self.num_atoms, 3), float)
         for i in xrange(self.num_atoms):
             line = self._f.next()
             words = line.split()

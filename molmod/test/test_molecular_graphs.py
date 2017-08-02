@@ -25,8 +25,7 @@
 import os
 import unittest
 
-import numpy
-
+import numpy as np
 from nose.plugins.skip import SkipTest
 import pkg_resources
 
@@ -347,8 +346,8 @@ class MolecularGraphTestCase(unittest.TestCase):
     def test_multiply(self):
         # sulfate:
         edges = [(0,1), (0,2), (0,3), (0,4)]
-        numbers = numpy.array([16, 8, 8, 8, 8])
-        orders = numpy.array([1, 1, 2, 2])
+        numbers = np.array([16, 8, 8, 8, 8])
+        orders = np.array([1, 1, 2, 2])
         mgraph = MolecularGraph(edges, numbers, orders)
 
         check_edges = [
@@ -357,8 +356,8 @@ class MolecularGraphTestCase(unittest.TestCase):
             (10, 11), (10, 12), (10, 13), (10, 14)
         ]
         check_edges = tuple(frozenset(edge) for edge in check_edges)
-        check_orders = numpy.concatenate([orders, orders, orders])
-        check_numbers = numpy.concatenate([numbers, numbers, numbers])
+        check_orders = np.concatenate([orders, orders, orders])
+        check_numbers = np.concatenate([numbers, numbers, numbers])
         for check in [mgraph*3, 3*mgraph]:
             self.assertEqual(len(check.edges), len(check_edges))
             self.assertEqual(check.edges, check_edges)
@@ -370,7 +369,7 @@ class MolecularGraphTestCase(unittest.TestCase):
     def test_fingerprints(self):
         for mol in self.iter_molecules():
             g0 = mol.graph
-            permutation = numpy.random.permutation(g0.num_vertices)
+            permutation = np.random.permutation(g0.num_vertices)
             g1 = g0.get_subgraph(permutation, normalize=True)
             for i in xrange(g0.num_vertices):
                 self.assert_((g0.vertex_fingerprints[permutation[i]]==g1.vertex_fingerprints[i]).all())
@@ -395,7 +394,7 @@ class MolecularGraphTestCase(unittest.TestCase):
     def test_subgraph(self):
         for mol in self.iter_molecules():
             g0 = mol.graph
-            permutation = numpy.random.permutation(g0.num_vertices)
+            permutation = np.random.permutation(g0.num_vertices)
             # normalize=False
             g1 = g0.get_subgraph(permutation)
             self.assert_((g0.numbers==g1.numbers).all())
@@ -428,8 +427,8 @@ class MolecularGraphTestCase(unittest.TestCase):
 
     def test_iter_shortest_paths_generic(self):
         for molecule in self.iter_molecules(allow_multi=True):
-            i = numpy.random.randint(molecule.size)
-            j = numpy.random.randint(molecule.size)
+            i = np.random.randint(molecule.size)
+            j = np.random.randint(molecule.size)
             length = None
             for path in molecule.graph.iter_shortest_paths(i,j):
                 if length is None:
@@ -454,7 +453,7 @@ class MolecularGraphTestCase(unittest.TestCase):
                 order0 = g0.canonical_order
                 g0_bis = g0.get_subgraph(order0, normalize=True)
 
-                permutation = numpy.random.permutation(g0.num_vertices)
+                permutation = np.random.permutation(g0.num_vertices)
                 g1 = g0.get_subgraph(permutation, normalize=True)
                 order1 = g1.canonical_order
                 g1_bis = g1.get_subgraph(order1, normalize=True)
@@ -492,21 +491,21 @@ class MolecularGraphTestCase(unittest.TestCase):
 
     def test_add_hydrogens(self):
         cases = [(
-            MolecularGraph([], numpy.array([6]), numpy.array([])),
+            MolecularGraph([], np.array([6]), np.array([])),
             None,
-            MolecularGraph([(0,1),(0,2),(0,3),(0,4)], numpy.array([6,1,1,1,1]), numpy.array([1,1,1,1])),
+            MolecularGraph([(0,1),(0,2),(0,3),(0,4)], np.array([6,1,1,1,1]), np.array([1,1,1,1])),
         ),(
-            MolecularGraph([], numpy.array([6]), numpy.array([])),
-            numpy.array([-1], int),
-            MolecularGraph([(0,1),(0,2),(0,3)], numpy.array([6,1,1,1]), numpy.array([1,1,1])),
+            MolecularGraph([], np.array([6]), np.array([])),
+            np.array([-1], int),
+            MolecularGraph([(0,1),(0,2),(0,3)], np.array([6,1,1,1]), np.array([1,1,1])),
         ),(
-            MolecularGraph([(0,1),(1,2),(2,3),(3,4),(4,5),(5,0)], numpy.array([6,6,6,6,6,6]), numpy.array([1,2,1,2,1,2])),
+            MolecularGraph([(0,1),(1,2),(2,3),(3,4),(4,5),(5,0)], np.array([6,6,6,6,6,6]), np.array([1,2,1,2,1,2])),
             None,
-            MolecularGraph([(0,1),(1,2),(2,3),(3,4),(4,5),(5,0),(0,6),(1,7),(2,8),(3,9),(4,10),(5,11)], numpy.array([6,6,6,6,6,6,1,1,1,1,1,1]), numpy.array([1,2,1,2,1,2,1,1,1,1,1,1])),
+            MolecularGraph([(0,1),(1,2),(2,3),(3,4),(4,5),(5,0),(0,6),(1,7),(2,8),(3,9),(4,10),(5,11)], np.array([6,6,6,6,6,6,1,1,1,1,1,1]), np.array([1,2,1,2,1,2,1,1,1,1,1,1])),
         ),(
-            MolecularGraph([(0,1),(1,2),(2,3),(3,4),(4,0)], numpy.array([8,6,6,6,6]), numpy.array([1,1,1,1,1])),
+            MolecularGraph([(0,1),(1,2),(2,3),(3,4),(4,0)], np.array([8,6,6,6,6]), np.array([1,1,1,1,1])),
             None,
-            MolecularGraph([(0,1),(1,2),(2,3),(3,4),(4,0),(1,5),(1,6),(2,7),(2,8),(3,9),(3,10),(4,11),(4,12)], numpy.array([8,6,6,6,6,1,1,1,1,1,1,1,1]), numpy.array([1,1,1,1,1,1,1,1,1,1,1,1,1])),
+            MolecularGraph([(0,1),(1,2),(2,3),(3,4),(4,0),(1,5),(1,6),(2,7),(2,8),(3,9),(3,10),(4,11),(4,12)], np.array([8,6,6,6,6,1,1,1,1,1,1,1,1]), np.array([1,1,1,1,1,1,1,1,1,1,1,1,1])),
         )]
 
         for before, formal_charges, after in cases:

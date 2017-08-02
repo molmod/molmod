@@ -23,9 +23,9 @@
 """Persistance, i.e. storage on disk, for objects with numerical attributes"""
 
 
-from molmod.io.common import FileFormatError
+import numpy as np
 
-import numpy
+from molmod.io.common import FileFormatError
 
 
 __all__ = ["NumberState"]
@@ -186,7 +186,7 @@ class NumberState(object):
         self._fields = {}
         for name in names:
             value = getattr(owner, name)
-            if isinstance(value, numpy.ndarray):
+            if isinstance(value, np.ndarray):
                 self._register(name, ArrayAttr)
             elif isinstance(value, int) or isinstance(value, float):
                 self._register(name, ScalarAttr)

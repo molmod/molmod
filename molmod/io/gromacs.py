@@ -23,10 +23,10 @@
 """Readers for Gromacs related file formats"""
 
 
+import numpy as np
+
 from molmod.units import picosecond, nanometer
 from molmod.io.common import SlicedReader
-
-import numpy
 
 
 __all__ = ["GroReader"]
@@ -78,8 +78,8 @@ class GroReader(SlicedReader):
         if self.num_atoms is not None and self.num_atoms != num_atoms:
             raise ValueError("The number of atoms must be the same over the entire file.")
         # Read the atom lines
-        pos = numpy.zeros((num_atoms, 3), numpy.float32)
-        vel = numpy.zeros((num_atoms, 3), numpy.float32)
+        pos = np.zeros((num_atoms, 3), np.float32)
+        vel = np.zeros((num_atoms, 3), np.float32)
         for i in xrange(num_atoms):
             words = self._get_line()[22:].split()
             pos[i, 0] = float(words[0])
@@ -91,7 +91,7 @@ class GroReader(SlicedReader):
         pos *= nanometer
         vel *= nanometer/picosecond
         # Read the cell line
-        cell = numpy.zeros((3, 3), numpy.float32)
+        cell = np.zeros((3, 3), np.float32)
         words = self._get_line().split()
         if len(words) >= 3:
             cell[0, 0] = float(words[0])

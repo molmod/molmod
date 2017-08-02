@@ -35,7 +35,8 @@
 """
 
 
-import numpy
+import numpy as np
+
 from molmod.periodic import periodic
 from molmod.units import unified
 from molmod.graphs import CriteriaSet, GraphSearch
@@ -66,15 +67,15 @@ class PSFFile(object):
     def clear(self):
         """Clear the contents of the data structure"""
         self.title = None
-        self.numbers = numpy.zeros(0, int)
+        self.numbers = np.zeros(0, int)
         self.atom_types = [] # the atom_types in the second column, used to associate ff parameters
         self.charges = [] # ff charges
         self.names = [] # a name that is unique for the molecule composition and connectivity
-        self.molecules = numpy.zeros(0, int) # a counter for each molecule
-        self.bonds = numpy.zeros((0, 2), int)
-        self.bends = numpy.zeros((0, 3), int)
-        self.dihedrals = numpy.zeros((0, 4), int)
-        self.impropers = numpy.zeros((0, 4), int)
+        self.molecules = np.zeros(0, int) # a counter for each molecule
+        self.bonds = np.zeros((0, 2), int)
+        self.bends = np.zeros((0, 3), int)
+        self.dihedrals = np.zeros((0, 4), int)
+        self.impropers = np.zeros((0, 4), int)
 
         self.name_cache = {}
 
@@ -120,29 +121,29 @@ class PSFFile(object):
                 numbers.append(0)
             else:
                 numbers.append(periodic[words[4]].number)
-        self.molecules = numpy.array(molecules)-1
-        self.numbers = numpy.array(numbers)
-        self.charges = numpy.array(self.charges)
+        self.molecules = np.array(molecules)-1
+        self.numbers = np.array(numbers)
+        self.charges = np.array(self.charges)
         # C.3) The bonds section
         tmp = []
         for line in sections['BOND']:
             tmp.extend(int(word) for word in line.split())
-        self.bonds = numpy.reshape(numpy.array(tmp), (-1, 2))-1
+        self.bonds = np.reshape(np.array(tmp), (-1, 2))-1
         # C.4) The bends section
         tmp = []
         for line in sections['THETA']:
             tmp.extend(int(word) for word in line.split())
-        self.bends = numpy.reshape(numpy.array(tmp), (-1, 3))-1
+        self.bends = np.reshape(np.array(tmp), (-1, 3))-1
         # C.5) The dihedral section
         tmp = []
         for line in sections['PHI']:
             tmp.extend(int(word) for word in line.split())
-        self.dihedrals = numpy.reshape(numpy.array(tmp), (-1, 4))-1
+        self.dihedrals = np.reshape(np.array(tmp), (-1, 4))-1
         # C.6) The improper section
         tmp = []
         for line in sections['IMPHI']:
             tmp.extend(int(word) for word in line.split())
-        self.impropers = numpy.reshape(numpy.array(tmp), (-1, 4))-1
+        self.impropers = np.reshape(np.array(tmp), (-1, 4))-1
 
     def _get_name(self, graph, group=None):
         """Convert a molecular graph into a unique name
@@ -301,7 +302,7 @@ class PSFFile(object):
         if split:
             groups = molecular_graph.independent_vertices
             names = [self._get_name(molecular_graph, group) for group in groups]
-            group_indices = numpy.zeros(new, int)
+            group_indices = np.zeros(new, int)
             for group_index, group in enumerate(groups):
                 for index in group:
                     group_indices[index] = group_index

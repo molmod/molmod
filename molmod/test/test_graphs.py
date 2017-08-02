@@ -26,7 +26,7 @@ import copy
 import unittest
 
 import pkg_resources
-import numpy
+import numpy as np
 
 from molmod import *
 
@@ -259,7 +259,7 @@ class GraphTestCase(unittest.TestCase):
     def test_distances(self):
         # normal graph
         graph = Graph([(0,1), (1,2), (2,3), (3,4), (4,0), (2,5), (3,6), (3,7)])
-        expecting = numpy.array([
+        expecting = np.array([
             [0, 1, 2, 2, 1, 3, 3, 3],
             [1, 0, 1, 2, 2, 2, 3, 3],
             [2, 1, 0, 1, 2, 1, 2, 2],
@@ -268,29 +268,29 @@ class GraphTestCase(unittest.TestCase):
             [3, 2, 1, 2, 3, 0, 3, 3],
             [3, 3, 2, 1, 2, 3, 0, 2],
             [3, 3, 2, 1, 2, 3, 2, 0],
-        ],dtype=numpy.int32)
+        ],dtype=np.int32)
         self.assertEqual(expecting.shape,graph.distances.shape)
         self.assert_((expecting==graph.distances).all())
         # disconnected graph
         graph = Graph([(0,1), (1,2), (3,4)])
-        expecting = numpy.array([
+        expecting = np.array([
             [ 0, 1, 2, 0, 0],
             [ 1, 0, 1, 0, 0],
             [ 2, 1, 0, 0, 0],
             [ 0, 0, 0, 0, 1],
             [ 0, 0, 0, 1, 0],
-        ],dtype=numpy.int32)
+        ],dtype=np.int32)
         self.assertEqual(expecting.shape,graph.distances.shape)
         self.assert_((expecting==graph.distances).all())
         # graph with singletons
         graph = Graph([(2,3), (3,4)])
-        expecting = numpy.array([
+        expecting = np.array([
             [ 0, 0, 0, 0, 0],
             [ 0, 0, 0, 0, 0],
             [ 0, 0, 0, 1, 2],
             [ 0, 0, 1, 0, 1],
             [ 0, 0, 2, 1, 0],
-        ],dtype=numpy.int32)
+        ],dtype=np.int32)
         self.assertEqual(expecting.shape,graph.distances.shape)
         self.assert_((expecting==graph.distances).all())
 
@@ -322,7 +322,7 @@ class GraphTestCase(unittest.TestCase):
     def test_fingerprints(self):
         for case in self.iter_cases():
             g0 = case.graph
-            permutation = numpy.random.permutation(g0.num_vertices)
+            permutation = np.random.permutation(g0.num_vertices)
             new_edges = tuple((permutation[i], permutation[j]) for i,j in g0.edges)
             g1 = Graph(new_edges, g0.num_vertices)
             self.assert_((g0.fingerprint==g1.fingerprint).all())
@@ -400,13 +400,13 @@ class GraphTestCase(unittest.TestCase):
         cases = self.iter_cases()
         for case in cases:
             g = case.graph
-            start = numpy.random.randint(g.num_vertices)
+            start = np.random.randint(g.num_vertices)
             result = list(g.iter_breadth_first(start))
             if len(case.graph.independent_vertices) != 1:
                 continue
             self.assertEqual(len(result), g.num_vertices)
             l_last = 0
-            visited = numpy.zeros(g.num_vertices, int)
+            visited = np.zeros(g.num_vertices, int)
             for n,l in result:
                 if l < l_last:
                     self.fail_("Distances in iter_breadth_first must be monotomically increasing.")
@@ -419,13 +419,13 @@ class GraphTestCase(unittest.TestCase):
         cases = self.iter_cases()
         for case in cases:
             g = case.graph
-            start = numpy.random.randint(g.num_vertices)
+            start = np.random.randint(g.num_vertices)
             result = list(g.iter_breadth_first_edges(start))
             if len(case.graph.independent_vertices) != 1:
                 continue
             self.assertEqual(len(result), g.num_edges)
             distance_last = 0
-            visited = numpy.zeros(g.num_edges, int)
+            visited = np.zeros(g.num_edges, int)
             edge_index = dict((edge,i) for i,edge in enumerate(g.edges))
             for edge,distance,flag in result:
                 if distance < distance_last:
@@ -476,7 +476,7 @@ class GraphTestCase(unittest.TestCase):
             if graph.num_edges<3:
                 continue
             while True:
-                subvertices = numpy.random.permutation(graph.num_vertices)
+                subvertices = np.random.permutation(graph.num_vertices)
                 subvertices = subvertices[:graph.num_vertices-1]
                 try:
                     subgraph = graph.get_subgraph(subvertices)

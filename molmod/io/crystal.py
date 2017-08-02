@@ -23,10 +23,10 @@
 """Tools for reading output from the Crystal 06 example API program."""
 
 
+import numpy as np
+
 from common import FileFormatError
 from molmod import UnitCell, Molecule
-
-import numpy as np
 
 
 __all__ = ['CrystalAPIOut']

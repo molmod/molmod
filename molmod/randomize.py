@@ -24,13 +24,14 @@
 
 
 from random import shuffle, sample
+import copy
+
+import numpy as np
 
 from molmod.molecules import Molecule
 from molmod.graphs import GraphError
 from molmod.transformations import Translation, Complete
 from molmod.vectors import random_orthonormal, random_unit
-
-import numpy, copy
 
 
 __all__ = [
@@ -142,8 +143,8 @@ class RandomStretch(RandomManipulation):
         """Construct a transformation object"""
         atom1, atom2 = self.hinge_atoms
         direction = coordinates[atom1] - coordinates[atom2]
-        direction /= numpy.linalg.norm(direction)
-        direction *= numpy.random.uniform(-self.max_amplitude, self.max_amplitude)
+        direction /= np.linalg.norm(direction)
+        direction *= np.random.uniform(-self.max_amplitude, self.max_amplitude)
         result = Translation(direction)
         return result
 
@@ -157,8 +158,8 @@ class RandomTorsion(RandomManipulation):
         atom1, atom2 = self.hinge_atoms
         center = coordinates[atom1]
         axis = coordinates[atom1] - coordinates[atom2]
-        axis /= numpy.linalg.norm(axis)
-        angle = numpy.random.uniform(-self.max_amplitude, self.max_amplitude)
+        axis /= np.linalg.norm(axis)
+        angle = np.random.uniform(-self.max_amplitude, self.max_amplitude)
         return Complete.about_axis(center, angle, axis)
 
 
@@ -172,14 +173,14 @@ class RandomBend(RandomManipulation):
         center = coordinates[atom2]
         a = coordinates[atom1] - coordinates[atom2]
         b = coordinates[atom3] - coordinates[atom2]
-        axis = numpy.cross(a, b)
-        norm = numpy.linalg.norm(axis)
+        axis = np.cross(a, b)
+        norm = np.linalg.norm(axis)
         if norm < 1e-5:
             # We suppose that atom3 is part of the affected atoms
             axis = random_orthonormal(a)
         else:
-            axis /= numpy.linalg.norm(axis)
-        angle = numpy.random.uniform(-self.max_amplitude, self.max_amplitude)
+            axis /= np.linalg.norm(axis)
+        angle = np.random.uniform(-self.max_amplitude, self.max_amplitude)
         return Complete.about_axis(center, angle, axis)
 
 
@@ -191,11 +192,11 @@ class RandomDoubleStretch(RandomManipulation):
         """Construct a transformation object"""
         atom1, atom2, atom3, atom4 = self.hinge_atoms
         a = coordinates[atom1] - coordinates[atom2]
-        a /= numpy.linalg.norm(a)
+        a /= np.linalg.norm(a)
         b = coordinates[atom3] - coordinates[atom4]
-        b /= numpy.linalg.norm(b)
+        b /= np.linalg.norm(b)
         direction = 0.5*(a+b)
-        direction *= numpy.random.uniform(-self.max_amplitude, self.max_amplitude)
+        direction *= np.random.uniform(-self.max_amplitude, self.max_amplitude)
         result = Translation(direction)
         return result
 
@@ -246,7 +247,7 @@ def iter_halfs_double(graph):
 
 
 def generate_manipulations(
-    molecule, bond_stretch_factor=0.15, torsion_amplitude=numpy.pi,
+    molecule, bond_stretch_factor=0.15, torsion_amplitude=np.pi,
     bending_amplitude=0.30
 ):
     """Generate a (complete) set of manipulations
@@ -276,7 +277,7 @@ def generate_manipulations(
     if do_stretch or do_torsion:
         for affected_atoms1, affected_atoms2, hinge_atoms in iter_halfs_bond(molecule.graph):
             if do_stretch:
-                length = numpy.linalg.norm(
+                length = np.linalg.norm(
                     molecule.coordinates[hinge_atoms[0]] -
                     molecule.coordinates[hinge_atoms[1]]
                 )
@@ -298,11 +299,11 @@ def generate_manipulations(
     if do_double_stretch or do_double_bend:
         for affected_atoms1, affected_atoms2, hinge_atoms in iter_halfs_double(molecule.graph):
             if do_double_stretch:
-                length1 = numpy.linalg.norm(
+                length1 = np.linalg.norm(
                     molecule.coordinates[hinge_atoms[0]] -
                     molecule.coordinates[hinge_atoms[1]]
                 )
-                length2 = numpy.linalg.norm(
+                length2 = np.linalg.norm(
                     molecule.coordinates[hinge_atoms[2]] -
                     molecule.coordinates[hinge_atoms[3]]
                 )
@@ -342,7 +343,7 @@ def check_nonbond(molecule, thresholds):
     for atom1 in xrange(molecule.graph.num_vertices):
         for atom2 in xrange(atom1):
             if molecule.graph.distances[atom1, atom2] > 2:
-                distance = numpy.linalg.norm(molecule.coordinates[atom1] - molecule.coordinates[atom2])
+                distance = np.linalg.norm(molecule.coordinates[atom1] - molecule.coordinates[atom2])
                 if distance < thresholds[frozenset([molecule.numbers[atom1], molecule.numbers[atom2]])]:
                     return False
     return True
@@ -411,15 +412,15 @@ def random_dimer(molecule0, molecule1, thresholds, shoot_max):
     """
 
     # apply a random rotation to molecule1
-    center = numpy.zeros(3, float)
-    angle = numpy.random.uniform(0, 2*numpy.pi)
+    center = np.zeros(3, float)
+    angle = np.random.uniform(0, 2*np.pi)
     axis = random_unit()
     rotation = Complete.about_axis(center, angle, axis)
-    cor1 = numpy.dot(molecule1.coordinates, rotation.r)
+    cor1 = np.dot(molecule1.coordinates, rotation.r)
 
     # select a random atom in each molecule
-    atom0 = numpy.random.randint(len(molecule0.numbers))
-    atom1 = numpy.random.randint(len(molecule1.numbers))
+    atom0 = np.random.randint(len(molecule0.numbers))
+    atom1 = np.random.randint(len(molecule1.numbers))
 
     # define a translation of molecule1 that brings both atoms in overlap
     delta = molecule0.coordinates[atom0] - cor1[atom1]
@@ -431,8 +432,8 @@ def random_dimer(molecule0, molecule1, thresholds, shoot_max):
 
     # move molecule1 along this direction until all intermolecular atomic
     # distances are above the threshold values
-    threshold_mat = numpy.zeros((len(molecule0.numbers), len(molecule1.numbers)), float)
-    distance_mat = numpy.zeros((len(molecule0.numbers), len(molecule1.numbers)), float)
+    threshold_mat = np.zeros((len(molecule0.numbers), len(molecule1.numbers)), float)
+    distance_mat = np.zeros((len(molecule0.numbers), len(molecule1.numbers)), float)
     for i1, n1 in enumerate(molecule0.numbers):
         for i2, n2 in enumerate(molecule1.numbers):
             threshold = thresholds.get(frozenset([n1, n2]))
@@ -441,24 +442,24 @@ def random_dimer(molecule0, molecule1, thresholds, shoot_max):
         cor1 += 0.1*direction
         distance_mat[:] = 0
         for i in 0, 1, 2:
-            distance_mat += numpy.subtract.outer(molecule0.coordinates[:, i], cor1[:, i])**2
+            distance_mat += np.subtract.outer(molecule0.coordinates[:, i], cor1[:, i])**2
         if (distance_mat > threshold_mat).all():
             break
 
     # translate over a random distance [0, shoot] along the same direction
     # (if necessary repeat until no overlap is found)
     while True:
-        cor1 += direction*numpy.random.uniform(0, shoot_max)
+        cor1 += direction*np.random.uniform(0, shoot_max)
         distance_mat[:] = 0
         for i in 0, 1, 2:
-            distance_mat += numpy.subtract.outer(molecule0.coordinates[:, i], cor1[:, i])**2
+            distance_mat += np.subtract.outer(molecule0.coordinates[:, i], cor1[:, i])**2
         if (distance_mat > threshold_mat).all():
             break
 
     # done
     dimer = Molecule(
-        numpy.concatenate([molecule0.numbers, molecule1.numbers]),
-        numpy.concatenate([molecule0.coordinates, cor1])
+        np.concatenate([molecule0.numbers, molecule1.numbers]),
+        np.concatenate([molecule0.coordinates, cor1])
     )
     dimer.direction = direction
     dimer.atom0 = atom0

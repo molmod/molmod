@@ -29,14 +29,12 @@
 """
 
 
+import numpy as np
 import pkg_resources
 
 from molmod.molecules import Molecule
 from molmod.periodic import periodic
-
 from molmod.ext import ff_dm_quad, ff_dm_reci, ff_bond_quad, ff_bond_hyper
-
-import numpy
 
 
 __all__ = ["guess_geometry", "tune_geometry", "ToyFF", "SpecialAngles"]
@@ -70,7 +68,7 @@ def guess_geometry(graph, unit_cell=None, verbose=False):
     stop_loss = StopLossCondition(max_iter=500, fun_margin=0.1)
 
     ff = ToyFF(graph, unit_cell)
-    x_init = numpy.random.normal(0, 1, N*3)
+    x_init = np.random.normal(0, 1, N*3)
 
     #  level 1 geometry optimization: graph based
     ff.dm_quad = 1.0
@@ -84,7 +82,7 @@ def guess_geometry(graph, unit_cell=None, verbose=False):
     x_init = minimizer.x
 
     # Add a little noise to avoid saddle points
-    x_init += numpy.random.uniform(-0.01, 0.01, len(x_init))
+    x_init += np.random.uniform(-0.01, 0.01, len(x_init))
 
     #  level 3 geometry optimization: bond lengths + pauli
     ff.dm_quad = 0.0
@@ -187,16 +185,16 @@ class ToyFF(object):
         dm = self.dm.astype(float)
         self.dm0 = dm**2
         self.dmk = (dm+0.1)**(-3)
-        self.vdw_radii = numpy.array([periodic[number].vdw_radius for number in graph.numbers], dtype=float)
-        self.covalent_radii = numpy.array([periodic[number].covalent_radius for number in graph.numbers], dtype=float)
+        self.vdw_radii = np.array([periodic[number].vdw_radius for number in graph.numbers], dtype=float)
+        self.covalent_radii = np.array([periodic[number].covalent_radius for number in graph.numbers], dtype=float)
 
         bond_edges = []
         bond_lengths = []
         for i, j in graph.edges:
             bond_edges.append((i, j))
             bond_lengths.append(bonds.get_length(graph.numbers[i], graph.numbers[j]))
-        self.bond_edges = numpy.array(bond_edges, int)
-        self.bond_lengths = numpy.array(bond_lengths, float)
+        self.bond_edges = np.array(bond_edges, int)
+        self.bond_lengths = np.array(bond_lengths, float)
 
         special_angles = SpecialAngles()
 
@@ -211,17 +209,17 @@ class ToyFF(object):
             else:
                 valence = -1
             if valence < 2 or valence > 6:
-                default_angle = numpy.pi/180.0*115.0
+                default_angle = np.pi/180.0*115.0
             elif valence == 2:
-                default_angle = numpy.pi
+                default_angle = np.pi
             elif valence == 3:
-                default_angle = numpy.pi/180.0*125.0
+                default_angle = np.pi/180.0*125.0
             elif valence == 4:
-                default_angle = numpy.pi/180.0*109.0
+                default_angle = np.pi/180.0*109.0
             elif valence == 5:
-                default_angle = numpy.pi/180.0*100.0
+                default_angle = np.pi/180.0*100.0
             elif valence == 6:
-                default_angle = numpy.pi/180.0*90.0
+                default_angle = np.pi/180.0*90.0
             for j in neighbors:
                 number_j = graph.numbers[j]
                 for k in neighbors:
@@ -240,11 +238,11 @@ class ToyFF(object):
 
                         dj = bonds.get_length(number_i, number_j)
                         dk = bonds.get_length(number_i, number_k)
-                        d = numpy.sqrt(dj**2+dk**2-2*dj*dk*numpy.cos(angle))
+                        d = np.sqrt(dj**2+dk**2-2*dj*dk*np.cos(angle))
                         span_edges.append((j, k))
                         span_lengths.append(d)
-        self.span_edges = numpy.array(span_edges, int)
-        self.span_lengths = numpy.array(span_lengths, float)
+        self.span_edges = np.array(span_edges, int)
+        self.span_lengths = np.array(span_lengths, float)
 
         self.dm_quad = 0.0
         self.dm_reci = 0.0
@@ -264,7 +262,7 @@ class ToyFF(object):
         x = x.reshape((-1, 3))
         result = 0.0
 
-        gradient = numpy.zeros(x.shape, float)
+        gradient = np.zeros(x.shape, float)
         if self.dm_quad > 0.0:
             result += ff_dm_quad(x, self.dm0, self.dmk, self.dm_quad,
                                  gradient, self.matrix, self.reciprocal)
@@ -298,7 +296,7 @@ class SpecialAngles(object):
             for line in f:
                 if line[0] != '#':
                     key = tuple(int(word) for word in line[0:line.index(':')].split(","))
-                    value = numpy.pi/180.0*float(line[line.index(':')+1:-1])
+                    value = np.pi/180.0*float(line[line.index(':')+1:-1])
                     self._angle_dict[key] = value
 
     def get_angle(self, triplet):

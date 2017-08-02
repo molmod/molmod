@@ -23,13 +23,14 @@
 """Tools for reading and writing XYZ trajectory files"""
 
 
+from itertools import izip
+
+import numpy as np
+
 from molmod.io.common import SlicedReader, FileFormatError
 from molmod.periodic import periodic
 from molmod.molecules import Molecule
 from molmod.units import angstrom
-
-import numpy
-from itertools import izip
 
 
 __all__ = ["XYZReader", "XYZWriter", "XYZFile"]
@@ -66,7 +67,7 @@ class XYZReader(SlicedReader):
         try:
             self.symbols = None
             self._first = self._read_frame()
-            self.numbers = numpy.zeros(len(self.symbols), int)
+            self.numbers = np.zeros(len(self.symbols), int)
             for index, symbol in enumerate(self.symbols):
                 try:
                     number = int(symbol)
@@ -98,7 +99,7 @@ class XYZReader(SlicedReader):
         title = self._f.readline()[:-1]
         if self.symbols is None:
             symbols = []
-        coordinates = numpy.zeros((size, 3), float)
+        coordinates = np.zeros((size, 3), float)
         for counter in xrange(size):
             line = self._f.readline()
             if len(line) == 0:
@@ -226,7 +227,7 @@ class XYZFile(object):
             step = sub.step
             if step is None: step = 1
             count = (sub.stop - start + step - 1)/step
-            self.geometries = numpy.zeros((count, len(self.numbers), 3), float)
+            self.geometries = np.zeros((count, len(self.numbers), 3), float)
 
             for counter, (title, coordinates) in enumerate(xyz_reader):
                 self.titles.append(title)
@@ -237,7 +238,7 @@ class XYZFile(object):
             for title, coordinates in xyz_reader:
                 self.titles.append(title)
                 geometries.append(coordinates)
-            self.geometries = numpy.array(geometries, float)
+            self.geometries = np.array(geometries, float)
 
     def get_molecule(self, index=0):
         """Get a molecule from the trajectory

@@ -50,7 +50,9 @@
 """
 
 
-import copy, numpy
+import copy
+
+import numpy as np
 
 from molmod.utils import cached, ReadOnly, ReadOnlyAttribute
 
@@ -92,9 +94,9 @@ class Graph(ReadOnly):
        ordering as the vertices or the edges:
 
        >>> # atom numbers of ethene
-       >>> graph.vertex_property = numpy.array([6, 6, 1, 1, 1, 1], int)
+       >>> graph.vertex_property = np.array([6, 6, 1, 1, 1, 1], int)
        >>> # bond orders of ethene
-       >>> graph.edge_property = numpy.array([2, 1, 1, 1, 1], int)
+       >>> graph.edge_property = np.array([2, 1, 1, 1, 1], int)
     """
     edges = ReadOnlyAttribute(tuple, none=False, doc="the incidence list")
     num_vertices = ReadOnlyAttribute(int, none=False, doc="the number of vertices")
@@ -216,7 +218,7 @@ class Graph(ReadOnly):
     def distances(self):
         """The matrix with the all-pairs shortest path lenghts"""
         from molmod.ext import graphs_floyd_warshall
-        distances = numpy.zeros((self.num_vertices,)*2, dtype=int)
+        distances = np.zeros((self.num_vertices,)*2, dtype=int)
         #distances[:] = -1 # set all -1, which is just a very big integer
         #distances.ravel()[::len(distances)+1] = 0 # set diagonal to zero
         for i, j in self.edges: # set edges to one
@@ -281,7 +283,7 @@ class Graph(ReadOnly):
            chance that two different (molecular) graphs yield the same
            fingerprint is small but not zero. (See unit tests.)"""
         if self.num_vertices == 0:
-            return numpy.zeros(20, numpy.ubyte)
+            return np.zeros(20, np.ubyte)
         else:
             return sum(self.vertex_fingerprints)
 
@@ -446,7 +448,7 @@ class Graph(ReadOnly):
                 raise ValueError("start must be in the range [0, %i[" %
                                  self.num_vertices)
         from collections import deque
-        work = numpy.zeros(self.num_vertices, int)
+        work = np.zeros(self.num_vertices, int)
         work[:] = -1
         work[start] = 0
         if do_paths:
@@ -511,7 +513,7 @@ class Graph(ReadOnly):
                 raise ValueError("start must be in the range [0, %i[" %
                                  self.num_vertices)
         from collections import deque
-        work = numpy.zeros(self.num_vertices, int)
+        work = np.zeros(self.num_vertices, int)
         work[:] = -1
         work[start] = 0
         todo = deque([start])
@@ -581,12 +583,12 @@ class Graph(ReadOnly):
             old_edge_indexes = [old_edge_indexes[i] for i in order]
 
             result = Graph(new_edges, num_vertices=len(subvertices))
-            result._old_vertex_indexes = numpy.array(subvertices, dtype=int)
+            result._old_vertex_indexes = np.array(subvertices, dtype=int)
             #result.new_vertex_indexes = revorder
-            result._old_edge_indexes = numpy.array(old_edge_indexes, dtype=int)
+            result._old_edge_indexes = np.array(old_edge_indexes, dtype=int)
         else:
             subvertices = set(subvertices)
-            old_edge_indexes = numpy.array([
+            old_edge_indexes = np.array([
                 i for i, edge in enumerate(self.edges)
                 if edge.issubset(subvertices)
             ], dtype=int)
@@ -603,12 +605,12 @@ class Graph(ReadOnly):
         def str2array(x):
             """convert a has string to a numpy array of bytes"""
             if len(x) == 0:
-                return numpy.zeros(0, numpy.ubyte)
+                return np.zeros(0, np.ubyte)
             else:
-                return numpy.frombuffer(x, numpy.ubyte)
-        hashrow = lambda x: numpy.frombuffer(hashlib.sha1(x.data).digest(), numpy.ubyte)
+                return np.frombuffer(x, np.ubyte)
+        hashrow = lambda x: np.frombuffer(hashlib.sha1(x.data).digest(), np.ubyte)
         # initialization
-        result = numpy.zeros((self.num_vertices, 20), numpy.ubyte)
+        result = np.zeros((self.num_vertices, 20), np.ubyte)
         for i in xrange(self.num_vertices):
             result[i] = hashrow(str2array(vertex_strings[i]))
         for i in xrange(self.num_edges):
@@ -1357,7 +1359,7 @@ class EqualMatch(Match):
             if next_vertex == current_cycle[0]:
                 if len(current_cycle) > 1:
                     # bring the lowest element in front
-                    pivot = numpy.argmin(current_cycle)
+                    pivot = np.argmin(current_cycle)
                     current_cycle = current_cycle[pivot:] + \
                                     current_cycle[:pivot]
                     closed_cycles.append(current_cycle)

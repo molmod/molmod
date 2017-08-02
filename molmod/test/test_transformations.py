@@ -22,11 +22,13 @@
 #--
 
 
+import copy
+import unittest
+
+import numpy as np
+
 from molmod.test.common import BaseTestCase
 from molmod import *
-
-import numpy, copy
-import unittest
 
 
 __all__ = ["TransformationsTestCase"]
@@ -36,7 +38,7 @@ class TransformationsTestCase(BaseTestCase):
     def iter_random_translations(self, n=20):
         for i in xrange(n):
             yield Translation(
-                numpy.random.uniform(-3, 3, 3)
+                np.random.uniform(-3, 3, 3)
             )
 
     def iter_random_rotations(self, n=20):
@@ -46,15 +48,15 @@ class TransformationsTestCase(BaseTestCase):
     def iter_random_completes(self, n=20):
         for i in xrange(n):
             yield Complete.from_properties(
-                numpy.random.uniform(0,numpy.pi*2),
+                np.random.uniform(0,np.pi*2),
                 random_unit(),
-                numpy.random.randint(0,1),
-                numpy.random.uniform(-3, 3, 3)
+                np.random.randint(0,1),
+                np.random.uniform(-3, 3, 3)
             )
 
     def test_translation_apply_to_vector(self):
         for t in self.iter_random_translations():
-            x = numpy.random.uniform(-3,3,3)
+            x = np.random.uniform(-3,3,3)
             self.assertArraysAlmostEqual(t.inv*x, x-t.t)
             self.assertArraysAlmostEqual(t.inv*(t*x), x)
             self.assertArraysAlmostEqual(t*(t.inv*x), x)
@@ -65,7 +67,7 @@ class TransformationsTestCase(BaseTestCase):
 
     def test_translation_apply_to_vectors(self):
         for t in self.iter_random_translations():
-            x = numpy.random.uniform(-3,3,(10,3))
+            x = np.random.uniform(-3,3,(10,3))
             self.assertArraysAlmostEqual(t.inv*x, x-t.t)
             self.assertArraysAlmostEqual(t.inv*(t*x), x)
             self.assertArraysAlmostEqual(t*(t.inv*x), x)
@@ -77,7 +79,7 @@ class TransformationsTestCase(BaseTestCase):
 
     def test_translation_apply_to_translation(self):
         for t1, t2 in zip(self.iter_random_translations(), self.iter_random_translations()):
-            self.assertArraysAlmostEqual((t1*t2).matrix, numpy.dot(t1.matrix,t2.matrix))
+            self.assertArraysAlmostEqual((t1*t2).matrix, np.dot(t1.matrix,t2.matrix))
             self.assertArraysAlmostEqual((t1*t2).t, (t2*t1).t)
             self.assertArraysAlmostEqual((t1.inv*t2.inv).t, (t2*t1).inv.t)
             self.assertArraysAlmostEqual((t1*t2).t, t1.t+t2.t)
@@ -85,7 +87,7 @@ class TransformationsTestCase(BaseTestCase):
 
     def test_translation_apply_to_rotation(self):
         for t, r in zip(self.iter_random_translations(), self.iter_random_rotations()):
-            self.assertArraysAlmostEqual((t*r).matrix, numpy.dot(t.matrix,r.matrix))
+            self.assertArraysAlmostEqual((t*r).matrix, np.dot(t.matrix,r.matrix))
             self.assertArraysAlmostEqual((t*r).t, t.t)
             self.assertArraysAlmostEqual((t*r).r, r.r)
             self.assertArraysAlmostEqual((t*r.inv).t, t.t)
@@ -97,154 +99,154 @@ class TransformationsTestCase(BaseTestCase):
 
     def test_translation_apply_to_complete(self):
         for t, c in zip(self.iter_random_translations(), self.iter_random_completes()):
-            self.assertArraysAlmostEqual((t*c).matrix, numpy.dot(t.matrix,c.matrix))
+            self.assertArraysAlmostEqual((t*c).matrix, np.dot(t.matrix,c.matrix))
             self.assertArraysAlmostEqual((t*c).t, t.t+c.t)
             self.assertArraysAlmostEqual((t*c).r, c.r)
-            self.assertArraysAlmostEqual((t*c.inv).t, t.t-numpy.dot(c.r.transpose(),c.t))
+            self.assertArraysAlmostEqual((t*c.inv).t, t.t-np.dot(c.r.transpose(),c.t))
             self.assertArraysAlmostEqual((t*c.inv).r, c.r.transpose())
             self.assertArraysAlmostEqual((t.inv*c).t, -t.t+c.t)
             self.assertArraysAlmostEqual((t.inv*c).r, c.r)
-            self.assertArraysAlmostEqual((t.inv*c.inv).t, -t.t-numpy.dot(c.r.transpose(),c.t))
+            self.assertArraysAlmostEqual((t.inv*c.inv).t, -t.t-np.dot(c.r.transpose(),c.t))
             self.assertArraysAlmostEqual((t.inv*c.inv).r, c.r.transpose())
 
     def test_rotation_apply_to_vector(self):
         for r in self.iter_random_rotations():
-            x = numpy.random.uniform(-3,3,3)
+            x = np.random.uniform(-3,3,3)
             self.assertArraysAlmostEqual(r.inv*(r*x), x)
             self.assertArraysAlmostEqual(r*(r.inv*x), x)
             self.assertArraysAlmostEqual((r*r.inv)*x, x)
             self.assertArraysAlmostEqual((r.inv*r)*x, x)
-            self.assertArraysAlmostEqual(r.apply_to(x), numpy.dot(r.r,x))
-            self.assertArraysAlmostEqual(r*x, numpy.dot(r.r,x))
+            self.assertArraysAlmostEqual(r.apply_to(x), np.dot(r.r,x))
+            self.assertArraysAlmostEqual(r*x, np.dot(r.r,x))
 
     def test_rotation_apply_to_vectors(self):
         for r in self.iter_random_rotations():
-            x = numpy.random.uniform(-3,3,(10,3))
+            x = np.random.uniform(-3,3,(10,3))
             self.assertArraysAlmostEqual(r.inv*(r*x), x)
             self.assertArraysAlmostEqual(r*(r.inv*x), x)
             self.assertArraysAlmostEqual((r*r.inv)*x, x)
             self.assertArraysAlmostEqual((r.inv*r)*x, x)
-            self.assertArraysAlmostEqual(r.apply_to(x), numpy.dot(r.r,x.transpose()).transpose())
-            self.assertArraysAlmostEqual(r*x, numpy.dot(r.r,x.transpose()).transpose())
+            self.assertArraysAlmostEqual(r.apply_to(x), np.dot(r.r,x.transpose()).transpose())
+            self.assertArraysAlmostEqual(r*x, np.dot(r.r,x.transpose()).transpose())
             self.assertArraysAlmostEqual(r.apply_to(x).transpose(), r.apply_to(x.transpose(), columns=True))
 
     def test_rotation_apply_to_translation(self):
         for r, t in zip(self.iter_random_rotations(), self.iter_random_translations()):
-            self.assertArraysAlmostEqual((r*t).matrix, numpy.dot(r.matrix,t.matrix))
-            self.assertArraysAlmostEqual((r*t).t, numpy.dot(r.r,t.t))
+            self.assertArraysAlmostEqual((r*t).matrix, np.dot(r.matrix,t.matrix))
+            self.assertArraysAlmostEqual((r*t).t, np.dot(r.r,t.t))
             self.assertArraysAlmostEqual((r*t).r, r.r)
-            self.assertArraysAlmostEqual((r*t.inv).t, -numpy.dot(r.r,t.t))
+            self.assertArraysAlmostEqual((r*t.inv).t, -np.dot(r.r,t.t))
             self.assertArraysAlmostEqual((r*t.inv).r, r.r)
-            self.assertArraysAlmostEqual((r.inv*t).t, numpy.dot(r.r.transpose(),t.t))
+            self.assertArraysAlmostEqual((r.inv*t).t, np.dot(r.r.transpose(),t.t))
             self.assertArraysAlmostEqual((r.inv*t).r, r.r.transpose())
-            self.assertArraysAlmostEqual((r.inv*t.inv).t, -numpy.dot(r.r.transpose(),t.t))
+            self.assertArraysAlmostEqual((r.inv*t.inv).t, -np.dot(r.r.transpose(),t.t))
             self.assertArraysAlmostEqual((r.inv*t.inv).r, r.r.transpose())
 
     def test_rotation_apply_to_rotation(self):
         for r1, r2 in zip(self.iter_random_rotations(), self.iter_random_rotations()):
-            self.assertArraysAlmostEqual((r1*r2).matrix, numpy.dot(r1.matrix,r2.matrix))
+            self.assertArraysAlmostEqual((r1*r2).matrix, np.dot(r1.matrix,r2.matrix))
             self.assertArraysAlmostEqual((r1.inv*r2.inv).r, (r2*r1).inv.r)
-            self.assertArraysAlmostEqual((r1*r2).r, numpy.dot(r1.r,r2.r))
+            self.assertArraysAlmostEqual((r1*r2).r, np.dot(r1.r,r2.r))
             self.assertArraysAlmostEqual((r1*(r2*r1)).r, ((r1*r2)*r1).r)
 
     def test_rotation_apply_to_complete(self):
         for r, c in zip(self.iter_random_rotations(), self.iter_random_completes()):
-            self.assertArraysAlmostEqual((r*c).matrix, numpy.dot(r.matrix,c.matrix))
-            self.assertArraysAlmostEqual((r*c).t, numpy.dot(r.r,c.t))
-            self.assertArraysAlmostEqual((r*c).r, numpy.dot(r.r,c.r))
-            self.assertArraysAlmostEqual((r*c.inv).t, -numpy.dot(r.r,numpy.dot(c.r.transpose(),c.t)))
-            self.assertArraysAlmostEqual((r*c.inv).r, numpy.dot(r.r,c.r.transpose()))
-            self.assertArraysAlmostEqual((r.inv*c).t, numpy.dot(r.r.transpose(),c.t))
-            self.assertArraysAlmostEqual((r.inv*c).r, numpy.dot(r.r.transpose(),c.r))
-            self.assertArraysAlmostEqual((r.inv*c.inv).t, -numpy.dot(r.r.transpose(),numpy.dot(c.r.transpose(),c.t)))
-            self.assertArraysAlmostEqual((r.inv*c.inv).r, numpy.dot(r.r.transpose(),c.r.transpose()))
+            self.assertArraysAlmostEqual((r*c).matrix, np.dot(r.matrix,c.matrix))
+            self.assertArraysAlmostEqual((r*c).t, np.dot(r.r,c.t))
+            self.assertArraysAlmostEqual((r*c).r, np.dot(r.r,c.r))
+            self.assertArraysAlmostEqual((r*c.inv).t, -np.dot(r.r,np.dot(c.r.transpose(),c.t)))
+            self.assertArraysAlmostEqual((r*c.inv).r, np.dot(r.r,c.r.transpose()))
+            self.assertArraysAlmostEqual((r.inv*c).t, np.dot(r.r.transpose(),c.t))
+            self.assertArraysAlmostEqual((r.inv*c).r, np.dot(r.r.transpose(),c.r))
+            self.assertArraysAlmostEqual((r.inv*c.inv).t, -np.dot(r.r.transpose(),np.dot(c.r.transpose(),c.t)))
+            self.assertArraysAlmostEqual((r.inv*c.inv).r, np.dot(r.r.transpose(),c.r.transpose()))
 
     def test_complete_apply_to_vector(self):
         for c in self.iter_random_completes():
-            x = numpy.random.uniform(-3,3,3)
+            x = np.random.uniform(-3,3,3)
             self.assertArraysAlmostEqual(c.inv*(c*x), x)
             self.assertArraysAlmostEqual(c*(c.inv*x), x)
             self.assertArraysAlmostEqual((c*c.inv)*x, x)
             self.assertArraysAlmostEqual((c.inv*c)*x, x)
-            self.assertArraysAlmostEqual(c.apply_to(x), numpy.dot(c.r,x) + c.t)
-            self.assertArraysAlmostEqual(c*x, numpy.dot(c.r,x) + c.t)
+            self.assertArraysAlmostEqual(c.apply_to(x), np.dot(c.r,x) + c.t)
+            self.assertArraysAlmostEqual(c*x, np.dot(c.r,x) + c.t)
 
     def test_complete_apply_to_vectors(self):
         for c in self.iter_random_completes():
-            x = numpy.random.uniform(-3,3,(10,3))
+            x = np.random.uniform(-3,3,(10,3))
             self.assertArraysAlmostEqual(c.inv*(c*x), x)
             self.assertArraysAlmostEqual(c*(c.inv*x), x)
             self.assertArraysAlmostEqual((c*c.inv)*x, x)
             self.assertArraysAlmostEqual((c.inv*c)*x, x)
-            self.assertArraysAlmostEqual(c.apply_to(x), numpy.dot(c.r,x.transpose()).transpose() + c.t)
-            self.assertArraysAlmostEqual(c*x, numpy.dot(c.r,x.transpose()).transpose() + c.t)
+            self.assertArraysAlmostEqual(c.apply_to(x), np.dot(c.r,x.transpose()).transpose() + c.t)
+            self.assertArraysAlmostEqual(c*x, np.dot(c.r,x.transpose()).transpose() + c.t)
             self.assertArraysAlmostEqual(c.apply_to(x).transpose(), c.apply_to(x.transpose(), columns=True))
 
     def test_complete_apply_to_translation(self):
         for c, t in zip(self.iter_random_completes(), self.iter_random_translations()):
-            self.assertArraysAlmostEqual((c*t).matrix, numpy.dot(c.matrix,t.matrix))
-            self.assertArraysAlmostEqual((c*t).t, numpy.dot(c.r,t.t) + c.t)
+            self.assertArraysAlmostEqual((c*t).matrix, np.dot(c.matrix,t.matrix))
+            self.assertArraysAlmostEqual((c*t).t, np.dot(c.r,t.t) + c.t)
             self.assertArraysAlmostEqual((c*t).r, c.r)
-            self.assertArraysAlmostEqual((c*t.inv).t, -numpy.dot(c.r,t.t) + c.t)
+            self.assertArraysAlmostEqual((c*t.inv).t, -np.dot(c.r,t.t) + c.t)
             self.assertArraysAlmostEqual((c*t.inv).r, c.r)
-            self.assertArraysAlmostEqual((c.inv*t).t, numpy.dot(c.r.transpose(),t.t-c.t))
+            self.assertArraysAlmostEqual((c.inv*t).t, np.dot(c.r.transpose(),t.t-c.t))
             self.assertArraysAlmostEqual((c.inv*t).r, c.r.transpose())
-            self.assertArraysAlmostEqual((c.inv*t.inv).t, -numpy.dot(c.r.transpose(),t.t+c.t))
+            self.assertArraysAlmostEqual((c.inv*t.inv).t, -np.dot(c.r.transpose(),t.t+c.t))
             self.assertArraysAlmostEqual((c.inv*t.inv).r, c.r.transpose())
 
     def test_complete_apply_to_rotation(self):
         for c, r in zip(self.iter_random_completes(), self.iter_random_rotations()):
-            self.assertArraysAlmostEqual((c*r).matrix, numpy.dot(c.matrix,r.matrix))
+            self.assertArraysAlmostEqual((c*r).matrix, np.dot(c.matrix,r.matrix))
             self.assertArraysAlmostEqual((c*r).t, c.t)
-            self.assertArraysAlmostEqual((c*r).r, numpy.dot(c.r,r.r))
+            self.assertArraysAlmostEqual((c*r).r, np.dot(c.r,r.r))
             self.assertArraysAlmostEqual((c*r.inv).t, c.t)
-            self.assertArraysAlmostEqual((c*r.inv).r, numpy.dot(c.r,r.r.transpose()))
-            self.assertArraysAlmostEqual((c.inv*r).t, -numpy.dot(c.r.transpose(),c.t))
-            self.assertArraysAlmostEqual((c.inv*r).r, numpy.dot(c.r.transpose(),r.r))
-            self.assertArraysAlmostEqual((c.inv*r.inv).t, -numpy.dot(c.r.transpose(),c.t))
-            self.assertArraysAlmostEqual((c.inv*r.inv).r, numpy.dot(c.r.transpose(),r.r.transpose()))
+            self.assertArraysAlmostEqual((c*r.inv).r, np.dot(c.r,r.r.transpose()))
+            self.assertArraysAlmostEqual((c.inv*r).t, -np.dot(c.r.transpose(),c.t))
+            self.assertArraysAlmostEqual((c.inv*r).r, np.dot(c.r.transpose(),r.r))
+            self.assertArraysAlmostEqual((c.inv*r.inv).t, -np.dot(c.r.transpose(),c.t))
+            self.assertArraysAlmostEqual((c.inv*r.inv).r, np.dot(c.r.transpose(),r.r.transpose()))
 
     def test_complete_apply_to_complete(self):
         for c1, c2 in zip(self.iter_random_completes(), self.iter_random_completes()):
-            self.assertArraysAlmostEqual((c1*c2).matrix, numpy.dot(c1.matrix,c2.matrix))
+            self.assertArraysAlmostEqual((c1*c2).matrix, np.dot(c1.matrix,c2.matrix))
             self.assertArraysAlmostEqual((c1.inv*c2.inv).t, (c2*c1).inv.t)
             self.assertArraysAlmostEqual((c1.inv*c2.inv).r, (c2*c1).inv.r)
             self.assertArraysAlmostEqual((c1*(c2*c1)).t, ((c1*c2)*c1).t)
             self.assertArraysAlmostEqual((c1*(c2*c1)).r, ((c1*c2)*c1).r)
-            self.assertArraysAlmostEqual((c1*c2).t, c1.t + numpy.dot(c1.r,c2.t))
-            self.assertArraysAlmostEqual((c1*c2).r, numpy.dot(c1.r,c2.r))
-            self.assertArraysAlmostEqual((c1*c2.inv).t, c1.t - numpy.dot(c1.r,numpy.dot(c2.r.transpose(),c2.t)))
-            self.assertArraysAlmostEqual((c1*c2.inv).r, numpy.dot(c1.r,c2.r.transpose()))
-            self.assertArraysAlmostEqual((c1.inv*c2).t, numpy.dot(c1.r.transpose(),c2.t-c1.t))
-            self.assertArraysAlmostEqual((c1.inv*c2).r, numpy.dot(c1.r.transpose(),c2.r))
-            self.assertArraysAlmostEqual((c1.inv*c2.inv).t, numpy.dot(c1.r.transpose(),-numpy.dot(c2.r.transpose(),c2.t)-c1.t))
-            self.assertArraysAlmostEqual((c1.inv*c2.inv).r, numpy.dot(c1.r.transpose(),c2.r.transpose()))
+            self.assertArraysAlmostEqual((c1*c2).t, c1.t + np.dot(c1.r,c2.t))
+            self.assertArraysAlmostEqual((c1*c2).r, np.dot(c1.r,c2.r))
+            self.assertArraysAlmostEqual((c1*c2.inv).t, c1.t - np.dot(c1.r,np.dot(c2.r.transpose(),c2.t)))
+            self.assertArraysAlmostEqual((c1*c2.inv).r, np.dot(c1.r,c2.r.transpose()))
+            self.assertArraysAlmostEqual((c1.inv*c2).t, np.dot(c1.r.transpose(),c2.t-c1.t))
+            self.assertArraysAlmostEqual((c1.inv*c2).r, np.dot(c1.r.transpose(),c2.r))
+            self.assertArraysAlmostEqual((c1.inv*c2.inv).t, np.dot(c1.r.transpose(),-np.dot(c2.r.transpose(),c2.t)-c1.t))
+            self.assertArraysAlmostEqual((c1.inv*c2.inv).r, np.dot(c1.r.transpose(),c2.r.transpose()))
 
     def test_inv_translation(self):
         for t in self.iter_random_translations():
-            self.assertArraysAlmostEqual(t.inv.matrix, numpy.linalg.inv(t.matrix))
-            self.assertArraysAlmostEqual((t*t.inv).t, numpy.zeros(3,float), doabs=True)
-            self.assertArraysAlmostEqual((t.inv*t).t, numpy.zeros(3,float), doabs=True)
+            self.assertArraysAlmostEqual(t.inv.matrix, np.linalg.inv(t.matrix))
+            self.assertArraysAlmostEqual((t*t.inv).t, np.zeros(3,float), doabs=True)
+            self.assertArraysAlmostEqual((t.inv*t).t, np.zeros(3,float), doabs=True)
             self.assertTrue((t*t.inv).compare(Translation.identity()))
             self.assertTrue((t.inv*t).compare(Translation.identity()))
         self.assertEqual(id(t), id(t.inv.inv))
 
     def test_inv_rotation(self):
         for r in self.iter_random_rotations():
-            self.assertArraysAlmostEqual(r.inv.matrix, numpy.linalg.inv(r.matrix))
-            self.assertArraysAlmostEqual((r*r.inv).r, numpy.identity(3,float))
-            self.assertArraysAlmostEqual((r.inv*r).r, numpy.identity(3,float))
+            self.assertArraysAlmostEqual(r.inv.matrix, np.linalg.inv(r.matrix))
+            self.assertArraysAlmostEqual((r*r.inv).r, np.identity(3,float))
+            self.assertArraysAlmostEqual((r.inv*r).r, np.identity(3,float))
             self.assertTrue((r*r.inv).compare(Rotation.identity()))
             self.assertTrue((r.inv*r).compare(Rotation.identity()))
         self.assertEqual(id(r), id(r.inv.inv))
 
     def test_inv_complete(self):
         for c in self.iter_random_completes():
-            self.assertArraysAlmostEqual(c.inv.matrix, numpy.linalg.inv(c.matrix))
-            self.assertArraysAlmostEqual((c*c.inv).t, numpy.zeros(3,float), doabs=True)
-            self.assertArraysAlmostEqual((c.inv*c).t, numpy.zeros(3,float), doabs=True)
-            self.assertArraysAlmostEqual((c*c.inv).r, numpy.identity(3,float))
-            self.assertArraysAlmostEqual((c.inv*c).r, numpy.identity(3,float))
+            self.assertArraysAlmostEqual(c.inv.matrix, np.linalg.inv(c.matrix))
+            self.assertArraysAlmostEqual((c*c.inv).t, np.zeros(3,float), doabs=True)
+            self.assertArraysAlmostEqual((c.inv*c).t, np.zeros(3,float), doabs=True)
+            self.assertArraysAlmostEqual((c*c.inv).r, np.identity(3,float))
+            self.assertArraysAlmostEqual((c.inv*c).r, np.identity(3,float))
             self.assertTrue((c*c.inv).compare(Complete.identity()))
             self.assertTrue((c.inv*c).compare(Complete.identity()))
         self.assertEqual(id(c), id(c.inv.inv))
@@ -295,21 +297,21 @@ class TransformationsTestCase(BaseTestCase):
 
 
     def test_rotation_about_axis(self):
-        x = numpy.array([2,0,0])
-        c = Complete.about_axis(numpy.array([1,0,0]), numpy.pi, numpy.array([1,1,0]), False)
-        self.assertArraysAlmostEqual(c*x, numpy.array([1,1,0]))
+        x = np.array([2,0,0])
+        c = Complete.about_axis(np.array([1,0,0]), np.pi, np.array([1,1,0]), False)
+        self.assertArraysAlmostEqual(c*x, np.array([1,1,0]))
 
     def test_superpose(self):
         # create a few test sets with random data points, including degenerate
         # situations. (e.g. one point, two points, linear points)
         references = [ # a list of 2-tuples: (points, degenerate)
-            (numpy.random.normal(0, 5, (n, 3)), False) for n in xrange(4, 40)
+            (np.random.normal(0, 5, (n, 3)), False) for n in xrange(4, 40)
         ] + [
-            (numpy.array([[0,0,1]], float), True),
-            (numpy.array([[0,0,0],[0,0,1]], float), True),
-            (numpy.array([[0,0,0],[0,0,1],[0,0,2]], float), True),
-            (numpy.array([[0,0,0],[0,0,1],[0,0,2],[0,0,4]], float), True),
-            (numpy.random.normal(0, 5, (3, 3)), True)
+            (np.array([[0,0,1]], float), True),
+            (np.array([[0,0,0],[0,0,1]], float), True),
+            (np.array([[0,0,0],[0,0,1],[0,0,2]], float), True),
+            (np.array([[0,0,0],[0,0,1],[0,0,2],[0,0,4]], float), True),
+            (np.random.normal(0, 5, (3, 3)), True)
         ]
 
         # Do a random transformation on the points
@@ -317,8 +319,8 @@ class TransformationsTestCase(BaseTestCase):
         for points, degenerate in references:
             #points[:] -= points.mean(axis=0)
             axis = random_unit()
-            angle = numpy.random.uniform(0, numpy.pi*2)
-            transformation = Complete.from_properties(angle, axis, False, numpy.random.normal(0, 5, 3))
+            angle = np.random.uniform(0, np.pi*2)
+            transformation = Complete.from_properties(angle, axis, False, np.random.normal(0, 5, 3))
             randomized.append((transformation*points, transformation))
 
         for (ref_points, degenerate), (tr_points, transf) in zip(references, randomized):
@@ -327,9 +329,9 @@ class TransformationsTestCase(BaseTestCase):
             self.assertArraysAlmostEqual(check_transf.r, check_transf2.r)
             self.assertArraysAlmostEqual(check_transf.t, check_transf2.t)
             # check whether the rotation matrix is orthogonal
-            self.assertArraysAlmostEqual(numpy.dot(check_transf.r, check_transf.r.transpose()), numpy.identity(3, float), 1e-5)
+            self.assertArraysAlmostEqual(np.dot(check_transf.r, check_transf.r.transpose()), np.identity(3, float), 1e-5)
             # first check whether check_transf brings the tr_points back to the ref_points
-            check_points = numpy.dot(tr_points, check_transf.r.transpose()) + check_transf.t
+            check_points = np.dot(tr_points, check_transf.r.transpose()) + check_transf.t
             self.assertArraysAlmostEqual(ref_points, check_points, 1e-5, doabs=True)
             if not degenerate:
                 # if the set of points is not degenerate, check whether transf and check_transf
@@ -339,7 +341,7 @@ class TransformationsTestCase(BaseTestCase):
 
         # Add some distortion to the transformed points
         for tr_points, transf in randomized:
-            tr_points[:] += numpy.random.normal(0, 1.0, tr_points.shape)
+            tr_points[:] += np.random.normal(0, 1.0, tr_points.shape)
 
         # Test wether a small modification to the optimal transformation leads
         # to a high rmsd.
@@ -347,7 +349,7 @@ class TransformationsTestCase(BaseTestCase):
             transf = superpose(ref_points, tr_points)
             lowest_rmsd = compute_rmsd(ref_points, transf*tr_points)
             for i in xrange(10):
-                transf_small = Complete.from_properties(0.01, random_unit(), True, numpy.random.normal(0,0.001,3))
+                transf_small = Complete.from_properties(0.01, random_unit(), True, np.random.normal(0,0.001,3))
                 transf_bis = transf*transf_small
                 higher_rmsd = compute_rmsd(ref_points, transf_bis*tr_points)
                 self.assert_(lowest_rmsd < higher_rmsd)
@@ -370,9 +372,9 @@ class TransformationsTestCase(BaseTestCase):
         self.assert_(c.t.ctypes.data == copy.deepcopy(c).t.ctypes.data)
 
     def test_fit_rmsd(self):
-        a = numpy.random.normal(0,1,(20,3))
+        a = np.random.normal(0,1,(20,3))
         trans, a_trans, rmsd = fit_rmsd(a,a)
-        self.assertArraysAlmostEqual(trans.r, numpy.identity(3, float))
-        self.assertArraysAlmostEqual(trans.t, numpy.zeros(3, float), doabs=True)
+        self.assertArraysAlmostEqual(trans.r, np.identity(3, float))
+        self.assertArraysAlmostEqual(trans.t, np.zeros(3, float), doabs=True)
         self.assertArraysAlmostEqual(a, a_trans)
         self.assertAlmostEqual(rmsd, 0.0)

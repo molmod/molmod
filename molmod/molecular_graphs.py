@@ -27,7 +27,7 @@ from molmod.graphs import cached, Graph, CustomPattern
 from molmod.utils import ReadOnlyAttribute
 from molmod.binning import PairSearchIntra
 
-import numpy
+import numpy as np
 
 
 __all__ = [
@@ -69,10 +69,10 @@ class MolecularGraph(Graph):
             if not isinstance(symbol, basestring):
                 raise TypeError("All symbols must be strings.")
 
-    numbers = ReadOnlyAttribute(numpy.ndarray, none=False, check=_check_numbers,
+    numbers = ReadOnlyAttribute(np.ndarray, none=False, check=_check_numbers,
         npdim=1, npdtype=int, doc="the atomic numbers associated with the "
         "vertices")
-    orders = ReadOnlyAttribute(numpy.ndarray, none=False, check=_check_orders,
+    orders = ReadOnlyAttribute(np.ndarray, none=False, check=_check_orders,
         npdim=1, npdtype=float, doc="the bond orders associated with the edges")
     symbols = ReadOnlyAttribute(tuple, _check_symbols, doc="symbols for the "
         "atoms, which can be element names for force-field atom types")
@@ -132,20 +132,20 @@ class MolecularGraph(Graph):
                 delta = molecule.coordinates[n] - molecule.coordinates[c]
                 if unit_cell is not None:
                     delta = unit_cell.shortest_vector(delta)
-                length = numpy.linalg.norm(delta)
+                length = np.linalg.norm(delta)
                 lengths_ns.append([length, delta, n])
             lengths_ns.sort(reverse=True, cmp=(lambda r0, r1: cmp(r0[0], r1[0])))
             for i0, (length0, delta0, n0) in enumerate(lengths_ns):
                 for i1, (length1, delta1, n1) in enumerate(lengths_ns[:i0]):
                     if length1 == 0.0:
                         continue
-                    cosine = numpy.dot(delta0, delta1)/length0/length1
+                    cosine = np.dot(delta0, delta1)/length0/length1
                     if cosine > threshold:
                         # length1 > length0
                         slated_for_removal.add((c,n1))
                         lengths_ns[i1][0] = 0.0
         # construct a mask
-        mask = numpy.ones(len(edges), bool)
+        mask = np.ones(len(edges), bool)
         for i0, i1 in slated_for_removal:
             edge_index = result.edge_index.get(frozenset([i0,i1]))
             if edge_index is None:
@@ -160,7 +160,7 @@ class MolecularGraph(Graph):
             result = cls(edges, molecule.numbers)
 
         lengths = [lengths[i] for i in xrange(len(lengths)) if mask[i]]
-        result.bond_lengths = numpy.array(lengths)
+        result.bond_lengths = np.array(lengths)
 
         return result
 
@@ -168,14 +168,14 @@ class MolecularGraph(Graph):
     def from_blob(cls, s):
         """Construct a molecular graph from the blob representation"""
         atom_str, edge_str = s.split()
-        numbers = numpy.array([int(s) for s in atom_str.split(",")])
+        numbers = np.array([int(s) for s in atom_str.split(",")])
         edges = []
         orders = []
         for s in edge_str.split(","):
             i, j, o = (int(w) for w in s.split("_"))
             edges.append((i, j))
             orders.append(o)
-        return cls(edges, numbers, numpy.array(orders))
+        return cls(edges, numbers, np.array(orders))
 
     def __init__(self, edges, numbers, orders=None, symbols=None, num_vertices=None):
         """
@@ -200,7 +200,7 @@ class MolecularGraph(Graph):
         if num_vertices is not None and num_vertices != len(numbers):
             raise ValueError('The number of vertices must be the same as the number of atoms.')
         if orders is None:
-            orders = numpy.ones(len(edges), float)
+            orders = np.ones(len(edges), float)
         Graph.__init__(self, edges, len(numbers))
         self.numbers = numbers
         self.orders = orders
@@ -220,11 +220,11 @@ class MolecularGraph(Graph):
             for vertex1, vertex2 in self.edges:
                 new_edges.append(frozenset([vertex1+i*self.num_vertices, vertex2+i*self.num_vertices]))
         # copy numbers
-        new_numbers = numpy.zeros((repeat, len(self.numbers)), int)
+        new_numbers = np.zeros((repeat, len(self.numbers)), int)
         new_numbers[:] = self.numbers
         new_numbers = new_numbers.ravel()
         # copy orders
-        new_orders = numpy.zeros((repeat, len(self.orders)), int)
+        new_orders = np.zeros((repeat, len(self.orders)), int)
         new_orders[:] = self.orders
         new_orders = new_orders.ravel()
         # copy symbols
@@ -320,10 +320,10 @@ class MolecularGraph(Graph):
             for j in xrange(num_hydrogen):
                 new_edges.append((i, counter))
                 counter += 1
-        new_numbers = numpy.zeros(counter, int)
+        new_numbers = np.zeros(counter, int)
         new_numbers[:self.num_vertices] = self.numbers
         new_numbers[self.num_vertices:] = 1
-        new_orders = numpy.zeros(len(new_edges), int)
+        new_orders = np.zeros(len(new_edges), int)
         new_orders[:self.num_edges] = self.orders
         new_orders[self.num_edges:] = 1
         result = MolecularGraph(new_edges, new_numbers, new_orders)
