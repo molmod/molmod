@@ -46,6 +46,7 @@
 
 
 import numpy as np
+from future.utils import with_metaclass
 
 
 __all__ = ["cached", "ReadOnlyAttribute", "ReadOnly", "compute_rmsd"]
@@ -264,7 +265,7 @@ class ReadOnlyType(type):
                     setattr(cls, key, descriptor)
 
 
-class ReadOnly(object):
+class ReadOnly(with_metaclass(ReadOnlyType, object)):
     """A base class for read-only objects
 
        An object that has nothing but read-only attributes. If an attribute is
@@ -274,8 +275,6 @@ class ReadOnly(object):
        If you want to modify a ReadOnly object, just create a modified one from
        scratch. This is greatly facilitated by the method :meth:`copy_with`.
     """
-
-    __metaclass__ = ReadOnlyType
 
     def __copy__(self):
         return self
