@@ -4,6 +4,7 @@ language: generic
 env:
   matrix:
   - MYCONDAPY=2.7
+  - MYCONDAPY=3.6
   global:
     # ANACONDA_TOKEN encrypted
     secure: "P5oCCSZgfntpxwYm0pe7J0EWebQ3iF7p7+XGeE5FJoOqfQAZBZXujcaHMcej0UtyLq/IkfHabX+DURuqc8OWKQBCgy224UD+qdYnlZclfrz5M8DMp/iplbkzJsXj3zjug/br5R2YBN5tVyFQPBbJAKQ0A52rZj+avOhOt1qKEpM="
