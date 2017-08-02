@@ -1,7 +1,7 @@
 Release history
 ###############
 
-**. Version 1.2**
+**Version 1.2.0**
 
 - Switch to setuptools in setup.py.
 - Use Cython to compile the extension instead of f2py.
@@ -11,12 +11,12 @@ Release history
 - Many cleanups.
 - Fix mistake in the Kabsch algorithm.
 
-**September 09, 2014. Version 1.1**
+**Version 1.1** September 09, 2014
 
 - DLPoly history reader also works for restarted calculation.
 - Testing on Travis-CI
 - Various small improvements
 
-**June 5, 2013. Version 1.0**
+**Version 1.0** June 5, 2013
 
 - First stable release of MolMod on Github.

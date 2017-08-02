@@ -3,7 +3,7 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
+SPHINXBUILD   = PYTHONPATH=../:./:$(PYTHONPATH) sphinx-build
 PAPER         =
 BUILDDIR      = _build
 
@@ -27,10 +27,13 @@ help:
 	@echo "  linkcheck to check all external links for integrity"
 	@echo "  doctest   to run all doctests embedded in the documentation (if enabled)"
 
+autogendoc:
+	cd ..; python setup.py build_ext -i
+
 clean:
 	-rm -rf $(BUILDDIR)/*
 
-html:
+html: autogendoc
 	mkdir -p $(BUILDDIR)/html _static
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
