@@ -29,8 +29,8 @@ import sys
 from glob import glob
 
 import numpy as np
-from numpy.distutils.core import setup
-from numpy.distutils.extension import Extension
+from distutils.core import setup
+from distutils.extension import Extension
 from distutils.command.install_data import install_data
 import Cython.Build
 
