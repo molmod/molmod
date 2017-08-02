@@ -466,13 +466,11 @@ def superpose(ras, rbs, weights=None):
     else:
         weights = weights.reshape((-1, 1))
         A = np.dot(((rbs-mb)*weights).transpose(), (ras-ma)*weights)
-    U, W, Vt = np.linalg.svd(A)
-    W[0] = 1
-    W[1] = 1
-    W[2] = 1
-    if np.linalg.det(A) < 0:
-        W[2] = -1
-    r = np.dot(Vt.transpose()*W, U.transpose())
+    v, s, wt = np.linalg.svd(A)
+    s[:] = 1
+    if np.linalg.det(np.dot(v, wt)) < 0:
+        s[2] = -1
+    r = np.dot(wt.T*s, v.T)
     return Complete(r, np.dot(r, -mb) + ma)
 
 
