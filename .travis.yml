@@ -111,4 +111,4 @@ deploy:
   on:
     repo: molmod/molmod
     condition: "$MYCONDAPY == 2.7"
-    branch: master
+    tags: true
