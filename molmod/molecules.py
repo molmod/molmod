@@ -23,8 +23,6 @@
 """Representation, analysis and manipulation of molecular systems."""
 
 
-from StringIO import StringIO
-
 import numpy as np
 
 from molmod.periodic import periodic

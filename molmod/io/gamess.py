@@ -25,7 +25,6 @@
 
 import numpy as np
 
-from molmod.molecules import Molecule
 from molmod.units import angstrom, amu
 
 

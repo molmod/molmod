@@ -23,7 +23,6 @@
 
 
 import os
-import unittest
 
 import pkg_resources
 

@@ -25,7 +25,7 @@
 
 import numpy as np
 
-from molmod.io.common import SlicedReader, FileFormatError
+from molmod.io.common import SlicedReader
 
 
 __all__ = ["CPMDTrajectoryReader"]

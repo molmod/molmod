@@ -23,7 +23,6 @@
 """Tools for generating CP2K input files and a Reader for unit cell trajectories"""
 
 
-from molmod.units import angstrom
 from molmod.io.common import FileFormatError
 
 

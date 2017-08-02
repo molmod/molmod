@@ -22,7 +22,6 @@
 #--
 
 
-import os
 import unittest
 
 import numpy as np
@@ -30,8 +29,6 @@ from nose.plugins.skip import SkipTest
 import pkg_resources
 
 from molmod import *
-from molmod.bonds import BOND_SINGLE
-
 
 
 __all__ = ["MolecularGraphTestCase"]

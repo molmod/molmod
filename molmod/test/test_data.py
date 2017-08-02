@@ -26,7 +26,6 @@ import unittest
 
 from molmod import *
 from molmod.periodic import periodic
-from molmod.bonds import bonds, BOND_SINGLE
 from molmod.isotopes import ame2003, nubtab03
 
 

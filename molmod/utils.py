@@ -45,8 +45,6 @@
 """Utilities that are used in all parts of the MolMod library"""
 
 
-import types
-
 import numpy as np
 
 

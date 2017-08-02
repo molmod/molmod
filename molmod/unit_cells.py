@@ -25,7 +25,6 @@
 
 import numpy as np
 
-from molmod.units import angstrom
 from molmod.utils import cached, ReadOnly, ReadOnlyAttribute
 
 

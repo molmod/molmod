@@ -22,9 +22,6 @@
 #--
 
 
-import copy
-import unittest
-
 import numpy as np
 
 from molmod.test.common import BaseTestCase
