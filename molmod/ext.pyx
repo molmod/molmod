@@ -101,6 +101,8 @@ def ff_bond_quad(double[:, ::1] cor not None, long[:, ::1] pairs not None,
         raise TypeError('cor argument must have three columns.')
     if pairs.shape[1] != 2:
         raise TypeError('pairs argument must have two columns.')
+    if np.asarray(pairs).min() < 0 or np.asarray(pairs).max() >= cor.shape[0]:
+        raise ValueError('The pairs array contains atom indexes that are out of bounds.')
     if lengths.shape[0] != npair:
         raise TypeError('lengths must have shape (npair,).')
     if gradient.shape[0] != cor.shape[0] or gradient.shape[1] != cor.shape[1]:
@@ -130,6 +132,8 @@ def ff_bond_hyper(double[:, ::1] cor not None, long[:, ::1] pairs not None,
         raise TypeError('cor argument must have three columns.')
     if pairs.shape[1] != 2:
         raise TypeError('pairs argument must have two columns.')
+    #if np.asarray(pairs).min() < 0 or np.asarray(pairs).max() >= cor.shape[0]:
+    #    raise ValueError('The pairs array contains atom indexes that are out of bounds.')
     if lengths.shape[0] != npair:
         raise TypeError('lengths must have shape (npair,).')
     if gradient.shape[0] != cor.shape[0] or gradient.shape[1] != cor.shape[1]:
