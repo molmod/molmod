@@ -1,27 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
-# for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
-# reserved unless otherwise stated.
-#
-# This file is part of MolMod.
-#
-# MolMod is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 3
-# of the License, or (at your option) any later version.
-#
-# MolMod is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, see <http://www.gnu.org/licenses/>
-#
-#--
-#!/usr/bin/env python
+
+from __future__ import print_function
 
 from molmod import *
 
@@ -32,7 +11,7 @@ mol.set_default_graph()
 # 1) Build a list of atom indexes involved in angles.
 angles = []
 # First loop over all atoms on the molecule.
-for i1 in xrange(mol.size):
+for i1 in range(mol.size):
     # For each atom we will find all bending angles centered at the current
     # atom. For this we construct (an ordered!) list of all bonded neighbors.
     n = list(mol.graph.neighbors[i1])
@@ -45,11 +24,11 @@ for i1 in xrange(mol.size):
             angles.append((i0, i1, i2))
 
 # 2) Iterate over all angles, compute and print.
-print "An overview of all bending angles in dopamine:"
+print("An overview of all bending angles in dopamine:")
 for i0, i1, i2 in angles:
     # Notice again the [0] at the end.
     angle = bend_angle(mol.coordinates[[i0, i1, i2]])[0]
     # Python formatting of the indexes, symbols, and the angle in degrees.
-    print "%2i %2i %2i    %2s %2s %2s    %5.1f" % (
+    print("%2i %2i %2i    %2s %2s %2s    %5.1f" % (
         i0, i1, i2, mol.symbols[i0], mol.symbols[i1], mol.symbols[i2], angle/deg
-    )
+    ))

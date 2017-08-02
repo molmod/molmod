@@ -1,27 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
-# for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
-# reserved unless otherwise stated.
-#
-# This file is part of MolMod.
-#
-# MolMod is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 3
-# of the License, or (at your option) any later version.
-#
-# MolMod is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, see <http://www.gnu.org/licenses/>
-#
-#--
-#!/usr/bin/env python
+
+from __future__ import print_function
 
 from molmod import *
 
@@ -48,11 +27,11 @@ mol.set_default_graph()
 # 3) Print all edges, i.e. bonds in the graph. The edges list is ordered and
 # each item is a frozenset with two elements to stress the undericted nature of
 # the molecular graphs.
-print "All edges (or bonds)"
-print mol.graph.edges
-print
+print("All edges (or bonds)")
+print(mol.graph.edges)
+print()
 # Print the third bond.
-print "The third bond:", mol.graph.edges[2]
+print("The third bond:", mol.graph.edges[2])
 # It is not possible to access only one of the two atom indexes of an edge. The
 # following won't work because a frozenset is like unordered list.
 #
@@ -60,7 +39,7 @@ print "The third bond:", mol.graph.edges[2]
 #
 # One can get both indexes of an edge at the same time:
 i, j = mol.graph.edges[2]
-print "The indexes of the second bond:", i, "and", j
+print("The indexes of the second bond:", i, "and", j)
 # It is not possible to know a priori which number is assigned to i and which to
 # j.
 
@@ -74,6 +53,6 @@ print "The indexes of the second bond:", i, "and", j
 # but is a little more compact.
 for i, j in mol.graph.edges:
     if mol.numbers[i] == 6 and mol.numbers[j] == 1:
-        print "C-H bond:", i, j
+        print("C-H bond:", i, j)
     elif mol.numbers[j] == 6 and mol.numbers[i] == 1:
-        print "C-H bond:", j, i
+        print("C-H bond:", j, i)
