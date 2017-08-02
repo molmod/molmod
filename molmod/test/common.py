@@ -22,7 +22,9 @@
 #--
 
 
-import unittest, tempfile, shutil
+import unittest
+import tempfile
+import shutil
 from contextlib import contextmanager
 
 

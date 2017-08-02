@@ -22,7 +22,14 @@
 #--
 
 
-import sys, os, datetime, getpass, time, codecs, locale, functools
+import sys
+import os
+import datetime
+import getpass
+import time
+import codecs
+import locale
+import functools
 from contextlib import contextmanager
 
 from molmod.units import kjmol, kcalmol, electronvolt, angstrom, nanometer, \
