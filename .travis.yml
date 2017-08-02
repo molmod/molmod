@@ -110,5 +110,5 @@ deploy:
   local_dir: doc/_build/html
   on:
     repo: molmod/molmod
-    condition: "$MYCONDAPY == 2.7"
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
     tags: true
