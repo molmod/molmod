@@ -32,6 +32,9 @@
 """
 
 
+from __future__ import division
+
+from builtins import range
 import numpy as np
 
 from molmod.unit_cells import UnitCell
@@ -66,7 +69,7 @@ class Binning(object):
         self._bins = {}
 
         fractional = grid_cell.to_fractional(coordinates)
-        for i in xrange(len(coordinates)):
+        for i in range(len(coordinates)):
             key = tuple(fractional[i].astype(int))
             if integer_cell is not None:
                 key = self.wrap_key(key)
@@ -86,7 +89,7 @@ class Binning(object):
 
     def __iter__(self):
         """Iterate over (key,bin) pairs"""
-        return self._bins.iteritems()
+        return iter(self._bins.items())
 
     def iter_surrounding(self, center_key):
         """Iterate over all bins surrounding the given bin"""

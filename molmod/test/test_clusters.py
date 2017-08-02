@@ -22,6 +22,7 @@
 #--
 
 
+from builtins import range
 import unittest
 
 import numpy as np
@@ -36,7 +37,7 @@ __all__ = ["ClusterTestCase"]
 class ClusterTestCase(unittest.TestCase):
     def test_even_odd(self):
         cf = ClusterFactory()
-        for counter in xrange(10000):
+        for counter in range(10000):
             a = np.random.randint(0, 200)
             b = np.random.randint(0, 200)
             if (a+b)%2 == 0:
@@ -59,7 +60,7 @@ class ClusterTestCase(unittest.TestCase):
         cf.add_related(RuleCluster(["u", "v"], ["u=v"]))
         clusters = list(cf.get_clusters())
         self.assertEqual(len(clusters), 2)
-        clusters.sort(lambda x,y: cmp(len(x.items),len(y.items)))
+        clusters.sort(key=lambda x: len(x.items))
         for cluster in clusters:
             cluster.rules.sort()
         self.assertEqual(clusters[0].items, set(["u", "v"]))

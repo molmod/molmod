@@ -27,6 +27,8 @@
 """
 
 
+from builtins import range
+from builtins import object
 import numpy as np
 
 from molmod.units import angstrom
@@ -53,9 +55,9 @@ class SDFReader(object):
            Argument:
             | ``f``  --  a filename or a file-like object
         """
-        if isinstance(f, basestring):
+        if isinstance(f, str):
             self.filename = f
-            self.f = file(f)
+            self.f = open(f)
             self._auto_close = True
         else:
             # try to treat f as a file-like object and hope for the best.
@@ -69,20 +71,20 @@ class SDFReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         """Load the next molecule from the SDF file
 
            This method is part of the iterator protocol.
         """
         while True:
-            title = self.f.next()
+            title = next(self.f)
             if len(title) == 0:
                 raise StopIteration
             else:
                 title = title.strip()
-            self.f.next() # skip line
-            self.f.next() # skip empty line
-            words = self.f.next().split()
+            next(self.f) # skip line
+            next(self.f) # skip empty line
+            words = next(self.f).split()
             if len(words) < 2:
                 raise FileFormatError("Expecting at least two numbers at fourth line.")
             try:
@@ -93,8 +95,8 @@ class SDFReader(object):
 
             numbers = np.zeros(num_atoms, int)
             coordinates = np.zeros((num_atoms, 3), float)
-            for i in xrange(num_atoms):
-                words = self.f.next().split()
+            for i in range(num_atoms):
+                words = next(self.f).split()
                 if len(words) < 4:
                     raise FileFormatError("Expecting at least four words on an atom line.")
                 try:
@@ -111,8 +113,8 @@ class SDFReader(object):
 
             edges = []
             orders = np.zeros(num_bonds, int)
-            for i in xrange(num_bonds):
-                words = self.f.next().split()
+            for i in range(num_bonds):
+                words = next(self.f).split()
                 if len(words) < 3:
                     raise FileFormatError("Expecting at least three numbers on a bond line.")
                 try:
@@ -123,7 +125,7 @@ class SDFReader(object):
 
             formal_charges = np.zeros(len(numbers), int)
 
-            line = self.f.next()
+            line = next(self.f)
             while line != "M  END\n":
                 if line.startswith("M  CHG"):
                     words = line[6:].split()[1:] # drop the first number which is the number of charges
@@ -134,7 +136,7 @@ class SDFReader(object):
                         except ValueError:
                             raise FileFormatError("Expecting only integer formal charges.")
                         i += 2
-                line = self.f.next()
+                line = next(self.f)
 
             # Read on to the next molecule
             for line in self.f:

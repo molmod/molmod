@@ -16,7 +16,7 @@ Dependencies
 
 The following software is used by MolMod:
 
-* Python >=2.7, <3.0 (including the development files): http://www.python.org/doc/
+* Python >=2.7 (including the development files): http://www.python.org/doc/
 * A C compiler e.g. gcc: http://gcc.gnu.org/
 * Numpy >=1.0 or later: http://numpy.scipy.org/
 * Cython >=0.24.1: http://cython.org/

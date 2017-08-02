@@ -1,6 +1,10 @@
 Release history
 ###############
 
+**Version 1.3.0**
+
+- Python 3 support.
+
 **Version 1.2.1** August 2, 2017
 
 - Switch to setuptools in setup.py.

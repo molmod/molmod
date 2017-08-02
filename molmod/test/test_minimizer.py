@@ -22,6 +22,7 @@
 #--
 
 
+from builtins import range
 import numpy as np
 from nose.plugins.skip import SkipTest
 
@@ -76,7 +77,7 @@ class MinimizerTestCase(BaseTestCase):
     def check_min(self, x_opt, step_rms, grad_rms):
         # check if it is really the minimum by computing small displacements
         f_opt = fun(x_opt)
-        for i in xrange(100):
+        for i in range(100):
             delta = np.random.normal(0, 1, 2)
             delta /= np.linalg.norm(delta)
             delta *= np.sqrt(len(delta))
@@ -252,7 +253,7 @@ class MinimizerTestCase(BaseTestCase):
         prec_fun.scales = abs(evals) + 1.0
         prec_fun.rotation = evecs
 
-        for i in xrange(20):
+        for i in range(20):
             orig = np.random.normal(0, 1, 2)
             check = prec_fun.do(prec_fun.undo(orig))
             self.assertArraysAlmostEqual(orig, check)

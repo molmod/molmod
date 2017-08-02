@@ -22,6 +22,7 @@
 #--
 
 
+from builtins import range
 import numpy as np
 import pkg_resources
 
@@ -43,7 +44,7 @@ class MoleculeTestCase(BaseTestCase):
         self.assert_((abs(molecule.distance_matrix - dm) < 1e-5).all(), "Wrong distance matrix")
 
     def test_distance_matrix_periodic(self):
-        for i in xrange(1000):
+        for i in range(1000):
             N = 6
             unit_cell = UnitCell(
                 np.random.uniform(0,1,(3,3)),
@@ -54,8 +55,8 @@ class MoleculeTestCase(BaseTestCase):
             from molmod.ext import molecules_distance_matrix
             dm = molecules_distance_matrix(coordinates, unit_cell.matrix,
                                            unit_cell.reciprocal)
-            for i in xrange(N):
-                for j in xrange(i,N):
+            for i in range(N):
+                for j in range(i,N):
                     delta = coordinates[j]-coordinates[i]
                     delta = unit_cell.shortest_vector(delta)
                     distance = np.linalg.norm(delta)
@@ -89,7 +90,7 @@ class MoleculeTestCase(BaseTestCase):
         molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
         molecule.set_default_masses()
         expected_com = 0
-        for i in xrange(3):
+        for i in range(3):
             expected_com += molecule.masses[i]*molecule.coordinates[i]
         expected_com /= molecule.mass
         self.assertArraysAlmostEqual(molecule.com, expected_com)

@@ -22,6 +22,8 @@
 #--
 
 
+from __future__ import division
+
 import unittest
 
 import pkg_resources

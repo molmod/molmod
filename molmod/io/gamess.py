@@ -23,6 +23,9 @@
 """Tools for reading Gamess punch files"""
 
 
+from __future__ import division
+
+from builtins import range
 import numpy as np
 
 from molmod.units import angstrom, amu
@@ -56,20 +59,19 @@ class PunchFile(object):
             FirstDataParser(), CoordinateParser(), EnergyGradParser(),
             SkipApproxHessian(), HessianParser(), MassParser(),
         ]
-        f = file(filename)
-        while True:
-            line = f.readline()
-            if line == "":
-                break
-            # at each line, a parsers checks if it has to process a piece of
-            # file. If that happens, the parser gets control over the file
-            # and reads as many lines as it needs to collect data for some
-            # attributes.
-            for parser in parsers:
-                if parser.test(line, data):
-                    parser.read(line, f, data)
+        with open(filename) as f:
+            while True:
+                line = f.readline()
+                if line == "":
                     break
-        f.close()
+                # at each line, a parsers checks if it has to process a piece of
+                # file. If that happens, the parser gets control over the file
+                # and reads as many lines as it needs to collect data for some
+                # attributes.
+                for parser in parsers:
+                    if parser.test(line, data):
+                        parser.read(line, f, data)
+                        break
         self.__dict__.update(data)
 
 
@@ -149,7 +151,7 @@ class CoordinateParser(PunchParser):
         if coordinates is None:
             coordinates = np.zeros((N,3), float)
             data["coordinates"] = coordinates
-        for i in xrange(N):
+        for i in range(N):
             words = f.readline().split()
             numbers[i] = int(float(words[1]))
             coordinates[i,0] = float(words[2])*angstrom
@@ -173,7 +175,7 @@ class EnergyGradParser(PunchParser):
         if gradient is None:
             gradient = np.zeros((N,3), float)
             data["gradient"] = gradient
-        for i in xrange(N):
+        for i in range(N):
             words = f.readline().split()
             gradient[i,0] = float(words[2])
             gradient[i,1] = float(words[3])
@@ -215,7 +217,7 @@ class HessianParser(PunchParser):
             if line == " $END\n":
                 break
             line = line[5:-1]
-            for j in xrange(len(line)/15):
+            for j in range(len(line)//15):
                 tmp[counter] = float(line[j*15:(j+1)*15])
                 counter += 1
         data["hessian"] = hessian

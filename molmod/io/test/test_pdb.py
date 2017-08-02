@@ -22,6 +22,8 @@
 #--
 
 
+from __future__ import division
+
 import pkg_resources
 
 from molmod.test.common import *
@@ -56,9 +58,8 @@ class PDBTestCase(BaseTestCase):
                 resnames=["HOH", "HOH", "HOH"], chain_ids=["A", "A", "A"],
                 occupancies=[1.0, 0.5, 1.0], betas=[41.2, 78.1, 0.25]
             )
-            f = file("%s/test.pdb" % dn)
-            content = "".join(f)
-            f.close()
+            with open("%s/test.pdb" % dn) as f:
+                content = "".join(f)
             expected_content = "ATOM      1  OT  HOH A   2      -0.529   0.000   " \
                                "0.000  1.00 41.20          O   \nATOM      2  HT " \
                                " HOH A   2       0.000   0.000   0.000  0.50 78.1" \

@@ -22,6 +22,8 @@
 #--
 
 
+from __future__ import print_function
+
 import unittest
 
 import pkg_resources
@@ -49,7 +51,7 @@ class CP2KTestCase(unittest.TestCase):
         del cp2k_input["MOTION"]["MD"]["ENSEMBLE"]
         self.assert_(cp2k_input._consistent())
         try:
-            print cp2k_input["MOTION"]["MD"]["ENSEMBLE"].value
+            print(cp2k_input["MOTION"]["MD"]["ENSEMBLE"].value)
             self.fail("CP2KKeyword ENSEMBLE should no longer exist.")
         except KeyError:
             pass
@@ -121,9 +123,7 @@ class CP2KTestCase(unittest.TestCase):
         cp2k_input = CP2KInputFile.read_from_file(pkg_resources.resource_filename(__name__, "../../data/test/water_md.inp"))
         with tmpdir() as dn:
             cp2k_input.write_to_file("%s/water_md.inp" % dn)
-            f1 = file(pkg_resources.resource_filename(__name__, "../../data/test/water_md.inp"))
-            f2 = file("%s/water_md.inp" % dn)
-            for line1, line2 in zip(f1, f2):
-                self.assertEqual(line1, line2)
-            f1.close()
-            f2.close()
+            with open(pkg_resources.resource_filename(__name__, "../../data/test/water_md.inp")) as f1, \
+                 open("%s/water_md.inp" % dn) as f2:
+                for line1, line2 in zip(f1, f2):
+                    self.assertEqual(line1, line2)

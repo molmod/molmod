@@ -22,6 +22,8 @@
 #--
 
 
+from __future__ import print_function, division
+
 import sys
 import os
 import datetime
@@ -247,7 +249,7 @@ class ScreenLog(object):
 
     def set_file(self, f):
         # Wrap sys.stdout into a StreamWriter to allow writing unicode.
-        self._file = codecs.getwriter(locale.getpreferredencoding())(f)
+        self._file = f
         self.add_newline = False
 
     def set_level(self, level):
@@ -256,7 +258,7 @@ class ScreenLog(object):
         self._level = level
 
     def __call__(self, *words):
-        s = u' '.join(unicode(w) for w in words)
+        s = u' '.join(str(w) for w in words)
         if not self.do_warning:
             raise RuntimeError('The runlevel should be at least warning when logging.')
         if not self._active:
@@ -264,7 +266,7 @@ class ScreenLog(object):
             self.print_header()
             self.prefix = prefix
         if self.add_newline and self.prefix != self._last_used_prefix:
-            print >> self._file
+            self._file.write(u'\n')
             self.add_newline = False
         # Check for alignment code '&'
         pos = s.find(u'&')
@@ -275,7 +277,7 @@ class ScreenLog(object):
             lead = s[:pos] + ' '
             rest = s[pos+1:]
         width = self.width - len(lead)
-        if width < self.width/2:
+        if width < self.width//2:
             raise ValueError('The lead may not exceed half the width of the terminal.')
         # break and print the line
         first = True
@@ -291,14 +293,14 @@ class ScreenLog(object):
             else:
                 current = rest
                 rest = u''
-            print >> self._file, u'%s %s%s' % (self.prefix, lead, current)
+            self._file.write(u'%s %s%s\n' % (self.prefix, lead, current))
             if first:
                 lead = u' '*len(lead)
                 first = False
         self._last_used_prefix = self.prefix
 
     def warn(self, *words):
-        self(u'WARNING!!&'+u' '.join(unicode(w) for w in words))
+        self(u'WARNING!!&'+u' '.join(str(w) for w in words))
 
     def hline(self, char='~'):
         self(char*self.width)
@@ -312,13 +314,13 @@ class ScreenLog(object):
             edge = kwargs['edge']
         else:
             raise TypeError('Too many keyword arguments. Should be at most one.')
-        s = u' '.join(unicode(w) for w in words)
+        s = u' '.join(str(w) for w in words)
         if len(s) + 2*len(edge) > self.width:
             raise ValueError('Line too long. center method does not support wrapping.')
         self('%s%s%s' % (edge, s.center(self.width-2*len(edge)), edge))
 
     def blank(self):
-        print >> self._file
+        self._file.write(u'\n')
 
     def _enter(self, prefix):
         if len(prefix) > self.margin-1:
@@ -355,7 +357,7 @@ class ScreenLog(object):
 
         if self.do_warning and not self._active:
             self._active = True
-            print >> self._file, self.head_banner
+            print(self.head_banner, file=self._file)
             self._print_basic_info()
             self.unitsys.log_info(self)
 
@@ -364,7 +366,7 @@ class ScreenLog(object):
             self._print_basic_info()
             self.timer._stop('Total')
             self.timer.report(self)
-            print >> self._file, self.foot_banner
+            print(self.foot_banner, file=self._file)
 
     def _print_basic_info(self):
         if self.do_low:
@@ -421,7 +423,7 @@ class TimerGroup(object):
         self._start('Total')
 
     def reset(self):
-        for timer in self.parts.itervalues():
+        for timer in self.parts.values():
             timer.total.cpu = 0.0
             timer.own.cpu = 0.0
 
@@ -455,7 +457,7 @@ class TimerGroup(object):
 
     def get_max_own_cpu(self):
         result = None
-        for part in self.parts.itervalues():
+        for part in self.parts.values():
             if result is None or result < part.own.cpu:
                 result = part.own.cpu
         return result
@@ -470,7 +472,7 @@ class TimerGroup(object):
             log('Label             Total      Own')
             log.hline()
             bar_width = log.width-33
-            for label, timer in sorted(self.parts.iteritems()):
+            for label, timer in sorted(self.parts.items()):
                 #if timer.total.cpu == 0.0:
                 #    continue
                 if max_own_cpu > 0:

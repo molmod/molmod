@@ -43,9 +43,9 @@ class CPMDTestCase(BaseTestCase):
 
         ctr = CPMDTrajectoryReader(pkg_resources.resource_filename(__name__, "../../data/test/TRAJECTORY_H2_CPMD"), slice(2,10,2))
         self.assertEqual(ctr.num_atoms, 2)
-        pos, vel = ctr.next()
+        pos, vel = next(ctr)
         self.assertAlmostEqual(pos[0,0], 8.28262598957809)
         self.assertAlmostEqual(vel[0,2], 0.00010143872376)
-        pos, vel = ctr.next()
+        pos, vel = next(ctr)
         self.assertAlmostEqual(pos[1,1], 7.55433910653197)
         self.assertAlmostEqual(vel[-1,-1], -0.00010042196797)

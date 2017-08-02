@@ -20,8 +20,11 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 #--
-"""Common functionality used by the molmod.io package
-"""
+"""Common functionality used by the molmod.io package."""
+
+
+from builtins import object
+
 
 __all__ = ["slice_match", "FileFormatError", "SlicedReader"]
 
@@ -68,12 +71,12 @@ class SlicedReader(object):
             | ``sub``  --  a slice indicating which frames to read/skip
 
         """
-        if isinstance(f, file):
+        if isinstance(f, str):
+            self._auto_close = True
+            self._f = open(f)
+        else:
             self._auto_close = False
             self._f = f
-        else:
-            self._auto_close = True
-            self._f = file(f)
         self._sub = sub
         self._counter = 0
 
@@ -93,7 +96,7 @@ class SlicedReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         """Get the next frame from the file, taking into account the slice
 
            This method is part of the iterator protocol.

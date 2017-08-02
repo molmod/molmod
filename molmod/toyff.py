@@ -200,7 +200,7 @@ class ToyFF(object):
 
         span_edges = []
         span_lengths = []
-        for i, neighbors in graph.neighbors.iteritems():
+        for i, neighbors in graph.neighbors.items():
             number_i = graph.numbers[i]
             if (number_i >= 5 and number_i <=8):
                 valence = len(neighbors) + abs(number_i-6)
@@ -295,8 +295,8 @@ class SpecialAngles(object):
         with pkg_resources.resource_stream(__name__, 'data/toyff_angles.txt') as f:
             for line in f:
                 if line[0] != '#':
-                    key = tuple(int(word) for word in line[0:line.index(':')].split(","))
-                    value = np.pi/180.0*float(line[line.index(':')+1:-1])
+                    key = tuple(int(word) for word in line[0:line.index(b':')].split(b","))
+                    value = np.pi/180.0*float(line[line.index(b':')+1:-1])
                     self._angle_dict[key] = value
 
     def get_angle(self, triplet):

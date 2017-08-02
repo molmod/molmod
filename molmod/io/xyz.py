@@ -23,8 +23,12 @@
 """Tools for reading and writing XYZ trajectory files"""
 
 
-from itertools import izip
+from __future__ import print_function
 
+
+from __future__ import division
+
+from builtins import range
 import numpy as np
 
 from molmod.io.common import SlicedReader, FileFormatError
@@ -100,7 +104,7 @@ class XYZReader(SlicedReader):
         if self.symbols is None:
             symbols = []
         coordinates = np.zeros((size, 3), float)
-        for counter in xrange(size):
+        for counter in range(size):
             line = self._f.readline()
             if len(line) == 0:
                 raise StopIteration
@@ -123,7 +127,7 @@ class XYZReader(SlicedReader):
     def _skip_frame(self):
         """Skip a single frame from the trajectory"""
         size = self.read_size()
-        for i in xrange(size+1):
+        for i in range(size+1):
             line = self._f.readline()
             if len(line) == 0:
                 raise StopIteration
@@ -160,12 +164,12 @@ class XYZWriter(object):
             | ``file_unit``  --  the unit of the values written to file
                                  [default=angstrom]
         """
-        if isinstance(f, file):
+        if isinstance(f, str):
+            self._auto_close = True
+            self._f = open(f, 'w')
+        else:
             self._auto_close = False
             self._f = f
-        else:
-            self._auto_close = True
-            self._f = file(f, 'w')
         self.symbols = symbols
         self.file_unit = file_unit
 
@@ -180,10 +184,10 @@ class XYZWriter(object):
             | ``title``  --  the title of the frame
             | ``coordinates``  --  a numpy array with coordinates in atomic units
         """
-        print >> self._f, "% 8i" % len(self.symbols)
-        print >> self._f, str(title)
+        print("% 8i" % len(self.symbols), file=self._f)
+        print(str(title), file=self._f)
         for symbol, coordinate in zip(self.symbols, coordinates):
-            print >> self._f, "% 2s % 12.9f % 12.9f % 12.9f" % ((symbol, ) + tuple(coordinate/self.file_unit))
+            print("% 2s % 12.9f % 12.9f % 12.9f" % ((symbol, ) + tuple(coordinate/self.file_unit)), file=self._f)
 
 
 class XYZFile(object):
@@ -226,7 +230,7 @@ class XYZFile(object):
             if start is None: start = 0
             step = sub.step
             if step is None: step = 1
-            count = (sub.stop - start + step - 1)/step
+            count = (sub.stop - start + step - 1)//step
             self.geometries = np.zeros((count, len(self.numbers), 3), float)
 
             for counter, (title, coordinates) in enumerate(xyz_reader):
@@ -259,5 +263,5 @@ class XYZFile(object):
                                  [default=angstrom]
         """
         xyz_writer = XYZWriter(f, self.symbols, file_unit=file_unit)
-        for title, coordinates in izip(self.titles, self.geometries):
+        for title, coordinates in zip(self.titles, self.geometries):
             xyz_writer.dump(title, coordinates)

@@ -22,6 +22,8 @@
 #--
 
 
+from __future__ import print_function
+
 import pkg_resources
 
 from molmod.io import *
@@ -80,8 +82,8 @@ def test_crystal_quartz():
     assert abs(cryout.basisset['O'][0][1][5][0] - 5.800E+00) < 1e-1
     assert abs(cryout.basisset['O'][1][1][2][1] - 1.980E+00) < 1e-4
     # density matrix
-    print cryout.density_matrix[:5,:5]
+    print(cryout.density_matrix[:5,:5])
     assert cryout.density_matrix[0,0] == 0.0
     assert abs(cryout.density_matrix[2,2] - 2.1646E-02) < 1e-5
-    print cryout.density_matrix[1,4]
+    print(cryout.density_matrix[1,4])
     assert abs(cryout.density_matrix[4,1] - -1.9742E-01) < 1e-4

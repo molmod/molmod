@@ -22,6 +22,9 @@
 #--
 
 
+from __future__ import print_function
+
+from builtins import range
 import copy
 import unittest
 
@@ -298,7 +301,7 @@ class GraphTestCase(unittest.TestCase):
         for case in self.iter_cases():
             g = case.graph
             counter = 0
-            for central, neighbors in g.neighbors.iteritems():
+            for central, neighbors in g.neighbors.items():
                 for neighbor in neighbors:
                     counter += 1
                     self.assert_(frozenset([central,neighbor]) in g.edges)
@@ -326,7 +329,7 @@ class GraphTestCase(unittest.TestCase):
             new_edges = tuple((permutation[i], permutation[j]) for i,j in g0.edges)
             g1 = Graph(new_edges, g0.num_vertices)
             self.assert_((g0.fingerprint==g1.fingerprint).all())
-            for i in xrange(g0.num_vertices):
+            for i in range(g0.num_vertices):
                 self.assert_((g0.vertex_fingerprints[i]==g1.vertex_fingerprints[permutation[i]]).all())
 
     def test_symmetries(self):
@@ -348,7 +351,7 @@ class GraphTestCase(unittest.TestCase):
                         # all cycles lengths must have a common divisor > 1
                         max_cycle_len = max(len(cycle) for cycle in cycles)
                         #print max_cycle_len
-                        for divisor in xrange(2, max_cycle_len+1):
+                        for divisor in range(2, max_cycle_len+1):
                             ok = True
                             for cycle in cycles:
                                 if len(cycle)%divisor != 0:
@@ -390,7 +393,7 @@ class GraphTestCase(unittest.TestCase):
                     for vertex in sub:
                         s = equivalent_vertices.setdefault(vertex, set([]))
                         s.update(sub)
-            for vertex in xrange(g.num_vertices):
+            for vertex in range(g.num_vertices):
                 equivalent_vertices.setdefault(vertex, set([vertex]))
             self.assertEqual(equivalent_vertices, g.equivalent_vertices)
 
@@ -578,26 +581,23 @@ class GraphTestCase(unittest.TestCase):
     # match generator related tests
 
     def check_graph_search(self, pattern, verbose=False, debug=False, callback=None):
-        if verbose: print
+        if verbose: print()
         graph_search = GraphSearch(
             pattern,
             debug=debug
         )
         cases = self.iter_cases()
         for case in cases:
-            if verbose: print
-            if verbose: print
-            if verbose: print "GRAPH %s" % case.name
+            if verbose: print()
+            if verbose: print()
+            if verbose: print("GRAPH %s" % case.name)
             matches = []
-            try:
-                for match in graph_search(case.graph):
-                    matches.append(match)
-                    if verbose: print "_ _ _ _ _", match, "_ _ _ _ _"
-                if callback is not None:
-                    callback(case, matches)
-            except SubgraphPatternError:
-                if len(case.graph.independent_vertices) == 1 or not isinstance(pattern, EgoPattern):
-                    raise
+            for match in graph_search(case.graph):
+                matches.append(match)
+                if verbose:
+                    print("_ _ _ _ _", match, "_ _ _ _ _")
+            if callback is not None:
+                callback(case, matches)
 
     def test_ring_pattern(self):
         def callback(case, matches):
@@ -619,7 +619,7 @@ class GraphTestCase(unittest.TestCase):
                 if len(case.graph.independent_vertices) == 1:
                     raise
 
-            graph_search(case.graph).next()
+            next(graph_search(case.graph))
 
     def test_start_vertex(self):
         subject_graph = Graph([(0,1),(1,2),(1,3),(2,4)])
@@ -651,7 +651,7 @@ class GraphTestCase(unittest.TestCase):
             b = match.forward[1]
             s = collection.setdefault(a, set([]))
             s.add(b)
-        for bs in collection.itervalues():
+        for bs in collection.values():
             self.assertEqual(len(bs), 3)
 
     def test_rings_zeolite(self):

@@ -1,27 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
-# for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
-# reserved unless otherwise stated.
-#
-# This file is part of MolMod.
-#
-# MolMod is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 3
-# of the License, or (at your option) any later version.
-#
-# MolMod is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, see <http://www.gnu.org/licenses/>
-#
-#--
-#!/usr/bin/env python
+
+from __future__ import print_function
 
 from molmod import *
 
@@ -45,10 +24,10 @@ atom_types = {
 
 # 2) loop to detect all atom types
 detected = {}
-for i in xrange(mol.size):
+for i in range(mol.size):
     # match label is going to be the label of the matching atom type.
     match_label = None
-    for label, atom_type in atom_types.iteritems():
+    for label, atom_type in atom_types.items():
         if atom_type(i, mol.graph):
             # We have a match.
             if match_label is None:
@@ -69,5 +48,5 @@ for i in xrange(mol.size):
     l.append(i)
 
 # 3) print out the detected atom types
-for label, indexes in detected.iteritems():
-    print label, indexes
+for label, indexes in detected.items():
+    print(label, indexes)

@@ -58,6 +58,8 @@
 """
 
 
+from __future__ import division
+
 from molmod.constants import avogadro
 
 
@@ -207,7 +209,7 @@ lines = [
     "    ================  ==================",
 ]
 
-for key, value in sorted(globals().iteritems()):
+for key, value in sorted(globals().items()):
     if not isinstance(value, float):
         continue
     lines.append("    %16s  %.10e" % (key, value))
@@ -222,7 +224,7 @@ lines = [
     "         ================  ==================",
 ]
 
-for key, value in sorted(shorthands.iteritems()):
+for key, value in sorted(shorthands.items()):
     if not isinstance(value, float):
         continue
     lines.append("         %16s  %.10e" % (key, value))

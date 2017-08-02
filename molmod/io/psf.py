@@ -35,6 +35,8 @@
 """
 
 
+from __future__ import print_function, division
+
 import numpy as np
 
 from molmod.periodic import periodic
@@ -82,28 +84,27 @@ class PSFFile(object):
     def read_from_file(self, filename):
         """Load a PSF file"""
         self.clear()
-        f = file(filename)
-        # A) check the first line
-        line = f.next()
-        if not line.startswith("PSF"):
-            raise FileFormatError("Error while reading: A PSF file must start with a line 'PSF'.")
-        # B) read in all the sections, without interpreting them
-        current_section = None
-        sections = {}
-        for line in f:
-            line = line.strip()
-            if line == "":
-                continue
-            elif "!N" in line:
-                words = line.split()
-                current_section = []
-                section_name = words[1][2:]
-                if section_name.endswith(":"):
-                    section_name = section_name[:-1]
-                sections[section_name] = current_section
-            else:
-                current_section.append(line)
-        f.close()
+        with open(filename) as f:
+            # A) check the first line
+            line = next(f)
+            if not line.startswith("PSF"):
+                raise FileFormatError("Error while reading: A PSF file must start with a line 'PSF'.")
+            # B) read in all the sections, without interpreting them
+            current_section = None
+            sections = {}
+            for line in f:
+                line = line.strip()
+                if line == "":
+                    continue
+                elif "!N" in line:
+                    words = line.split()
+                    current_section = []
+                    section_name = words[1][2:]
+                    if section_name.endswith(":"):
+                        section_name = section_name[:-1]
+                    sections[section_name] = current_section
+                else:
+                    current_section.append(line)
         # C) interpret the supported sections
         # C.1) The title
         self.title = sections['TITLE'][0]
@@ -153,7 +154,7 @@ class PSFFile(object):
         if group is not None:
             graph = graph.get_subgraph(group, normalize=True)
 
-        fingerprint = str(buffer(graph.fingerprint))
+        fingerprint = graph.fingerprint.tobytes()
         name = self.name_cache.get(fingerprint)
         if name is None:
             name = "NM%02i" % len(self.name_cache)
@@ -162,27 +163,26 @@ class PSFFile(object):
 
     def write_to_file(self, filename):
         """Write the data structure to a file"""
-        f = file(filename, 'w')
-        self.dump(f)
-        f.close()
+        with open(filename, 'w') as f:
+            self.dump(f)
 
     def dump(self, f):
         """Dump the data structure to a file-like object"""
         # header
-        print >> f, "PSF"
-        print >> f
+        print("PSF", file=f)
+        print(file=f)
 
         # title
-        print >> f, "      1 !NTITLE"
-        print >> f, self.title
-        print >> f
+        print("      1 !NTITLE", file=f)
+        print(self.title, file=f)
+        print(file=f)
 
         # atoms
-        print >> f, "% 7i !NATOM" % len(self.numbers)
+        print("% 7i !NATOM" % len(self.numbers), file=f)
         if len(self.numbers) > 0:
             for index, (number, atom_type, charge, name, molecule) in enumerate(zip(self.numbers, self.atom_types, self.charges, self.names, self.molecules)):
                 atom = periodic[number]
-                print >> f, "% 7i % 4s % 4i NAME % 6s % 6s % 8.4f % 12.6f 0" % (
+                print("% 7i % 4s % 4i NAME % 6s % 6s % 8.4f % 12.6f 0" % (
                     index + 1,
                     name,
                     molecule + 1,
@@ -190,68 +190,68 @@ class PSFFile(object):
                     atom_type,
                     charge,
                     atom.mass/unified,
-                )
-        print >> f
+                ), file=f)
+        print(file=f)
 
         # bonds
-        print >> f, "% 7i !NBOND" % len(self.bonds)
+        print("% 7i !NBOND" % len(self.bonds), file=f)
         if len(self.bonds) > 0:
             tmp = []
             for bond in self.bonds:
                 tmp.extend(bond+1)
                 if len(tmp) >= 8:
-                    print >> f, " ".join("% 7i" % v for v in tmp[:8])
+                    print(" ".join("% 7i" % v for v in tmp[:8]), file=f)
                     tmp = tmp[8:]
             if len(tmp) > 0:
-                print >> f, " ".join("% 7i" % v for v in tmp)
-        print >> f
+                print(" ".join("% 7i" % v for v in tmp), file=f)
+        print(file=f)
 
         # bends
-        print >> f, "% 7i !NTHETA" % len(self.bends)
+        print("% 7i !NTHETA" % len(self.bends), file=f)
         if len(self.bends) > 0:
             tmp = []
             for bend in self.bends:
                 tmp.extend(bend+1)
                 if len(tmp) >= 9:
-                    print >> f, " " + (" ".join("% 6i" % v for v in tmp[:9]))
+                    print(" " + (" ".join("% 6i" % v for v in tmp[:9])), file=f)
                     tmp = tmp[9:]
             if len(tmp) > 0:
-                print >> f, " " + (" ".join("% 6i" % v for v in tmp))
-        print >> f
+                print(" " + (" ".join("% 6i" % v for v in tmp)), file=f)
+        print(file=f)
 
         # dihedrals
-        print >> f, "% 7i !NPHI" % len(self.dihedrals)
+        print("% 7i !NPHI" % len(self.dihedrals), file=f)
         if len(self.dihedrals) > 0:
             tmp = []
             for dihedral in self.dihedrals:
                 tmp.extend(dihedral+1)
                 if len(tmp) >= 8:
-                    print >> f, " " + (" ".join("% 6i" % v for v in tmp[:8]))
+                    print(" " + (" ".join("% 6i" % v for v in tmp[:8])), file=f)
                     tmp = tmp[8:]
             if len(tmp) > 0:
-                print >> f, " " + (" ".join("% 6i" % v for v in tmp))
-        print >> f
+                print(" " + (" ".join("% 6i" % v for v in tmp)), file=f)
+        print(file=f)
 
         # impropers
-        print >> f, "% 7i !NIMPHI" % len(self.impropers)
+        print("% 7i !NIMPHI" % len(self.impropers), file=f)
         if len(self.impropers) > 0:
             tmp = []
             for improper in self.impropers:
                 tmp.extend(improper+1)
                 if len(tmp) >= 8:
-                    print >> f, " " + (" ".join("% 6i" % v for v in tmp[:8]))
+                    print(" " + (" ".join("% 6i" % v for v in tmp[:8])), file=f)
                     tmp = tmp[8:]
             if len(tmp) > 0:
-                print >> f, " " + (" ".join("% 6i" % v for v in tmp))
-        print >> f
+                print(" " + (" ".join("% 6i" % v for v in tmp)), file=f)
+        print(file=f)
 
         # not implemented fields
-        print >> f, "      0 !NDON"
-        print >> f
-        print >> f, "      0 !NNB"
-        print >> f
-        print >> f, "      0 !NGRP"
-        print >> f
+        print("      0 !NDON", file=f)
+        print(file=f)
+        print("      0 !NNB", file=f)
+        print(file=f)
+        print("      0 !NGRP", file=f)
+        print(file=f)
 
     def add_molecule(self, molecule, atom_types=None, charges=None, split=True):
         """Add the graph of the molecule to the data structure
@@ -327,11 +327,10 @@ class PSFFile(object):
     def _add_graph_bonds(self, molecular_graph, offset, atom_types, molecule):
         # add bonds
         match_generator = GraphSearch(BondPattern([CriteriaSet()]))
-        tmp = [(
+        tmp = sorted([(
             match.get_destination(0),
             match.get_destination(1),
-        ) for match in match_generator(molecular_graph)]
-        tmp.sort()
+        ) for match in match_generator(molecular_graph)])
         new = len(tmp)
         if new > 0:
             prev = len(self.bonds)
@@ -342,12 +341,11 @@ class PSFFile(object):
     def _add_graph_bends(self, molecular_graph, offset, atom_types, molecule):
         # add bends
         match_generator = GraphSearch(BendingAnglePattern([CriteriaSet()]))
-        tmp = [(
+        tmp = sorted([(
             match.get_destination(0),
             match.get_destination(1),
             match.get_destination(2),
-        ) for match in match_generator(molecular_graph)]
-        tmp.sort()
+        ) for match in match_generator(molecular_graph)])
         new = len(tmp)
         if new > 0:
             prev = len(self.bends)
@@ -358,13 +356,12 @@ class PSFFile(object):
     def _add_graph_dihedrals(self, molecular_graph, offset, atom_types, molecule):
         # add dihedrals
         match_generator = GraphSearch(DihedralAnglePattern([CriteriaSet()]))
-        tmp = [(
+        tmp = sorted([(
             match.get_destination(0),
             match.get_destination(1),
             match.get_destination(2),
             match.get_destination(3),
-        ) for match in match_generator(molecular_graph)]
-        tmp.sort()
+        ) for match in match_generator(molecular_graph)])
         new = len(tmp)
         if new > 0:
             prev = len(self.dihedrals)
@@ -377,13 +374,12 @@ class PSFFile(object):
         match_generator = GraphSearch(OutOfPlanePattern([CriteriaSet(
             vertex_criteria={0: HasNumNeighbors(3)},
         )], vertex_tags={1:1}))
-        tmp = [(
+        tmp = sorted([(
             match.get_destination(0),
             match.get_destination(1),
             match.get_destination(2),
             match.get_destination(3),
-        ) for match in match_generator(molecular_graph)]
-        tmp.sort()
+        ) for match in match_generator(molecular_graph)])
         new = len(tmp)
         if new > 0:
             prev = len(self.impropers)

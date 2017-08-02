@@ -22,6 +22,7 @@
 #--
 
 
+from builtins import range
 import numpy as np
 
 from molmod.test.common import BaseTestCase
@@ -33,17 +34,17 @@ __all__ = ["TransformationsTestCase"]
 
 class TransformationsTestCase(BaseTestCase):
     def iter_random_translations(self, n=20):
-        for i in xrange(n):
+        for i in range(n):
             yield Translation(
                 np.random.uniform(-3, 3, 3)
             )
 
     def iter_random_rotations(self, n=20):
-        for i in xrange(n):
+        for i in range(n):
             yield Rotation.random()
 
     def iter_random_completes(self, n=20):
-        for i in xrange(n):
+        for i in range(n):
             yield Complete.from_properties(
                 np.random.uniform(0,np.pi*2),
                 random_unit(),
@@ -302,7 +303,7 @@ class TransformationsTestCase(BaseTestCase):
         # create a few test sets with random data points, including degenerate
         # situations. (e.g. one point, two points, linear points)
         references = [ # a list of 2-tuples: (points, degenerate)
-            (np.random.normal(0, 5, (n, 3)), False) for n in xrange(4, 40)
+            (np.random.normal(0, 5, (n, 3)), False) for n in range(4, 40)
         ] + [
             (np.array([[0,0,1]], float), True),
             (np.array([[0,0,0],[0,0,1]], float), True),
@@ -345,7 +346,7 @@ class TransformationsTestCase(BaseTestCase):
         for (ref_points, degenerate), (tr_points, transf) in zip(references, randomized):
             transf = superpose(ref_points, tr_points)
             lowest_rmsd = compute_rmsd(ref_points, transf*tr_points)
-            for i in xrange(10):
+            for i in range(10):
                 transf_small = Complete.from_properties(0.01, random_unit(), True, np.random.normal(0,0.001,3))
                 transf_bis = transf*transf_small
                 higher_rmsd = compute_rmsd(ref_points, transf_bis*tr_points)

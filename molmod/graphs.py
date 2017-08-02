@@ -50,6 +50,9 @@
 """
 
 
+from __future__ import print_function, division
+
+from builtins import range
 import copy
 
 import numpy as np
@@ -120,10 +123,10 @@ class Graph(ReadOnly):
             if len(edge) != 2:
                 raise TypeError("The edges must be a iterable with 2 elements")
             i, j = edge
+            i = int(i)
+            j = int(j)
             if i == j:
                 raise ValueError("A edge must contain two different values.")
-            if not (isinstance(i, int) and isinstance(j, int)):
-                raise TypeError("The edges must contain integers.")
             if i < 0 or j < 0:
                 raise TypeError("The edges must contain positive integers.")
             tmp.append(frozenset([i, j]))
@@ -157,7 +160,7 @@ class Graph(ReadOnly):
         if not isinstance(repeat, int):
             raise TypeError("Can only multiply a graph with an integer")
         new_edges = []
-        for i in xrange(repeat):
+        for i in range(repeat):
             for vertex1, vertex2 in self.edges:
                 new_edges.append(frozenset([
                     vertex1+i*self.num_vertices,
@@ -205,13 +208,13 @@ class Graph(ReadOnly):
         """
         neighbors = dict(
             (vertex, []) for vertex
-            in xrange(self.num_vertices)
+            in range(self.num_vertices)
         )
         for a, b in self.edges:
             neighbors[a].append(b)
             neighbors[b].append(a)
         # turn lists into frozensets
-        neighbors = dict((key, frozenset(val)) for key, val in neighbors.iteritems())
+        neighbors = dict((key, frozenset(val)) for key, val in neighbors.items())
         return neighbors
 
     @cached
@@ -259,7 +262,7 @@ class Graph(ReadOnly):
            vertex in another list. In case of a molecular graph, this would
            yield the atoms that belong to individual molecules.
         """
-        candidates = set(xrange(self.num_vertices))
+        candidates = set(range(self.num_vertices))
 
         result = []
         while len(candidates) > 0:
@@ -297,8 +300,8 @@ class Graph(ReadOnly):
            fingerprint.
         """
         return self.get_vertex_fingerprints(
-            [self.get_vertex_string(i) for i in xrange(self.num_vertices)],
-            [self.get_edge_string(i) for i in xrange(self.num_edges)],
+            [self.get_vertex_string(i) for i in range(self.num_vertices)],
+            [self.get_edge_string(i) for i in range(self.num_edges)],
         )
 
     @cached
@@ -306,7 +309,7 @@ class Graph(ReadOnly):
         """A dictionary with symmetrically equivalent vertices."""
         level1 = {}
         for i, row in enumerate(self.vertex_fingerprints):
-            key = str(buffer(row))
+            key = row.tobytes()
             l = level1.get(key)
             if l is None:
                 l = set([i])
@@ -314,7 +317,7 @@ class Graph(ReadOnly):
             else:
                 l.add(i)
         level2 = {}
-        for key, vertices in level1.iteritems():
+        for key, vertices in level1.items():
             for vertex in vertices:
                 level2[vertex] = vertices
         return level2
@@ -370,7 +373,7 @@ class Graph(ReadOnly):
             (
                 -len(self.equivalent_vertices[vertex]),
                 self.get_vertex_string(vertex),
-                str(buffer(self.vertex_fingerprints[vertex])),
+                self.vertex_fingerprints[vertex].tobytes(),
                 vertex
             ) for vertex in self.central_vertices
         )[-1]
@@ -389,7 +392,7 @@ class Graph(ReadOnly):
                 -distance,
                 -len(self.equivalent_vertices[vertex]),
                 self.get_vertex_string(vertex),
-                str(buffer(self.vertex_fingerprints[vertex])),
+                self.vertex_fingerprints[vertex].tobytes(),
                 vertex
             ] for vertex, distance in self.iter_breadth_first(starting_vertex)
             if len(self.neighbors[vertex]) > 0
@@ -414,7 +417,7 @@ class Graph(ReadOnly):
         # day, I'll need this code more than I do now, and I'll fix things up.
         # I know how to do this, but I don't care enough right now.
         # -- Toon
-        for i in xrange(1, len(l)):
+        for i in range(1, len(l)):
             if l[i][:-1] == l[i-1][:-1]:
                 raise NotImplementedError
 
@@ -576,7 +579,7 @@ class Graph(ReadOnly):
                 new_edges.append((new_i, new_j))
                 old_edge_indexes.append(counter)
             # sort the edges
-            order = range(len(new_edges))
+            order = list(range(len(new_edges)))
             # argsort in pure python
             order.sort( key=(lambda i: tuple(sorted(new_edges[i]))) )
             new_edges = [new_edges[i] for i in order]
@@ -603,17 +606,17 @@ class Graph(ReadOnly):
         """Return an array with fingerprints for each vertex"""
         import hashlib
         def str2array(x):
-            """convert a has string to a numpy array of bytes"""
+            """convert a hash string to a numpy array of bytes"""
             if len(x) == 0:
                 return np.zeros(0, np.ubyte)
             else:
-                return np.frombuffer(x, np.ubyte)
-        hashrow = lambda x: np.frombuffer(hashlib.sha1(x.data).digest(), np.ubyte)
+                return np.fromstring(x, np.ubyte)
+        hashrow = lambda x: np.fromstring(hashlib.sha1(x.data).digest(), np.ubyte)
         # initialization
         result = np.zeros((self.num_vertices, 20), np.ubyte)
-        for i in xrange(self.num_vertices):
+        for i in range(self.num_vertices):
             result[i] = hashrow(str2array(vertex_strings[i]))
-        for i in xrange(self.num_edges):
+        for i in range(self.num_edges):
             a, b = self.edges[i]
             tmp = hashrow(str2array(edge_strings[i]))
             result[a] += tmp
@@ -622,14 +625,14 @@ class Graph(ReadOnly):
         # iterations
         if num_iter is None:
             num_iter = self.max_distance
-        for i in xrange(num_iter):
+        for i in range(num_iter):
             for a, b in self.edges:
                 work[a] += result[b]
                 work[b] += result[a]
             #for a in xrange(self.num_vertices):
             #    for b in xrange(self.num_vertices):
             #        work[a] += hashrow(result[b]*self.distances[a, b])
-            for a in xrange(self.num_vertices):
+            for a in range(self.num_vertices):
                 result[a] = hashrow(work[a])
         return result
 
@@ -767,7 +770,7 @@ class Graph(ReadOnly):
 
         # finaly compute the real vertex_b_part, the former loop might break
         # early for efficiency.
-        vertex_b_part = set(xrange(self.num_vertices)) - vertex_a_part
+        vertex_b_part = set(range(self.num_vertices)) - vertex_a_part
 
         # done!
         return vertex_a_part, vertex_b_part, \
@@ -818,7 +821,7 @@ class Graph(ReadOnly):
 
         result = OneToOne()
         for match in matches:
-            result.add_relations(match.forward.iteritems())
+            result.add_relations(match.forward.items())
         return result
 
 
@@ -847,14 +850,14 @@ class OneToOne(object):
 
     def __str__(self):
         result = "|"
-        for source, destination in self.forward.iteritems():
+        for source, destination in self.forward.items():
             result += " %s -> %s |" % (source, destination)
         return result
 
     def __mul__(self, other):
         """Return the result of the 'after' operator."""
         result = OneToOne()
-        for source, mid in other.forward.iteritems():
+        for source, mid in other.forward.items():
             destination = self.forward[mid]
             result.forward[source] = destination
             result.reverse[destination] = source
@@ -930,9 +933,9 @@ class Match(OneToOne):
 
     def copy_with_new_relations(self, new_relations):
         """Create a new match object extended with new relations"""
-        result = self.__class__(self.forward.iteritems())
-        result.add_relations(new_relations.iteritems())
-        result.previous_ends1 = set(new_relations.itervalues())
+        result = self.__class__(self.forward.items())
+        result.add_relations(new_relations.items())
+        result.previous_ends1 = set(new_relations.values())
         return result
 
 
@@ -1034,11 +1037,11 @@ class CriteriaSet(object):
 
     def test_match(self, match, pattern_graph, subject_graph):
         """Test if a match satisfies the criteria"""
-        for vertex0, c in self.vertex_criteria.iteritems():
+        for vertex0, c in self.vertex_criteria.items():
             vertex1 = match.forward[vertex0]
             if not c(vertex1, subject_graph):
                 return False
-        for edge0_index, c in self.edge_criteria.iteritems():
+        for edge0_index, c in self.edge_criteria.items():
             vertex0a, vertex0b = pattern_graph.edges[edge0_index]
             edge1_index = subject_graph.edge_index[frozenset([
                 match.forward[vertex0a],
@@ -1235,7 +1238,7 @@ class CustomPattern(Pattern):
     def iter_initial_relations(self, subject_graph):
         """Iterate over all valid initial relations for a match"""
         vertex0 = self.start_vertex
-        for vertex1 in xrange(subject_graph.num_vertices):
+        for vertex1 in range(subject_graph.num_vertices):
             if self.compare(vertex0, vertex1, subject_graph):
                 yield vertex0, vertex1
 
@@ -1320,7 +1323,7 @@ class CustomPattern(Pattern):
                         match_tags = tuple(
                             self.vertex_tags.get(symmetry.reverse[vertex0])
                             for vertex0
-                            in xrange(self.pattern_graph.num_vertices)
+                            in range(self.pattern_graph.num_vertices)
                         )
                         if match_tags not in satisfied_match_tags:
                             final_match.__dict__.update(criteria_set.info)
@@ -1417,7 +1420,7 @@ class RingPattern(Pattern):
     def iter_initial_relations(self, subject_graph):
         """Iterate over all valid initial relations for a match"""
         vertex0 = 0
-        for vertex1 in xrange(subject_graph.num_vertices):
+        for vertex1 in range(subject_graph.num_vertices):
             yield vertex0, vertex1
 
     def get_new_edges(self, level):
@@ -1428,7 +1431,7 @@ class RingPattern(Pattern):
         """
         if level == 0:
             edges0 = [(0, 1), (0, 2)]
-        elif level >= (self.max_size-1)/2:
+        elif level >= (self.max_size-1)//2:
             edges0 = []
         else:
             l2 = level*2
@@ -1443,17 +1446,17 @@ class RingPattern(Pattern):
                 #print "RingPattern.check_next_match: duplicate order", match.forward[1], match.forward[2]
                 return False
         # avoid duplicate rings (starting point)
-        for vertex1 in new_relations.itervalues():
+        for vertex1 in new_relations.values():
             if vertex1 < match.forward[0]:
                 #print "RingPattern.check_next_match: duplicate start", vertex1, match.forward[0]
                 return False
         # can this ever become a strong ring?
-        for vertex1 in new_relations.itervalues():
+        for vertex1 in new_relations.values():
             paths = list(subject_graph.iter_shortest_paths(vertex1, match.forward[0]))
             if len(paths) != 1:
                 #print "RingPattern.check_next_match: not strong 1"
                 return False
-            if len(paths[0]) != (len(match)+1)/2:
+            if len(paths[0]) != (len(match)+1)//2:
                 #print "RingPattern.check_next_match: not strong 2"
                 return False
         return True
@@ -1464,22 +1467,22 @@ class RingPattern(Pattern):
         # check whether we have an odd strong ring
         if match.forward[size-1] in subject_graph.neighbors[match.forward[size-2]]:
             # we have an odd closed cycle. check if this is a strong ring
-            order = range(0, size, 2) + range(1, size-1, 2)[::-1]
+            order = list(range(0, size, 2)) + list(range(1, size-1, 2))[::-1]
             ok = True
-            for i in xrange(len(order)/2):
+            for i in range(len(order)//2):
                 # Count the number of paths between two opposite points in the
                 # ring. Since the ring has an odd number of vertices, each
                 # vertex has two semi-opposite vertices.
                 count = len(list(subject_graph.iter_shortest_paths(
                     match.forward[order[i]],
-                    match.forward[order[(i+size/2)%size]]
+                    match.forward[order[(i+size//2)%size]]
                 )))
                 if count > 1:
                     ok = False
                     break
                 count = len(list(subject_graph.iter_shortest_paths(
                     match.forward[order[i]],
-                    match.forward[order[(i+size/2+1)%size]]
+                    match.forward[order[(i+size//2+1)%size]]
                 )))
                 if count > 1:
                     ok = False
@@ -1503,12 +1506,12 @@ class RingPattern(Pattern):
             # we have an even closed cycle. check if this is a strong ring
             match.add_relation(size, path[1])
             size += 1
-            order = range(0, size, 2) + range(size-1, 0, -2)
+            order = list(range(0, size, 2)) + list(range(size-1, 0, -2))
             ok = True
-            for i in xrange(len(order)/2):
+            for i in range(len(order)//2):
                 count = len(list(subject_graph.iter_shortest_paths(
                     match.forward[order[i]],
-                    match.forward[order[(i+size/2)%size]]
+                    match.forward[order[(i+size//2)%size]]
                 )))
                 if count != 2:
                     ok = False
@@ -1583,10 +1586,10 @@ class GraphSearch(object):
         """Only prints debug info on screen when self.debug == True."""
         if self.debug:
             if indent > 0:
-                print " "*self.debug, text
+                print(" "*self.debug, text)
             self.debug += indent
             if indent <= 0:
-                print " "*self.debug, text
+                print(" "*self.debug, text)
 
     def _iter_candidate_groups(self, init_match, edges0, edges1):
         """Divide the edges into groups"""
@@ -1601,7 +1604,7 @@ class GraphSearch(object):
             start_vertex0 = init_match.reverse[start_vertex1]
             l = dests.setdefault(start_vertex0, [])
             l.append(end_vertex1)
-        for start_vertex0, end_vertices0 in sources.iteritems():
+        for start_vertex0, end_vertices0 in sources.items():
             end_vertices1 = dests.get(start_vertex0, [])
             yield end_vertices0, end_vertices1
 

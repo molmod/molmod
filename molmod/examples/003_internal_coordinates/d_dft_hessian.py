@@ -1,27 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
-# for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
-# reserved unless otherwise stated.
-#
-# This file is part of MolMod.
-#
-# MolMod is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 3
-# of the License, or (at your option) any later version.
-#
-# MolMod is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, see <http://www.gnu.org/licenses/>
-#
-#--
-#!/usr/bin/env python
+
+from __future__ import print_function
 
 import numpy
 
@@ -94,7 +73,7 @@ def setup_ics(graph):
     for i0, i1 in graph.edges:
         ics.append(BondLength(i0, i1))
     # B) Collect all bends. (see b_bending_angles.py for the explanation)
-    for i1 in xrange(graph.num_vertices):
+    for i1 in range(graph.num_vertices):
         n = list(graph.neighbors[i1])
         for index, i0 in enumerate(n):
             for i2 in n[:index]:
@@ -155,7 +134,7 @@ if __name__ == "__main__":
     # Transform to internal coordinates.
     K = numpy.dot(Jinv, numpy.dot(H, Jinv.transpose()))
     # Make a nice printout of K.
-    print "The Hessian in internal coordinates in kcal/mol/angstrom**2"
+    print("The Hessian in internal coordinates in kcal/mol/angstrom**2")
     unit = kcalmol/angstrom**2
     for row in K:
-        print " ".join("% 5.0f" % (v/unit) for v in row)
+        print(" ".join("% 5.0f" % (v/unit) for v in row))

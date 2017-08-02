@@ -23,6 +23,9 @@
 """Reader for the cube format"""
 
 
+from __future__ import print_function
+
+from builtins import range, object
 import numpy as np
 
 from molmod.molecules import Molecule
@@ -88,7 +91,7 @@ def read_cube_header(f):
     numbers = np.zeros(natom, int)
     nuclear_charges = np.zeros(natom, float)
     coordinates = np.zeros((natom, 3), float)
-    for i in xrange(natom):
+    for i in range(natom):
         numbers[i], nuclear_charges[i], coordinates[i] = read_coordinate_line(f.readline())
 
     molecule = Molecule(numbers, coordinates, title=title)
@@ -112,7 +115,7 @@ class CubeReader(object):
            Argument:
             | ``filename``  --  the filename with the formatted cube data
         """
-        self.f = file(filename)
+        self.f = open(filename)
 
         self.molecule, self.origin, self.axes, self.nrep, self.subtitle, \
             self.nuclear_charges = read_cube_header(self.f)
@@ -129,7 +132,7 @@ class CubeReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         """Read the next datapoint from the cube file
 
            This method is part of the iterator protocol.
@@ -170,21 +173,20 @@ class Cube(object):
                 The file to load. It must contain the header with the
                 description of the grid and the molecule.
         '''
-        f = file(filename)
-        molecule, origin, axes, nrep, subtitle, nuclear_charges = \
-            read_cube_header(f)
-        data = np.zeros(tuple(nrep), float)
-        tmp = data.ravel()
-        counter = 0
-        while True:
-            line = f.readline()
-            if len(line) == 0:
-                break
-            words = line.split()
-            for word in words:
-                tmp[counter] = float(word)
-                counter += 1
-        f.close()
+        with open(filename) as f:
+            molecule, origin, axes, nrep, subtitle, nuclear_charges = \
+                read_cube_header(f)
+            data = np.zeros(tuple(nrep), float)
+            tmp = data.ravel()
+            counter = 0
+            while True:
+                line = f.readline()
+                if len(line) == 0:
+                    break
+                words = line.split()
+                for word in words:
+                    tmp[counter] = float(word)
+                    counter += 1
         return cls(molecule, origin, axes, nrep, data, subtitle, nuclear_charges)
 
     def __init__(self, molecule, origin, axes, nrep, data, subtitle='', nuclear_charges=None):
@@ -223,40 +225,37 @@ class Cube(object):
 
     def write_to_file(self, fn):
         '''Write the cube to a file in the Gaussian cube format.'''
-        f = open(fn, 'w')
-        print >> f, ' ' + self.molecule.title
-        print >> f, ' ' + self.subtitle
+        with open(fn, 'w') as f:
+            f.write(' {}\n'.format(self.molecule.title))
+            f.write(' {}\n'.format(self.subtitle))
 
-        def write_grid_line(n, v):
-            print >> f, '%5i % 11.6f % 11.6f % 11.6f' % (n, v[0], v[1], v[2])
+            def write_grid_line(n, v):
+                f.write('%5i % 11.6f % 11.6f % 11.6f\n' % (n, v[0], v[1], v[2]))
 
-        write_grid_line(self.molecule.size, self.origin)
-        write_grid_line(self.data.shape[0], self.axes[0])
-        write_grid_line(self.data.shape[1], self.axes[1])
-        write_grid_line(self.data.shape[2], self.axes[2])
+            write_grid_line(self.molecule.size, self.origin)
+            write_grid_line(self.data.shape[0], self.axes[0])
+            write_grid_line(self.data.shape[1], self.axes[1])
+            write_grid_line(self.data.shape[2], self.axes[2])
 
-        def write_atom_line(n, nc, v):
-            print >> f, '%5i % 11.6f % 11.6f % 11.6f % 11.6f' % (n, nc, v[0], v[1], v[2])
+            def write_atom_line(n, nc, v):
+                f.write('%5i % 11.6f % 11.6f % 11.6f % 11.6f\n' % (n, nc, v[0], v[1], v[2]))
 
-        for i in xrange(self.molecule.size):
-            write_atom_line(self.molecule.numbers[i], self.nuclear_charges[i],
-                            self.molecule.coordinates[i])
+            for i in range(self.molecule.size):
+                write_atom_line(self.molecule.numbers[i], self.nuclear_charges[i],
+                                self.molecule.coordinates[i])
 
-        for i0 in xrange(self.data.shape[0]):
-            for i1 in xrange(self.data.shape[1]):
-                col = 0
-                for i2 in xrange(self.data.shape[2]):
-                    value = self.data[i0, i1, i2]
-                    if col % 6 == 0:
-                        print >> f, ' % 12.5e' % value,
-                    elif col % 6 == 5:
-                        print >> f, '% 12.5e' % value
-                    else:
-                        print >> f, '% 12.5e' % value,
-                    col += 1
-                if col % 6 != 5:
-                    print >> f
-        f.close()
+            for i0 in range(self.data.shape[0]):
+                for i1 in range(self.data.shape[1]):
+                    col = 0
+                    for i2 in range(self.data.shape[2]):
+                        value = self.data[i0, i1, i2]
+                        if col % 6 == 5:
+                            f.write(' % 12.5e\n' % value)
+                        else:
+                            f.write(' % 12.5e' % value)
+                        col += 1
+                    if col % 6 != 5:
+                        f.write('\n')
 
     def copy(self, newdata=None):
         '''Return a copy of the cube with optionally new data.'''

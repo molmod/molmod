@@ -23,6 +23,9 @@
 """Representation, analysis and manipulation of molecular systems."""
 
 
+from __future__ import division
+
+from builtins import range
 import numpy as np
 
 from molmod.periodic import periodic
@@ -75,7 +78,7 @@ class Molecule(ReadOnly):
             raise TypeError("The number of symbols in the graph does not "
                 "match the length of the atomic numbers array.")
         for symbol in symbols:
-            if not isinstance(symbol, basestring):
+            if not isinstance(symbol, str):
                 raise TypeError("All symbols must be strings.")
 
     numbers = ReadOnlyAttribute(np.ndarray, none=False, npdim=1, npdtype=int,
@@ -83,7 +86,7 @@ class Molecule(ReadOnly):
     coordinates = ReadOnlyAttribute(np.ndarray, npdim=2, npshape=(None,3),
         npdtype=float, check=_check_coordinates, doc="atomic Cartesian "
         "coordinates")
-    title = ReadOnlyAttribute(basestring, doc="a short description of the system")
+    title = ReadOnlyAttribute(str, doc="a short description of the system")
     masses = ReadOnlyAttribute(np.ndarray, npdim=1, npdtype=float,
         check=_check_masses, doc="the atomic masses")
     graph = ReadOnlyAttribute(MolecularGraph, check=_check_graph,
@@ -144,11 +147,11 @@ class Molecule(ReadOnly):
             return load_pdb(filename)
         elif filename.endswith(".sdf"):
             from molmod.io import SDFReader
-            return SDFReader(filename).next()
+            return next(SDFReader(filename))
         elif filename.endswith(".xyz"):
             from molmod.io import XYZReader
             xyz_reader = XYZReader(filename)
-            title, coordinates = xyz_reader.next()
+            title, coordinates = next(xyz_reader)
             return Molecule(xyz_reader.numbers, coordinates, title, symbols=xyz_reader.symbols)
         else:
             raise ValueError("Could not determine file format for %s." % filename)
@@ -176,7 +179,7 @@ class Molecule(ReadOnly):
     def inertia_tensor(self):
         """the intertia tensor of the molecule"""
         result = np.zeros((3,3), float)
-        for i in xrange(self.size):
+        for i in range(self.size):
             r = self.coordinates[i] - self.com
             # the diagonal term
             result.ravel()[::4] += self.masses[i]*(r**2).sum()
@@ -191,7 +194,7 @@ class Molecule(ReadOnly):
         for number in self.numbers:
             counts[number] = counts.get(number, 0)+1
         items = []
-        for number, count in sorted(counts.iteritems(), reverse=True):
+        for number, count in sorted(counts.items(), reverse=True):
             if count == 1:
                 items.append(periodic[number].symbol)
             else:

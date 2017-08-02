@@ -22,6 +22,8 @@
 #--
 
 
+from __future__ import division
+
 from molmod.test.common import BaseTestCase
 from molmod import *
 

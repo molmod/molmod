@@ -22,6 +22,9 @@
 #--
 
 
+from __future__ import division
+
+from builtins import range
 import unittest
 
 import numpy as np
@@ -254,8 +257,8 @@ class PairFFTestCase(unittest.TestCase):
 
         delta = 1e-5
         # test the yield_pair_gradient and yield_pair_hessian generators:
-        for atom1 in xrange(len(coordinates)):
-            for atom2 in xrange(atom1):
+        for atom1 in range(len(coordinates)):
+            for atom2 in range(atom1):
                 ff.update_coordinates(coordinates)
                 distance = ff.distances[atom1, atom2]
                 an_se = 0.0
@@ -278,7 +281,7 @@ class PairFFTestCase(unittest.TestCase):
 
                 num_vg = np.zeros(an_vg.shape, float)
                 num_vh = np.zeros(an_vh.shape, float)
-                for i in xrange(3):
+                for i in range(3):
                     delta_coordinates = coordinates.copy()
                     delta_coordinates[atom1,i] += delta
                     ff.update_coordinates(delta_coordinates)
@@ -310,14 +313,14 @@ class PairFFTestCase(unittest.TestCase):
         self.assertAlmostEqual(error, 0.0, 3, "1) The hessian is not symmetric: % 12.8f / % 12.8f" % (error, reference))
 
         # 1a) test the diagonal hessian blocks
-        for atom in xrange(numc):
+        for atom in range(numc):
             error = sum((hessian[atom,:,atom,:] - hessian[atom,:,atom,:].transpose()).ravel()**2)
             reference = sum(hessian[atom,:,atom,:].ravel()**2)
             self.assertAlmostEqual(error, 0.0, 3, "1a) Diagonal hessian block %i is not symmetric: % 12.8f / % 12.8f" % (atom, error, reference))
 
         # 1b) test the off-diagonal hessian blocks
-        for atom1 in xrange(numc):
-            for atom2 in xrange(atom1):
+        for atom1 in range(numc):
+            for atom2 in range(atom1):
                 error = sum((hessian[atom1,:,atom2,:] - hessian[atom2,:,atom1,:].transpose()).ravel()**2)
                 reference = sum(hessian[atom1,:,atom2,:].ravel()**2)
                 self.assertAlmostEqual(error, 0.0, 3, "1a) Off-diagonal hessian block (%i,%i) is not symmetric: % 12.8f / % 12.8f" % (atom1, atom2, error, reference))
@@ -326,8 +329,8 @@ class PairFFTestCase(unittest.TestCase):
 
         # 2a) test the analytical gradient
         numerical_gradient = np.zeros(gradient.shape, float)
-        for atom in xrange(len(coordinates)):
-            for index in xrange(3):
+        for atom in range(len(coordinates)):
+            for index in range(3):
                 delta_coordinates = coordinates.copy()
                 delta_coordinates[atom,index] += delta
                 ff.update_coordinates(delta_coordinates)
@@ -338,16 +341,16 @@ class PairFFTestCase(unittest.TestCase):
 
         # 2 pre_b) create a mask for the diagonal
         diagonal_mask = np.zeros(hessian.shape, float)
-        for index in xrange(numc):
+        for index in range(numc):
             diagonal_mask[index,:,index,:] = 1
         off_diagonal_mask = 1 - diagonal_mask
 
         # 2b) test the analytical hessian
         numerical_hessian = np.zeros(hessian.shape, float)
-        for atom1 in xrange(len(coordinates)):
-            for atom2 in xrange(len(coordinates)):
-                for index1 in xrange(3):
-                    for index2 in xrange(3):
+        for atom1 in range(len(coordinates)):
+            for atom2 in range(len(coordinates)):
+                for index1 in range(3):
+                    for index2 in range(3):
                         delta_coordinates = coordinates.copy()
                         delta_coordinates[atom1,index1] += delta
                         delta_coordinates[atom2,index2] += delta
@@ -365,8 +368,8 @@ class PairFFTestCase(unittest.TestCase):
 
         # 2c) test the analytical hessian in another way
         numerical_hessian = np.zeros(hessian.shape, float)
-        for atom in xrange(len(coordinates)):
-            for index in xrange(3):
+        for atom in range(len(coordinates)):
+            for index in range(3):
                 delta_coordinates = coordinates.copy()
                 delta_coordinates[atom,index] += delta
                 ff.update_coordinates(delta_coordinates)
@@ -505,11 +508,11 @@ class CoulombFFTestCase(BaseTestCase):
         charges = np.array([-1, 1], float)
         ff = CoulombFF(scaling, charges=charges, dipoles=dipoles, coordinates=coordinates)
         eps = 1e-5
-        for i in xrange(10):
+        for i in range(10):
             center = np.random.uniform(-0.2, 0.2, 3)
             esp0 = ff.esp_point(center)
             efield0 = ff.efield_point(center)
-            for j in xrange(3):
+            for j in range(3):
                 ex_center = center.copy()
                 ex_center[j] += eps
                 self.assertAlmostEqual(-efield0[j], (ff.esp_point(ex_center) - esp0)/eps, 3)

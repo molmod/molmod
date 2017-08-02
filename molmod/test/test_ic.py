@@ -22,6 +22,9 @@
 #--
 
 
+from __future__ import division
+
+from builtins import range
 import numpy as np
 import pkg_resources
 
@@ -83,7 +86,7 @@ def iter_diheds():
 
 
 def iter_pairs():
-    for counter in xrange(num):
+    for counter in range(num):
         while True:
             x = np.random.normal(0,big,2)
             if x[-1] > small: break
@@ -214,7 +217,7 @@ def test_dihedral_ethene():
     c = mol.coordinates.copy()
     assert abs(ic.dihed_cos([c[2], c[0], c[3], c[5]])[0] - 1.0) < 1e-5
     assert abs(ic.dihed_angle([c[2], c[0], c[3], c[5]])[0]) < 1e-5
-    for i in xrange(1000):
+    for i in range(1000):
         angle = np.random.uniform(-np.pi, np.pi)
         radius = np.random.uniform(0, 5*angstrom)
         offset = np.random.uniform(0, 5*angstrom)
@@ -235,7 +238,7 @@ def test_opbend_ethene():
     assert abs(ic.opbend_mcos([c[0], c[5], c[4], c[3]])[0] - 1.0) < 1e-5
     assert abs(ic.opbend_mangle([c[0], c[5], c[4], c[3]])[0]) < 1e-5
     assert abs(ic.opbend_dist([c[0], c[5], c[4], c[3]])[0]) < 1e-5
-    for i in xrange(1000):
+    for i in range(1000):
         angle = np.random.uniform(-np.pi/2, np.pi/2)
         radius = np.random.uniform(0, 5*angstrom)
         #offset = np.random.uniform(0, 5*angstrom)

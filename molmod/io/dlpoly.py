@@ -23,6 +23,9 @@
 """Readers for DLPoly file formats"""
 
 
+from __future__ import division
+
+from builtins import range
 import numpy as np
 
 from molmod.units import picosecond, amu, angstrom, atm, deg
@@ -75,8 +78,8 @@ class DLPolyHistoryReader(SlicedReader):
         restart = self._detect_restart()
         if restart is None:
             try:
-                self.header = self._f.next()[:-1]
-                integers = tuple(int(word) for word in self._f.next().split())
+                self.header = next(self._f)[:-1]
+                integers = tuple(int(word) for word in next(self._f).split())
                 if len(integers) != 3:
                     raise FileFormatError("Second line must contain three integers.")
                 self.keytrj, self.imcon, self.num_atoms = integers
@@ -90,7 +93,7 @@ class DLPolyHistoryReader(SlicedReader):
         self._frame_size = 4 + self.num_atoms*(self.keytrj+2)
 
     def _detect_restart(self):
-        words = self._f.next().split()
+        words = next(self._f).split()
         self._f.seek(0)
         if len(words) != 6:
             return
@@ -111,7 +114,7 @@ class DLPolyHistoryReader(SlicedReader):
         # auxiliary read function
         def read_three(msg):
             """Read three words as floating point numbers"""
-            line = self._f.next()
+            line = next(self._f)
             try:
                 return [float(line[:12]), float(line[12:24]), float(line[24:])]
             except ValueError:
@@ -119,7 +122,7 @@ class DLPolyHistoryReader(SlicedReader):
 
         frame = {}
         # read the frame header line
-        words = self._f.next().split()
+        words = next(self._f).split()
         if len(words) != 6:
             raise FileFormatError("The first line of each time frame must contain 6 words. (%i'th frame)" % self._counter)
         if words[0] != "timestep":
@@ -141,7 +144,7 @@ class DLPolyHistoryReader(SlicedReader):
         cell = np.zeros((3, 3), float)
         frame["cell"] = cell
         cell_msg = "The cell lines must consist of three floating point values. (%i'th frame, %i'th step)" % (self._counter, step)
-        for i in xrange(3):
+        for i in range(3):
             cell[:, i] = read_three(cell_msg)
         cell *= self.pos_unit
         # the atoms
@@ -159,9 +162,9 @@ class DLPolyHistoryReader(SlicedReader):
         if self.keytrj > 1:
             frc = np.zeros((self.num_atoms, 3), float)
             frame["frc"] = frc
-        for i in xrange(self.num_atoms):
+        for i in range(self.num_atoms):
             # the atom header line
-            words = self._f.next().split()
+            words = next(self._f).split()
             if len(words) != 4:
                 raise FileFormatError("The atom header line must contain 4 words. (%i'th frame, %i'th step, %i'th atom)" % (self._counter, step, i+1))
             symbols.append(words[0])
@@ -188,8 +191,8 @@ class DLPolyHistoryReader(SlicedReader):
 
     def _skip_frame(self):
         """Skip a single frame from the trajectory"""
-        for i in xrange(self._frame_size):
-            self._f.next()
+        for i in range(self._frame_size):
+            next(self._f)
 
 
 class DLPolyOutputReader(SlicedReader):
@@ -238,7 +241,7 @@ class DLPolyOutputReader(SlicedReader):
         # find the line that gives the number of equilibration steps:
         try:
             while True:
-                line = self._f.next()
+                line = next(self._f)
                 if line.startswith(" equilibration period"):
                     self.equi_period = int(line[30:])
                     break
@@ -251,7 +254,7 @@ class DLPolyOutputReader(SlicedReader):
         """Continue reading until the next frame is reached"""
         marked = False
         while True:
-            line = self._f.next()[:-1]
+            line = next(self._f)[:-1]
             if marked and len(line) > 0 and not line.startswith(" --------"):
                 try:
                     step = int(line[:10])
@@ -276,21 +279,21 @@ class DLPolyOutputReader(SlicedReader):
         # read the three lines
         try:
             row = [step]
-            for i in xrange(9):
+            for i in range(9):
                 row.append(float(line[10+i*12:10+(i+1)*12]))
-            line = self._f.next()[:-1]
+            line = next(self._f)[:-1]
             row.append(float(line[:10]))
-            for i in xrange(9):
+            for i in range(9):
                 row.append(float(line[10+i*12:10+(i+1)*12]))
-            line = self._f.next()[:-1]
+            line = next(self._f)[:-1]
             row.append(float(line[:10]))
-            for i in xrange(9):
+            for i in range(9):
                 row.append(float(line[10+i*12:10+(i+1)*12]))
         except ValueError:
             raise FileFormatError("Some numbers in the output file could not be read. (expecting floating point numbers)")
 
         # convert all the numbers to atomic units
-        for i in xrange(30):
+        for i in range(30):
             row[i] *= self._conv[i]
 
         # done

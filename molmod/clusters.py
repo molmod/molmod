@@ -152,4 +152,4 @@ class ClusterFactory(object):
 
     def get_clusters(self):
         """Returns a set with the clusters"""
-        return set(self.lookup.itervalues())
+        return set(self.lookup.values())
