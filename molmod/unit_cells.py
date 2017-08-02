@@ -23,6 +23,8 @@
 """Data structure & tools to work with periodic systems"""
 
 
+from __future__ import division
+
 import numpy as np
 
 from molmod.utils import cached, ReadOnly, ReadOnlyAttribute
@@ -74,7 +76,7 @@ class UnitCell(ReadOnly):
     def __mul__(self, x):
         return self.copy_with(matrix=self.matrix*x)
 
-    def __div__(self, x):
+    def __truediv__(self, x):
         return self.copy_with(matrix=self.matrix/x)
 
     @classmethod

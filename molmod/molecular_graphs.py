@@ -23,6 +23,8 @@
 """Extension of the graphs module with molecular features"""
 
 
+from __future__ import division
+
 import numpy as np
 
 from molmod.graphs import cached, Graph, CustomPattern
@@ -578,14 +580,14 @@ class NRingPattern(CustomPattern):
                         #print "NRingPattern.check_next_match: not strong a.1"
                         return False
                     for path in paths:
-                        if len(path) != len(match)/2+1:
+                        if len(path) != len(match)//2+1:
                             #print "NRingPattern.check_next_match: not strong a.2"
                             return False
                 else:
                     if len(paths) != 1:
                         #print "NRingPattern.check_next_match: not strong b.1"
                         return False
-                    if len(paths[0]) != (len(match)+1)/2:
+                    if len(paths[0]) != (len(match)+1)//2:
                         #print "NRingPattern.check_next_match: not strong b.2"
                         return False
             #print "RingPattern.check_next_match: no remarks"
@@ -599,31 +601,31 @@ class NRingPattern(CustomPattern):
             # If the ring is not strong, return False
             if self.size % 2 == 0:
                 # even ring
-                for i in xrange(self.size/2):
+                for i in xrange(self.size//2):
                     vertex1_start = match.forward[i]
-                    vertex1_stop = match.forward[i+self.size/2]
+                    vertex1_stop = match.forward[i+self.size//2]
                     paths = list(subject_graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) != 2:
                         #print "Even ring must have two paths between opposite vertices"
                         return False
                     for path in paths:
-                        if len(path) != self.size/2+1:
+                        if len(path) != self.size//2+1:
                             #print "Paths between opposite vertices must half the size of the ring+1"
                             return False
             else:
                 # odd ring
-                for i in xrange(self.size/2+1):
+                for i in xrange(self.size//2+1):
                     vertex1_start = match.forward[i]
-                    vertex1_stop = match.forward[i+self.size/2]
+                    vertex1_stop = match.forward[i+self.size//2]
                     paths = list(subject_graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) > 1:
                         return False
-                    if len(paths[0]) != self.size/2+1:
+                    if len(paths[0]) != self.size//2+1:
                         return False
-                    vertex1_stop = match.forward[i+self.size/2+1]
+                    vertex1_stop = match.forward[i+self.size//2+1]
                     paths = list(subject_graph.iter_shortest_paths(vertex1_start, vertex1_stop))
                     if len(paths) > 1:
                         return False
-                    if len(paths[0]) != self.size/2+1:
+                    if len(paths[0]) != self.size//2+1:
                         return False
         return True

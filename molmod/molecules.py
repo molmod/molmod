@@ -23,6 +23,8 @@
 """Representation, analysis and manipulation of molecular systems."""
 
 
+from __future__ import division
+
 import numpy as np
 
 from molmod.periodic import periodic

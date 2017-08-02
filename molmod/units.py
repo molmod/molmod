@@ -58,6 +58,8 @@
 """
 
 
+from __future__ import division
+
 from molmod.constants import avogadro
 
 

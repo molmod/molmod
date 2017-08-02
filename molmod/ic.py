@@ -34,6 +34,9 @@ know the chain rule for each operation and can therefore evaluate the
 derivatives simultaneously.
 """
 
+
+from __future__ import division
+
 import numpy as np
 
 
@@ -150,7 +153,7 @@ class Scalar(object):
         result *= other
         return result
 
-    def __idiv__(self, other):
+    def __itruediv__(self, other):
         if isinstance(other, int) or isinstance(other, float):
             self.v /= other
             if self.deriv > 0:
@@ -239,7 +242,7 @@ class Vector3(object):
         self.z *= other
         return self
 
-    def __idiv__(self, other):
+    def __itruediv__(self, other):
         self.x /= other
         self.y /= other
         self.z /= other

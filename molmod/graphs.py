@@ -50,7 +50,7 @@
 """
 
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 import copy
 
@@ -1430,7 +1430,7 @@ class RingPattern(Pattern):
         """
         if level == 0:
             edges0 = [(0, 1), (0, 2)]
-        elif level >= (self.max_size-1)/2:
+        elif level >= (self.max_size-1)//2:
             edges0 = []
         else:
             l2 = level*2
@@ -1455,7 +1455,7 @@ class RingPattern(Pattern):
             if len(paths) != 1:
                 #print "RingPattern.check_next_match: not strong 1"
                 return False
-            if len(paths[0]) != (len(match)+1)/2:
+            if len(paths[0]) != (len(match)+1)//2:
                 #print "RingPattern.check_next_match: not strong 2"
                 return False
         return True
@@ -1468,20 +1468,20 @@ class RingPattern(Pattern):
             # we have an odd closed cycle. check if this is a strong ring
             order = range(0, size, 2) + range(1, size-1, 2)[::-1]
             ok = True
-            for i in xrange(len(order)/2):
+            for i in xrange(len(order)//2):
                 # Count the number of paths between two opposite points in the
                 # ring. Since the ring has an odd number of vertices, each
                 # vertex has two semi-opposite vertices.
                 count = len(list(subject_graph.iter_shortest_paths(
                     match.forward[order[i]],
-                    match.forward[order[(i+size/2)%size]]
+                    match.forward[order[(i+size//2)%size]]
                 )))
                 if count > 1:
                     ok = False
                     break
                 count = len(list(subject_graph.iter_shortest_paths(
                     match.forward[order[i]],
-                    match.forward[order[(i+size/2+1)%size]]
+                    match.forward[order[(i+size//2+1)%size]]
                 )))
                 if count > 1:
                     ok = False
@@ -1507,10 +1507,10 @@ class RingPattern(Pattern):
             size += 1
             order = range(0, size, 2) + range(size-1, 0, -2)
             ok = True
-            for i in xrange(len(order)/2):
+            for i in xrange(len(order)//2):
                 count = len(list(subject_graph.iter_shortest_paths(
                     match.forward[order[i]],
-                    match.forward[order[(i+size/2)%size]]
+                    match.forward[order[(i+size//2)%size]]
                 )))
                 if count != 2:
                     ok = False

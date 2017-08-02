@@ -22,6 +22,8 @@
 #--
 
 
+from __future__ import division
+
 import pkg_resources
 
 from molmod.test.common import *

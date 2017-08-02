@@ -591,15 +591,12 @@ class GraphTestCase(unittest.TestCase):
             if verbose: print()
             if verbose: print("GRAPH %s" % case.name)
             matches = []
-            try:
-                for match in graph_search(case.graph):
-                    matches.append(match)
-                    if verbose: print("_ _ _ _ _", match, "_ _ _ _ _")
-                if callback is not None:
-                    callback(case, matches)
-            except SubgraphPatternError:
-                if len(case.graph.independent_vertices) == 1 or not isinstance(pattern, EgoPattern):
-                    raise
+            for match in graph_search(case.graph):
+                matches.append(match)
+                if verbose:
+                    print("_ _ _ _ _", match, "_ _ _ _ _")
+            if callback is not None:
+                callback(case, matches)
 
     def test_ring_pattern(self):
         def callback(case, matches):

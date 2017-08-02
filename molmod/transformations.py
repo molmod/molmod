@@ -28,6 +28,8 @@ implementation of the Kabsch algorithm.
 """
 
 
+from __future__ import division
+
 import numpy as np
 
 from molmod.utils import cached, ReadOnly, ReadOnlyAttribute, compute_rmsd

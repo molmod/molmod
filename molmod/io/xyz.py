@@ -26,6 +26,7 @@
 from __future__ import print_function
 
 
+from __future__ import division
 
 import numpy as np
 
@@ -228,7 +229,7 @@ class XYZFile(object):
             if start is None: start = 0
             step = sub.step
             if step is None: step = 1
-            count = (sub.stop - start + step - 1)/step
+            count = (sub.stop - start + step - 1)//step
             self.geometries = np.zeros((count, len(self.numbers), 3), float)
 
             for counter, (title, coordinates) in enumerate(xyz_reader):

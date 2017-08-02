@@ -23,6 +23,8 @@
 """Readers for DLPoly file formats"""
 
 
+from __future__ import division
+
 import numpy as np
 
 from molmod.units import picosecond, amu, angstrom, atm, deg

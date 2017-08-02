@@ -23,6 +23,8 @@
 """Cartesian vector manipulation routines"""
 
 
+from __future__ import division
+
 import numpy as np
 
 

@@ -31,6 +31,8 @@
 """
 
 
+from __future__ import division
+
 import numpy as np
 
 from xml.sax import make_parser

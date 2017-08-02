@@ -23,6 +23,8 @@
 """Tools for reading Gamess punch files"""
 
 
+from __future__ import division
+
 import numpy as np
 
 from molmod.units import angstrom, amu
@@ -215,7 +217,7 @@ class HessianParser(PunchParser):
             if line == " $END\n":
                 break
             line = line[5:-1]
-            for j in xrange(len(line)/15):
+            for j in xrange(len(line)//15):
                 tmp[counter] = float(line[j*15:(j+1)*15])
                 counter += 1
         data["hessian"] = hessian

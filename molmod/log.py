@@ -22,7 +22,7 @@
 #--
 
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 import sys
 import os
@@ -277,7 +277,7 @@ class ScreenLog(object):
             lead = s[:pos] + ' '
             rest = s[pos+1:]
         width = self.width - len(lead)
-        if width < self.width/2:
+        if width < self.width//2:
             raise ValueError('The lead may not exceed half the width of the terminal.')
         # break and print the line
         first = True
