@@ -36,10 +36,10 @@ from molmod import *
 from molmod.test.common import tmpdir
 
 
-def check_example(dirname, fn_py, fns_data):
-    with tmpdir(__name__, dirname + fn_py) as dntmp:
+def check_example(module_name, dirname, fn_py, fns_data):
+    with tmpdir(module_name, dirname + fn_py) as dntmp:
         for fn in [fn_py] + fns_data:
-            with pkg_resources.resource_stream(__name__, "../examples/{}/{}".format(dirname, fn)) as fin:
+            with pkg_resources.resource_stream(module_name, "../examples/{}/{}".format(dirname, fn)) as fin:
                 with open(os.path.join(dntmp, fn), 'wb') as fout:
                     fout.write(fin.read())
         env = dict(os.environ)
@@ -58,55 +58,55 @@ def check_example(dirname, fn_py, fns_data):
 
 
 def test_example_000_a():
-    check_example("000_units", "a_reaction.py", [])
+    check_example(__name__, "000_units", "a_reaction.py", [])
 
 def test_example_000_b():
-    check_example("000_units", "b_chbond.py", [])
+    check_example(__name__, "000_units", "b_chbond.py", [])
 
 def test_example_000_c():
-    check_example("000_units", "c_h2rot.py", [])
+    check_example(__name__, "000_units", "c_h2rot.py", [])
 
 def test_example_001_a():
-    check_example("001_molecules", "a_convert.py", ['ibuprofen.sdf'])
+    check_example(__name__, "001_molecules", "a_convert.py", ['ibuprofen.sdf'])
 
 def test_example_001_b():
-    check_example("001_molecules", "b_com.py", ['ibuprofen.sdf'])
+    check_example(__name__, "001_molecules", "b_com.py", ['ibuprofen.sdf'])
 
 def test_example_001_c():
-    check_example("001_molecules", "c_carbon.py", ['ibuprofen.sdf'])
+    check_example(__name__, "001_molecules", "c_carbon.py", ['ibuprofen.sdf'])
 
 def test_example_001_d():
-    check_example("001_molecules", "d_size.py", ['ibuprofen.sdf'])
+    check_example(__name__, "001_molecules", "d_size.py", ['ibuprofen.sdf'])
 
 def test_example_001_e():
-    check_example("001_molecules", "e_shape.py", ['ibuprofen.sdf'])
+    check_example(__name__, "001_molecules", "e_shape.py", ['ibuprofen.sdf'])
 
 def test_example_002_a():
-    check_example("002_graphs", "a_graphs.py", ['caffeine.xyz'])
+    check_example(__name__, "002_graphs", "a_graphs.py", ['caffeine.xyz'])
 
 def test_example_002_b():
-    check_example("002_graphs", "b_neighbors.py", ['caffeine.xyz'])
+    check_example(__name__, "002_graphs", "b_neighbors.py", ['caffeine.xyz'])
 
 def test_example_002_c():
-    check_example("002_graphs", "c_distances.py", ['caffeine.xyz'])
+    check_example(__name__, "002_graphs", "c_distances.py", ['caffeine.xyz'])
 
 def test_example_002_d():
-    check_example("002_graphs", "d_symmetries.py", ['ethanol.xyz'])
+    check_example(__name__, "002_graphs", "d_symmetries.py", ['ethanol.xyz'])
 
 def test_example_003_a():
-    check_example("003_internal_coordinates", "a_bond_length.py", ['dopamine.xyz'])
+    check_example(__name__, "003_internal_coordinates", "a_bond_length.py", ['dopamine.xyz'])
 
 def test_example_003_b():
-    check_example("003_internal_coordinates", "b_bending_angles.py", ['dopamine.xyz'])
+    check_example(__name__, "003_internal_coordinates", "b_bending_angles.py", ['dopamine.xyz'])
 
 def test_example_003_c():
-    check_example("003_internal_coordinates", "c_ff_hessian.py", ['propane.xyz'])
+    check_example(__name__, "003_internal_coordinates", "c_ff_hessian.py", ['propane.xyz'])
 
 def test_example_003_d():
-    check_example("003_internal_coordinates", "d_dft_hessian.py", ['dopamine.fchk'])
+    check_example(__name__, "003_internal_coordinates", "d_dft_hessian.py", ['dopamine.fchk'])
 
 def test_example_004_a():
-    check_example("004_patterns", "a_propane_types.py", ['propane.xyz'])
+    check_example(__name__, "004_patterns", "a_propane_types.py", ['propane.xyz'])
 
 def test_example_004_b():
-    check_example("004_patterns", "b_dopamine_types.py", ['dopamine.xyz'])
+    check_example(__name__, "004_patterns", "b_dopamine_types.py", ['dopamine.xyz'])
