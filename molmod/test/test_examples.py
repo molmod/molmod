@@ -27,6 +27,7 @@ from __future__ import print_function
 import os
 import unittest
 import shutil
+import stat
 import subprocess
 import tempfile
 
@@ -36,16 +37,40 @@ from molmod import *
 from molmod.test.common import tmpdir
 
 
-def check_example(module_name, dirname, fn_py, fns_data):
-    with tmpdir(module_name, dirname + fn_py) as dntmp:
-        for fn in [fn_py] + fns_data:
+def check_example(module_name, dirname, fn_script, fns_data):
+    """Run an example in a temporary directory and check its exit code.
+
+    Parameters
+    ----------
+    module_name : str
+        You can just pass __name__.
+    dirname : str
+        The directory with the example, relative to the __file__ of where you call this
+        function.
+    fn_script : str
+        The name of the script to be executed, assumed to be present in the given
+        directory.
+    fns_data : list of str:
+        A list of data files needed by the example, which will be copied over to the
+        temporary directory.
+    """
+    with tmpdir(module_name, dirname + fn_script) as dntmp:
+        for fn in [fn_script] + fns_data:
             with pkg_resources.resource_stream(module_name, "../examples/{}/{}".format(dirname, fn)) as fin:
+                # Create the directory if needed.
+                if '/' in fn:
+                    subdntmp = os.path.join(dntmp, os.path.dirname(fn))
+                    if not os.path.isdir(subdntmp):
+                        os.makedirs(subdntmp)
+                # Extract the file manually.
                 with open(os.path.join(dntmp, fn), 'wb') as fout:
                     fout.write(fin.read())
         env = dict(os.environ)
         root_dir = os.getcwd()
         env['PYTHONPATH'] = root_dir + ':' + env.get('PYTHONPATH', '')
-        command = ["python", fn_py]
+        path_script = os.path.join(dntmp, fn_script)
+        os.chmod(path_script, os.stat(path_script).st_mode | stat.S_IXUSR)
+        command = "./" + fn_script
         proc = subprocess.Popen(command, stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 cwd=dntmp, env=env)
