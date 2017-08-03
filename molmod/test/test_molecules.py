@@ -156,7 +156,7 @@ class MoleculeTestCase(BaseTestCase):
 
     def test_to_cml(self):
         mol0 = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/caplayer.cml"))
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_to_cml') as dn:
             mol0.write_to_file("%s/caplayer.cml" % dn)
             mol1 = Molecule.from_file("%s/caplayer.cml" % dn)
         self.assertEqual(mol0.title, mol1.title)
@@ -166,7 +166,7 @@ class MoleculeTestCase(BaseTestCase):
 
     def test_to_xyz(self):
         mol0 = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_to_xyz') as dn:
             mol0.write_to_file("%s/water.xyz" % dn)
             mol1 = Molecule.from_file("%s/water.xyz" % dn)
         self.assertEqual(mol0.title, mol1.title)
@@ -200,7 +200,7 @@ class MoleculeTestCase(BaseTestCase):
     def test_probes(self):
         mol1 = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/probes.xyz"))
         self.assertEqual(mol1.numbers[-1], 0)
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_probes') as dn:
             mol1.write_to_file("%s/probes.xyz" % dn)
         mol2 = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/probes.xyz"))
         self.assertArraysEqual(mol1.numbers, mol2.numbers)

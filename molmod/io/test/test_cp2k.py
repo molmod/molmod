@@ -113,7 +113,7 @@ class CP2KTestCase(unittest.TestCase):
         self.assertEqual(cp2k_input["MOTION"]["MD"]["NOSE"]["LENGTH"].value, "3")
 
         # test dump, load consistency, part 1: dump a file, load it again, should be the same
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_input_file') as dn:
             cp2k_input.write_to_file("%s/water_md.inp" % dn)
             cp2k_input_check = CP2KInputFile.read_from_file("%s/water_md.inp" % dn)
         self.assert_(cp2k_input_check._consistent())
@@ -121,7 +121,7 @@ class CP2KTestCase(unittest.TestCase):
 
         # test dump-load consistency, part 2: no reordering of sections and keywords should be allowed
         cp2k_input = CP2KInputFile.read_from_file(pkg_resources.resource_filename(__name__, "../../data/test/water_md.inp"))
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_input_file') as dn:
             cp2k_input.write_to_file("%s/water_md.inp" % dn)
             with open(pkg_resources.resource_filename(__name__, "../../data/test/water_md.inp")) as f1, \
                  open("%s/water_md.inp" % dn) as f2:

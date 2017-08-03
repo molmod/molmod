@@ -42,7 +42,7 @@ class TestObject(object):
 
 class NumberStateTestCase(BaseTestCase):
     def test_consistency(self):
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_consistency') as dn:
             test1 = TestObject()
             test1.state.dump("%s/test" % dn)
             test2 = TestObject()

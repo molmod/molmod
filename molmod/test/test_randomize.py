@@ -66,7 +66,7 @@ class RandomizeTestCase(BaseTestCase):
         for molecule in self.iter_test_molecules():
             manipulations = generate_manipulations(molecule)
             randomized_molecule = randomize_molecule(molecule, manipulations, nonbond_thresholds)
-            with tmpdir() as dn:
+            with tmpdir(__name__, 'test_randomize_count') as dn:
                 randomized_molecule.write_to_file(os.path.join(dn, molecule.filename))
             counts = all_counts.get(molecule.filename)
             if counts is not None:
@@ -80,7 +80,7 @@ class RandomizeTestCase(BaseTestCase):
                 dimer = random_dimer(molecule1, molecule2, nonbond_thresholds, 0.5*angstrom)
                 self.assertEqual(dimer.coordinates.shape, (molecule1.coordinates.shape[0] + molecule2.coordinates.shape[0], 3))
                 self.assertEqual(dimer.numbers.shape, (molecule1.numbers.shape[0] + molecule2.numbers.shape[0],))
-                with tmpdir() as dn:
+                with tmpdir(__name__, 'test_random_dimer') as dn:
                     dimer.write_to_file(os.path.join(dn, "%s_%s" % (molecule1.filename, molecule2.filename)))
 
     def test_single_manipulation(self):
@@ -88,7 +88,7 @@ class RandomizeTestCase(BaseTestCase):
             manipulations = generate_manipulations(molecule)
             for i in range(100):
                 randomized_molecule, mol_transformation = single_random_manipulation(molecule, manipulations, nonbond_thresholds)
-                with tmpdir() as dn:
+                with tmpdir(__name__, 'test_single_manipulation') as dn:
                     randomized_molecule.write_to_file(os.path.join(dn, molecule.filename))
                     mol_transformation.write_to_file(os.path.join(dn, "tmp"))
                     check_transformation = MolecularDistortion.read_from_file(os.path.join(dn, "tmp"))

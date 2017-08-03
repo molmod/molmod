@@ -54,7 +54,7 @@ class XYZTestCase(BaseTestCase):
 
     def test_xyz_writer(self):
         xr = XYZReader(pkg_resources.resource_filename(__name__, "../../data/test/water.xyz"))
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_xyz_writer') as dn:
             xw = XYZWriter("%s/test.xyz" % dn, xr.symbols)
             for title, coordinates in xr:
                 xw.dump(title, coordinates)
@@ -76,7 +76,7 @@ class XYZTestCase(BaseTestCase):
         self.assertAlmostEqual(xf.geometries[0,2,2]/angstrom, -0.7649930856)
         xf.geometries = np.array([xf.geometries[0]]*10)
         xf.titles = [xf.titles[0]]*10
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_xyz_file') as dn:
             xf.write_to_file("%s/test.xyz" % dn)
             xf = XYZFile("%s/test.xyz" % dn)
             self.assertEqual(xf.symbols, ("O", "H", "H"))

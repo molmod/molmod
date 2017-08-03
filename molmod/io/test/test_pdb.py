@@ -51,7 +51,7 @@ class PDBTestCase(BaseTestCase):
         self.assertEqual(len(mol.betas), mol.size)
 
     def test_dump_pdb(self):
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_dump_pdb') as dn:
             mol = Molecule([8,1,1], [[-1,0,0],[0,0,0],[1.1,0,0]])
             dump_pdb(
                 "%s/test.pdb" % dn, mol, ["OT", "HT", "HT"],

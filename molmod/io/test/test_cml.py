@@ -43,7 +43,7 @@ class CMLTestCase(unittest.TestCase):
         ]
         for m in molecules:
             m.set_default_graph()
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_consistency') as dn:
             dump_cml("%s/tmp.cml" % dn, molecules)
             check = load_cml("%s/tmp.cml" % dn)
         for m1, m2 in zip(molecules, check):

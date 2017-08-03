@@ -81,7 +81,7 @@ class CubeTestCase(BaseTestCase):
         self.assertAlmostEqual(cf.data[0,2,0], 3.72924E-11, 14)
         self.assertAlmostEqual(cf.data[-1,-1,-1], 1.93947E-16, 19)
         # Make sure the file is written properly
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_cube') as dn:
             cf.write_to_file('%s/alanine.cube' % dn)
             f1 = open(pkg_resources.resource_filename(__name__, "../../data/test/alanine.cube"))
             lines1 = f1.readlines()

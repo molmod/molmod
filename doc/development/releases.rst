@@ -1,6 +1,10 @@
 Release history
 ###############
 
+**Version 1.3.1** August 3, 2017
+
+- Fix parallel testing issue with ``tmpdir`` contextwrapper.
+
 **Version 1.3.0** August 3, 2017
 
 - Python 3 support.

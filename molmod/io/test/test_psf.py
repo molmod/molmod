@@ -51,7 +51,7 @@ class PSFTestCase(BaseTestCase):
         m = Molecule.from_file(pkg_resources.resource_filename(__name__, "../../data/test/thf.xyz"))
         psf = PSFFile()
         psf.add_molecule(m)
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_dump') as dn:
             psf.write_to_file("%s/thf.psf" % dn)
 
     def test_tetra(self):
@@ -60,7 +60,7 @@ class PSFTestCase(BaseTestCase):
         psf.add_molecule(molecule)
         self.assert_(psf.bonds.shape[0] == 4)
         self.assert_(psf.bends.shape[0] == 6)
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_tetra') as dn:
             psf.write_to_file("%s/tetra.psf" % dn)
 
     def test_many_separate(self):
@@ -70,7 +70,7 @@ class PSFTestCase(BaseTestCase):
         psf.add_molecule(molecule)
         molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../../data/test/tea.xyz"))
         psf.add_molecule(molecule)
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_many_separate') as dn:
             psf.write_to_file("%s/many_separate.psf" % dn)
 
     def test_improper(self):
@@ -82,7 +82,7 @@ class PSFTestCase(BaseTestCase):
         self.assert_((0,1) in test_block)
         self.assert_((0,2) in test_block)
         self.assert_((0,3) in test_block)
-        with tmpdir() as dn:
+        with tmpdir(__name__, 'test_improper') as dn:
             psf.write_to_file("%s/tmp_impropers.psf" % dn)
             psf2 = PSFFile("%s/tmp_impropers.psf" % dn)
         self.assertArraysEqual(psf.impropers, psf2.impropers)

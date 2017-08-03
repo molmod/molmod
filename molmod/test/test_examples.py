@@ -33,11 +33,11 @@ import tempfile
 import pkg_resources
 
 from molmod import *
+from molmod.test.common import tmpdir
 
 
 def check_example(dirname, fn_py, fns_data):
-    dntmp = tempfile.mkdtemp(dirname, fn_py)
-    try:
+    with tmpdir(__name__, dirname + fn_py) as dntmp:
         for fn in [fn_py] + fns_data:
             with pkg_resources.resource_stream(__name__, "../examples/{}/{}".format(dirname, fn)) as fin:
                 with open(os.path.join(dntmp, fn), 'wb') as fout:
@@ -55,8 +55,6 @@ def check_example(dirname, fn_py, fns_data):
                 'Command faild', str(command), 'Standard output', '+'*80, outdata.decode('utf-8'),
                 '+'*80, 'Standard error', '+'*80, errdata.decode('utf-8'), '+'*80]
             raise AssertionError('\n'.join(lines))
-    finally:
-        shutil.rmtree(dntmp)
 
 
 def test_example_000_a():

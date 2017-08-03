@@ -69,8 +69,8 @@ class BaseTestCase(unittest.TestCase):
 
 
 @contextmanager
-def tmpdir():
-    dn = tempfile.mkdtemp('molmod')
+def tmpdir(suffix, prefix):
+    dn = tempfile.mkdtemp(suffix, prefix)
     try:
         yield dn
     finally:
