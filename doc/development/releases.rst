@@ -1,6 +1,10 @@
 Release history
 ###############
 
+**Version 1.3.2** August 3, 2017
+
+- Specify versions of dependencies in setup.py.
+
 **Version 1.3.1** August 3, 2017
 
 - Fix parallel testing issue with ``tmpdir`` contextwrapper.
