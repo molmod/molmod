@@ -28,6 +28,7 @@ from __future__ import print_function
 
 import sys
 
+retcode = 0
 for fn in sys.argv[1:]:
     with open(fn) as f:
         lines = f.readlines()
@@ -42,3 +43,5 @@ for fn in sys.argv[1:]:
     bad |= (lines[-1] == '\n')
     if bad:
         print('Whitespace errors in {}'.format(fn))
+        retcode = 1
+sys.exit(retcode)
