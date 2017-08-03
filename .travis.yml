@@ -33,7 +33,7 @@ install:
 - conda info -a
 
 # Build the conda package
-- conda build -q conda.recipe 2> /dev/null
+- conda build -q conda.recipe
 
 # Build source package, should work too and needed for deployment.
 - python setup.py sdist
