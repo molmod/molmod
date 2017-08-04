@@ -42,7 +42,7 @@ try:
     version_words = git_describe.decode('utf-8').strip().split('-')
     __version__ = version_words[0]
     if len(version_words) > 1:
-        __version__ += '.dev' + version_words[1]
+        __version__ += '.post' + version_words[1]
 except subprocess.CalledProcessError:
     pass
 
