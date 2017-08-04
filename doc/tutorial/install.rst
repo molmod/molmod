@@ -30,8 +30,13 @@ You can install MolMod with pip, using either of the following two commands:
 
 .. code:: bash
 
-    pip install molmod   # system wide (requires root permission) or in virtual env
-    pip install molmod --user   # installs in ~/.local
+    # system wide (requires root permission) or in virtual env
+    pip install numpy Cython
+    pip install molmod
+
+    # installs in ~/.local
+    pip install numpy Cython --user
+    pip install molmod --user
 
 Alternatively, you can use conda. (See https://www.continuum.io/downloads)
 

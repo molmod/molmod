@@ -19,12 +19,14 @@ MolMod can be installed with pip (system wide or in a virtual environment):
 
 .. code:: bash
 
+    pip install Cython numpy
     pip install molmod
 
 Alternatively, you can install MolMod in your home directory:
 
 .. code:: bash
 
+    pip install Cython numpy --user
     pip install molmod --user
 
 Lastly, you can also install MolMod with conda. (See
