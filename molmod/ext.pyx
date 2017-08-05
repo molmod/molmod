@@ -22,6 +22,10 @@
 # --
 """C extensions for molmod."""
 
+
+from __future__ import division
+
+
 import numpy as np
 cimport numpy as np
 
@@ -199,7 +203,7 @@ def molecules_distance_matrix(double[:, ::1] cor not None, double[:, ::1] matrix
 
 def similarity_table_labels(const long[::1] labels not None):
     cdef size_t n = labels.shape[0]
-    cdef np.ndarray[long, ndim=2] labels_table = np.zeros(((n*(n-1))/2, 2), dtype=int)
+    cdef np.ndarray[long, ndim=2] labels_table = np.zeros(((n*(n-1))//2, 2), dtype=int)
     similarity.similarity_table_labels(n, &labels[0], &labels_table[0, 0])
     return labels_table
 
@@ -208,7 +212,7 @@ def similarity_table_distances(const double[:, ::1] distance_matrix not None):
     cdef size_t n = distance_matrix.shape[0]
     if distance_matrix.shape[1] != n:
         raise TypeError('distance_matrix must be sqaure')
-    cdef np.ndarray[double] distances_table = np.zeros(((n*(n-1))/2), dtype=float)
+    cdef np.ndarray[double] distances_table = np.zeros(((n*(n-1))//2), dtype=float)
     similarity.similarity_table_distances(n, &distance_matrix[0, 0], &distances_table[0])
     return distances_table
 
