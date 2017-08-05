@@ -64,7 +64,7 @@ def load_chk(filename):
                 result[key] = float(value)
             elif kind[3:5] == 'ar':
                 if kind[:3] == 'str':
-                    dtype = np.dtype('a22')
+                    dtype = np.dtype('U')
                 elif kind[:3] == 'int':
                     dtype = int
                 elif kind[:3] == 'bln':
@@ -85,7 +85,7 @@ def load_chk(filename):
                         for s in short:
                             if dtype is bool and s.lower() in ['True', '1', 'Yes']:
                                 work[counter] = True
-                            elif dtype == np.dtype('a22'):
+                            elif dtype == np.dtype('U'):
                                 work[counter] = s
                             else:
                                 work[counter] = dtype(s)
@@ -128,7 +128,7 @@ def dump_chk(filename, data):
                 print('%40s  kind=str   %s' % (key.ljust(40), value), file=f)
             elif isinstance(value, bool):
                 print('%40s  kind=bln   %s' % (key.ljust(40), value), file=f)
-            elif isinstance(value, int):
+            elif isinstance(value, (int, np.integer)):
                 print('%40s  kind=int   %i' % (key.ljust(40), value), file=f)
             elif isinstance(value, float):
                 print('%40s  kind=flt   %22.15e' % (key.ljust(40), value), file=f)
@@ -147,7 +147,7 @@ def dump_chk(filename, data):
                             raise ValueError('In case of string arrays, a string may not contain spaces or new lines.')
                     print('%40s  kind=strar %s' % (key.ljust(40), shape_str), file=f)
                     format_str = '%22s'
-                elif issubclass(value.dtype.type, int):
+                elif issubclass(value.dtype.type, np.integer):
                     print('%40s  kind=intar %s' % (key.ljust(40), shape_str), file=f)
                     format_str = '%22i'
                 elif issubclass(value.dtype.type, np.bool_):
