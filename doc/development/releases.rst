@@ -24,6 +24,10 @@
 Release history
 ###############
 
+**Version 1.3.5** August 5, 2017
+
+- Python 3 bug fix
+
 **Version 1.3.4** August 5, 2017
 
 - Python 3 bug fixes
