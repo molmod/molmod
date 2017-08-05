@@ -46,7 +46,7 @@
 """
 
 
-from .version import __version__
+from molmod.version import __version__
 
 
 import numpy as np

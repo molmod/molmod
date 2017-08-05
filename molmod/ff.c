@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include "common.h"
 
-inline void add_grad(
+void add_grad(
   size_t i, size_t j, double s, double *cor, double *delta,
   double *gradient
 ) {

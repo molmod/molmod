@@ -25,6 +25,10 @@
 
 #include <math.h>
 
+// Needed for portability, M_PI is not part of the C/C++ standard
+#define M_PI 3.14159265358979323846
+
+
 void similarity_table_labels(size_t n, long *labels, long* labels_table) {
   size_t i,j;
   for (i=0; i<n; i++) {

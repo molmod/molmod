@@ -39,7 +39,7 @@ script:
   ./ds-normalize-code;
 
 # Build the conda package
-- conda build -q conda.recipe
+- conda build -q tools/conda.recipe
 
 # Build source package, should work too and needed for deployment.
 - python setup.py sdist
@@ -51,7 +51,7 @@ script:
 - (cd doc; make html)
 
 # Run tests out of source tree, to make sure that installed version is tested.
-- "(cd; nosetests molmod -v --processes=2 --detailed-errors --process-timeout=600)"
+- (cd; nosetests molmod -v --processes=2 --detailed-errors --process-timeout=600)
 
 # In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
 deploy:

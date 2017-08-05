@@ -70,7 +70,7 @@ def check_example(module_name, dirname, fn_script, fns_data):
         env['PYTHONPATH'] = root_dir + ':' + env.get('PYTHONPATH', '')
         path_script = os.path.join(dntmp, fn_script)
         os.chmod(path_script, os.stat(path_script).st_mode | stat.S_IXUSR)
-        command = "./" + fn_script
+        command = ["python", fn_script]
         proc = subprocess.Popen(command, stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 cwd=dntmp, env=env)

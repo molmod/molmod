@@ -3,7 +3,7 @@ package:
   name: 'molmod'
 
 source:
-  path: ../
+  path: ../../
 
 build:
   number: 0
@@ -18,7 +18,6 @@ requirements:
   build:
     - python
     - numpy
-    - gcc
     - cython >=0.24.1
     - setuptools
 

@@ -53,19 +53,20 @@ class XYZTestCase(BaseTestCase):
         self.assertAlmostEqual(coordinates[2,2]/angstrom, -0.7649930856)
 
     def test_xyz_writer(self):
-        xr = XYZReader(pkg_resources.resource_filename(__name__, "../../data/test/water.xyz"))
+        xr1 = XYZReader(pkg_resources.resource_filename(__name__, "../../data/test/water.xyz"))
         with tmpdir(__name__, 'test_xyz_writer') as dn:
-            xw = XYZWriter("%s/test.xyz" % dn, xr.symbols)
-            for title, coordinates in xr:
+            xw = XYZWriter("%s/test.xyz" % dn, xr1.symbols)
+            for title, coordinates in xr1:
                 xw.dump(title, coordinates)
             del xw
-            xr = XYZReader("%s/test.xyz" % dn)
-            self.assertEqual(xr.symbols, ("O", "H", "H"))
-            self.assertArraysEqual(xr.numbers, np.array([8,1,1]))
-            title, coordinates = next(xr)
+            xr2 = XYZReader("%s/test.xyz" % dn)
+            self.assertEqual(xr2.symbols, ("O", "H", "H"))
+            self.assertArraysEqual(xr2.numbers, np.array([8,1,1]))
+            title, coordinates = next(xr2)
             self.assertEqual(title, "water")
             self.assertAlmostEqual(coordinates[0,0]/angstrom, -0.0914980466)
             self.assertAlmostEqual(coordinates[2,2]/angstrom, -0.7649930856)
+            del xr2
 
     def test_xyz_file(self):
         xf = XYZFile(pkg_resources.resource_filename(__name__, "../../data/test/water.xyz"))
