@@ -32,6 +32,12 @@ install:
 - conda install conda-build anaconda-client
 - conda info -a
 
+script:
+# Check if code is normalized properly, whitespace etc
+- wget https://raw.githubusercontent.com/tovrstra/devscripts/master/scripts/ds-normalize-code -O ds-normalize-code;
+  chmod +x ds-normalize-code;
+  ./ds-normalize-code;
+
 # Build the conda package
 - conda build -q conda.recipe
 
@@ -43,12 +49,9 @@ install:
 
 # Compile documentation
 - (cd doc; make html)
-script:
+
 # Run tests out of source tree, to make sure that installed version is tested.
 - "(cd; nosetests molmod -v --processes=2 --detailed-errors --process-timeout=600)"
-
-# Basic code checks
-- ./checkwhitespace.py $(find . -type f | egrep '(\.py$)|(\.c$)|(\.pyx$)|(\.pxd$)|(\.h$)|(\.rst$)|(\.in$)|(\.yml$)|(\.yaml$)')
 
 # In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
 deploy:

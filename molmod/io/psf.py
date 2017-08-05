@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-#--
+# --
 """Tools for reading and writing PSF (Protein Structure File) files
 
    This format is orignally developed in conjunction with the CHARMM program,

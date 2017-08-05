@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-#--
+# --
 """Data structures to handle 3D rotations and translations
 
 In addition to Translation, Rotation and Complete classes, two utility

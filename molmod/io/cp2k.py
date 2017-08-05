@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-#--
+# --
 """Tools for generating CP2K input files and a Reader for unit cell trajectories"""
 
 
