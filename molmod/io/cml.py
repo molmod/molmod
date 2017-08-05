@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-#--
+# --
 """Basic support for the Chemical Markup Language
 
    Not all features of the CML standard are supported in this module, only the

@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-#--
+# --
 """General purpose minimization of smooth multidimensional functions
 
    The implementation is mainly concerned with robustness, rather than

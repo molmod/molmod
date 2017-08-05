@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-#--
+# --
 """Basic cluster analysis tool
 
    Given a mixed set of related and unrelated data pionts, it is often interesting
