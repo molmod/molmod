@@ -18,11 +18,14 @@ env:
   - MYCONDAPY=3.5
   - MYCONDAPY=3.6
   global:
-    # ANACONDA_TOKEN encrypted
-    - secure: "P5oCCSZgfntpxwYm0pe7J0EWebQ3iF7p7+XGeE5FJoOqfQAZBZXujcaHMcej0UtyLq/IkfHabX+DURuqc8OWKQBCgy224UD+qdYnlZclfrz5M8DMp/iplbkzJsXj3zjug/br5R2YBN5tVyFQPBbJAKQ0A52rZj+avOhOt1qKEpM="
+    # ANACONDA_TOKEN
+    - secure: "eVqw72IFej1iFYefMNd67CXu82CiLrpten2SYarRsnrn5BIHFIrnNmeZ7ZVBv35oHsfk9rCJZBjwUKlzDKDKi9KX7NqVz2hMMJGxnHrAAdy4fYEPj0sRp9thtfsgRs24Ekmeyo/mqAd/qZOhDEGKJFERdvrTXIe0Gv4imKJDv5ZPdp7uelMGTS7nWRHa2uqKhGtEE8tEKtdsBJh27rjPv4nfyjfg3gsS8cbAL7gPBs5+5yZZo6SVJjpWBrWSIKpPBHqxFx9d6Rt/ebLbVNriUzJoS7lP4KT7CnllgQDY39sm0WT0XD41Z2FsbziZ5u4ede9rGIsJpB3Nls554dvb/saxlnO4fzAEu4tTT4ErRRdJaaAgxkx/CMDTL5ztKlyeh9Pq1qPzhaFDjG5qnE3ES1y8jyQkiZ583JMFvoCyGditFpBxEA7xOHCPpbN6D4U6JamlY9Ol7SlNpgfEH+/dFyOQ73r5skmj8zBbxAFaUK1vtpp7xRJDgxBU3ZRyHPq333Te0sxwikX4GTdBH0jTmWA25BzjgANPda5WI4RgQxNZ4f4GJJm1ldUziVl/SSltUBp5WIx3VjmeNNLRSygXyg/OleLH0pYtQO4fKb2DPo80TAO58Bqu4f0haPuymX7D5xB/L5y+GidJdJSuQ+c49YUNpROlGOJ4WrcCN1yrAT8="
+    # GITHUB_TOKEN
+    - secure: "NrofdkaGtI5wasllKNqBQsYWupcm3FtpVpCfoUSe753mq/SI6+THUnyWg1oakgtlwVgcXghDevieWIaCEXUGVtLANl7KHK1R60n/Byb3eOYi/HwU2TfefrC3YyqM3P8xaCam4wxtp6BRnsX/wVUbRggfkba/WqJlN2nXgVP/emU="
+    # PYPI_PASSWD
+    - secure: "O/IuiNJ0j3M64WlNZHis/RGdoa26LiDzzUh60yFJd7J8VIATfJSVObn342ToY/vcWmt+zYAsaouNzm729DUJ1bj80Zzuwrftb/5sgP5Z/QkwdsHfukke4vXa6zyrPQxMEDhfaO0St3zUznSjCT4vQJlTL7cCBOun+sIhOT807qM="
     - PYPKG=molmod
-    - GITHUB_REPO=molmod
-    - GITHUB_ORG=molmod
+    - GITHUB_REPO_NAME=molmod/molmod
 install:
 # Get miniconda. Take the right version, so re-installing python is only needed for 3.5.
 - if [[ "$MYCONDAPY" == "2.7" ]]; then
@@ -59,6 +62,7 @@ script:
   ./ds-normalize-code;
 
 # Build the conda package
+- git fetch origin --tags
 - conda build -q tools/conda.recipe
 
 # Build source package, should work too and needed for deployment to Github and
@@ -78,23 +82,19 @@ script:
 deploy:
 - provider: releases
   skip_cleanup: true
-  api_key:
-    # Encrypted github token
-    secure: cfs7wOx9Q4LXFIvZvxSDVtCT1dNpuMQHMODK50CS4mstR0ppZab62YpJLLEQVfhLsaqNVdBM3fCWm03LndbUcdB9dHkKnELh+Gj6Y/E9zA/1QkQau4yTjVG2Pb16If4doHwMrny08m1daOcpDFNfpXFszNieidOs6dsLw/ZbbEQ=
+  api_key: ${GITHUB_TOKEN}
   file: dist/${PYPKG}-${TRAVIS_TAG}.tar.gz
   on:
-    repo: ${GITHUB_ORG}/${GITHUB_REPO}
+    repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
   prerelease: false
 - provider: releases
   skip_cleanup: true
-  api_key:
-    # Encrypted github token
-    secure: cfs7wOx9Q4LXFIvZvxSDVtCT1dNpuMQHMODK50CS4mstR0ppZab62YpJLLEQVfhLsaqNVdBM3fCWm03LndbUcdB9dHkKnELh+Gj6Y/E9zA/1QkQau4yTjVG2Pb16If4doHwMrny08m1daOcpDFNfpXFszNieidOs6dsLw/ZbbEQ=
+  api_key: ${GITHUB_TOKEN}
   file: dist/${PYPKG}-${TRAVIS_TAG}.tar.gz
   on:
-    repo: ${GITHUB_ORG}/${GITHUB_REPO}
+    repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
   prerelease: true
@@ -102,40 +102,37 @@ deploy:
   skip_cleanup: true
   script: anaconda -t $ANACONDA_TOKEN upload -l alpha ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
   on:
-    repo: ${GITHUB_ORG}/${GITHUB_REPO}
+    repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG == *a*"
 - provider: script
   skip_cleanup: true
   script: anaconda -t $ANACONDA_TOKEN upload -l beta ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
   on:
-    repo: ${GITHUB_ORG}/${GITHUB_REPO}
+    repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG == *b*"
 - provider: script
   skip_cleanup: true
   script: anaconda -t $ANACONDA_TOKEN upload -l main ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
   on:
-    repo: ${GITHUB_ORG}/${GITHUB_REPO}
+    repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG != *[ab]*"
 - provider: pypi
   skip_cleanup: true
   user: tovrstra
-  password:
-    # Encrypted PyPI password
-    secure: "FqhLt9p9lWnI7XsAZjJfdRKwdteHSCIR/7f87QQ1ZnLRxjML33ndz++Me2P0Ceps1Z8qgRuOQstPvlhyCVk9aKVoAhwOtHSmcBz/IHsYTIo0PVmZqPSGqDqhF1zkTudTVDYRBHlR8bCNQW82hIxNhNBaRCeKbku/nBBdYxTWrG8="
+  password: ${PYPI_PASSWD}
   on:
-    repo: ${GITHUB_ORG}/${GITHUB_REPO}
+    repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
 - provider: pages
   skip_cleanup: true
-  github_token:
-    secure: cfs7wOx9Q4LXFIvZvxSDVtCT1dNpuMQHMODK50CS4mstR0ppZab62YpJLLEQVfhLsaqNVdBM3fCWm03LndbUcdB9dHkKnELh+Gj6Y/E9zA/1QkQau4yTjVG2Pb16If4doHwMrny08m1daOcpDFNfpXFszNieidOs6dsLw/ZbbEQ=
+  github_token: ${GITHUB_TOKEN}
   project_name: ${PYPKG}
   local_dir: doc/_build/html
   on:
-    repo: ${GITHUB_ORG}/${GITHUB_REPO}
+    repo: ${GITHUB_REPO_NAME}
     condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
     tags: true
