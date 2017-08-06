@@ -1,5 +1,9 @@
 .. image:: https://travis-ci.org/molmod/molmod.svg?branch=master
     :target: https://travis-ci.org/molmod/molmod
+.. image:: https://ci.appveyor.com/api/projects/status/g3kpxx1n80vek3hq/branch/master?svg=true
+    :target: https://ci.appveyor.com/project/tovrstra/molmod
+.. image:: https://anaconda.org/tovrstra/molmod/badges/version.svg
+    :target: https://anaconda.org/tovrstra/molmod
 
 MolMod is a collection of molecular modelling tools for python. It is used by other
 software developed at the CMM, including Yaff, TAMkin and Zeobuilder.
