@@ -30,18 +30,16 @@ branches:
     - master
 
 init:
-  - "ECHO %PYTHON_VERSION% %CONDA%"
+  - ECHO %PLATFORM% %CONDA% %PLATFORM%
+  - IF "%PLATFORM%"=="X64" ( SET CONDA=%CONDA%-x64 )
+  - ECHO %PYTHON_VERSION% %CONDA% %PLATFORM%
 
 install:
   # Make sure the compiler is accessible
   - '"%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %PLATFORM%'
 
   # Load the conda root environment, configure and install some packages
-  - ECHO %PLATFORM% %CONDA%
-  - IF "%PLATFORM%"=="x64" ( SET CONDA=%CONDA%-x64 )
-  - ECHO %PLATFORM% %CONDA%
   - "call %CONDA%\\Scripts\\activate.bat"
-  - ECHO %PLATFORM% %CONDA%
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda info -a
