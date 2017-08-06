@@ -34,8 +34,12 @@ branches:
     - master
 
 init:
-  - IF "%PLATFORM%"=="x64" ( SET "CONDA=%CONDA%-x64" )
-  - ECHO "%PYTHON_VERSION%" "%CONDA%" "%PLATFORM%"
+  - ps: if ($Env:PLATFORM -eq "x64") { $Env:CONDA = "${Env:CONDA}-x64" }
+  - ps: Write-Host $Env:PYTHON_VERSION
+  - ps: Write-Host $Env:CONDA
+  - ps: Write-Host $Env:PLATFORM
+  - ps: Write-Host $Env:APPVEYOR_REPO_TAG
+  - ps: Write-Host $Env:APPVEYOR_REPO_TAG_NAME
 
 install:
   # Make sure the compiler is accessible
@@ -46,7 +50,7 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda info -a
-  - conda install nose conda-build anaconda-client numpy cython
+  - conda install conda-build anaconda-client numpy cython
 
 build: false
 
@@ -69,12 +73,18 @@ artifacts:
   - path: 'conda-bld\win-*\*.tar.bz2'
 
 on_success:
-  - IF "%APPVEYOR_REPO_TAG%" == "true" (
-      IF NOT "%APPVEYOR_REPO_TAG_NAME:a=%" == "%APPVEYOR_REPO_TAG_NAME%" (
-        anaconda -t %ANACONDA_TOKEN% upload .\conda-bld\win-*\*.tar.bz2 --no-progress -l alpha
-      ) ELSE IF NOT "%APPVEYOR_REPO_TAG_NAME:b=%" == "%APPVEYOR_REPO_TAG_NAME%" (
-        anaconda -t %ANACONDA_TOKEN% upload .\conda-bld\win-*\*.tar.bz2 --no-progress -l beta
-      ) ELSE (
-        anaconda -t %ANACONDA_TOKEN% upload .\conda-bld\win-*\*.tar.bz2 --no-progress
-      )
-    )
+  # This is virtually impossible with a normal dos batch script...
+  # Upload to anaconda, with the correct label derived from the version tag.
+  - ps:
+      if ($Env:APPVEYOR_REPO_TAG -eq "true") {
+        if ($Env:APPVEYOR_REPO_TAG_NAME -like "*a*") {
+          Start-Process -FilePath anaconda -ArgumentList "-t $Env:ANACONDA_TOKEN upload
+          .\conda-bld\win-*\*.tar.bz2 --no-progress -l alpha" -Wait -Passthru
+        } elseif ($Env:APPVEYOR_REPO_TAG_NAME -like "*b*") {
+          Start-Process -FilePath anaconda -ArgumentList "-t $Env:ANACONDA_TOKEN upload
+          .\conda-bld\win-*\*.tar.bz2 --no-progress -l beta" -Wait -Passthru
+        } else {
+          Start-Process -FilePath anaconda -ArgumentList "-t $Env:ANACONDA_TOKEN upload
+          .\conda-bld\win-*\*.tar.bz2 --no-progress" -Wait -Passthru
+        }
+      }
