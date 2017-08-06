@@ -64,4 +64,12 @@ artifacts:
   - path: 'conda-bld\win-*\*.tar.bz2'
 
 on_success:
-  - IF "%APPVEYOR_REPO_TAG%" == "true" (anaconda upload .\\conda-bld\\win-*\\*.tar.bz2 --no-progress --force -t %ANACONDA_TOKEN%)
+  - IF "%APPVEYOR_REPO_TAG%" == "true" (
+      IF "%APPVEYOR_REPO_TAG_NAME:a=%=="%APPVEYOR_REPO_TAG_NAME% (
+        anaconda upload .\\conda-bld\\win-*\\*.tar.bz2 --no-progress -l alpha -t %ANACONDA_TOKEN%
+      ) ELSE IF "%APPVEYOR_REPO_TAG_NAME:b=%=="%APPVEYOR_REPO_TAG_NAME% (
+        anaconda upload .\\conda-bld\\win-*\\*.tar.bz2 --no-progress -l beta -t %ANACONDA_TOKEN%
+      ) ELSE (
+        anaconda upload .\\conda-bld\\win-*\\*.tar.bz2 --no-progress -t %ANACONDA_TOKEN%
+      )
+    )
