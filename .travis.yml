@@ -88,7 +88,7 @@ deploy:
   on:
     repo: molmod/molmod
     tags: true
-    condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7 $TRAVIS_OS_NAME == linux"
+    condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
   prerelease: true
 - provider: script
   skip_cleanup: true
@@ -120,7 +120,7 @@ deploy:
   on:
     repo: molmod/molmod
     tags: true
-    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 $TRAVIS_OS_NAME == linux"
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
 - provider: pages
   skip_cleanup: true
   github_token:
@@ -129,5 +129,5 @@ deploy:
   local_dir: doc/_build/html
   on:
     repo: molmod/molmod
-    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 $TRAVIS_OS_NAME == linux"
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
     tags: true
