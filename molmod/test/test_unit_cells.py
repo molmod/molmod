@@ -35,19 +35,21 @@ from molmod import *
 __all__ = ["UnitCellTestCase"]
 
 
-class UnitCellTestCase(BaseTestCase):
-    def get_random_uc(self, r=3, full=True):
-        if full:
-            active = np.ones(3, bool)
-        else:
-            active = np.random.randint(2,size=3).astype(bool)
-        while True:
-            result = UnitCell(np.random.uniform(-r, r, (3, 3)), active)
-            if not active.any() or result.spacings[active].min() > 1.0e-1:
-                #result = result.ordered
-                #result = result.alignment_a*result
+def get_random_uc(scale=2, num_active=3, min_spacing=0.1):
+    while True:
+        active = np.random.randint(0, 2, 3).astype(bool)
+        if active.sum() == num_active:
+            break
+    while True:
+        try:
+            result = UnitCell(np.random.uniform(-scale, scale, (3, 3)), active)
+            if not active.any() or result.spacings[active].min() >= min_spacing:
                 return result
+        except ValueError:
+            pass
 
+
+class UnitCellTestCase(BaseTestCase):
     def test_parameters(self):
         for counter in range(100):
             in_lengths = np.random.uniform(0.5, 1, (3,))
@@ -62,7 +64,7 @@ class UnitCellTestCase(BaseTestCase):
 
     def test_reciprocal(self):
         for counter in range(100):
-            uc = self.get_random_uc(full=False)
+            uc = get_random_uc(num_active=2)
             if uc.active[0]:
                 self.assertAlmostEqual(np.dot(uc.matrix[:,0], uc.reciprocal[:,0]), 1.0)
                 self.assertAlmostEqual(np.dot(uc.matrix[:,0], uc.reciprocal[:,1]), 0.0)
@@ -78,7 +80,7 @@ class UnitCellTestCase(BaseTestCase):
 
     def test_reciprocal_bis(self):
         for i in range(100):
-            uc = self.get_random_uc(full=False)
+            uc = get_random_uc(num_active=2)
             active, inactive = uc.active_inactive
             for i in inactive:
                 self.assertEqual(abs(uc.reciprocal[:,i]).max(), 0.0)
@@ -102,13 +104,13 @@ class UnitCellTestCase(BaseTestCase):
 
     def test_to_fractional(self):
         for i in range(100):
-            uc = self.get_random_uc()
+            uc = get_random_uc()
             fractional = np.random.uniform(-0.5, 0.5, 3)
             cartesian = fractional[0]*uc.matrix[:,0] + fractional[1]*uc.matrix[:,1] + fractional[2]*uc.matrix[:,2]
             fractional_bis = uc.to_fractional(cartesian)
             self.assertArraysAlmostEqual(fractional, fractional_bis)
         for i in range(100):
-            uc = self.get_random_uc()
+            uc = get_random_uc()
             cartesian = np.random.uniform(-3, 3, (10,3))
             fractional = uc.to_fractional(cartesian)
             for i in range(10):
@@ -117,13 +119,13 @@ class UnitCellTestCase(BaseTestCase):
 
     def test_to_cartesian(self):
         for i in range(100):
-            uc = self.get_random_uc()
+            uc = get_random_uc()
             cartesian = np.random.uniform(-3, 3, 3)
             fractional = cartesian[0]*uc.reciprocal[0] + cartesian[1]*uc.reciprocal[1] + cartesian[2]*uc.reciprocal[2]
             cartesian_bis = uc.to_cartesian(fractional)
             self.assertArraysAlmostEqual(cartesian, cartesian_bis)
         for i in range(100):
-            uc = self.get_random_uc()
+            uc = get_random_uc()
             fractional = np.random.uniform(-0.5, 0.5, (10,3))
             cartesian = uc.to_cartesian(fractional)
             for i in range(10):
@@ -132,13 +134,13 @@ class UnitCellTestCase(BaseTestCase):
 
     def test_consistency(self):
         for i in range(100):
-            uc = self.get_random_uc()
+            uc = get_random_uc()
             cartesian = np.random.uniform(-3, 3, 3)
             fractional = uc.to_fractional(cartesian)
             cartesian_bis = uc.to_cartesian(fractional)
             self.assertArraysAlmostEqual(cartesian, cartesian_bis)
         for i in range(100):
-            uc = self.get_random_uc()
+            uc = get_random_uc()
             fractional = np.random.uniform(-0.5, 0.5, (10,3))
             cartesian = uc.to_cartesian(fractional)
             fractional_bis = uc.to_fractional(cartesian)
@@ -166,7 +168,7 @@ class UnitCellTestCase(BaseTestCase):
         self.assertArraysAlmostEqual(uc.shortest_vector([3, 0, 3]), np.array([0, 0, 3]))
         # random tests
         for uc_counter in range(1000):
-            uc = self.get_random_uc(full=False)
+            uc = get_random_uc(num_active=2)
             for r_counter in range(10):
                 r0 = np.random.normal(0, 10, 3)
                 r1 = uc.shortest_vector(r0)
@@ -194,7 +196,7 @@ class UnitCellTestCase(BaseTestCase):
         uc = UnitCell(np.identity(3,float)*3)
         self.assertArraysAlmostEqual(uc.spacings, np.ones(3, float)*3.0)
         for i in range(100):
-            uc = self.get_random_uc()
+            uc = get_random_uc()
             a = uc.matrix[:,0]
             b = uc.matrix[:,1]
             c = uc.matrix[:,2]
@@ -206,7 +208,7 @@ class UnitCellTestCase(BaseTestCase):
 
     def test_radius_ranges(self):
         for i in range(20):
-            uc = self.get_random_uc()
+            uc = get_random_uc()
             radius = np.random.uniform(1,5)
             ranges = uc.get_radius_ranges(radius)
             for j in range(100):
@@ -221,7 +223,7 @@ class UnitCellTestCase(BaseTestCase):
 
     def test_radius_indexes(self):
         for i in range(20):
-            uc = self.get_random_uc()
+            uc = get_random_uc()
             radius = np.random.uniform(1,2)*abs(uc.volume)**(0.333)
 
             #uc = UnitCell.from_parameters3(
@@ -389,7 +391,7 @@ class UnitCellTestCase(BaseTestCase):
 
     def test_div(self):
         for i in range(20):
-            uc0 = self.get_random_uc(full=False)
+            uc0 = get_random_uc(num_active=2)
             x = np.random.uniform(1,2,3)
             uc1 = uc0/x
             self.assertArraysAlmostEqual(uc0.matrix/x, uc1.matrix)
@@ -412,7 +414,7 @@ class UnitCellTestCase(BaseTestCase):
 
     def test_mul(self):
         for i in range(20):
-            uc0 = self.get_random_uc(full=False)
+            uc0 = get_random_uc(num_active=2)
             x = np.random.uniform(1,2,3)
             uc1 = uc0*x
             self.assertArraysAlmostEqual(uc0.matrix*x, uc1.matrix)
@@ -480,7 +482,7 @@ class UnitCellTestCase(BaseTestCase):
 
     def test_ordered(self):
         for i in range(10):
-            uc0 = self.get_random_uc(full=False)
+            uc0 = get_random_uc(num_active=2)
             uc1 = uc0.ordered
             self.assertAlmostEqual(uc0.volume, uc1.volume)
             self.assertEqual(uc0.active.sum(), uc1.active.sum())

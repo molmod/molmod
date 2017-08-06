@@ -31,6 +31,7 @@ import pkg_resources
 from molmod import *
 from molmod.io import *
 from molmod.periodic import periodic
+from molmod.test.test_unit_cells import get_random_uc
 
 
 __all__ = ["BinningTestCase"]
@@ -169,13 +170,7 @@ class BinningTestCase(unittest.TestCase):
     def test_distances_intra_random_periodic(self):
         for i in range(10):
             coordinates = np.random.uniform(0,1,(20,3))
-            while True:
-                unit_cell = UnitCell(
-                    np.random.uniform(0,5,(3,3)),
-                    np.random.randint(0,2,3).astype(bool),
-                )
-                if unit_cell.spacings.min() > 0.5:
-                    break
+            unit_cell = get_random_uc(5.0, np.random.randint(0, 4), 0.5)
             coordinates = unit_cell.to_cartesian(coordinates)*3-unit_cell.matrix.sum(axis=1)
             cutoff = np.random.uniform(1, 6)
 
@@ -205,13 +200,7 @@ class BinningTestCase(unittest.TestCase):
         for i in range(10):
             fractional0 = np.random.uniform(0,1,(20,3))
             fractional1 = np.random.uniform(0,1,(20,3))
-            while True:
-                unit_cell = UnitCell(
-                    np.random.uniform(0,5,(3,3)),
-                    np.random.randint(0,2,3).astype(bool),
-                )
-                if unit_cell.spacings.min() > 0.5:
-                    break
+            unit_cell = get_random_uc(5.0, np.random.randint(0, 4), 0.5)
             coordinates0 = unit_cell.to_cartesian(fractional0)*3-unit_cell.matrix.sum(axis=1)
             coordinates1 = unit_cell.to_cartesian(fractional1)*3-unit_cell.matrix.sum(axis=1)
             cutoff = np.random.uniform(1, 6)

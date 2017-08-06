@@ -30,6 +30,7 @@ import unittest
 import numpy as np
 import pkg_resources
 
+from molmod.test.test_unit_cells import get_random_uc
 from molmod import *
 
 
@@ -81,10 +82,7 @@ class ToyFFTestCase(unittest.TestCase):
 
         from molmod.ext import molecules_distance_matrix
         while True:
-            unit_cell = UnitCell(
-                np.random.uniform(0,3,(3,3)),
-                np.random.randint(0,2,3).astype(bool),
-            )
+            unit_cell = get_random_uc(3.0, np.random.randint(0, 4), 0.2)
             fractional = np.random.uniform(0,1,(N,3))
             coordinates = unit_cell.to_cartesian(fractional)
             if np.random.randint(0,2):

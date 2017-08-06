@@ -27,6 +27,7 @@ import numpy as np
 import pkg_resources
 
 from molmod.test.common import *
+from molmod.test.test_unit_cells import get_random_uc
 from molmod import *
 
 
@@ -46,10 +47,7 @@ class MoleculeTestCase(BaseTestCase):
     def test_distance_matrix_periodic(self):
         for i in range(1000):
             N = 6
-            unit_cell = UnitCell(
-                np.random.uniform(0,1,(3,3)),
-                np.random.randint(0,2,3).astype(bool),
-            )
+            unit_cell = get_random_uc(1.0, np.random.randint(0, 4))
             fractional = np.random.uniform(0,1,(N,3))
             coordinates = unit_cell.to_cartesian(fractional)
             from molmod.ext import molecules_distance_matrix
