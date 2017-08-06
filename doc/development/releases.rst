@@ -24,6 +24,14 @@
 Release history
 ###############
 
+**Version 1.4.0** August 6, 2017
+
+- Testing on Windows instances with AppVeyor, with deployment of Windows packages to
+  anaconda.
+- Testing on Travis with OSX instances, with deployment of OSX packages to
+  anaconda.
+- Fix tests failing due to unfortunate random numbers
+
 **Version 1.3.5** August 5, 2017
 
 - Python 3 bug fix
