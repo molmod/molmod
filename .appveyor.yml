@@ -2,7 +2,7 @@ version: '{build}'
 image: Visual Studio 2015
 
 platform:
-- x86
+#- x86
 - x64
 
 environment:
@@ -37,6 +37,7 @@ install:
   - '"%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %PLATFORM%'
 
   # Load the conda root environment, configure and install some packages
+  - if "%PLATFORM%"=="x64" ( SET CONDA=%CONDA%-x64 )
   - "call %CONDA%\\Scripts\\activate.bat"
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
