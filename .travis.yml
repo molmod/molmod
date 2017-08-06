@@ -77,7 +77,7 @@ deploy:
   on:
     repo: molmod/molmod
     tags: true
-    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 $TRAVIS_OS_NAME == linux"
   prerelease: false
 - provider: releases
   skip_cleanup: true
@@ -88,25 +88,25 @@ deploy:
   on:
     repo: molmod/molmod
     tags: true
-    condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7"
+    condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7 $TRAVIS_OS_NAME == linux"
   prerelease: true
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l alpha ${HOME}/miniconda/conda-bld/linux-64/molmod-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload -l alpha ${HOME}/miniconda/conda-bld/*/molmod-*.tar.bz2
   on:
     repo: molmod/molmod
     tags: true
     condition: "$TRAVIS_TAG == *a*"
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l beta ${HOME}/miniconda/conda-bld/linux-64/molmod-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload -l beta ${HOME}/miniconda/conda-bld/*/molmod-*.tar.bz2
   on:
     repo: molmod/molmod
     tags: true
     condition: "$TRAVIS_TAG == *b*"
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l main ${HOME}/miniconda/conda-bld/linux-64/molmod-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload -l main ${HOME}/miniconda/conda-bld/*/molmod-*.tar.bz2
   on:
     repo: molmod/molmod
     tags: true
@@ -120,7 +120,7 @@ deploy:
   on:
     repo: molmod/molmod
     tags: true
-    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 $TRAVIS_OS_NAME == linux"
 - provider: pages
   skip_cleanup: true
   github_token:
@@ -129,5 +129,5 @@ deploy:
   local_dir: doc/_build/html
   on:
     repo: molmod/molmod
-    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 $TRAVIS_OS_NAME == linux"
     tags: true
