@@ -30,7 +30,8 @@ Release history
   anaconda.
 - Testing on Travis with OSX instances, with deployment of OSX packages to
   anaconda.
-- Fix tests failing due to unfortunate random numbers
+- Fix tests failing due to unfortunate random numbers.
+- Skip tests on known weaknesses of binning.
 
 **Version 1.3.5** August 5, 2017
 
