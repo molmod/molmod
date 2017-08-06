@@ -1,3 +1,6 @@
+os:
+  - linux
+  - osx
 sudo: false
 # Do not use Travis Python to save some time.
 language: generic
