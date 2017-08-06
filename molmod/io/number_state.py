@@ -293,6 +293,7 @@ class NumberState(object):
 
                 skip = ((subset is not None) and (name not in subset))
 
+                print(words)
                 if (words[2].startswith("shape=(") and words[2].endswith(")")):
                     if not isinstance(attr, ArrayAttr):
                         raise FileFormatError("field '%s' is not an array." % name)
