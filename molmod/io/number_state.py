@@ -121,10 +121,10 @@ class ArrayAttr(StateAttr):
         """Write the attribute to a file-like object"""
         array = self.get()
         # print the header line
-        print("% 40s  kind=%s  shape=%s" % (
+        print("% 40s  kind=%s  shape=(%s)" % (
             name,
             array.dtype.kind,
-            ("%s" % (array.shape, )).replace(" ", ""),
+            ",".join([str(int(size_axis)) for size_axis in array.shape]),
         ), file=f)
         # print the numbers
         counter = 0
