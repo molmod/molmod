@@ -1,17 +1,3 @@
-os:
-  - linux
-  - osx
-osx_image: xcode8.3
-dist: trusty
-sudo: false
-
-# For testing only:
-#branches:
-#  only:
-#    - /^\d+\.\d+(\.\d+)?(-\S*)?$/
-
-# Do not use Travis Python to save some time.
-language: generic
 env:
   matrix:
   - MYCONDAPY=2.7
@@ -26,6 +12,21 @@ env:
     - secure: "O/IuiNJ0j3M64WlNZHis/RGdoa26LiDzzUh60yFJd7J8VIATfJSVObn342ToY/vcWmt+zYAsaouNzm729DUJ1bj80Zzuwrftb/5sgP5Z/QkwdsHfukke4vXa6zyrPQxMEDhfaO0St3zUznSjCT4vQJlTL7cCBOun+sIhOT807qM="
     - PYPKG=molmod
     - GITHUB_REPO_NAME=molmod/molmod
+
+# Do not use Travis Python to save some time.
+language: generic
+os:
+  - linux
+  - osx
+osx_image: xcode8.3
+dist: trusty
+sudo: false
+
+# For testing only:
+#branches:
+#  only:
+#    - /^\d+\.\d+(\.\d+)?(-\S*)?$/
+
 install:
 # Get miniconda. Take the right version, so re-installing python is only needed for 3.5.
 - if [[ "$MYCONDAPY" == "2.7" ]]; then
