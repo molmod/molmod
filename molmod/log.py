@@ -26,6 +26,7 @@ from __future__ import print_function, division
 
 import sys
 import os
+import platform
 import datetime
 import getpass
 import time
@@ -372,7 +373,7 @@ class ScreenLog(object):
         if self.do_low:
             with self.section('ENV'):
                 self('User:          &' + getpass.getuser())
-                self('Machine info:  &' + ' '.join(os.uname()))
+                self('Platform:      &' + platform.platform())
                 self('Time:          &' + datetime.datetime.now().isoformat())
                 self('Python version:&' + sys.version.replace('\n', ''))
                 self('%s&%s' % (('%s version:' % self.name).ljust(15), self.version))

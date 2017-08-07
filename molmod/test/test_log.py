@@ -28,26 +28,24 @@ from molmod import *
 
 
 def test_line_wrapping():
-    f = StringIO()
-    timer = TimerGroup()
-    log = ScreenLog('TEST', '0.0', '', '', timer, f)
-    log._active = True
-    with log.section('NVE'):
-        log('This is just a long test message that should get splitted into two lines properly.')
-    assert f.getvalue() == '\n    NVE This is just a long test message that should get splitted into two\n    NVE lines properly.\n'
-    f.close()
+    with StringIO() as f:
+        timer = TimerGroup()
+        log = ScreenLog('TEST', '0.0', '', '', timer, f)
+        log._active = True
+        with log.section('NVE'):
+            log('This is just a long test message that should get splitted into two lines properly.')
+        assert f.getvalue() == '\n    NVE This is just a long test message that should get splitted into two\n    NVE lines properly.\n'
 
 
 def test_center():
-    f = StringIO()
-    timer = TimerGroup()
-    log = ScreenLog('TEST', '0.0', '', '', timer, f)
-    log._active = True
-    with log.section('NVE'):
-        log.center('Gets centered.', edge='***')
-        log.center('Gets centered.')
-    assert f.getvalue() == '\n    NVE ***                          Gets centered.                          ***\n    NVE                              Gets centered.                             \n'
-    f.close()
+    with StringIO() as f:
+        timer = TimerGroup()
+        log = ScreenLog('TEST', '0.0', '', '', timer, f)
+        log._active = True
+        with log.section('NVE'):
+            log.center('Gets centered.', edge='***')
+            log.center('Gets centered.')
+        assert f.getvalue() == '\n    NVE ***                          Gets centered.                          ***\n    NVE                              Gets centered.                             \n'
 
 
 def test_levels():
@@ -59,6 +57,15 @@ def test_levels():
     assert not log.do_medium
 
 
+def test_header_footer():
+    with StringIO() as f:
+        timer = TimerGroup()
+        log = ScreenLog(u'TEST', u'0.0', u'', u'', timer, f)
+        log(u'test')
+        assert f.tell() > 10
+        log.print_footer()
+
+
 def test_colors():
     timer = TimerGroup()
     log = ScreenLog('TEST', '0.0', '', '', timer)
@@ -66,44 +73,42 @@ def test_colors():
 
 
 def test_hline():
-    f = StringIO()
-    timer = TimerGroup()
-    log = ScreenLog('TEST', '0.0', '', '', timer, f)
-    log._active = True
-    with log.section('FOOBAR'):
-        log.hline()
-    assert f.getvalue() == '\n FOOBAR ' + '~'*log.width + '\n'
-    f.close()
+    with StringIO() as f:
+        timer = TimerGroup()
+        log = ScreenLog('TEST', '0.0', '', '', timer, f)
+        log._active = True
+        with log.section('FOOBAR'):
+            log.hline()
+        assert f.getvalue() == '\n FOOBAR ' + '~'*log.width + '\n'
 
 
 def test_unitsys():
     from molmod.units import kjmol, kcalmol
-    f = StringIO()
-    timer = TimerGroup()
-    log = ScreenLog('TEST', '0.0', '', '', timer, f)
-    assert abs(log.energy.conversion - kjmol) < 1e-10
-    log.set_unitsys(log.cal)
-    assert abs(log.energy.conversion - kcalmol) < 1e-10
+    with StringIO() as f:
+        timer = TimerGroup()
+        log = ScreenLog('TEST', '0.0', '', '', timer, f)
+        assert abs(log.energy.conversion - kjmol) < 1e-10
+        log.set_unitsys(log.cal)
+        assert abs(log.energy.conversion - kcalmol) < 1e-10
 
 
 def test_lead():
-    f = StringIO()
-    timer = TimerGroup()
-    log = ScreenLog('TEST', '0.0', '', '', timer, f)
-    log._active = True
-    with log.section('AAA'):
-        log('Some prefix:&followed by a long text that needs to be wrapped over multiple lines.')
-    assert f.getvalue() == '\n    AAA Some prefix: followed by a long text that needs to be wrapped over\n    AAA              multiple lines.\n'
-    f.close()
+    with StringIO() as f:
+        timer = TimerGroup()
+        log = ScreenLog('TEST', '0.0', '', '', timer, f)
+        log._active = True
+        with log.section('AAA'):
+            log('Some prefix:&followed by a long text that needs to be wrapped over multiple lines.')
+        assert f.getvalue() == '\n    AAA Some prefix: followed by a long text that needs to be wrapped over\n    AAA              multiple lines.\n'
 
 
 def test_enter_leave():
-    f = StringIO()
-    timer = TimerGroup()
-    log = ScreenLog('TEST', '0.0', '', '', timer, f)
-    with log.section('FOO'):
-        assert log.prefix == '    FOO'
-        with log.section('BAR'):
-            assert log.prefix == '    BAR'
-        assert log.prefix == '    FOO'
-    assert log.prefix == '       '
+    with StringIO() as f:
+        timer = TimerGroup()
+        log = ScreenLog('TEST', '0.0', '', '', timer, f)
+        with log.section('FOO'):
+            assert log.prefix == '    FOO'
+            with log.section('BAR'):
+                assert log.prefix == '    BAR'
+            assert log.prefix == '    FOO'
+        assert log.prefix == '       '
