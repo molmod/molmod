@@ -24,6 +24,10 @@
 Release history
 ###############
 
+**Version 1.4.1** August 7, 2017
+
+- Fix windows compatibility bug.
+
 **Version 1.4.0** August 6, 2017
 
 - Testing on Windows instances with AppVeyor, with deployment of Windows packages to
