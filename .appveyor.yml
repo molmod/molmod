@@ -53,6 +53,8 @@ install:
   - conda update -q conda
   - conda info -a
   - conda install conda-build anaconda-client numpy cython
+  # Install codecov tool for uploading coverage reports
+  - pip install codecov
 
 build: false
 
@@ -65,11 +67,14 @@ test_script:
   - conda install --use-local %PYPKG%
 
   # Run the tests outside the source tree.
-  - pushd %HOMEPATH% && (nosetests -v %PYPKG% & popd)
+  - pushd "%HOMEPATH%" && (nosetests %PYPKG% -v --detailed-errors --with-coverage --cover-package=molmod --cover-tests --cover-xml & popd)
 
 after_test:
   # Copy the conda build to the home dir, such that it can be registerd as an artifact
   - move %CONDA%\conda-bld .
+
+  # Upload coverage reports
+  - 'codecov -f "%HOMEPATH%\coverage.xml"'
 
 artifacts:
   # Files to be uploaded
