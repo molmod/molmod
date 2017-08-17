@@ -59,12 +59,12 @@ def load_chk(filename):
             elif kind == 'int':
                 result[key] = int(value)
             elif kind == 'bln':
-                result[key] = value == 'True'
+                result[key] = value.lower() in ['true', '1', 'yes']
             elif kind == 'flt':
                 result[key] = float(value)
             elif kind[3:5] == 'ar':
                 if kind[:3] == 'str':
-                    dtype = np.dtype('U')
+                    dtype = np.dtype('U22')
                 elif kind[:3] == 'int':
                     dtype = int
                 elif kind[:3] == 'bln':
@@ -83,12 +83,12 @@ def load_chk(filename):
                         if len(short) == 0:
                             raise IOError('Insufficient data')
                         for s in short:
-                            if dtype is bool and s.lower() in ['True', '1', 'Yes']:
-                                work[counter] = True
-                            elif dtype == np.dtype('U'):
-                                work[counter] = s
-                            else:
+                            if dtype == bool:
+                                work[counter] = s.lower() in ['true', '1', 'yes']
+                            elif callable(dtype):
                                 work[counter] = dtype(s)
+                            else:
+                                work[counter] = s
                             counter += 1
                             if counter == array.size:
                                 break
