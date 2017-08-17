@@ -22,10 +22,9 @@ osx_image: xcode8.3
 dist: trusty
 sudo: false
 
-# For testing only:
-#branches:
-#  only:
-#    - /^\d+\.\d+(\.\d+)?(-\S*)?$/
+branches:
+  only:
+    - master
 
 install:
 # Get miniconda. Take the right version, so re-installing python is only needed for 3.5.
@@ -80,7 +79,7 @@ script:
 - (cd doc; make html)
 
 # Run tests out of source tree, to make sure that installed version is tested.
-- (cd; nosetests $PYPKG -v --detailed-errors --with-coverage --cover-package=molmod --cover-tests --cover-xml)
+- (cd; nosetests $PYPKG -v --detailed-errors --with-coverage --cover-package=$PYPKG --cover-tests --cover-xml)
 
 after_success:
 # Upload the coverage analysis

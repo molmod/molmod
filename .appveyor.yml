@@ -51,10 +51,11 @@ install:
   - '"%CONDA%\Scripts\activate.bat"'
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
-  - conda info -a
   - conda install conda-build anaconda-client numpy cython
   # Install codecov tool for uploading coverage reports
   - pip install codecov coverage
+  # Show conda info for debugging
+  - conda info -a
 
 build: false
 
@@ -67,7 +68,7 @@ test_script:
   - conda install --use-local %PYPKG%
 
   # Run the tests outside the source tree.
-  - pushd "%HOMEPATH%" && (nosetests %PYPKG% -v --detailed-errors --with-coverage --cover-package=molmod --cover-tests --cover-xml & popd)
+  - pushd "%HOMEPATH%" && (nosetests %PYPKG% -v --detailed-errors --with-coverage --cover-package=%PYPKG% --cover-tests --cover-xml & popd)
 
 after_test:
   # Copy the conda build to the home dir, such that it can be registerd as an artifact
