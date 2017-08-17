@@ -55,7 +55,7 @@ install:
 # Install conda tools for packaging and uploading
 - conda install python=${MYCONDAPY} numpy cython sphinx conda-build anaconda-client
 # Install more recent stuff with pip
-- pip install codecov
+- pip install codecov coverage
 # Show conda info for debugging
 - conda info -a
 

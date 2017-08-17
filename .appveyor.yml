@@ -54,7 +54,7 @@ install:
   - conda info -a
   - conda install conda-build anaconda-client numpy cython
   # Install codecov tool for uploading coverage reports
-  - pip install codecov
+  - pip install codecov coverage
 
 build: false
 
