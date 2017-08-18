@@ -119,12 +119,14 @@ def dump_chk(filename, data):
             if not isinstance(key, str):
                 raise TypeError('The keys must be strings.')
             if len(key) > 40:
-                raise ValueError('Key strings can not be longer than 40 characters.')
+                raise ValueError('Key strings cannot be longer than 40 characters.')
+            if '\n' in key:
+                raise ValueError('Key strings cannot contain newlines.')
             if isinstance(value, str):
                 if len(value) > 256:
-                    raise TypeError('Only small strings are supported (256 chars).')
+                    raise ValueError('Only small strings are supported (256 chars).')
                 if '\n' in value:
-                    raise ValueError('The string can not contain new lines.')
+                    raise ValueError('The string cannot contain new lines.')
                 print('%40s  kind=str   %s' % (key.ljust(40), value), file=f)
             elif isinstance(value, bool):
                 print('%40s  kind=bln   %s' % (key.ljust(40), value), file=f)

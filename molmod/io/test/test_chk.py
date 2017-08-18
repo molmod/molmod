@@ -23,6 +23,8 @@
 
 
 import os
+
+from nose.tools import assert_raises
 import numpy as np
 
 from molmod.test.common import tmpdir
@@ -45,6 +47,7 @@ def test_strings_array():
 
 def test_floats_array():
     check_data_array('test_floats_array', {'values': [1.2, 3.0, 4]}, float)
+    check_data_array('test_floats_array', {'values': [1.2, 3.0, 4, 5.0]}, float)
 
 
 def test_ints_array():
@@ -67,6 +70,7 @@ def check_data(testname, data0, dtype):
 
 def test_strings():
     check_data('test_strings_array', {'values': 'foo'}, (str, np.unicode))
+    check_data('test_strings_array', {'values': 'foo bar'}, (str, np.unicode))
 
 
 def test_floats():
@@ -83,3 +87,28 @@ def test_bool():
 
 def test_none():
     check_data('test_bool_array', {'values': None}, type(None))
+
+
+def test_errors():
+    with assert_raises(TypeError):
+        check_data('test_error1', {123: 5}, None)
+    with assert_raises(TypeError):
+        check_data('test_error1', {'a': 3.0 + 5j}, None)
+    with assert_raises(ValueError):
+        check_data('test_error2', {'Thiskeyiswaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaay'
+                                   'toooooooooooooooooooooooooolong': 5}, None)
+    with assert_raises(ValueError):
+        check_data('test_error3', {'no\nnewlines': 5}, None)
+    with assert_raises(ValueError):
+        check_data('test_error4', {'foo': 'a'*280}, None)
+    with assert_raises(ValueError):
+        check_data('test_error4', {'foo': 'a\n7'}, None)
+    structarr = np.array([(3, 2.4), (2, 3.4)], dtype=[('foo', 'i4'),('bar', 'f4')])
+    with assert_raises(TypeError):
+        check_data('test_error4', {'foo': structarr}, None)
+    with assert_raises(TypeError):
+        check_data('test_error1', {'a': [3.0 + 5j, -1j]}, None)
+    with assert_raises(ValueError):
+        check_data('test_error4', {'foo': ['a'*50, 'b']}, None)
+    with assert_raises(ValueError):
+        check_data('test_error4', {'foo': ['a a', 'b']}, None)
