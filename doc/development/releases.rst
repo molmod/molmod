@@ -24,6 +24,10 @@
 Release history
 ###############
 
+**Version 1.4.2** August 18, 2017
+
+- Fix bugs in the internal ``.chk`` file format.
+
 **Version 1.4.1** August 7, 2017
 
 - Fix windows compatibility bug.
