@@ -1,9 +1,9 @@
 .. image:: https://travis-ci.org/molmod/molmod.svg?branch=master
     :target: https://travis-ci.org/molmod/molmod
 .. image:: https://ci.appveyor.com/api/projects/status/g3kpxx1n80vek3hq/branch/master?svg=true
-    :target: https://ci.appveyor.com/project/tovrstra/molmod
-.. image:: https://anaconda.org/tovrstra/molmod/badges/version.svg
-    :target: https://anaconda.org/tovrstra/molmod
+    :target: https://ci.appveyor.com/project/molmod-bot/molmod
+.. image:: https://anaconda.org/molmod/molmod/badges/version.svg
+    :target: https://anaconda.org/molmod/molmod
 .. image:: https://codecov.io/gh/molmod/molmod/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/molmod/molmod
 
@@ -40,7 +40,7 @@ https://www.continuum.io/downloads)
 
 .. code:: bash
 
-    conda install -c tovrstra molmod
+    conda install -c molmod molmod
 
 
 Testing
