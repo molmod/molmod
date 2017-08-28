@@ -24,6 +24,10 @@
 Release history
 ###############
 
+**Version 1.4.3** August 28, 2017
+
+- First release on molmod conda channel.
+
 **Version 1.4.2** August 18, 2017
 
 - Fix bugs in the internal ``.chk`` file format.
