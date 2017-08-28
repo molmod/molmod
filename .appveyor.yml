@@ -87,13 +87,16 @@ on_success:
         $tar_glob = ".\conda-bld\win-*\${Env:PYPKG}-${Env:APPVEYOR_REPO_TAG_NAME}-*.tar.bz2";
         Write-Host $tar_glob;
         if ($Env:APPVEYOR_REPO_TAG_NAME -like "*a*") {
-          Start-Process -FilePath anaconda -ArgumentList "-t $Env:ANACONDA_TOKEN upload
+          $process = Start-Process -FilePath anaconda -ArgumentList "-t $Env:ANACONDA_TOKEN upload
           $tar_glob --no-progress -l alpha" -Wait -Passthru
         } elseif ($Env:APPVEYOR_REPO_TAG_NAME -like "*b*") {
-          Start-Process -FilePath anaconda -ArgumentList "-t $Env:ANACONDA_TOKEN upload
+          $process = Start-Process -FilePath anaconda -ArgumentList "-t $Env:ANACONDA_TOKEN upload
           $tar_glob --no-progress -l beta" -Wait -Passthru
         } else {
-          Start-Process -FilePath anaconda -ArgumentList "-t $Env:ANACONDA_TOKEN upload
+          $process = Start-Process -FilePath anaconda -ArgumentList "-t $Env:ANACONDA_TOKEN upload
           $tar_glob --no-progress" -Wait -Passthru
         }
+        $process.HasExited
+        Write-Host $process.StandardOutput
+        Write-Host $process.StandardError
       }
