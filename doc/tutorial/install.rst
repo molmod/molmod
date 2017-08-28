@@ -65,7 +65,7 @@ Alternatively, you can use conda. (See https://www.continuum.io/downloads)
 
 .. code:: bash
 
-    conda install -c tovrstra molmod
+    conda install -c molmod molmod
 
 
 Testing

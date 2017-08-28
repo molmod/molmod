@@ -1,15 +1,14 @@
 env:
   matrix:
   - MYCONDAPY=2.7
-  - MYCONDAPY=3.5
   - MYCONDAPY=3.6
   global:
     # ANACONDA_TOKEN
-    - secure: "aIgSD/nhnWU9ztVeRkDPBCg/zI48TtIgeTJL0tsBSKB42T9wVlxp2Muod50r1rZOZjtY/S4lFiXJhSkVOPP3nKAp+I4mCJC5ey0wthSCWv8pB4OBsjqYGpK28Th0h2lqgWwvZ5KuFb7qr0drqEVxpQezPdffwZRvpPqDLzhNqck="
+    - secure: "e+ESOBfKWStGIfqUh8AZ0QhC6eZSkb2u/3fM49HyQ8qzjP9TO+s6zjnMAfPPMj80ThoIe0eyHS30o/lu9HxobnXVwQnrQu8UCDqkikMe/vNwbupAit4NiAe1EsXDotyjN6B4gZ0fpNsvDcG8gH8j5pOm1Z4CpiHMy/cRPOBLZmQ="
     # GITHUB_TOKEN
-    - secure: "NrofdkaGtI5wasllKNqBQsYWupcm3FtpVpCfoUSe753mq/SI6+THUnyWg1oakgtlwVgcXghDevieWIaCEXUGVtLANl7KHK1R60n/Byb3eOYi/HwU2TfefrC3YyqM3P8xaCam4wxtp6BRnsX/wVUbRggfkba/WqJlN2nXgVP/emU="
+    - secure: "ajkGgqIdkVthYRvHt2ZtAEDaZ8ywomMIMWeIik3kU+YEgw6WjHhmjfBaMmCv+KpcaqTrNQ496WkBLQFECydhmSr02CD+0JvnX4+3goSNh7B2Dw7XimO6qIa9s4Gdls4BbxhAY1fcpEG7pUia8VC/nwDVmoz5Ca/u+RUK/KdnLfo="
     # PYPI_PASSWD
-    - secure: "O/IuiNJ0j3M64WlNZHis/RGdoa26LiDzzUh60yFJd7J8VIATfJSVObn342ToY/vcWmt+zYAsaouNzm729DUJ1bj80Zzuwrftb/5sgP5Z/QkwdsHfukke4vXa6zyrPQxMEDhfaO0St3zUznSjCT4vQJlTL7cCBOun+sIhOT807qM="
+    - secure: "fs1tw5B2G0J81XvGZ0scDmWkNJz7Vza05EAKIrhXBzBUNgI1yCgJwAokmkvMKGcq9sQ6zKB0XLFQFAXPqdvEjpFS0kpFzfzscHxkwBaXp1bqYQ0sSz/ER6O1qYECAdGwzfLBTSgxpC9gHJR/9UUalsBir9LAEUlmVLpkLW18gR8="
     - PYPKG=molmod
     - GITHUB_REPO_NAME=molmod/molmod
 
@@ -18,7 +17,7 @@ language: generic
 os:
   - linux
   - osx
-osx_image: xcode8.3
+osx_image: xcode6.4
 dist: trusty
 sudo: false
 
@@ -108,28 +107,28 @@ deploy:
   prerelease: true
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l alpha ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload --force -l alpha ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG == *a*"
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l beta ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload --force -l beta ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG == *b*"
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l main ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload --force -l main ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG != *[ab]*"
 - provider: pypi
   skip_cleanup: true
-  user: tovrstra
+  user: molmod
   password: ${PYPI_PASSWD}
   on:
     repo: ${GITHUB_REPO_NAME}
