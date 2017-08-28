@@ -95,8 +95,8 @@ on_success:
         } else {
           $process = Start-Process -FilePath anaconda -ArgumentList "-t $Env:ANACONDA_TOKEN upload
           $tar_glob --no-progress" -Wait -Passthru
-        }
-        $process.HasExited
-        Write-Host $process.StandardOutput
-        Write-Host $process.StandardError
+        };
+        $process.HasExited;
+        Write-Host $process.StandardOutput;
+        Write-Host $process.StandardError;
       }
