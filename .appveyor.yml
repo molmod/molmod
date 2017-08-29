@@ -5,7 +5,7 @@ environment:
     # See: http://stackoverflow.com/a/13751649/163740
     CMD_IN_ENV: 'cmd /E:ON /V:ON /C .\tools\appveyor\run_with_env.cmd'
     ANACONDA_TOKEN:
-      secure: UMSXPRCnP38rwuIS4dAq/ukkO7MNo513Qn8XwLPrtGtbGA0QGEDx8aWUQMsLrlaK
+      secure: 0DQaYM39SnBvsdy1f+Q71v2qRxJQuksPTqlyZL5AfjPaXW1yp1I+mHEKRVeKpUQf
     PYPKG: molmod
     GITHUB_REPO_NAME: molmod/molmod
 
