@@ -79,8 +79,12 @@ artifacts:
   - path: 'conda-bld\win-*\*.tar.bz2'
 
 on_success:
-  # This is virtually impossible with a normal dos batch script...
-  # Upload to anaconda, with the correct label derived from the version tag.
+# Upload to anaconda, with the correct label derived from the version tag.
+# This is virtually impossible with a normal dos batch script...
+# It also contains an incredibly clunky way to avoid build failure when anaconda writes
+# something harmless to stderr. The normal way does not work!
+# & anaconda $parameters 2>&1
+# Powershell should be called Powerhell!
   - ps:
       if (($Env:APPVEYOR_REPO_TAG -eq "true") -and
           ($Env:APPVEYOR_REPO_NAME -eq ${Env:GITHUB_REPO_NAME})) {
@@ -96,9 +100,5 @@ on_success:
         Write-Host "anaconda_label $anaconda_label";
         $parameters = '-t', "$Env:ANACONDA_TOKEN", 'upload', "$tar_glob", '-l',
                       "$anaconda_label", '--force', '--no-progress';
-        # Incredibly clunky way to avoid build failure when anaconda writes something
-        # harmless to stderr. The normal way does not work!
-        # & anaconda $parameters 2>&1
-        # Powershell should be called Powerhell!
         & cmd /c 'anaconda 2>&1' $parameters;
       }
