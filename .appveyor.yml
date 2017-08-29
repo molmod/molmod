@@ -5,7 +5,7 @@ environment:
     # See: http://stackoverflow.com/a/13751649/163740
     CMD_IN_ENV: 'cmd /E:ON /V:ON /C .\tools\appveyor\run_with_env.cmd'
     ANACONDA_TOKEN:
-      secure: 0DQaYM39SnBvsdy1f+Q71v2qRxJQuksPTqlyZL5AfjPaXW1yp1I+mHEKRVeKpUQf
+      secure: 9LaQALwQwI4XwxtzU05Lq7ZWj9H02yh1RGOCRCkxQzGbGyCUP496pcK4i6xC+BF9
     PYPKG: molmod
     GITHUB_REPO_NAME: molmod/molmod
 
@@ -94,7 +94,6 @@ on_success:
           $anaconda_label = "main"
         };
         Write-Host "anaconda_label $anaconda_label";
-        $parameters = '-t', "$Env:ANACONDA_TOKEN", 'upload', "$tar_glob", '-l', "$anaconda_label", '-f';
-        Write-Host "parameters $parameters";
+        $parameters = '-t', "$Env:ANACONDA_TOKEN", 'upload', "$tar_glob", '-l', "$anaconda_label", '-f', '--no-progress';
         & anaconda $parameters;
       }
