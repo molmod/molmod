@@ -1,6 +1,6 @@
 .. image:: https://travis-ci.org/molmod/molmod.svg?branch=master
     :target: https://travis-ci.org/molmod/molmod
-.. image:: https://ci.appveyor.com/api/projects/status/g3kpxx1n80vek3hq/branch/master?svg=true
+.. image:: https://ci.appveyor.com/api/projects/status/t9q65bdeny5cwy8x/branch/master?svg=true
     :target: https://ci.appveyor.com/project/molmod-bot/molmod
 .. image:: https://anaconda.org/molmod/molmod/badges/version.svg
     :target: https://anaconda.org/molmod/molmod
