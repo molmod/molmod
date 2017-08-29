@@ -96,5 +96,9 @@ on_success:
         Write-Host "anaconda_label $anaconda_label";
         $parameters = '-t', "$Env:ANACONDA_TOKEN", 'upload', "$tar_glob", '-l',
                       "$anaconda_label", '--force', '--no-progress';
+        # Incredibly clunky way to avoid build failure when anaconda writes something
+        # harmless to stderr. The normal way does not work!
+        # & anaconda $parameters 2>&1
+        # Powershell should be called Powerhell!
         & cmd /c 'anaconda 2>&1' $parameters;
       }

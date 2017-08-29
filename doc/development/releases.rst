@@ -24,7 +24,7 @@
 Release history
 ###############
 
-**Version 1.4.3** August 28, 2017
+**Version 1.4.3** August 29, 2017
 
 - First release on molmod conda channel.
 
