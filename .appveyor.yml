@@ -93,7 +93,8 @@ on_success:
         } else {
           $anaconda_label = "main"
         };
-        Write-Host "anaconda_label $anaconda_label"
-        $parameters = '-t', "$Env:ANACONDA_TOKEN", 'upload', "$tar_glob", '-l', "$anaconda_label", '-f'
-        & anaconda $parameters
+        Write-Host "anaconda_label $anaconda_label";
+        $parameters = '-t', "$Env:ANACONDA_TOKEN", 'upload', "$tar_glob", '-l', "$anaconda_label", '-f';
+        Write-Host "parameters $parameters";
+        & anaconda $parameters;
       }
