@@ -37,12 +37,33 @@ def check_data_array(testname, data0, dtype):
         dump_chk(fn_test, data0)
         data1 = load_chk(fn_test)
         assert data0.keys() == data1.keys()
-        assert (data0['values'] == data1['values']).all()
         assert data1['values'].dtype == dtype
+        assert (np.asarray(data0['values'], dtype=dtype) == data1['values']).all()
 
 
 def test_strings_array():
-    check_data_array('test_strings_array', {'values': ['foo', 'bar']}, np.dtype('U22'))
+    data = {'values': np.array(['foo', 'bar'])}
+    check_data_array('test_strings_array', data, np.dtype('U22'))
+
+
+def test_strings_array_list():
+    data = {'values': ['foo', 'bar']}
+    check_data_array('test_strings_array', data, np.dtype('U22'))
+
+
+def test_strings_array_tuple():
+    data = {'values': ('foo', 'bar')}
+    check_data_array('test_strings_array', data, np.dtype('U22'))
+
+
+def test_strings_array_bytes():
+    data = {'values': np.array(['foo', 'bar'], dtype=np.bytes_)}
+    check_data_array('test_strings_array', data, np.dtype('U22'))
+
+
+def test_strings_array_unicode():
+    data = {'values': np.array(['foo', 'bar'], dtype=np.unicode)}
+    check_data_array('test_strings_array', data, np.dtype('U22'))
 
 
 def test_floats_array():
