@@ -24,6 +24,11 @@
 Release history
 ###############
 
+**Version 1.4.4** November 20, 2017
+
+- Fix Python 3 bug in CHK format
+- Fix counter error in ring detection (Patrik Marschalik)
+
 **Version 1.4.3** August 29, 2017
 
 - First release on molmod conda channel.
