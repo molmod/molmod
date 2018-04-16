@@ -26,6 +26,12 @@
 from builtins import object
 
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
+
 __all__ = ["slice_match", "FileFormatError", "SlicedReader"]
 
 
