@@ -71,7 +71,7 @@ class SlicedReader(object):
             | ``sub``  --  a slice indicating which frames to read/skip
 
         """
-        if isinstance(f, str):
+        if isinstance(f, basestring):
             self._auto_close = True
             self._f = open(f)
         else:
