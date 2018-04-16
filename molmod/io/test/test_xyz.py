@@ -95,6 +95,8 @@ class XYZTestCase(BaseTestCase):
     def test_probes(self):
         xyz = XYZFile(pkg_resources.resource_filename(__name__, "../../data/test/probes.xyz"))
         self.assertEqual(xyz.numbers[-1], 0)
+        xyz = XYZFile(pkg_resources.resource_filename(__name__, u"../../data/test/probes.xyz"))
+        self.assertEqual(xyz.numbers[-1], 0)
 
     def test_dopamine(self):
         xyz = XYZFile(pkg_resources.resource_filename(__name__, "../../data/test/dopamine.xyz"))
