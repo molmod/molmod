@@ -88,6 +88,13 @@ class MolecularGraph(Graph):
            with a database of bond lengths. Based on this comparison, bonded
            atoms are detected.
 
+           Before marking a pair of atoms A and B as bonded, it is also checked
+           that there is no third atom C somewhat between A and B.
+           When an atom C exists that is closer to B (than A) and the angle
+           A-B-C is less than 45 degrees, atoms A and B are not bonded.
+           Similarly if C is closer to A (than B) and the angle B-A-C is less
+           then 45 degrees, A and B are not connected.
+
            Argument:
             | ``molecule``  --  The molecule to derive the graph from
 
