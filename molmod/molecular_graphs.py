@@ -109,7 +109,7 @@ class MolecularGraph(Graph):
         unit_cell = molecule.unit_cell
         pair_search = PairSearchIntra(
             molecule.coordinates,
-            bonds.max_length*bonds.bond_tolerance,
+            bonds.max_length*bonds.bond_tolerance*scaling,
             unit_cell
         )
 
