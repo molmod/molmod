@@ -527,16 +527,16 @@ class MolecularGraphTestCase(unittest.TestCase):
         HasNeighbors(HasAtomNumber(1), HasAtomNumber(6))
 
     def test_zirconium(self):
-        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, '../data/test/oh3siozroh3.xyz'))
+        mol = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/oh3siozroh3.xyz"))
         mol.set_default_graph()
         assert len(mol.graph.edges)==14
-        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, '../data/test/osih2osihosih2osih2ozrh2oh.xyz'))
+        mol = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/osih2osihosih2osih2ozrh2oh.xyz"))
         mol.set_default_graph()
         assert len(mol.graph.edges)==21
-        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, '../data/test/h3zrosihohosioh3.xyz'))
+        mol = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/h3zrosihohosioh3.xyz"))
         mol.set_default_graph()
         assert len(mol.graph.edges)==16
-        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, '../data/test/zr4o8-3.xyz'))
+        mol = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/zr4o8-3.xyz"))
         mol.set_default_graph()
         assert len(mol.graph.edges)==12
 

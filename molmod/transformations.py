@@ -62,7 +62,7 @@ class Translation(ReadOnly):
        array with three elements.
     """
     t = ReadOnlyAttribute(np.ndarray, none=False, npdim=1, npshape=(3,),
-        npdtype=float, doc="the translation vector")
+        npdtype=np.floating, doc="the translation vector")
 
     def __init__(self, t):
         """
@@ -162,7 +162,7 @@ class Rotation(ReadOnly):
 
 
     r = ReadOnlyAttribute(np.ndarray, none=False, check=_check_r, npdim=2,
-        npshape=(3,3), npdtype=float, doc="the rotation matrix")
+        npshape=(3,3), npdtype=np.floating, doc="the rotation matrix")
 
     def __init__(self, r):
         """

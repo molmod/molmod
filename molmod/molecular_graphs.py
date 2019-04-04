@@ -73,10 +73,11 @@ class MolecularGraph(Graph):
                 raise TypeError("All symbols must be strings.")
 
     numbers = ReadOnlyAttribute(np.ndarray, none=False, check=_check_numbers,
-        npdim=1, npdtype=int, doc="the atomic numbers associated with the "
-        "vertices")
+        npdim=1, npdtype=np.signedinteger, doc="the atomic numbers associated "
+        "with the vertices")
     orders = ReadOnlyAttribute(np.ndarray, none=False, check=_check_orders,
-        npdim=1, npdtype=float, doc="the bond orders associated with the edges")
+        npdim=1, npdtype=np.floating, doc="the bond orders associated with the "
+        "edges")
     symbols = ReadOnlyAttribute(tuple, _check_symbols, doc="symbols for the "
         "atoms, which can be element names for force-field atom types")
 

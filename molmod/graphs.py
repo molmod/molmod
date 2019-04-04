@@ -610,8 +610,8 @@ class Graph(ReadOnly):
             if len(x) == 0:
                 return np.zeros(0, np.ubyte)
             else:
-                return np.fromstring(x, np.ubyte)
-        hashrow = lambda x: np.fromstring(hashlib.sha1(x.data).digest(), np.ubyte)
+                return np.frombuffer(x, np.ubyte)
+        hashrow = lambda x: np.frombuffer(hashlib.sha1(x.data).digest(), np.ubyte)
         # initialization
         result = np.zeros((self.num_vertices, 20), np.ubyte)
         for i in range(self.num_vertices):

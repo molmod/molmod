@@ -81,13 +81,13 @@ class Molecule(ReadOnly):
             if not isinstance(symbol, str):
                 raise TypeError("All symbols must be strings.")
 
-    numbers = ReadOnlyAttribute(np.ndarray, none=False, npdim=1, npdtype=int,
-        doc="the atomic numbers")
+    numbers = ReadOnlyAttribute(np.ndarray, none=False, npdim=1,
+        npdtype=np.signedinteger, doc="the atomic numbers")
     coordinates = ReadOnlyAttribute(np.ndarray, npdim=2, npshape=(None,3),
-        npdtype=float, check=_check_coordinates, doc="atomic Cartesian "
+        npdtype=np.floating, check=_check_coordinates, doc="atomic Cartesian "
         "coordinates")
     title = ReadOnlyAttribute(str, doc="a short description of the system")
-    masses = ReadOnlyAttribute(np.ndarray, npdim=1, npdtype=float,
+    masses = ReadOnlyAttribute(np.ndarray, npdim=1, npdtype=np.floating,
         check=_check_masses, doc="the atomic masses")
     graph = ReadOnlyAttribute(MolecularGraph, check=_check_graph,
         doc="the molecular graph with the atom connectivity")
