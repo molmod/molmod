@@ -663,7 +663,7 @@ class GraphTestCase(unittest.TestCase):
         ]
         gs = GraphSearch(RingPattern(12), debug=False)
         for fn_xyz, expected_sizes in cases:
-            mol = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/%s" % fn_xyz))
+            mol = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/%s" % fn_xyz))
             mol.set_default_graph()
             sizes = []
             for match in gs(mol.graph):

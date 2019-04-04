@@ -36,7 +36,7 @@ __all__ = ["GamessTestCase"]
 
 class GamessTestCase(BaseTestCase):
     def test_punch(self):
-        punch = PunchFile(pkg_resources.resource_filename(__name__, "../../data/test/PCGamess_PUNCH"))
+        punch = PunchFile(pkg_resources.resource_filename("molmod", "data/test/PCGamess_PUNCH"))
         self.assertEqual(punch.title, "Simple example sample optimization with Hessian output for Toon")
         self.assertEqual(punch.symmetry, "C1")
         self.assertEqual(punch.symbols, ["CL", "H", "H", "H", "H", "F", "F", "F", "F", "H", "F"])

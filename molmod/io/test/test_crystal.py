@@ -31,7 +31,7 @@ from molmod import *
 
 
 def test_crystal_quartz():
-    cryout = CrystalAPIOut(pkg_resources.resource_filename(__name__, "../../data/test/crystal_api.out"))
+    cryout = CrystalAPIOut(pkg_resources.resource_filename("molmod", "data/test/crystal_api.out"))
     # unit cell
     assert abs(cryout.unit_cell.matrix[0,0] - 8.041028888) < 1e-8
     assert cryout.unit_cell.matrix[2,0] == 0.0

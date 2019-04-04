@@ -37,7 +37,7 @@ __all__ = ["DLPolyTestCase"]
 
 class DLPolyTestCase(BaseTestCase):
     def test_history_reader(self):
-        hr = DLPolyHistoryReader(pkg_resources.resource_filename(__name__, "../../data/test/dlpoly_HISTORY"))
+        hr = DLPolyHistoryReader(pkg_resources.resource_filename("molmod", "data/test/dlpoly_HISTORY"))
         assert hr.num_atoms == 3
         frame = next(hr)
         self.assertEqual(frame["step"], 4000)
@@ -54,7 +54,7 @@ class DLPolyTestCase(BaseTestCase):
         self.assertEqual(frame["step"], 4050)
 
     def test_history_reader_restart(self):
-        hr = DLPolyHistoryReader(pkg_resources.resource_filename(__name__, "../../data/test/dlpoly_HISTORY_an2"))
+        hr = DLPolyHistoryReader(pkg_resources.resource_filename("molmod", "data/test/dlpoly_HISTORY_an2"))
         assert hr.num_atoms == 24
         frame = next(hr)
         self.assertEqual(frame["step"], 10381000)
@@ -63,7 +63,7 @@ class DLPolyTestCase(BaseTestCase):
         self.assertEqual(frame["step"], 10382000)
 
     def test_output_reader(self):
-        outr = DLPolyOutputReader(pkg_resources.resource_filename(__name__, "../../data/test/dlpoly_OUTPUT"), skip_equi_period=False)
+        outr = DLPolyOutputReader(pkg_resources.resource_filename("molmod", "data/test/dlpoly_OUTPUT"), skip_equi_period=False)
         row = next(outr)
         self.assertAlmostEqual(row[0], 1)
         self.assertAlmostEqual(row[-1]/(1000*atm), 5.0151E+01)

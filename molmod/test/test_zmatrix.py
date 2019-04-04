@@ -36,7 +36,7 @@ __all__ = ["ZMatrixTestCase"]
 class ZMatrixTestCase(BaseTestCase):
     def test_constency(self):
         def test_one(xyz_fn, checks, reorder=False):
-            mol = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/" + xyz_fn))
+            mol = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/" + xyz_fn))
             mol.set_default_graph()
             zmat_gen = ZMatrixGenerator(mol.graph)
             if reorder is False:

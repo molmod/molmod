@@ -36,7 +36,7 @@ __all__ = ["PDBTestCase"]
 
 class PDBTestCase(BaseTestCase):
     def test_load_pdb(self):
-        mol = load_pdb(pkg_resources.resource_filename(__name__, "../../data/test/il2.pdb"))
+        mol = load_pdb(pkg_resources.resource_filename("molmod", "data/test/il2.pdb"))
         self.assertEqual(mol.numbers[0], 7)
         self.assertEqual(mol.numbers[5], 1)
         self.assertEqual(mol.numbers[-1], 8)

@@ -36,7 +36,7 @@ __all__ = ["GromacsTestCase"]
 
 class GromacsTestCase(BaseTestCase):
     def test_reader(self):
-        gr = GroReader(pkg_resources.resource_filename(__name__, "../../data/test/water2.gro"))
+        gr = GroReader(pkg_resources.resource_filename("molmod", "data/test/water2.gro"))
         next(gr) # skip one
         for time, pos, vel, cell in gr:
             self.assertAlmostEqual(time/picosecond, 1.0)

@@ -39,7 +39,7 @@ class MolecularGraphTestCase(unittest.TestCase):
     # auxiliary routines
 
     def load_molecule(self, fn):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/" + fn))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/" + fn))
         if molecule.graph is None:
             molecule.set_default_graph()
         return molecule

@@ -35,7 +35,7 @@ __all__ = ["CubeTestCase"]
 
 class CubeTestCase(BaseTestCase):
     def test_cube_reader(self):
-        cr = CubeReader(pkg_resources.resource_filename(__name__, "../../data/test/alanine.cube"))
+        cr = CubeReader(pkg_resources.resource_filename("molmod", "data/test/alanine.cube"))
         self.assertEqual(cr.molecule.numbers[0], 7)
         self.assertEqual(cr.molecule.numbers[8], 1)
         self.assertEqual(cr.molecule.numbers[-1], 8)
@@ -52,7 +52,7 @@ class CubeTestCase(BaseTestCase):
         self.assertArraysAlmostEqual(vector, np.array([-9.375592, -8.571340, -4.994197]))
 
     def test_cube_reader_size(self):
-        cr = CubeReader(pkg_resources.resource_filename(__name__, "../../data/test/alanine.cube"))
+        cr = CubeReader(pkg_resources.resource_filename("molmod", "data/test/alanine.cube"))
         self.assertEqual(cr.nrep[0], 11)
         self.assertEqual(cr.nrep[1], 10)
         self.assertEqual(cr.nrep[2], 9)
@@ -62,7 +62,7 @@ class CubeTestCase(BaseTestCase):
 
     def test_cube(self):
         # Make sure the file is read properly
-        cf = Cube.from_file(pkg_resources.resource_filename(__name__, "../../data/test/alanine.cube"))
+        cf = Cube.from_file(pkg_resources.resource_filename("molmod", "data/test/alanine.cube"))
         self.assertEqual(cf.molecule.numbers[0], 7)
         self.assertEqual(cf.molecule.numbers[8], 1)
         self.assertEqual(cf.molecule.numbers[-1], 8)
@@ -83,7 +83,7 @@ class CubeTestCase(BaseTestCase):
         # Make sure the file is written properly
         with tmpdir(__name__, 'test_cube') as dn:
             cf.write_to_file('%s/alanine.cube' % dn)
-            f1 = open(pkg_resources.resource_filename(__name__, "../../data/test/alanine.cube"))
+            f1 = open(pkg_resources.resource_filename("molmod", "data/test/alanine.cube"))
             lines1 = f1.readlines()
             f1.close()
             f2 = open('%s/alanine.cube' % dn)
