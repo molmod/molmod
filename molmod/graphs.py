@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -52,6 +52,7 @@
 
 from __future__ import print_function, division
 
+import sys
 from builtins import range
 import copy
 
@@ -609,9 +610,11 @@ class Graph(ReadOnly):
             """convert a hash string to a numpy array of bytes"""
             if len(x) == 0:
                 return np.zeros(0, np.ubyte)
+            elif sys.version_info[0] == 2:
+                return np.frombuffer(x, np.ubyte)
             else:
-                return np.fromstring(x, np.ubyte)
-        hashrow = lambda x: np.fromstring(hashlib.sha1(x.data).digest(), np.ubyte)
+                return np.frombuffer(x.encode(), np.ubyte)
+        hashrow = lambda x: np.frombuffer(hashlib.sha1(x.data).digest(), np.ubyte)
         # initialization
         result = np.zeros((self.num_vertices, 20), np.ubyte)
         for i in range(self.num_vertices):

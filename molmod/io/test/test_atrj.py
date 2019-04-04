@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -39,7 +39,7 @@ __all__ = ["ATRJTestCase"]
 class ATRJTestCase(BaseTestCase):
     def test_load(self):
         # A) normal
-        atrj_reader = ATRJReader(pkg_resources.resource_filename(__name__, "../../data/test/bartek.atrj"))
+        atrj_reader = ATRJReader(pkg_resources.resource_filename("molmod", "data/test/bartek.atrj"))
         self.assertEqual(atrj_reader.num_atoms, 1293)
         frames = list(atrj_reader)
         self.assertEqual(len(frames), 3)
@@ -61,7 +61,7 @@ class ATRJTestCase(BaseTestCase):
         self.assertAlmostEqual(frames[-1].coordinates[-5,-1]/angstrom, 2.1392983758428979e1)
 
         # B) sliced
-        atrj_reader = ATRJReader(pkg_resources.resource_filename(__name__, "../../data/test/bartek.atrj"), slice(None, None, 2))
+        atrj_reader = ATRJReader(pkg_resources.resource_filename("molmod", "data/test/bartek.atrj"), slice(None, None, 2))
         self.assertEqual(atrj_reader.num_atoms, 1293)
         frames = list(atrj_reader)
         self.assertEqual(len(frames), 2)

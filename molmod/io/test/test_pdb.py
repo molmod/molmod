@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -36,7 +36,7 @@ __all__ = ["PDBTestCase"]
 
 class PDBTestCase(BaseTestCase):
     def test_load_pdb(self):
-        mol = load_pdb(pkg_resources.resource_filename(__name__, "../../data/test/il2.pdb"))
+        mol = load_pdb(pkg_resources.resource_filename("molmod", "data/test/il2.pdb"))
         self.assertEqual(mol.numbers[0], 7)
         self.assertEqual(mol.numbers[5], 1)
         self.assertEqual(mol.numbers[-1], 8)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -47,7 +47,7 @@ class TypeCheckTest(ReadOnly):
     b = ReadOnlyAttribute(np.ndarray)
     c = ReadOnlyAttribute(np.ndarray, npdim=2)
     d = ReadOnlyAttribute(np.ndarray, npshape=(None,3))
-    e = ReadOnlyAttribute(np.ndarray, npdtype=float)
+    e = ReadOnlyAttribute(np.ndarray, npdtype=np.floating)
 
 
 class CustomCheckTest(ReadOnly):
@@ -56,7 +56,7 @@ class CustomCheckTest(ReadOnly):
             raise TypeError()
 
     a = ReadOnlyAttribute(int, none=False)
-    b = ReadOnlyAttribute(np.ndarray, check=check_b, npdim=1, npdtype=int)
+    b = ReadOnlyAttribute(np.ndarray, check=check_b, npdim=1, npdtype=np.integer)
 
     def __init__(self, a, b=None):
         self.a = a

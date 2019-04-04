@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -36,7 +36,7 @@ __all__ = ["ZMatrixTestCase"]
 class ZMatrixTestCase(BaseTestCase):
     def test_constency(self):
         def test_one(xyz_fn, checks, reorder=False):
-            mol = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/" + xyz_fn))
+            mol = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/" + xyz_fn))
             mol.set_default_graph()
             zmat_gen = ZMatrixGenerator(mol.graph)
             if reorder is False:

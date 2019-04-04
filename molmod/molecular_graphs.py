@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -73,10 +73,11 @@ class MolecularGraph(Graph):
                 raise TypeError("All symbols must be strings.")
 
     numbers = ReadOnlyAttribute(np.ndarray, none=False, check=_check_numbers,
-        npdim=1, npdtype=int, doc="the atomic numbers associated with the "
-        "vertices")
+        npdim=1, npdtype=np.signedinteger, doc="the atomic numbers associated "
+        "with the vertices")
     orders = ReadOnlyAttribute(np.ndarray, none=False, check=_check_orders,
-        npdim=1, npdtype=float, doc="the bond orders associated with the edges")
+        npdim=1, npdtype=np.floating, doc="the bond orders associated with the "
+        "edges")
     symbols = ReadOnlyAttribute(tuple, _check_symbols, doc="symbols for the "
         "atoms, which can be element names for force-field atom types")
 
@@ -87,6 +88,13 @@ class MolecularGraph(Graph):
            All short distances are computed with the binning module and compared
            with a database of bond lengths. Based on this comparison, bonded
            atoms are detected.
+
+           Before marking a pair of atoms A and B as bonded, it is also checked
+           that there is no third atom C somewhat between A and B.
+           When an atom C exists that is closer to B (than A) and the angle
+           A-B-C is less than 45 degrees, atoms A and B are not bonded.
+           Similarly if C is closer to A (than B) and the angle B-A-C is less
+           then 45 degrees, A and B are not connected.
 
            Argument:
             | ``molecule``  --  The molecule to derive the graph from
@@ -102,7 +110,7 @@ class MolecularGraph(Graph):
         unit_cell = molecule.unit_cell
         pair_search = PairSearchIntra(
             molecule.coordinates,
-            bonds.max_length*bonds.bond_tolerance,
+            bonds.max_length*bonds.bond_tolerance*scaling,
             unit_cell
         )
 

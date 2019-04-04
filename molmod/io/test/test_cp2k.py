@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -38,7 +38,7 @@ __all__ = ["CP2KTestCase"]
 
 class CP2KTestCase(unittest.TestCase):
     def test_input_file(self):
-        cp2k_input = CP2KInputFile.read_from_file(pkg_resources.resource_filename(__name__, "../../data/test/water_md.inp"))
+        cp2k_input = CP2KInputFile.read_from_file(pkg_resources.resource_filename("molmod", "data/test/water_md.inp"))
         self.assert_(cp2k_input._consistent())
 
         # test that the read_from_file works
@@ -120,10 +120,10 @@ class CP2KTestCase(unittest.TestCase):
         self.assertEqual(cp2k_input, cp2k_input_check)
 
         # test dump-load consistency, part 2: no reordering of sections and keywords should be allowed
-        cp2k_input = CP2KInputFile.read_from_file(pkg_resources.resource_filename(__name__, "../../data/test/water_md.inp"))
+        cp2k_input = CP2KInputFile.read_from_file(pkg_resources.resource_filename("molmod", "data/test/water_md.inp"))
         with tmpdir(__name__, 'test_input_file') as dn:
             cp2k_input.write_to_file("%s/water_md.inp" % dn)
-            with open(pkg_resources.resource_filename(__name__, "../../data/test/water_md.inp")) as f1, \
+            with open(pkg_resources.resource_filename("molmod", "data/test/water_md.inp")) as f1, \
                  open("%s/water_md.inp" % dn) as f2:
                 for line1, line2 in zip(f1, f2):
                     self.assertEqual(line1, line2)

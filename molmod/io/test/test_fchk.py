@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -45,7 +45,7 @@ class FCHKTestCase(BaseTestCase):
              3.76723726E+00, -1.48292907E+00,  4.52735777E+00,
         ])
 
-        fchk = FCHKFile(pkg_resources.resource_filename(__name__, "../../data/test/1TOH.b3lyp.fchk"))
+        fchk = FCHKFile(pkg_resources.resource_filename("molmod", "data/test/1TOH.b3lyp.fchk"))
         self.assertEqual(fchk.title, "opt")
         self.assertEqual(fchk.command, "FOpt")
         self.assertEqual(fchk.lot, "RB3LYP")
@@ -57,7 +57,7 @@ class FCHKTestCase(BaseTestCase):
         self.assert_(isinstance(fchk.fields["Shell to atom map"][0], np.integer))
         self.assertEqual(fchk.fields["Shell to atom map"][-1], 9)
 
-        fchk = FCHKFile(pkg_resources.resource_filename(__name__, "../../data/test/1TOH.b3lyp.trim.fchk"), ignore_errors=True)
+        fchk = FCHKFile(pkg_resources.resource_filename("molmod", "data/test/1TOH.b3lyp.trim.fchk"), ignore_errors=True)
         self.assertEqual(fchk.title, "opt")
         self.assertEqual(fchk.command, "FOpt")
         self.assertEqual(fchk.lot, "RB3LYP")
@@ -66,5 +66,5 @@ class FCHKTestCase(BaseTestCase):
         self.assertEqual(fchk.fields["Number of independant functions"], 142)
         self.assertAlmostEqual(fchk.fields["Virial Ratio"], 2.002408027154329)
 
-        fchk = FCHKFile(pkg_resources.resource_filename(__name__, "../../data/test/1TOH.b3lyp.trim.fchk"), ignore_errors=True, field_labels=["Virial Ratio"])
+        fchk = FCHKFile(pkg_resources.resource_filename("molmod", "data/test/1TOH.b3lyp.trim.fchk"), ignore_errors=True, field_labels=["Virial Ratio"])
         self.assertAlmostEqual(fchk.fields["Virial Ratio"], 2.002408027154329)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -38,8 +38,8 @@ __all__ = ["CMLTestCase"]
 class CMLTestCase(unittest.TestCase):
     def test_consistency(self):
         molecules = [
-            Molecule.from_file(pkg_resources.resource_filename(__name__, "../../data/test/cyclopentane.xyz")),
-            Molecule.from_file(pkg_resources.resource_filename(__name__, "../../data/test/funny.xyz")),
+            Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/cyclopentane.xyz")),
+            Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/funny.xyz")),
         ]
         for m in molecules:
             m.set_default_graph()
@@ -54,7 +54,7 @@ class CMLTestCase(unittest.TestCase):
             self.assertEqual(set(m1.graph.edges), set(m2.graph.edges))
 
     def test_load(self):
-        l = load_cml(pkg_resources.resource_filename(__name__, "../../data/test/1LJL_Cys10.cml"))
+        l = load_cml(pkg_resources.resource_filename("molmod", "data/test/1LJL_Cys10.cml"))
         self.assertEqual(l[0].title, "Kalium [+]")
         self.assertEqual(l[2].title, "Acetic acid [-]")
         self.assert_((l[2].numbers==np.array([6,6,8,8,1,1,1])).all())

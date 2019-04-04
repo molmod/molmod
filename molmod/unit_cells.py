@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -45,10 +45,10 @@ class UnitCell(ReadOnly):
     """
     eps = 1e-6 # small positive number, below this value is approximately zero
     matrix = ReadOnlyAttribute(np.ndarray, none=False, npdim=2,
-        npshape=(3,3), npdtype=float, doc="matrix whose columns are the "
+        npshape=(3,3), npdtype=np.floating, doc="matrix whose columns are the "
         "primitive cell vectors")
     active = ReadOnlyAttribute(np.ndarray, none=False, npdim=1, npshape=(3,),
-        npdtype=bool, doc="the active cell vectors")
+        npdtype=np.bool_, doc="the active cell vectors")
 
     def __init__(self, matrix, active=None):
         """

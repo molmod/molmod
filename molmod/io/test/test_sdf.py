@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -37,7 +37,7 @@ __all__ = ["SDFTestCase"]
 
 class SDFTestCase(unittest.TestCase):
     def test_reader(self):
-        sdf_reader = SDFReader(pkg_resources.resource_filename(__name__, "../../data/test/example.sdf"))
+        sdf_reader = SDFReader(pkg_resources.resource_filename("molmod", "data/test/example.sdf"))
         mol = next(sdf_reader)
         self.assertEqual(mol.title, "24978498")
         self.assertEqual(mol.size, 16)
@@ -62,7 +62,7 @@ class SDFTestCase(unittest.TestCase):
             pass
 
     def test_reader2(self):
-        sdf_reader = SDFReader(pkg_resources.resource_filename(__name__, "../../data/test/CID_22898828.sdf"))
+        sdf_reader = SDFReader(pkg_resources.resource_filename("molmod", "data/test/CID_22898828.sdf"))
         mol = next(sdf_reader)
         self.assertEqual(mol.title, "22898828")
         self.assertEqual(mol.size, 14)

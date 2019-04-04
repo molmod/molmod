@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -36,7 +36,7 @@ __all__ = ["GamessTestCase"]
 
 class GamessTestCase(BaseTestCase):
     def test_punch(self):
-        punch = PunchFile(pkg_resources.resource_filename(__name__, "../../data/test/PCGamess_PUNCH"))
+        punch = PunchFile(pkg_resources.resource_filename("molmod", "data/test/PCGamess_PUNCH"))
         self.assertEqual(punch.title, "Simple example sample optimization with Hessian output for Toon")
         self.assertEqual(punch.symmetry, "C1")
         self.assertEqual(punch.symbols, ["CL", "H", "H", "H", "H", "F", "F", "F", "F", "H", "F"])

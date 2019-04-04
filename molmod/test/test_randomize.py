@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -52,7 +52,7 @@ nonbond_thresholds = {
 class RandomizeTestCase(BaseTestCase):
     def iter_test_molecules(self):
         for filename in ["tpa.xyz", "water.xyz", "thf_single.xyz"]:
-            molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/" + filename))
+            molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/" + filename))
             molecule.filename = filename
             molecule.set_default_graph()
             yield molecule

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -39,7 +39,7 @@ class MolecularGraphTestCase(unittest.TestCase):
     # auxiliary routines
 
     def load_molecule(self, fn):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/" + fn))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/" + fn))
         if molecule.graph is None:
             molecule.set_default_graph()
         return molecule
@@ -527,16 +527,16 @@ class MolecularGraphTestCase(unittest.TestCase):
         HasNeighbors(HasAtomNumber(1), HasAtomNumber(6))
 
     def test_zirconium(self):
-        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, '../data/test/oh3siozroh3.xyz'))
+        mol = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/oh3siozroh3.xyz"))
         mol.set_default_graph()
         assert len(mol.graph.edges)==14
-        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, '../data/test/osih2osihosih2osih2ozrh2oh.xyz'))
+        mol = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/osih2osihosih2osih2ozrh2oh.xyz"))
         mol.set_default_graph()
         assert len(mol.graph.edges)==21
-        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, '../data/test/h3zrosihohosioh3.xyz'))
+        mol = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/h3zrosihohosioh3.xyz"))
         mol.set_default_graph()
         assert len(mol.graph.edges)==16
-        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, '../data/test/zr4o8-3.xyz'))
+        mol = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/zr4o8-3.xyz"))
         mol.set_default_graph()
         assert len(mol.graph.edges)==12
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -38,10 +38,10 @@ __all__ = ["SimilarityTestCase"]
 
 class SimilarityTestCase(unittest.TestCase):
     def get_molecules(self):
-        tpa = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/tpa.xyz"))
-        tea = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/tea.xyz"))
-        water = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
-        cyclopentane = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/cyclopentane.xyz"))
+        tpa = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/tpa.xyz"))
+        tea = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/tea.xyz"))
+        water = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/water.xyz"))
+        cyclopentane = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/cyclopentane.xyz"))
 
         return [tpa, tea, water, cyclopentane]
         #return [water, cyclopentane]

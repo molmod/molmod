@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -40,7 +40,7 @@ __all__ = ["ToyFFTestCase"]
 
 class ToyFFTestCase(unittest.TestCase):
     def load_molecule(self, fn):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/" + fn))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/" + fn))
         if molecule.graph is None:
             molecule.set_default_graph()
         return molecule
@@ -189,7 +189,7 @@ class ToyFFTestCase(unittest.TestCase):
             self.check_toyff_gradient(ff, coordinates)
 
     def test_example_periodic(self):
-        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/caplayer.cml"))
+        mol = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/caplayer.cml"))
         unit_cell = UnitCell(
             np.array([
                 [14.218,  7.109,  0.0],

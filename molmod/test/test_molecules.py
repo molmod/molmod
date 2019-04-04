@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -37,7 +37,7 @@ __all__ = ["MoleculeTestCase"]
 
 class MoleculeTestCase(BaseTestCase):
     def test_distance_matrix(self):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/tpa.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/tpa.xyz"))
         dm = 0
         for i in 0,1,2:
             dm += np.subtract.outer(molecule.coordinates[:,i],molecule.coordinates[:,i])**2
@@ -80,12 +80,12 @@ class MoleculeTestCase(BaseTestCase):
         self.assertAlmostEqual(mol.coordinates[0,1], 1.0)
 
     def test_mass(self):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/water.xyz"))
         molecule.set_default_masses()
         self.assertAlmostEqual(molecule.mass, 32839.849030585152)
 
     def test_com(self):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/water.xyz"))
         molecule.set_default_masses()
         expected_com = 0
         for i in range(3):
@@ -94,7 +94,7 @@ class MoleculeTestCase(BaseTestCase):
         self.assertArraysAlmostEqual(molecule.com, expected_com)
 
     def test_inertia_tensor(self):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/water.xyz"))
         molecule.set_default_masses()
         expected_result = sum(
             m*(np.identity(3)*(r**2).sum()-np.outer(r,r))
@@ -103,11 +103,11 @@ class MoleculeTestCase(BaseTestCase):
         self.assertArraysAlmostEqual(molecule.inertia_tensor, expected_result)
 
     def test_chemical_formula(self):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/water.xyz"))
         self.assertEqual(molecule.chemical_formula, "OH2")
 
     def test_copy(self):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/water.xyz"))
         import copy
         tmp = copy.copy(molecule)
         self.assertEqual(id(tmp), id(molecule))
@@ -115,12 +115,12 @@ class MoleculeTestCase(BaseTestCase):
         self.assertEqual(id(tmp), id(molecule))
 
     def test_default_graph(self):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/water.xyz"))
         molecule.set_default_graph()
         self.assertEqual(molecule.graph.num_edges, 2)
 
     def test_default_graph_periodic(self):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/lau.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/lau.xyz"))
         uc = UnitCell.from_parameters3(
             np.array([14.587, 12.877, 7.613])*angstrom,
             np.array([90.000, 111.159, 90.000])*deg
@@ -131,29 +131,29 @@ class MoleculeTestCase(BaseTestCase):
         self.assertEqual(molecule.graph.num_edges, 4*molecule.size/3)
 
     def test_from_file_cml(self):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/caplayer.cml"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/caplayer.cml"))
         self.assertEqual(molecule.size, 81)
         self.assertEqual(molecule.graph.num_edges, 90)
 
     def test_from_file_fchk(self):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/1TOH.b3lyp.fchk"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/1TOH.b3lyp.fchk"))
         self.assertEqual(molecule.size, 9)
 
     def test_from_file_pdb(self):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/il2.pdb"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/il2.pdb"))
         self.assertEqual(molecule.size, 2084)
 
     def test_from_file_sdf(self):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/CID_22898828.sdf"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/CID_22898828.sdf"))
         self.assertEqual(molecule.size, 14)
 
     def test_from_file_xyz(self):
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/water.xyz"))
         self.assertEqual(molecule.size, 3)
         self.assertEqual(molecule.symbols, ("O", "H", "H"))
 
     def test_to_cml(self):
-        mol0 = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/caplayer.cml"))
+        mol0 = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/caplayer.cml"))
         with tmpdir(__name__, 'test_to_cml') as dn:
             mol0.write_to_file("%s/caplayer.cml" % dn)
             mol1 = Molecule.from_file("%s/caplayer.cml" % dn)
@@ -163,7 +163,7 @@ class MoleculeTestCase(BaseTestCase):
         self.assertEqual(mol0.graph.num_edges, mol1.graph.num_edges)
 
     def test_to_xyz(self):
-        mol0 = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
+        mol0 = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/water.xyz"))
         with tmpdir(__name__, 'test_to_xyz') as dn:
             mol0.write_to_file("%s/water.xyz" % dn)
             mol1 = Molecule.from_file("%s/water.xyz" % dn)
@@ -172,33 +172,33 @@ class MoleculeTestCase(BaseTestCase):
         self.assertArraysAlmostEqual(mol0.coordinates, mol1.coordinates)
 
     def test_copy_with(self):
-        mol0 = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
+        mol0 = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/water.xyz"))
         mol1 = mol0.copy_with(numbers=[3,4,5])
         self.assertArraysEqual(mol0.numbers, np.array([8,1,1]))
         self.assertArraysEqual(mol1.numbers, np.array([3,4,5]))
         self.assertArraysAlmostEqual(mol0.coordinates, mol1.coordinates)
 
     def test_default_symbols(self):
-        mol0 = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
+        mol0 = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/water.xyz"))
         mol1 = mol0.copy_with(symbols=None)
         mol1.set_default_symbols()
         self.assertEqual(mol1.symbols, ("O", "H", "H"))
 
     def test_rmsd(self):
-        mol0 = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/water.xyz"))
+        mol0 = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/water.xyz"))
         self.assertAlmostEqual(mol0.rmsd(mol0)[2], 0.0)
 
     def test_rotsym(self):
-        mol = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/benzene.xyz"))
+        mol = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/benzene.xyz"))
         self.assertEqual(mol.compute_rotsym(), 12)
-        molecule = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/ethene_ethyl_trans.xyz"))
+        molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/ethene_ethyl_trans.xyz"))
         rotsym = molecule.compute_rotsym()
         self.assertEqual(rotsym, 1)
 
     def test_probes(self):
-        mol1 = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/probes.xyz"))
+        mol1 = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/probes.xyz"))
         self.assertEqual(mol1.numbers[-1], 0)
         with tmpdir(__name__, 'test_probes') as dn:
             mol1.write_to_file("%s/probes.xyz" % dn)
-        mol2 = Molecule.from_file(pkg_resources.resource_filename(__name__, "../data/test/probes.xyz"))
+        mol2 = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/probes.xyz"))
         self.assertArraysEqual(mol1.numbers, mol2.numbers)

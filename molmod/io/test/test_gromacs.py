@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MolMod is a collection of molecular modelling tools for python.
-# Copyright (C) 2007 - 2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
+# Copyright (C) 2007 - 2019 Toon Verstraelen <Toon.Verstraelen@UGent.be>, Center
 # for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all rights
 # reserved unless otherwise stated.
 #
@@ -36,7 +36,7 @@ __all__ = ["GromacsTestCase"]
 
 class GromacsTestCase(BaseTestCase):
     def test_reader(self):
-        gr = GroReader(pkg_resources.resource_filename(__name__, "../../data/test/water2.gro"))
+        gr = GroReader(pkg_resources.resource_filename("molmod", "data/test/water2.gro"))
         next(gr) # skip one
         for time, pos, vel, cell in gr:
             self.assertAlmostEqual(time/picosecond, 1.0)
