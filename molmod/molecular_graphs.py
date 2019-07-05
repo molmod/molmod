@@ -165,7 +165,7 @@ class MolecularGraph(Graph):
         # actual removal
         edges = [edges[i] for i in range(len(edges)) if mask[i]]
         if do_orders:
-            bond_order = [bond_order[i] for i in range(len(bond_order)) if mask[i]]
+            orders = [orders[i] for i in range(len(orders)) if mask[i]]
             result = cls(edges, molecule.numbers, orders)
         else:
             result = cls(edges, molecule.numbers)
