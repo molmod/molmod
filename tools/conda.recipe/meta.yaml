@@ -11,17 +11,23 @@ build:
 
 requirements:
   build:
+    - {{ compiler("c") }}
+  host:
     - python
-    - numpy
+    - numpy >1.1
     - cython >=0.24.1
     - setuptools
-    - nose
-    - future
   run:
-    - python
-    - numpy
-    - nose
     - future
+
+test:
+  requires:
+    - nosetests
+  imports:
+    - molmod
+  commands:
+    - conda inspect linkages molmod
+    - nostests -v
 
 about:
   dev_url: https://github.com/molmod/molmod

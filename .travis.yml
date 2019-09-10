@@ -2,6 +2,7 @@ env:
   matrix:
   - MYCONDAPY=2.7
   - MYCONDAPY=3.6
+  - MYCONDAPY=3.7
   global:
     # ANACONDA_TOKEN
     - secure: "J2U10RLjse9KYQy7ehrpi7u3HwnhsMqrdYd3MlF5H9lTWXnLzVnHdDL/TEpLLiEDE00p3VKn3zn6BndK36pn8HwrgrZ5ZdwdFGHoFF7TF+mpxxGy/H3C/c526GcDRoZpGSAm/gmNhpI/McuVZQ95eIhSrdJXljpPaSt4f27YLzI="
