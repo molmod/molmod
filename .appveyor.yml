@@ -51,9 +51,7 @@ install:
   - '"%CONDA%\Scripts\activate.bat"'
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
-  - conda install conda-build anaconda-client numpy cython
-  # Install codecov tool for uploading coverage reports
-  - pip install codecov coverage
+  - conda install conda-build anaconda-client numpy cython codecov coverage
   # Show conda info for debugging
   - conda info -a
 
