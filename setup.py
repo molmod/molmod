@@ -94,7 +94,7 @@ setup(
         include_dirs=[np.get_include()],
     )],
     setup_requires=['numpy>=1.0', 'cython>=0.24.1'],
-    install_requires=['numpy>=1.0', 'nose>=0.11', 'cython>=0.24.1', 'future'],
+    install_requires=['numpy>=1.0', 'cython>=0.24.1', 'future'],
     classifiers=[
         'Environment :: Console',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',

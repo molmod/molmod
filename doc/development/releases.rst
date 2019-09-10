@@ -24,6 +24,14 @@
 Release history
 ###############
 
+**Version 1.4.5** September 10, 2019
+
+- Conda packages for Python 3.7.
+- Fix bug in bond-order algorithm in MolecularGraph.
+- Make buffer tricks work in Python 2 and 3 in Graph class.
+- Document algorithm to detect bonds.
+- Fix unicode issues
+
 **Version 1.4.4** November 20, 2017
 
 - Fix Python 3 bug in CHK format

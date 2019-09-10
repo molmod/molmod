@@ -2,6 +2,7 @@ env:
   matrix:
   - MYCONDAPY=2.7
   - MYCONDAPY=3.6
+  - MYCONDAPY=3.7
   global:
     # ANACONDA_TOKEN
     - secure: "J2U10RLjse9KYQy7ehrpi7u3HwnhsMqrdYd3MlF5H9lTWXnLzVnHdDL/TEpLLiEDE00p3VKn3zn6BndK36pn8HwrgrZ5ZdwdFGHoFF7TF+mpxxGy/H3C/c526GcDRoZpGSAm/gmNhpI/McuVZQ95eIhSrdJXljpPaSt4f27YLzI="
@@ -42,7 +43,7 @@ install:
     fi;
   fi
 - bash miniconda.sh -b -p $HOME/miniconda
-- export PATH="$HOME/miniconda/bin:$PATH"
+- source ~/miniconda/bin/activate
 - hash -r
 
 # Configure conda and get a few essentials
@@ -52,9 +53,7 @@ install:
 # Install extra package needed to make things work. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
 # Install conda tools for packaging and uploading
-- conda install python=${MYCONDAPY} numpy cython sphinx conda-build anaconda-client
-# Install more recent stuff with pip
-- pip install codecov coverage
+- conda install python=${MYCONDAPY} numpy cython sphinx conda-build anaconda-client codecov coverage nose
 # Show conda info for debugging
 - conda info -a
 
