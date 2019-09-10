@@ -56,16 +56,18 @@ You can install MolMod with pip, using either of the following two commands:
     # system wide (requires root permission) or in virtual env
     pip install numpy Cython
     pip install molmod
+    pip install nose  # only needed to run unit tests
 
     # installs in ~/.local
     pip install numpy Cython --user
     pip install molmod --user
+    pip install nose --user  # only needed to run unit tests
 
 Alternatively, you can use conda. (See https://www.continuum.io/downloads)
 
 .. code:: bash
 
-    conda install -c molmod molmod
+    conda install -c molmod molmod nose
 
 
 Testing
