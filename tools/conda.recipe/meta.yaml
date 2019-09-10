@@ -28,7 +28,7 @@ test:
   imports:
     - molmod
   commands:
-    - conda inspect linkages molmod
+    - conda inspect linkages molmod  # [not win]
     - nostests -v
 
 about:
