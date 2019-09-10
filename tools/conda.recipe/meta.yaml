@@ -29,7 +29,7 @@ test:
     - molmod
   commands:
     - conda inspect linkages molmod  # [not win]
-    - nostests -v
+    - nosetests -v
 
 about:
   dev_url: https://github.com/molmod/molmod
