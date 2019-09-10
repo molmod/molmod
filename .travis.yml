@@ -43,7 +43,7 @@ install:
     fi;
   fi
 - bash miniconda.sh -b -p $HOME/miniconda
-- export PATH="$HOME/miniconda/bin:$PATH"
+- source ~/miniconda/bin/activate
 - hash -r
 
 # Configure conda and get a few essentials
