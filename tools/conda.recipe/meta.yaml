@@ -22,7 +22,7 @@ requirements:
 
 test:
   requires:
-    - nosetests
+    - nose
   imports:
     - molmod
   commands:
