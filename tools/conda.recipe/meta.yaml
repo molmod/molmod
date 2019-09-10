@@ -23,13 +23,10 @@ requirements:
     - future
 
 test:
-  requires:
-    - nose >0.11
   imports:
     - molmod
   commands:
     - conda inspect linkages molmod  # [not win]
-    - nosetests -v
 
 about:
   dev_url: https://github.com/molmod/molmod
