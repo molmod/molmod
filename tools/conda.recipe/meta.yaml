@@ -17,7 +17,9 @@ requirements:
     - numpy >1.0
     - cython >=0.24.1
     - setuptools
+    - future
   run:
+    - numpy >1.0
     - future
 
 test:
