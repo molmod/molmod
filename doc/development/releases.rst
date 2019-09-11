@@ -24,7 +24,7 @@
 Release history
 ###############
 
-**Version 1.4.5** September 10, 2019
+**Version 1.4.5** September 11, 2019
 
 - Conda packages for Python 3.7.
 - Fix bug in bond-order algorithm in MolecularGraph.
