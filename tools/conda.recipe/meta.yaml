@@ -14,13 +14,13 @@ requirements:
     - {{ compiler("c") }}
   host:
     - python
-    - numpy >1.0
+    - numpy >=1.0
     - cython >=0.24.1
     - setuptools
     - future
   run:
     - python
-    - numpy >1.0
+    - {{ pin_compatible('numpy') }}
     - future
 
 test:
