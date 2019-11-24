@@ -388,11 +388,11 @@ class Timer(object):
 
     def start(self):
         assert self._start is None
-        self._start = time.clock()
+        self._start = time.process_time()
 
     def stop(self):
         assert self._start is not None
-        self.cpu += time.clock() - self._start
+        self.cpu += time.process_time() - self._start
         self._start = None
 
 
