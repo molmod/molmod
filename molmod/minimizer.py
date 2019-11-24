@@ -1474,7 +1474,7 @@ class Minimizer(object):
         else:
             converged = False
         # timing
-        end = time.clock()
+        end = time.process_time()
         self._screen("%5.2f" % (end - self.last_end), newline=True)
         self.last_end = end
         # check convergence, part 2
