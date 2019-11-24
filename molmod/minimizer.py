@@ -1414,7 +1414,7 @@ class Minimizer(object):
             except ConstraintError:
                 self._screen("CONSTRAINT PROJECT FAILED", newline=True)
                 return False
-        self.last_end = time.clock()
+        self.last_end = time.process_time()
 
     def propagate(self):
         # compute the new direction
