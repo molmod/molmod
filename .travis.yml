@@ -2,7 +2,6 @@ env:
   matrix:
   - MYCONDAPY=2.7
   - MYCONDAPY=3.7
-  - MYCONDAPY=3.8
   global:
     # ANACONDA_TOKEN
     - secure: "Mict7gfK9EflyXN0wgMIEcW3jErzwWo+xtU7U5I8Rb/zFyKyXiBwTqbq6l6zlvmTR8/Yj8H5RG70+vHigMTRyMQttRtpa9Y8Uu/hGLkTEC5/QIhbqKbRLNOY2xzkwgQ7H+DHsi2z03cbYrM78rFUNwL0cvIPnUO4PEHLosa9ZK4="
@@ -18,7 +17,7 @@ language: generic
 os:
   - linux
   - osx
-osx_image: xcode6.4
+osx_image: xcode9.4
 dist: trusty
 sudo: false
 
