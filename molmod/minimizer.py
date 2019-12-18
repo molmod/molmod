@@ -63,7 +63,10 @@
 from __future__ import print_function, division
 
 from builtins import range
-import time
+try:
+    from time import process_time
+except ImportError:
+    from time import clock as process_time
 
 import numpy as np
 
@@ -1414,7 +1417,7 @@ class Minimizer(object):
             except ConstraintError:
                 self._screen("CONSTRAINT PROJECT FAILED", newline=True)
                 return False
-        self.last_end = time.process_time()
+        self.last_end = process_time()
 
     def propagate(self):
         # compute the new direction
@@ -1474,7 +1477,7 @@ class Minimizer(object):
         else:
             converged = False
         # timing
-        end = time.process_time()
+        end = process_time()
         self._screen("%5.2f" % (end - self.last_end), newline=True)
         self.last_end = end
         # check convergence, part 2
