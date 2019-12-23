@@ -17,9 +17,15 @@ language: generic
 os:
   - linux
   - osx
-osx_image: xcode10.1
+osx_image: xcode9.4
 dist: trusty
 sudo: false
+
+# Same problem as described here: https://github.com/brian-team/brian2/issues/1128
+jobs:
+  allow_failures:
+    - python: "2.7"
+      os: osx
 
 branches:
   only:
