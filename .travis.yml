@@ -1,5 +1,5 @@
 env:
-  matrix:
+  jobs:
   - MYCONDAPY=2.7
   - MYCONDAPY=3.8
   global:
@@ -14,10 +14,7 @@ env:
 
 # Do not use Travis Python to save some time.
 language: generic
-os:
-  - linux
-dist: trusty
-sudo: false
+dist: xenial
 
 branches:
   only:
@@ -77,7 +74,7 @@ after_success:
 deploy:
 - provider: releases
   skip_cleanup: true
-  api_key: ${GITHUB_TOKEN}
+  token: ${GITHUB_TOKEN}
   file: dist/${PYPKG}-${TRAVIS_TAG}.tar.gz
   on:
     repo: ${GITHUB_REPO_NAME}
@@ -86,7 +83,7 @@ deploy:
   prerelease: false
 - provider: releases
   skip_cleanup: true
-  api_key: ${GITHUB_TOKEN}
+  token: ${GITHUB_TOKEN}
   file: dist/${PYPKG}-${TRAVIS_TAG}.tar.gz
   on:
     repo: ${GITHUB_REPO_NAME}
@@ -116,7 +113,7 @@ deploy:
     condition: "$TRAVIS_TAG != *[ab]*"
 - provider: pypi
   skip_cleanup: true
-  user: molmod
+  username: molmod
   password: ${PYPI_PASSWD}
   on:
     repo: ${GITHUB_REPO_NAME}
@@ -124,7 +121,7 @@ deploy:
     condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
 - provider: pages
   skip_cleanup: true
-  github_token: ${GITHUB_TOKEN}
+  token: ${GITHUB_TOKEN}
   project_name: ${PYPKG}
   local_dir: doc/_build/html
   on:
