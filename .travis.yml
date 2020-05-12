@@ -56,7 +56,7 @@ script:
 - python setup.py sdist
 
 # Install Conda package, which is put outside the test env.
-- conda install ${PYPKG}
+- conda install --use-local ${PYPKG}
 
 # Compile documentation
 - (cd doc; make html)
