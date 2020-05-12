@@ -1,7 +1,5 @@
 .. image:: https://travis-ci.org/molmod/molmod.svg?branch=master
     :target: https://travis-ci.org/molmod/molmod
-.. image:: https://ci.appveyor.com/api/projects/status/t9q65bdeny5cwy8x/branch/master?svg=true
-    :target: https://ci.appveyor.com/project/molmod-bot/molmod
 .. image:: https://anaconda.org/molmod/molmod/badges/version.svg
     :target: https://anaconda.org/molmod/molmod
 .. image:: https://codecov.io/gh/molmod/molmod/branch/master/graph/badge.svg
@@ -40,7 +38,10 @@ https://www.continuum.io/downloads)
 
 .. code:: bash
 
+    # Using the builds from Travis-CI ...
     conda install -c molmod molmod
+    # ... or using the packages on conda-force
+    conda install -c conda-forge molmod
 
 
 Testing

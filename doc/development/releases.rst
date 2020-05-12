@@ -24,6 +24,10 @@
 Release history
 ###############
 
+**Version 1.4.6** May 12, 2020
+
+- Bug fix for Python 3.8.
+
 **Version 1.4.5** September 11, 2019
 
 - Conda packages for Python 3.7.
