@@ -1,7 +1,7 @@
 env:
   matrix:
   - MYCONDAPY=2.7
-  - MYCONDAPY=3.7
+  - MYCONDAPY=3.8
   global:
     # ANACONDA_TOKEN
     - secure: "Mict7gfK9EflyXN0wgMIEcW3jErzwWo+xtU7U5I8Rb/zFyKyXiBwTqbq6l6zlvmTR8/Yj8H5RG70+vHigMTRyMQttRtpa9Y8Uu/hGLkTEC5/QIhbqKbRLNOY2xzkwgQ7H+DHsi2z03cbYrM78rFUNwL0cvIPnUO4PEHLosa9ZK4="
@@ -16,16 +16,8 @@ env:
 language: generic
 os:
   - linux
-  - osx
-osx_image: xcode9.4
 dist: trusty
 sudo: false
-
-# Same problem as described here: https://github.com/brian-team/brian2/issues/1128
-jobs:
-  allow_failures:
-    - python: "2.7"
-      os: osx
 
 branches:
   only:
@@ -35,16 +27,9 @@ branches:
 install:
 # Get miniconda. Take the right version, so re-installing python is only needed for 3.5.
 - if [[ "$MYCONDAPY" == "2.7" ]]; then
-    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -O miniconda.sh;
-    fi;
+    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
   else
-    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
     fi;
   fi
 - bash miniconda.sh -b -p $HOME/miniconda
