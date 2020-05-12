@@ -1,7 +1,6 @@
 env:
-  matrix:
+  jobs:
   - MYCONDAPY=2.7
-  - MYCONDAPY=3.6
   - MYCONDAPY=3.7
   global:
     # ANACONDA_TOKEN
@@ -15,12 +14,7 @@ env:
 
 # Do not use Travis Python to save some time.
 language: generic
-os:
-  - linux
-  - osx
-osx_image: xcode6.4
-dist: trusty
-sudo: false
+dist: xenial
 
 branches:
   only:
@@ -30,30 +24,20 @@ branches:
 install:
 # Get miniconda. Take the right version, so re-installing python is only needed for 3.5.
 - if [[ "$MYCONDAPY" == "2.7" ]]; then
-    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -O miniconda.sh;
-    fi;
+    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
   else
-    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
-    fi;
+    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
   fi
 - bash miniconda.sh -b -p $HOME/miniconda
 - source ~/miniconda/bin/activate
 - hash -r
 
-# Configure conda and get a few essentials
-- conda config --set always_yes yes --set changeps1 no
-- conda update -q conda
-# Get the right python version for building. This only does something for 3.5.
-# Install extra package needed to make things work. Most things can be listed as
+## Configure conda and get a few essentials
+- conda config --set always_yes yes
+# Get the right python version for building. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
-# Install conda tools for packaging and uploading
-- conda install python=${MYCONDAPY} numpy cython sphinx conda-build anaconda-client codecov coverage nose conda-verify
+# This also installs conda tools for packaging and uploading
+- conda install python=${MYCONDAPY} conda-build numpy cython conda-verify numpy cython sphinx anaconda-client codecov coverage nose
 # Show conda info for debugging
 - conda info -a
 
@@ -71,8 +55,8 @@ script:
 # PyPI.
 - python setup.py sdist
 
-# Install Conda package
-- conda install --use-local $PYPKG
+# Install Conda package, which is put outside the test env.
+- conda install --use-local ${PYPKG}
 
 # Compile documentation
 - (cd doc; make html)
@@ -88,7 +72,7 @@ after_success:
 deploy:
 - provider: releases
   skip_cleanup: true
-  api_key: ${GITHUB_TOKEN}
+  token: ${GITHUB_TOKEN}
   file: dist/${PYPKG}-${TRAVIS_TAG}.tar.gz
   on:
     repo: ${GITHUB_REPO_NAME}
@@ -97,7 +81,7 @@ deploy:
   prerelease: false
 - provider: releases
   skip_cleanup: true
-  api_key: ${GITHUB_TOKEN}
+  token: ${GITHUB_TOKEN}
   file: dist/${PYPKG}-${TRAVIS_TAG}.tar.gz
   on:
     repo: ${GITHUB_REPO_NAME}
@@ -127,7 +111,7 @@ deploy:
     condition: "$TRAVIS_TAG != *[ab]*"
 - provider: pypi
   skip_cleanup: true
-  user: molmod
+  username: molmod
   password: ${PYPI_PASSWD}
   on:
     repo: ${GITHUB_REPO_NAME}
@@ -135,7 +119,7 @@ deploy:
     condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
 - provider: pages
   skip_cleanup: true
-  github_token: ${GITHUB_TOKEN}
+  token: ${GITHUB_TOKEN}
   project_name: ${PYPKG}
   local_dir: doc/_build/html
   on:

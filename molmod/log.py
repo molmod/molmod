@@ -29,7 +29,10 @@ import os
 import platform
 import datetime
 import getpass
-import time
+try:
+    from time import process_time
+except ImportError:
+    from time import clock as process_time
 import codecs
 import locale
 import functools
@@ -388,11 +391,11 @@ class Timer(object):
 
     def start(self):
         assert self._start is None
-        self._start = time.clock()
+        self._start = process_time()
 
     def stop(self):
         assert self._start is not None
-        self.cpu += time.clock() - self._start
+        self.cpu += process_time() - self._start
         self._start = None
 
 

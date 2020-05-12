@@ -27,8 +27,6 @@ requirements:
 test:
   imports:
     - molmod
-  commands:
-    - conda inspect linkages molmod  # [not win]
 
 about:
   dev_url: https://github.com/molmod/molmod
