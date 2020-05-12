@@ -1,7 +1,7 @@
 env:
   jobs:
   - MYCONDAPY=2.7
-  - MYCONDAPY=3.8
+  - MYCONDAPY=3.7
   global:
     # ANACONDA_TOKEN
     - secure: "Mict7gfK9EflyXN0wgMIEcW3jErzwWo+xtU7U5I8Rb/zFyKyXiBwTqbq6l6zlvmTR8/Yj8H5RG70+vHigMTRyMQttRtpa9Y8Uu/hGLkTEC5/QIhbqKbRLNOY2xzkwgQ7H+DHsi2z03cbYrM78rFUNwL0cvIPnUO4PEHLosa9ZK4="
@@ -32,14 +32,12 @@ install:
 - source ~/miniconda/bin/activate
 - hash -r
 
-# Configure conda and get a few essentials
-- conda config --set always_yes yes --set changeps1 no
-- conda update -q conda
+## Configure conda and get a few essentials
+- conda config --set always_yes yes
 # Get the right python version for building. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
 # This also installs conda tools for packaging and uploading
-- conda create -n testenv python=${MYCONDAPY} numpy cython sphinx conda-build anaconda-client codecov coverage nose conda-verify
-- conda activate testenv
+- conda install python=${MYCONDAPY} conda-build numpy cython conda-verify numpy cython sphinx anaconda-client codecov coverage nose
 # Show conda info for debugging
 - conda info -a
 
@@ -58,7 +56,7 @@ script:
 - python setup.py sdist
 
 # Install Conda package, which is put outside the test env.
-- conda install ${HOME}/miniconda/conda-bld/${PYPKG}*.tar.bz2
+- conda install ${PYPKG}
 
 # Compile documentation
 - (cd doc; make html)
