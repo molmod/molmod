@@ -57,8 +57,8 @@ script:
 # PyPI.
 - python setup.py sdist
 
-# Install Conda package
-- conda install --use-local $PYPKG
+# Install Conda package, which is put outside the test env.
+- conda install ${HOME}/miniconda/conda-bld/${PYPKG}*.tar.bz2
 
 # Compile documentation
 - (cd doc; make html)
