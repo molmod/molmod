@@ -24,6 +24,11 @@
 Release history
 ###############
 
+**Version 1.4.7** May 14, 2020
+
+- Fix version in the NumPy dependency (at least 1.16.00). This is needed to
+  avoid data structure incompatibility issues in the Cython extension.
+
 **Version 1.4.6** May 12, 2020
 
 - Bug fix for Python 3.8.
