@@ -42,7 +42,7 @@ class SDFTestCase(unittest.TestCase):
         self.assertEqual(mol.title, "24978498")
         self.assertEqual(mol.size, 16)
         self.assertEqual(len(mol.graph.edges), 15)
-        self.assert_(frozenset([1,14]) in mol.graph.edges)
+        assert frozenset([1,14]) in mol.graph.edges
         self.assertAlmostEqual(mol.coordinates[0,0]/angstrom,  2.8660)
         self.assertAlmostEqual(mol.coordinates[4,1]/angstrom, -1.9400)
         self.assertAlmostEqual(mol.coordinates[15,1]/angstrom, -2.5600)
@@ -50,7 +50,7 @@ class SDFTestCase(unittest.TestCase):
         self.assertEqual(mol.title, "24978481")
         self.assertEqual(mol.size, 21)
         self.assertEqual(len(mol.graph.edges), 19)
-        self.assert_(frozenset([3,9]) in mol.graph.edges)
+        assert frozenset([3,9]) in mol.graph.edges
         self.assertEqual(len(mol.graph.independent_vertices), 2)
         self.assertAlmostEqual(mol.coordinates[0,0]/angstrom, 2.2690)
         self.assertAlmostEqual(mol.coordinates[9,1]/angstrom, 2.5790)
@@ -67,10 +67,10 @@ class SDFTestCase(unittest.TestCase):
         self.assertEqual(mol.title, "22898828")
         self.assertEqual(mol.size, 14)
         self.assertEqual(len(mol.graph.edges), 13)
-        self.assert_(frozenset([4,6]) in mol.graph.edges)
+        assert frozenset([4,6]) in mol.graph.edges
         self.assertEqual(len(mol.graph.independent_vertices), 1)
         self.assertAlmostEqual(mol.coordinates[0,0]/angstrom, 6.8671)
         self.assertAlmostEqual(mol.coordinates[9,1]/angstrom, 0.2500)
         self.assertAlmostEqual(mol.coordinates[13,0]/angstrom, 12.6002)
-        self.assert_((mol.formal_charges[:12]==-1).all())
-        self.assert_((mol.formal_charges[12:]==0).all())
+        assert (mol.formal_charges[:12]==-1).all()
+        assert (mol.formal_charges[12:]==0).all()

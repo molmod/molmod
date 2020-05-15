@@ -31,7 +31,7 @@ from molmod.io import *
 __all__ = ["NumberStateTestCase"]
 
 
-class TestObject(object):
+class Example(object):
     def __init__(self):
         self.a = np.random.normal(0, 1, (5, 3))
         self.b = np.random.randint(0, 40, (4, 7, 9))
@@ -43,9 +43,9 @@ class TestObject(object):
 class NumberStateTestCase(BaseTestCase):
     def test_consistency(self):
         with tmpdir(__name__, 'test_consistency') as dn:
-            test1 = TestObject()
+            test1 = Example()
             test1.state.dump("%s/test" % dn)
-            test2 = TestObject()
+            test2 = Example()
             test2.state.load("%s/test" % dn)
             self.assertArraysAlmostEqual(test1.a, test2.a, 1e-10)
             self.assertArraysAlmostEqual(test1.b, test2.b, 1e-10)
@@ -61,13 +61,13 @@ class NumberStateTestCase(BaseTestCase):
             self.assertAlmostEqual(test2.c, 0.0)
             self.assertAlmostEqual(test1.d, test2.d)
 
-        test1 = TestObject()
-        test2 = TestObject()
+        test1 = Example()
+        test2 = Example()
         subset = set(["a", "d"])
         state = test1.state.get(subset)
         self.assertEqual(len(state), 2)
-        self.assert_("a" in state)
-        self.assert_("d" in state)
+        assert "a" in state
+        assert "d" in state
         test2.state.set(state, subset)
         self.assertArraysAlmostEqual(test1.a, test2.a, 1e-10)
         self.assertAlmostEqual(test1.d, test2.d)

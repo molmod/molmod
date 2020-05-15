@@ -35,16 +35,16 @@ __all__ = ["PSFTestCase"]
 class PSFTestCase(BaseTestCase):
     def test_load(self):
         psf = PSFFile(pkg_resources.resource_filename("molmod", "data/test/thf.psf"))
-        self.assert_(psf.bonds.shape[0] == 832)
-        self.assert_(psf.bends.shape[0] == 1600)
-        self.assert_(psf.dihedrals.shape[0] == 2112)
+        assert psf.bonds.shape[0] == 832
+        assert psf.bends.shape[0] == 1600
+        assert psf.dihedrals.shape[0] == 2112
         g = psf.get_graph()
 
     def test_load_vmd(self):
         psf = PSFFile(pkg_resources.resource_filename("molmod", "data/test/pentapeptide.psf"))
-        self.assert_(psf.bonds.shape[0] == 44)
-        self.assert_(psf.bends.shape[0] == 75)
-        self.assert_(psf.dihedrals.shape[0] == 98)
+        assert psf.bonds.shape[0] == 44
+        assert psf.bends.shape[0] == 75
+        assert psf.dihedrals.shape[0] == 98
         g = psf.get_graph()
 
     def test_dump(self):
@@ -58,8 +58,8 @@ class PSFTestCase(BaseTestCase):
         molecule = Molecule.from_file(pkg_resources.resource_filename("molmod", "data/test/tetra.xyz"))
         psf = PSFFile()
         psf.add_molecule(molecule)
-        self.assert_(psf.bonds.shape[0] == 4)
-        self.assert_(psf.bends.shape[0] == 6)
+        assert psf.bonds.shape[0] == 4
+        assert psf.bends.shape[0] == 6
         with tmpdir(__name__, 'test_tetra') as dn:
             psf.write_to_file("%s/tetra.psf" % dn)
 
@@ -79,9 +79,9 @@ class PSFTestCase(BaseTestCase):
         psf.add_molecule(molecule)
         self.assertEqual(psf.impropers.shape, (3,4))
         test_block = set([(row[0], row[1]) for row in psf.impropers])
-        self.assert_((0,1) in test_block)
-        self.assert_((0,2) in test_block)
-        self.assert_((0,3) in test_block)
+        assert (0,1) in test_block
+        assert (0,2) in test_block
+        assert (0,3) in test_block
         with tmpdir(__name__, 'test_improper') as dn:
             psf.write_to_file("%s/tmp_impropers.psf" % dn)
             psf2 = PSFFile("%s/tmp_impropers.psf" % dn)

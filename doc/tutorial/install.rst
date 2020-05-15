@@ -43,7 +43,7 @@ The following software is used by MolMod:
 * A C compiler e.g. gcc: http://gcc.gnu.org/
 * Numpy >=1.0 or later: http://numpy.scipy.org/
 * Cython >=0.24.1: http://cython.org/
-* Nosetests >=0.11: http://somethingaboutorange.com/mrl/projects/nose/0.11.2/
+* PyTest >=4.0: https://docs.pytest.org/
 
 
 Installation
@@ -56,18 +56,18 @@ You can install MolMod with pip, using either of the following two commands:
     # system wide (requires root permission) or in virtual env
     pip install numpy Cython
     pip install molmod
-    pip install nose  # only needed to run unit tests
+    pip install pytest  # only needed to run unit tests
 
     # installs in ~/.local
     pip install numpy Cython --user
     pip install molmod --user
-    pip install nose --user  # only needed to run unit tests
+    pip install pytest --user  # only needed to run unit tests
 
 Alternatively, you can use conda. (See https://www.continuum.io/downloads)
 
 .. code:: bash
 
-    conda install -c molmod molmod nose
+    conda install -c molmod molmod pytest
 
 
 Testing
@@ -77,7 +77,7 @@ The installation can be tested as follows:
 
 .. code:: bash
 
-    nosetests molmod
+    pytest molmod
 
 This will run a series of tests to check the validity of the outcomes generated
 by MolMod. If some tests fail, post an issue on https://github.com/molmod/molmod/issues

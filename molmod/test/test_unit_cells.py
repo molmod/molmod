@@ -24,9 +24,8 @@
 
 from __future__ import division
 
-from builtins import range
 import numpy as np
-from nose.plugins.skip import SkipTest
+import pytest
 
 from molmod.test.common import BaseTestCase
 from molmod import *
@@ -153,8 +152,8 @@ class UnitCellTestCase(BaseTestCase):
             uc2 = uc1.add_cell_vector(np.random.uniform(-2,2,3))
             uc3 = uc2.add_cell_vector(np.random.uniform(-2,2,3))
 
+    @pytest.mark.xfail
     def test_shortest_vector(self):
-        raise SkipTest
         # simple cases
         uc = UnitCell(np.identity(3,float)*3)
         self.assertArraysAlmostEqual(uc.shortest_vector([3, 0, 1]), np.array([0, 0, 1]))
@@ -173,13 +172,13 @@ class UnitCellTestCase(BaseTestCase):
                 r0 = np.random.normal(0, 10, 3)
                 r1 = uc.shortest_vector(r0)
                 change = r1 - r0
-                self.assert_(np.dot(change, r0) <= 0)
-                #self.assert_(np.linalg.norm(r0) >= np.linalg.norm(r1))
+                assert np.dot(change, r0) <= 0
+                #assert np.linalg.norm(r0) >= np.linalg.norm(r1)
                 index = uc.to_fractional(r0-r1)
                 self.assertArraysAlmostEqual(index, np.round(index), doabs=True)
                 index = uc.to_fractional(r1)
-                self.assert_(index.max()<0.5)
-                self.assert_(index.max()>=-0.5)
+                assert index.max()<0.5
+                assert index.max()>=-0.5
             r0 = np.random.normal(0, 10, (10,3))
             r1 = uc.shortest_vector(r0)
             for i in range(10):
@@ -215,7 +214,7 @@ class UnitCellTestCase(BaseTestCase):
                 c0 = uc.to_cartesian(np.random.uniform(-0.5, 0.5, 3))
                 c1 = c0 + radius*random_unit()
                 f1 = uc.to_fractional(c1)
-                self.assert_((abs(f1) <= ranges+0.5).all(), "f1=%s  ranges=%s" % (f1, ranges))
+                assert (abs(f1) <= ranges+0.5).all(), "f1=%s  ranges=%s" % (f1, ranges)
 
     def test_radius_ranges_2d(self):
         uc = UnitCell(np.identity(3, float), np.array([True, True, False]))
@@ -247,7 +246,7 @@ class UnitCellTestCase(BaseTestCase):
             if np.product(ranges) > 100:
                 continue
             indexes = uc.get_radius_indexes(radius)
-            self.assert_(len(indexes)*abs(uc.volume) > 4.0/3.0*np.pi*radius**3)
+            assert len(indexes)*abs(uc.volume) > 4.0/3.0*np.pi*radius**3
             #print "testing distances"
             for j in range(20):
                 c0 = uc.to_cartesian(np.random.uniform(-0.5, 0.5, 3))
@@ -311,8 +310,8 @@ class UnitCellTestCase(BaseTestCase):
         ])
         self.assertArraysEqual(indexes, expected_indexes)
 
+    @pytest.mark.xfail
     def test_radius_indexes_2d_graphical(self):
-        raise SkipTest
         #uc = UnitCell(np.array([
         #    [2.0, 1.0, 0.0],
         #    [0.0, 0.2, 0.0],
@@ -486,8 +485,8 @@ class UnitCellTestCase(BaseTestCase):
             uc1 = uc0.ordered
             self.assertAlmostEqual(uc0.volume, uc1.volume)
             self.assertEqual(uc0.active.sum(), uc1.active.sum())
-            self.assert_(uc1.active[0] >= uc1.active[1])
-            self.assert_(uc1.active[1] >= uc1.active[2])
+            assert uc1.active[0] >= uc1.active[1]
+            assert uc1.active[1] >= uc1.active[2]
             for i1, i0 in enumerate(uc0.active_inactive[0]):
                 self.assertArraysAlmostEqual(uc0.matrix[:,i0], uc1.matrix[:,i1])
                 self.assertEqual(uc0.active[i0], uc1.active[i1])

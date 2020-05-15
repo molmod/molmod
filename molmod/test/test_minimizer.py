@@ -22,9 +22,8 @@
 # --
 
 
-from builtins import range
 import numpy as np
-from nose.plugins.skip import SkipTest
+import pytest
 
 from molmod.test.common import BaseTestCase
 from molmod import *
@@ -84,17 +83,17 @@ class MinimizerTestCase(BaseTestCase):
             delta *= step_rms
             x_dev = x_opt + delta
             f_dev = fun(x_dev)
-            self.assert_(f_opt - f_dev <= grad_rms*step_rms)
+            assert f_opt - f_dev <= grad_rms*step_rms
         # check if it is really the minimum by computing the eigen values of the
         # hessian
         hessian1 = compute_fd_hessian(fun, x_opt, 1e-4, anagrad=True)
-        self.assert_((np.linalg.eigvalsh(hessian1) > 0).all())
+        assert (np.linalg.eigvalsh(hessian1) > 0).all()
         # check if it is really the minimum by computing the eigen values of the
         # hessian
         hessian2 = compute_fd_hessian(fun, x_opt, 1e-4, anagrad=False)
-        self.assert_((np.linalg.eigvalsh(hessian2) > 0).all())
+        assert (np.linalg.eigvalsh(hessian2) > 0).all()
         # also compare the two hessians
-        self.assert_(abs(hessian1 - hessian2).max() < 1e-4)
+        assert abs(hessian1 - hessian2).max() < 1e-4
 
     def test_sd_golden(self):
         x_init = np.zeros(2, float)
@@ -179,7 +178,7 @@ class MinimizerTestCase(BaseTestCase):
             x_init, prec_fun, search_direction, line_search, convergence, stop_loss,
             anagrad=True, verbose=False,
         )
-        self.assert_(prec_fun.scales is not None)
+        assert prec_fun.scales is not None
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
     def test_cg_newtong_full_prec(self):
@@ -193,7 +192,7 @@ class MinimizerTestCase(BaseTestCase):
             x_init, prec_fun, search_direction, line_search, convergence, stop_loss,
             anagrad=True, verbose=False,
         )
-        self.assert_(prec_fun.scales is not None)
+        assert prec_fun.scales is not None
         self.check_min(minimizer.get_final(), 1e-6, 1e-6)
 
     def test_qn_newtong(self):
@@ -231,8 +230,9 @@ class MinimizerTestCase(BaseTestCase):
         dxs = random_unit((100, len(x_init)))*1e-4
         check_delta(prec_fun, x_init, dxs)
 
+
+    @pytest.mark.xfail
     def test_check_anagrad_full_prec(self):
-        raise SkipTest
         x_init = np.zeros(2, float)
         prec_fun = FullPreconditioner(fun, 20, 1e-2)
         A = np.random.normal(0,1,(2,2))

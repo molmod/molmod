@@ -37,15 +37,15 @@ install:
 # Get the right python version for building. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
 # This also installs conda tools for packaging and uploading
-- conda install python=${MYCONDAPY} conda-build numpy cython conda-verify numpy cython sphinx anaconda-client codecov coverage nose
+- conda install python=${MYCONDAPY} conda-build numpy cython conda-verify numpy cython sphinx anaconda-client codecov coverage pytest pytest-cov
 # Show conda info for debugging
 - conda info -a
 
 script:
 # Check if code is normalized properly, whitespace etc
-- wget https://raw.githubusercontent.com/tovrstra/devscripts/master/scripts/ds-normalize-code -O ds-normalize-code;
-  chmod +x ds-normalize-code;
-  ./ds-normalize-code;
+- wget https://raw.githubusercontent.com/tovrstra/devscripts/master/scripts/ds-normalize-code -O ~/ds-normalize-code;
+  chmod +x ~/ds-normalize-code;
+  ~/ds-normalize-code
 
 # Build the conda package
 - git fetch origin --tags
@@ -62,7 +62,7 @@ script:
 - (cd doc; make html)
 
 # Run tests out of source tree, to make sure that installed version is tested.
-- (cd; nosetests $PYPKG -v --detailed-errors --with-coverage --cover-package=$PYPKG --cover-tests --cover-erase --cover-inclusive --cover-branches --cover-xml)
+- (cd; pytest --pyargs $PYPKG -v --cov=$PYPKG --cov-report=term-missing --cov-report=xml --cov-branch)
 
 after_success:
 # Upload the coverage analysis

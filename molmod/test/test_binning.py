@@ -22,12 +22,11 @@
 # --
 
 
-from builtins import range
 import unittest
 
 import numpy as np
 import pkg_resources
-from nose.plugins.skip import SkipTest
+import pytest
 
 from molmod import *
 from molmod.io import *
@@ -89,8 +88,8 @@ class BinningTestCase(unittest.TestCase):
         self.assertEqual(len(wrong_distances), 0, message)
         self.assertEqual(len(distances), 0, message)
 
+    @pytest.mark.xfail
     def verify_bins_intra_periodic(self, bins):
-        raise SkipTest
         neighbor_set = set([tuple(index) for index in bins.neighbor_indexes])
         self.assertEqual(len(neighbor_set), len(bins.neighbor_indexes))
 
@@ -98,12 +97,12 @@ class BinningTestCase(unittest.TestCase):
             encountered = set([])
             for key1, bin1 in bins.iter_surrounding(key0):
                 frac_key1 = bins.integer_cell.to_fractional(key1)
-                self.assert_(frac_key1.max() < 0.5, str(key1) + str(frac_key1))
-                self.assert_(key1 not in encountered, str(key0) + str(key1))
+                assert frac_key1.max() < 0.5, str(key1) + str(frac_key1)
+                assert key1 not in encountered, str(key0) + str(key1)
                 encountered.add(key1)
 
+    @pytest.mark.xfail
     def verify_bins_inter_periodic(self, bins0, bins1):
-        raise SkipTest
         for bins in bins0, bins1:
             neighbor_set = set([tuple(index) for index in bins.neighbor_indexes])
             self.assertEqual(len(neighbor_set), len(bins.neighbor_indexes))
@@ -112,8 +111,8 @@ class BinningTestCase(unittest.TestCase):
             encountered = set([])
             for key1, bin1 in bins1.iter_surrounding(key0):
                 frac_key1 = bins0.integer_cell.to_fractional(key1)
-                self.assert_(frac_key1.max() < 0.5, str(key1) + str(frac_key1))
-                self.assert_(key1 not in encountered, str(key0) + str(key1))
+                assert frac_key1.max() < 0.5, str(key1) + str(frac_key1)
+                assert key1 not in encountered, str(key0) + str(key1)
                 encountered.add(key1)
 
     def verify_distances_intra(self, coordinates, cutoff, distances, unit_cell=None):
@@ -170,8 +169,8 @@ class BinningTestCase(unittest.TestCase):
             ]
             self.verify_distances_intra(coordinates, cutoff, distances)
 
+    @pytest.mark.xfail
     def test_distances_intra_random_periodic(self):
-        raise SkipTest
         for i in range(10):
             coordinates = np.random.uniform(0,1,(20,3))
             unit_cell = get_random_uc(5.0, np.random.randint(0, 4), 0.5)
@@ -200,8 +199,8 @@ class BinningTestCase(unittest.TestCase):
             ]
             self.verify_distances_inter(coordinates0, coordinates1, cutoff, distances)
 
+    @pytest.mark.xfail
     def test_distances_inter_random_periodic(self):
-        raise SkipTest
         for i in range(10):
             fractional0 = np.random.uniform(0,1,(20,3))
             fractional1 = np.random.uniform(0,1,(20,3))

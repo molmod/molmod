@@ -48,8 +48,8 @@ class CMLTestCase(unittest.TestCase):
             check = load_cml("%s/tmp.cml" % dn)
         for m1, m2 in zip(molecules, check):
             self.assertEqual(m1.title, m2.title)
-            self.assert_((m1.numbers==m2.numbers).all())
-            self.assert_((m1.coordinates==m2.coordinates).all())
+            assert (m1.numbers==m2.numbers).all()
+            assert (m1.coordinates==m2.coordinates).all()
             self.assertEqual(m1.graph.num_vertices, m2.graph.num_vertices)
             self.assertEqual(set(m1.graph.edges), set(m2.graph.edges))
 
@@ -57,5 +57,5 @@ class CMLTestCase(unittest.TestCase):
         l = load_cml(pkg_resources.resource_filename("molmod", "data/test/1LJL_Cys10.cml"))
         self.assertEqual(l[0].title, "Kalium [+]")
         self.assertEqual(l[2].title, "Acetic acid [-]")
-        self.assert_((l[2].numbers==np.array([6,6,8,8,1,1,1])).all())
+        assert (l[2].numbers==np.array([6,6,8,8,1,1,1])).all()
         self.assertEqual(l[2].extra["charge"],"-1.0")

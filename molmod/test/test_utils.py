@@ -33,7 +33,7 @@ from molmod import *
 __all__ = ["UtilsTestCase"]
 
 
-class Test(ReadOnly):
+class Example(ReadOnly):
     a = ReadOnlyAttribute(none=False)
     b = ReadOnlyAttribute()
 
@@ -42,7 +42,7 @@ class Test(ReadOnly):
         self.b = b
 
 
-class TypeCheckTest(ReadOnly):
+class TypeCheckExample(ReadOnly):
     a = ReadOnlyAttribute(int)
     b = ReadOnlyAttribute(np.ndarray)
     c = ReadOnlyAttribute(np.ndarray, npdim=2)
@@ -50,7 +50,7 @@ class TypeCheckTest(ReadOnly):
     e = ReadOnlyAttribute(np.ndarray, npdtype=np.floating)
 
 
-class CustomCheckTest(ReadOnly):
+class CustomCheckExample(ReadOnly):
     def check_b(self, b):
         if len(b) != self.a:
             raise TypeError()
@@ -62,13 +62,13 @@ class CustomCheckTest(ReadOnly):
         self.a = a
         self.b = b
 
-class DerivTest(Test):
+class SubExample(Example):
     pass
 
 
 class UtilsTestCase(unittest.TestCase):
     def test_pickle_read_only1(self):
-        test1 = Test(5)
+        test1 = Example(5)
         s = pickle.dumps(test1)
         test2 = pickle.loads(s)
         self.assertEqual(test1.a, test2.a)
@@ -78,7 +78,7 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEqual(test1.b, "foo")
 
     def test_pickle_read_only2(self):
-        test1 = Test(5, 3)
+        test1 = Example(5, 3)
         s = pickle.dumps(test1)
         test2 = pickle.loads(s)
         self.assertEqual(test1.a, test2.a)
@@ -95,16 +95,16 @@ class UtilsTestCase(unittest.TestCase):
             self.fail("Should have raised a TypeError. Got %s" % e)
 
     def test_assign_none(self):
-        self.check_type_error(Test, None)
+        self.check_type_error(Example, None)
 
     def test_copy_with(self):
-        test1 = Test(5,4)
+        test1 = Example(5,4)
         test2 = test1.copy_with(a=2)
         assert(test2.a == 2)
         assert(test2.b == 4)
 
     def test_type_checking_correct(self):
-        test = TypeCheckTest()
+        test = TypeCheckExample()
         test.a = 5
         test.b = np.array([5, 3])
         test.c = np.identity(2)
@@ -112,7 +112,7 @@ class UtilsTestCase(unittest.TestCase):
         test.e = np.array([4.2, 3.1])
 
     def test_type_checking_wrong(self):
-        test = TypeCheckTest()
+        test = TypeCheckExample()
         self.check_type_error(setattr, test, "a", "foo")
         self.check_type_error(setattr, test, "b", test)
         self.check_type_error(setattr, test, "c", np.array([2, 3]))
@@ -122,18 +122,18 @@ class UtilsTestCase(unittest.TestCase):
         test.e = np.array([4.2, 3.1])
 
     def test_assign_list(self):
-        self.check_type_error(Test, [4, 5])
+        self.check_type_error(Example, [4, 5])
 
     def test_custon_check_correct(self):
-        test = CustomCheckTest(5)
+        test = CustomCheckExample(5)
         test.b = np.zeros(5, int)
 
     def test_custon_check_wrong(self):
-        test = CustomCheckTest(5)
+        test = CustomCheckExample(5)
         self.check_type_error(setattr, test, "b", np.zeros(4, int))
 
-    def test_deriv(self):
-        test1 = Test(5)
+    def test_sub(self):
+        test1 = SubExample(5)
         s = pickle.dumps(test1)
         test2 = pickle.loads(s)
         self.assertEqual(test1.a, test2.a)

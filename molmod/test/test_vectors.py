@@ -24,7 +24,6 @@
 
 from __future__ import division
 
-from builtins import range
 import numpy as np
 
 from molmod.test.common import BaseTestCase
@@ -40,8 +39,8 @@ class VectorTestCase(BaseTestCase):
             a = np.random.normal(0,1,3)
             b = np.random.normal(0,1,3)
             cos = cosine(a,b)
-            self.assert_(cos>=-1)
-            self.assert_(cos<=1)
+            assert cos>=-1
+            assert cos<=1
             cos = cosine(a,a)
             self.assertAlmostEqual(cos, 1)
             cos = cosine(a,-a)
@@ -56,8 +55,8 @@ class VectorTestCase(BaseTestCase):
             a = np.random.normal(0,1,3)
             b = np.random.normal(0,1,3)
             alpha = angle(a,b)
-            self.assert_(alpha>=0.0)
-            self.assert_(alpha<=np.pi)
+            assert alpha>=0.0
+            assert alpha<=np.pi
             alpha = angle(a,a)
             self.assertAlmostEqual(alpha, 0.0)
             alpha = angle(a,-a)

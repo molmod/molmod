@@ -36,10 +36,10 @@ __all__ = ["BaseTestCase", "tmpdir"]
 class BaseTestCase(unittest.TestCase):
     def assertArraysEqual(self, a, b):
         self.assertEqual(a.shape, b.shape, "The array shapes do not match.")
-        self.assert_((a==b).all(), "The array values do not match.")
+        assert (a==b).all(), "The array values do not match."
 
     def assertArrayConstant(self, arr, const):
-        self.assert_((arr==const).all(), "Some/All array values do not match the constant.")
+        assert (arr==const).all(), "Some/All array values do not match the constant."
 
     def assertArraysAlmostEqual(self, a, b, threshold=1e-6, mean=False, doabs=False):
         self.assertEqual(a.shape, b.shape, "The array shapes do not match.")
@@ -52,20 +52,20 @@ class BaseTestCase(unittest.TestCase):
             abserr = abs(a-b).max()
             oom = 0.5*(abs(a).max()+abs(b).max())
         if doabs:
-            self.assert_(abserr <= threshold, "The absolute error is larger than the given threshold: %5.3e > %5.3e" % (abserr, threshold))
+            assert abserr <= threshold, "The absolute error is larger than the given threshold: %5.3e > %5.3e" % (abserr, threshold)
         else:
             relerr = abserr/oom
-            self.assert_(relerr <= threshold, "The relative error is larger than the given threshold: %5.3e > %5.3e" % (relerr, threshold))
+            assert relerr <= threshold, "The relative error is larger than the given threshold: %5.3e > %5.3e" % (relerr, threshold)
 
     def assertArrayAlmostConstant(self, arr, const, relerr_threshold):
         error = abs(arr-const).max()
         oom = const
         relerr = error/oom
-        self.assert_(relerr <= relerr_threshold, "The relative error is larger than the given threshold: %5.3e > %5.3e" % (relerr, relerr_threshold))
+        assert relerr <= relerr_threshold, "The relative error is larger than the given threshold: %5.3e > %5.3e" % (relerr, relerr_threshold)
 
     def assertArrayAlmostZero(self, arr, abserr_threshold):
         abserr = abs(arr).max()
-        self.assert_(abserr <= abserr_threshold, "The absolute error is larger than the given threshold: %5.3e > %5.3e" % (abserr, abserr_threshold))
+        assert abserr <= abserr_threshold, "The absolute error is larger than the given threshold: %5.3e > %5.3e" % (abserr, abserr_threshold)
 
 
 @contextmanager

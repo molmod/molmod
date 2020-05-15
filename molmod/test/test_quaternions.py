@@ -38,8 +38,8 @@ class QuaternionTestCase(unittest.TestCase):
         r1 = quaternion_to_rotation_matrix(q1)
         factor, q2 = rotation_matrix_to_quaternion(r1)
         r2 = quaternion_to_rotation_matrix(q2)
-        self.assert_((abs(q1-q2).max() < 1e-10) or (abs(q1+q2).max() < 1e-10))
-        self.assert_(abs(r1-r2).max() < 1e-10)
+        assert (abs(q1-q2).max() < 1e-10) or (abs(q1+q2).max() < 1e-10)
+        assert abs(r1-r2).max() < 1e-10
 
     def test_quaternion_rotation(self):
         q = np.random.normal(0,1,4)
@@ -49,7 +49,7 @@ class QuaternionTestCase(unittest.TestCase):
         p = np.random.normal(0,1,3)
         pa = np.dot(r, p)
         pb = quaternion_rotation(q, p)
-        self.assert_(abs(pa-pb).max() < 1e-10)
+        assert abs(pa-pb).max() < 1e-10
 
     def test_quaternion_product(self):
         q1 = np.random.normal(0,1,4)
@@ -61,4 +61,4 @@ class QuaternionTestCase(unittest.TestCase):
         r2 = quaternion_to_rotation_matrix(q2)
         r3 = np.dot(r1, r2)
         foo, q3_check = rotation_matrix_to_quaternion(r3)
-        self.assert_((abs(q3-q3_check).max() < 1e-10) or (abs(q3+q3_check).max() < 1e-10))
+        assert (abs(q3-q3_check).max() < 1e-10) or (abs(q3+q3_check).max() < 1e-10)

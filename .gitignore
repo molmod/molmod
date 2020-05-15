@@ -14,6 +14,9 @@ doctrees
 dist
 molmod.egg-info
 .eggs
+.coverage
+coverage.xml
+ds-normalize-code
 
 # Output of the examples
 molmod/examples/001_molecules/ibuprofen.xyz
