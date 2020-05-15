@@ -89,5 +89,5 @@ class SimilarityTestCase(unittest.TestCase):
                 if verbose: print(("%14.5f" % similarity), end=' ')
             if verbose: print()
         result = np.array(result)
-        self.assert_((abs(np.diag(result) - 1) < 1e-5).all(), "Diagonal must be unity.")
-        self.assert_((abs(result - result.transpose()) < 1e-5).all(), "Result must be symmetric.")
+        assert (abs(np.diag(result) - 1) < 1e-5).all(), "Diagonal must be unity."
+        assert (abs(result - result.transpose()) < 1e-5).all(), "Result must be symmetric."

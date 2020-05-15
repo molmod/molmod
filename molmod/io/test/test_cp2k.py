@@ -39,17 +39,17 @@ __all__ = ["CP2KTestCase"]
 class CP2KTestCase(unittest.TestCase):
     def test_input_file(self):
         cp2k_input = CP2KInputFile.read_from_file(pkg_resources.resource_filename("molmod", "data/test/water_md.inp"))
-        self.assert_(cp2k_input._consistent())
+        assert cp2k_input._consistent()
 
         # test that the read_from_file works
         self.assertEqual(cp2k_input["FORCE_EVAL"]["METHOD"].value, "Quickstep")
-        self.assert_(cp2k_input._consistent())
+        assert cp2k_input._consistent()
         self.assertEqual(cp2k_input["MOTION"]["MD"]["ENSEMBLE"].value, "NVE")
-        self.assert_(cp2k_input._consistent())
+        assert cp2k_input._consistent()
 
         # test the __getitem__, __setitem__ and __delitem__
         del cp2k_input["MOTION"]["MD"]["ENSEMBLE"]
-        self.assert_(cp2k_input._consistent())
+        assert cp2k_input._consistent()
         try:
             print(cp2k_input["MOTION"]["MD"]["ENSEMBLE"].value)
             self.fail("CP2KKeyword ENSEMBLE should no longer exist.")
@@ -57,7 +57,7 @@ class CP2KTestCase(unittest.TestCase):
             pass
 
         cp2k_input["MOTION"]["MD"]["ENSEMBLE"] = CP2KKeyword("ENSEMBLE", "NVE")
-        self.assert_(cp2k_input._consistent())
+        assert cp2k_input._consistent()
         self.assertEqual(cp2k_input["MOTION"]["MD"]["ENSEMBLE"].value, "NVE")
 
         try:
@@ -73,9 +73,9 @@ class CP2KTestCase(unittest.TestCase):
             pass
 
         cp2k_input["MOTION"]["MD"]["ENSEMBLE"] = [CP2KKeyword("ENSEMBLE", "NVE"), CP2KKeyword("ENSEMBLE", "NVT")]
-        self.assert_(cp2k_input._consistent())
+        assert cp2k_input._consistent()
         cp2k_input["MOTION"]["MD"]["ENSEMBLE", 0] = CP2KKeyword("ENSEMBLE", "NVE")
-        self.assert_(cp2k_input._consistent())
+        assert cp2k_input._consistent()
 
         self.assertEqual(len(cp2k_input["MOTION"]["MD"]["ENSEMBLE"]), 2)
         l = cp2k_input["MOTION"]["MD"]["ENSEMBLE"]
@@ -83,24 +83,24 @@ class CP2KTestCase(unittest.TestCase):
         self.assertEqual(l[1].value, "NVT")
 
         del cp2k_input["MOTION"]["MD"]["ENSEMBLE", 0]
-        self.assert_(cp2k_input._consistent())
+        assert cp2k_input._consistent()
         self.assertEqual(cp2k_input["MOTION"]["MD"]["ENSEMBLE"].value, "NVT")
 
         # test __len__
         self.assertEqual(len(cp2k_input), 3)
         self.assertEqual(len(cp2k_input["MOTION"]["MD"]), 5)
         cp2k_input["MOTION"]["MD"]["ENSEMBLE"] = [CP2KKeyword("ENSEMBLE", "NVE"), CP2KKeyword("ENSEMBLE", "NVT")]
-        self.assert_(cp2k_input._consistent())
+        assert cp2k_input._consistent()
         self.assertEqual(len(cp2k_input["MOTION"]["MD"]), 6)
         del cp2k_input["MOTION"]["MD"]["ENSEMBLE", 1]
-        self.assert_(cp2k_input._consistent())
+        assert cp2k_input._consistent()
 
         # test creating new parts
         nose = CP2KSection("NOSE", [
             CP2KKeyword("LENGTH", "3"),
             CP2KKeyword("TIMECON", "10.0")
         ])
-        self.assert_(nose._consistent())
+        assert nose._consistent()
 
         # test iter
         tmp = [child for child in nose]
@@ -109,14 +109,14 @@ class CP2KTestCase(unittest.TestCase):
 
         # test append
         cp2k_input["MOTION"]["MD"].append(nose)
-        self.assert_(cp2k_input._consistent())
+        assert cp2k_input._consistent()
         self.assertEqual(cp2k_input["MOTION"]["MD"]["NOSE"]["LENGTH"].value, "3")
 
         # test dump, load consistency, part 1: dump a file, load it again, should be the same
         with tmpdir(__name__, 'test_input_file') as dn:
             cp2k_input.write_to_file("%s/water_md.inp" % dn)
             cp2k_input_check = CP2KInputFile.read_from_file("%s/water_md.inp" % dn)
-        self.assert_(cp2k_input_check._consistent())
+        assert cp2k_input_check._consistent()
         self.assertEqual(cp2k_input, cp2k_input_check)
 
         # test dump-load consistency, part 2: no reordering of sections and keywords should be allowed

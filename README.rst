@@ -51,4 +51,4 @@ The tests can be executed as follows:
 
 .. code:: bash
 
-    nosetests molmod
+    pytest molmod

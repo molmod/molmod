@@ -51,15 +51,15 @@ class GamessTestCase(BaseTestCase):
         self.assertAlmostEqual(punch.coordinates[-1,0]/angstrom, 3.8608437748)
         self.assertAlmostEqual(punch.energy, -959.9675629527)
         self.assertEqual(punch.gradient.shape, (N,3))
-        self.assert_(abs(punch.gradient[0,1] - 1.5314677838E-05) < 1e-10)
-        self.assert_(abs(punch.gradient[3,-1] - 8.5221217336E-06) < 1e-10)
-        self.assert_(abs(punch.gradient[-1,0] - 2.1211421041E-05) < 1e-10)
+        assert abs(punch.gradient[0,1] - 1.5314677838E-05) < 1e-10
+        assert abs(punch.gradient[3,-1] - 8.5221217336E-06) < 1e-10
+        assert abs(punch.gradient[-1,0] - 2.1211421041E-05) < 1e-10
         self.assertEqual(punch.hessian.shape, (3*N,3*N))
-        self.assert_(abs(punch.hessian - punch.hessian.transpose()).max() < 1e-10)
-        self.assert_(abs(punch.hessian[0,0] - 2.51645239E-02) < 1e-10)
-        self.assert_(abs(punch.hessian[0,-1] - -1.27201108E-04) < 1e-10)
-        self.assert_(abs(punch.hessian[-1,0] - -1.27201108E-04) < 1e-10)
-        self.assert_(abs(punch.hessian[-1,-1] - 7.34538698E-03) < 1e-10)
+        assert abs(punch.hessian - punch.hessian.transpose()).max() < 1e-10
+        assert abs(punch.hessian[0,0] - 2.51645239E-02) < 1e-10
+        assert abs(punch.hessian[0,-1] - -1.27201108E-04) < 1e-10
+        assert abs(punch.hessian[-1,0] - -1.27201108E-04) < 1e-10
+        assert abs(punch.hessian[-1,-1] - 7.34538698E-03) < 1e-10
         self.assertEqual(punch.masses.shape, (N,))
         self.assertAlmostEqual(punch.masses[0]/amu, 34.96885)
         self.assertAlmostEqual(punch.masses[3]/amu, 1.00782)

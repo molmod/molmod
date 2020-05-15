@@ -22,7 +22,6 @@
 # --
 
 
-from builtins import range
 import numpy as np
 import pkg_resources
 
@@ -42,7 +41,7 @@ class MoleculeTestCase(BaseTestCase):
         for i in 0,1,2:
             dm += np.subtract.outer(molecule.coordinates[:,i],molecule.coordinates[:,i])**2
         dm = np.sqrt(dm)
-        self.assert_((abs(molecule.distance_matrix - dm) < 1e-5).all(), "Wrong distance matrix")
+        assert (abs(molecule.distance_matrix - dm) < 1e-5).all(), "Wrong distance matrix"
 
     def test_distance_matrix_periodic(self):
         for i in range(1000):
@@ -72,7 +71,7 @@ class MoleculeTestCase(BaseTestCase):
         #    self.fail("Should have raised an error")
         #except (ValueError, RuntimeError), e:
         #    pass
-        self.assert_(isinstance(mol.coordinates[0,0], float))
+        assert isinstance(mol.coordinates[0,0], float)
 
         coordinates = np.array(coordinates)
         mol = Molecule(numbers, coordinates)

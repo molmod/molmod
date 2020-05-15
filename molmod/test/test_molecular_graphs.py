@@ -22,12 +22,11 @@
 # --
 
 
-from builtins import range
 import unittest
 
 import numpy as np
-from nose.plugins.skip import SkipTest
 import pkg_resources
+import pytest
 
 from molmod import *
 
@@ -360,9 +359,9 @@ class MolecularGraphTestCase(unittest.TestCase):
             self.assertEqual(len(check.edges), len(check_edges))
             self.assertEqual(check.edges, check_edges)
             self.assertEqual(check.numbers.shape,check_numbers.shape)
-            self.assert_((check.numbers==check_numbers).all())
+            assert (check.numbers==check_numbers).all()
             self.assertEqual(check.orders.shape,check_orders.shape)
-            self.assert_((check.orders==check_orders).all())
+            assert (check.orders==check_orders).all()
 
     def test_fingerprints(self):
         for mol in self.iter_molecules():
@@ -370,11 +369,11 @@ class MolecularGraphTestCase(unittest.TestCase):
             permutation = np.random.permutation(g0.num_vertices)
             g1 = g0.get_subgraph(permutation, normalize=True)
             for i in range(g0.num_vertices):
-                self.assert_((g0.vertex_fingerprints[permutation[i]]==g1.vertex_fingerprints[i]).all())
-            self.assert_((g0.fingerprint==g1.fingerprint).all())
+                assert (g0.vertex_fingerprints[permutation[i]]==g1.vertex_fingerprints[i]).all()
+            assert (g0.fingerprint==g1.fingerprint).all()
 
+    @pytest.mark.xfail
     def test_fingerprint_collisions(self):
-        raise SkipTest
         # These are collisions with older versions, found by scanning the
         # pubchem database.
         cases = [
@@ -395,13 +394,13 @@ class MolecularGraphTestCase(unittest.TestCase):
             permutation = np.random.permutation(g0.num_vertices)
             # normalize=False
             g1 = g0.get_subgraph(permutation)
-            self.assert_((g0.numbers==g1.numbers).all())
+            assert (g0.numbers==g1.numbers).all()
             self.assertEqual(g0.num_edges, g1.num_edges)
             self.assertEqual(g0.edges, g1.edges)
-            self.assert_((g0.orders==g1.orders).all())
+            assert (g0.orders==g1.orders).all()
             # normalize=True
             g1 = g0.get_subgraph(permutation, normalize=True)
-            self.assert_((g0.numbers[permutation]==g1.numbers).all())
+            assert (g0.numbers[permutation]==g1.numbers).all()
             self.assertEqual(g0.num_edges, g1.num_edges)
 
     def test_subgraph_big(self):
@@ -410,7 +409,7 @@ class MolecularGraphTestCase(unittest.TestCase):
         for group in g0.independent_vertices:
             g1 = g0.get_subgraph(group, normalize=True)
             self.assertEqual(g1.num_vertices, len(group))
-            self.assert_((g0.numbers[group]==g1.numbers).all())
+            assert (g0.numbers[group]==g1.numbers).all()
 
     def test_iter_shortest_paths(self):
         molecule = self.load_molecule("precursor.xyz")
@@ -434,7 +433,7 @@ class MolecularGraphTestCase(unittest.TestCase):
                 else:
                     self.assertEqual(length, len(path))
                 for i in range(len(path)-1):
-                    self.assert_(path[i] in molecule.graph.neighbors[path[i+1]])
+                    assert path[i] in molecule.graph.neighbors[path[i+1]]
 
     def test_full_match_on_self(self):
         for molecule in self.iter_molecules(allow_multi=True):
@@ -457,8 +456,8 @@ class MolecularGraphTestCase(unittest.TestCase):
                 g1_bis = g1.get_subgraph(order1, normalize=True)
 
                 self.assertEqual(str(g0_bis), str(g1_bis))
-                self.assert_((g0_bis.numbers==g1_bis.numbers).all())
-                self.assert_((g0_bis.orders==g1_bis.orders).all())
+                assert (g0_bis.numbers==g1_bis.numbers).all()
+                assert (g0_bis.orders==g1_bis.orders).all()
             except NotImplementedError:
                 pass
 
@@ -466,8 +465,8 @@ class MolecularGraphTestCase(unittest.TestCase):
         for molecule in self.iter_molecules(allow_multi=True):
             blob = molecule.graph.blob
             graph = MolecularGraph.from_blob(blob)
-            self.assert_((graph.numbers==molecule.graph.numbers).all(), "Atom numbers do not match.")
-            self.assert_(graph.edges==molecule.graph.edges, "edges do not match.")
+            assert (graph.numbers==molecule.graph.numbers).all(), "Atom numbers do not match."
+            assert graph.edges==molecule.graph.edges, "edges do not match."
 
     def test_halfs_double_thf(self):
         molecule = self.load_molecule("thf_single.xyz")
@@ -482,10 +481,10 @@ class MolecularGraphTestCase(unittest.TestCase):
                 self.fail_("The case (%i,%i,%i,%i) must lead to a solution." % (a1,b1,a2,b2))
             if a1 == 0 and a2 == 0:
                 self.assertEqual(len(half1), 1)
-                self.assert_(len(half2) > 1)
+                assert len(half2) > 1
             else:
-                self.assert_(len(half1) > 1)
-                self.assert_(len(half2) > 1)
+                assert len(half1) > 1
+                assert len(half2) > 1
 
     def test_add_hydrogens(self):
         cases = [(
@@ -509,8 +508,8 @@ class MolecularGraphTestCase(unittest.TestCase):
         for before, formal_charges, after in cases:
             after_check = before.add_hydrogens(formal_charges)
             self.assertEqual(after.edges, after_check.edges)
-            self.assert_((after.numbers==after_check.numbers).all())
-            self.assert_((after.orders==after_check.orders).all())
+            assert (after.numbers==after_check.numbers).all()
+            assert (after.orders==after_check.orders).all()
 
     def test_criteria_arguments(self):
         try:

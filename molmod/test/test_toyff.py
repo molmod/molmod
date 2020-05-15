@@ -24,7 +24,6 @@
 
 from __future__ import division
 
-from builtins import range
 import unittest
 
 import numpy as np
@@ -120,7 +119,7 @@ class ToyFFTestCase(unittest.TestCase):
         error = abs(delta_energy - approx_delta_energy)
         oom = abs(delta_energy)
 
-        self.assert_(error < oom*1e-5)
+        assert error < oom*1e-5
 
     def test_dm_quad_energy(self):
         for i in range(10):

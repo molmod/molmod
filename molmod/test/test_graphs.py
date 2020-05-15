@@ -273,7 +273,7 @@ class GraphTestCase(unittest.TestCase):
             [3, 3, 2, 1, 2, 3, 2, 0],
         ],dtype=np.int32)
         self.assertEqual(expecting.shape,graph.distances.shape)
-        self.assert_((expecting==graph.distances).all())
+        assert (expecting==graph.distances).all()
         # disconnected graph
         graph = Graph([(0,1), (1,2), (3,4)])
         expecting = np.array([
@@ -284,7 +284,7 @@ class GraphTestCase(unittest.TestCase):
             [ 0, 0, 0, 1, 0],
         ],dtype=np.int32)
         self.assertEqual(expecting.shape,graph.distances.shape)
-        self.assert_((expecting==graph.distances).all())
+        assert (expecting==graph.distances).all()
         # graph with singletons
         graph = Graph([(2,3), (3,4)])
         expecting = np.array([
@@ -295,7 +295,7 @@ class GraphTestCase(unittest.TestCase):
             [ 0, 0, 2, 1, 0],
         ],dtype=np.int32)
         self.assertEqual(expecting.shape,graph.distances.shape)
-        self.assert_((expecting==graph.distances).all())
+        assert (expecting==graph.distances).all()
 
     def test_neighbors(self):
         for case in self.iter_cases():
@@ -304,7 +304,7 @@ class GraphTestCase(unittest.TestCase):
             for central, neighbors in g.neighbors.items():
                 for neighbor in neighbors:
                     counter += 1
-                    self.assert_(frozenset([central,neighbor]) in g.edges)
+                    assert frozenset([central,neighbor]) in g.edges
             self.assertEqual(counter, len(g.edges)*2)
 
     def test_central_vertices(self):
@@ -312,10 +312,10 @@ class GraphTestCase(unittest.TestCase):
             g = case.graph
             max_distances = g.distances.max(axis=1)
             max_distances_min = max_distances[max_distances>0].min()
-            self.assert_(len(g.central_vertices>0))
+            assert len(g.central_vertices>0)
             for c in g.central_vertices:
-                self.assert_(g.distances[c].max() == max_distances_min)
-            self.assert_(g.central_vertex in g.central_vertices)
+                assert g.distances[c].max() == max_distances_min
+            assert g.central_vertex in g.central_vertices
 
     def test_independent_vertices(self):
         edges = [(0,1), (0,2), (0,3), (1,4), (1,5), (6,7), (6,8), (6,9), (7,10), (7,11)]
@@ -328,9 +328,9 @@ class GraphTestCase(unittest.TestCase):
             permutation = np.random.permutation(g0.num_vertices)
             new_edges = tuple((permutation[i], permutation[j]) for i,j in g0.edges)
             g1 = Graph(new_edges, g0.num_vertices)
-            self.assert_((g0.fingerprint==g1.fingerprint).all())
+            assert (g0.fingerprint==g1.fingerprint).all()
             for i in range(g0.num_vertices):
-                self.assert_((g0.vertex_fingerprints[i]==g1.vertex_fingerprints[permutation[i]]).all())
+                assert (g0.vertex_fingerprints[i]==g1.vertex_fingerprints[permutation[i]]).all()
 
     def test_symmetries(self):
         cases = self.iter_cases()
@@ -362,7 +362,8 @@ class GraphTestCase(unittest.TestCase):
                         if not ok:
                             self.fail_("The cycle lengths must have a common divisor. Not found in %s: %s" % (case.name, cycles))
             # checking expected data
-            if case.symmetry_cycles is None: continue
+            if case.symmetry_cycles is None:
+                continue
             common = set([])
             unexpected = set([])
             unsatisfied = copy.deepcopy(case.symmetry_cycles)
@@ -380,8 +381,8 @@ class GraphTestCase(unittest.TestCase):
                        ("unexpected (%i): %s\n" % (len(unexpected), unexpected)) + \
                        ("unsatisfied (%i): %s\n" % (len(unsatisfied), unsatisfied))
 
-            self.assert_(len(unexpected) == 0, message())
-            self.assert_(len(unsatisfied) == 0, message())
+            assert len(unexpected) == 0, message()
+            assert len(unsatisfied) == 0, message()
 
     def test_equivalent_vertices(self):
         for case in self.iter_cases(disconnected=False):
@@ -416,7 +417,7 @@ class GraphTestCase(unittest.TestCase):
                 self.assertEqual(l, g.distances[n,start])
                 l_last = l
                 visited[n] = 1
-            self.assert_((visited==1).all())
+            assert (visited==1).all()
 
     def test_iter_breadth_first_edges(self):
         cases = self.iter_cases()
@@ -440,7 +441,7 @@ class GraphTestCase(unittest.TestCase):
                     self.assertEqual(distance+1, g.distances[edge[1],start])
                 distance_last = distance
                 visited[edge_index[frozenset(edge)]] = 1
-            self.assert_((visited==1).all())
+            assert (visited==1).all()
 
     def test_iter_shortest_paths(self):
         # a few exotic cases
@@ -466,7 +467,7 @@ class GraphTestCase(unittest.TestCase):
             #print graph.edges
             for path in graph.iter_shortest_paths(begin,end):
                 self.assertEqual(len(path), length)
-                self.assert_(path in expected_paths)
+                assert path in expected_paths
                 expected_paths.discard(path)
                 #print path
             self.assertEqual(len(expected_paths), 0)
@@ -488,14 +489,14 @@ class GraphTestCase(unittest.TestCase):
                     pass
             self.assertEqual(graph.num_vertices, subgraph.num_vertices)
             for i,j in subgraph.edges:
-                self.assert_(i in subvertices)
-                self.assert_(j in subvertices)
+                assert i in subvertices
+                assert j in subvertices
             for i_new, i_old in enumerate(subgraph._old_edge_indexes):
                 self.assertEqual(subgraph.edges[i_new], graph.edges[i_old])
 
             # normalized case
             subgraph = graph.get_subgraph(subvertices, normalize=True)
-            self.assert_(subgraph.num_vertices <= len(subvertices))
+            assert subgraph.num_vertices <= len(subvertices)
             for p0,p1 in enumerate(subgraph._old_edge_indexes):
                 i0,j0 = subgraph.edges[p0]
                 #i1,j1 = subgraph.edges[p1]
@@ -605,7 +606,7 @@ class GraphTestCase(unittest.TestCase):
                 return
             self.assertEqual(len(case.rings), len(matches))
             for match in matches:
-                self.assert_(match.ring_vertices in case.rings)
+                assert match.ring_vertices in case.rings
         self.check_graph_search(RingPattern(10), callback=callback)
 
     def test_custom_pattern(self):
@@ -636,7 +637,7 @@ class GraphTestCase(unittest.TestCase):
                 if match0.forward == match1.forward:
                     found = True
                     break
-            self.assert_(found)
+            assert found
 
     def test_pattern_lower_symmetry(self):
         subject_graph = Graph([

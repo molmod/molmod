@@ -22,7 +22,6 @@
 # --
 
 
-from builtins import range
 import unittest
 
 import numpy as np
@@ -48,7 +47,7 @@ class ClusterTestCase(unittest.TestCase):
         complete = set([])
         for cluster in clusters:
             tmp = np.array(list(cluster.items)) % 2
-            self.assert_((tmp == 0).all() or (tmp == 1).all())
+            assert (tmp == 0).all() or (tmp == 1).all()
             counter += len(cluster.items)
             complete |= cluster.items
         self.assertEqual(counter, len(complete))

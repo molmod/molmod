@@ -225,8 +225,8 @@ class TransformationsTestCase(BaseTestCase):
             self.assertArraysAlmostEqual(t.inv.matrix, np.linalg.inv(t.matrix))
             self.assertArraysAlmostEqual((t*t.inv).t, np.zeros(3,float), doabs=True)
             self.assertArraysAlmostEqual((t.inv*t).t, np.zeros(3,float), doabs=True)
-            self.assertTrue((t*t.inv).compare(Translation.identity()))
-            self.assertTrue((t.inv*t).compare(Translation.identity()))
+            assert (t*t.inv).compare(Translation.identity())
+            assert (t.inv*t).compare(Translation.identity())
         self.assertEqual(id(t), id(t.inv.inv))
 
     def test_inv_rotation(self):
@@ -234,8 +234,8 @@ class TransformationsTestCase(BaseTestCase):
             self.assertArraysAlmostEqual(r.inv.matrix, np.linalg.inv(r.matrix))
             self.assertArraysAlmostEqual((r*r.inv).r, np.identity(3,float))
             self.assertArraysAlmostEqual((r.inv*r).r, np.identity(3,float))
-            self.assertTrue((r*r.inv).compare(Rotation.identity()))
-            self.assertTrue((r.inv*r).compare(Rotation.identity()))
+            assert (r*r.inv).compare(Rotation.identity())
+            assert (r.inv*r).compare(Rotation.identity())
         self.assertEqual(id(r), id(r.inv.inv))
 
     def test_inv_complete(self):
@@ -245,29 +245,29 @@ class TransformationsTestCase(BaseTestCase):
             self.assertArraysAlmostEqual((c.inv*c).t, np.zeros(3,float), doabs=True)
             self.assertArraysAlmostEqual((c*c.inv).r, np.identity(3,float))
             self.assertArraysAlmostEqual((c.inv*c).r, np.identity(3,float))
-            self.assertTrue((c*c.inv).compare(Complete.identity()))
-            self.assertTrue((c.inv*c).compare(Complete.identity()))
+            assert (c*c.inv).compare(Complete.identity())
+            assert (c.inv*c).compare(Complete.identity())
         self.assertEqual(id(c), id(c.inv.inv))
 
     def test_translation_from_matrix(self):
         for t in self.iter_random_translations():
-            self.assert_(t.compare(Translation.from_matrix(t.matrix)))
+            assert t.compare(Translation.from_matrix(t.matrix))
 
     def test_rotation_from_matrix(self):
         for r in self.iter_random_rotations():
-            self.assert_(r.compare(Rotation.from_matrix(r.matrix)))
+            assert r.compare(Rotation.from_matrix(r.matrix))
 
     def test_complete_from_matrix(self):
         for c in self.iter_random_completes():
-            self.assert_(c.compare(Complete.from_matrix(c.matrix)))
+            assert c.compare(Complete.from_matrix(c.matrix))
 
     def test_rotation_from_properties(self):
         for r in self.iter_random_rotations():
-            self.assert_(r.compare(Rotation.from_properties(*r.properties)))
+            assert r.compare(Rotation.from_properties(*r.properties))
 
     def test_complete_from_properties(self):
         for c in self.iter_random_completes():
-            self.assert_(c.compare(Complete.from_properties(*c.properties)))
+            assert c.compare(Complete.from_properties(*c.properties))
 
     def test_compare_translations(self):
         for t1, t2 in zip(self.iter_random_translations(), self.iter_random_translations()):
@@ -334,7 +334,7 @@ class TransformationsTestCase(BaseTestCase):
             if not degenerate:
                 # if the set of points is not degenerate, check whether transf and check_transf
                 # are each other inverses
-                self.assert_((transf*check_transf).compare(Complete.identity()))
+                assert (transf*check_transf).compare(Complete.identity())
 
 
         # Add some distortion to the transformed points
@@ -350,24 +350,24 @@ class TransformationsTestCase(BaseTestCase):
                 transf_small = Complete.from_properties(0.01, random_unit(), True, np.random.normal(0,0.001,3))
                 transf_bis = transf*transf_small
                 higher_rmsd = compute_rmsd(ref_points, transf_bis*tr_points)
-                self.assert_(lowest_rmsd < higher_rmsd)
+                assert lowest_rmsd < higher_rmsd
 
     def test_copy(self):
         import copy
         t = Translation([0.8, 3, -0.1])
-        self.assert_(t is copy.copy(t))
-        self.assert_(t.t.ctypes.data == copy.copy(t).t.ctypes.data)
-        self.assert_(t.t.ctypes.data == copy.deepcopy(t).t.ctypes.data)
+        assert t is copy.copy(t)
+        assert t.t.ctypes.data == copy.copy(t).t.ctypes.data
+        assert t.t.ctypes.data == copy.deepcopy(t).t.ctypes.data
         r = Rotation.from_properties(0.1, [3.0, 0.0, 1.0], False)
-        self.assert_(r is copy.copy(r))
-        self.assert_(r.r.ctypes.data == copy.copy(r).r.ctypes.data)
-        self.assert_(r.r.ctypes.data == copy.deepcopy(r).r.ctypes.data)
+        assert r is copy.copy(r)
+        assert r.r.ctypes.data == copy.copy(r).r.ctypes.data
+        assert r.r.ctypes.data == copy.deepcopy(r).r.ctypes.data
         c = Complete.from_properties(0.1, [3.0, 0.0, 1.0], False, [0.8, 3, -0.1])
-        self.assert_(c is copy.copy(c))
-        self.assert_(c.r.ctypes.data == copy.copy(c).r.ctypes.data)
-        self.assert_(c.r.ctypes.data == copy.deepcopy(c).r.ctypes.data)
-        self.assert_(c.t.ctypes.data == copy.copy(c).t.ctypes.data)
-        self.assert_(c.t.ctypes.data == copy.deepcopy(c).t.ctypes.data)
+        assert c is copy.copy(c)
+        assert c.r.ctypes.data == copy.copy(c).r.ctypes.data
+        assert c.r.ctypes.data == copy.deepcopy(c).r.ctypes.data
+        assert c.t.ctypes.data == copy.copy(c).t.ctypes.data
+        assert c.t.ctypes.data == copy.deepcopy(c).t.ctypes.data
 
     def test_fit_rmsd(self):
         a = np.random.normal(0,1,(20,3))

@@ -24,8 +24,8 @@
 
 import os
 
-from nose.tools import assert_raises
 import numpy as np
+import pytest
 
 from molmod.test.common import tmpdir
 from molmod.io import load_chk, dump_chk
@@ -111,25 +111,25 @@ def test_none():
 
 
 def test_errors():
-    with assert_raises(TypeError):
+    with pytest.raises(TypeError):
         check_data('test_error1', {123: 5}, None)
-    with assert_raises(TypeError):
+    with pytest.raises(TypeError):
         check_data('test_error1', {'a': 3.0 + 5j}, None)
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         check_data('test_error2', {'Thiskeyiswaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaay'
                                    'toooooooooooooooooooooooooolong': 5}, None)
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         check_data('test_error3', {'no\nnewlines': 5}, None)
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         check_data('test_error4', {'foo': 'a'*280}, None)
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         check_data('test_error4', {'foo': 'a\n7'}, None)
     structarr = np.array([(3, 2.4), (2, 3.4)], dtype=[('foo', 'i4'),('bar', 'f4')])
-    with assert_raises(TypeError):
+    with pytest.raises(TypeError):
         check_data('test_error4', {'foo': structarr}, None)
-    with assert_raises(TypeError):
+    with pytest.raises(TypeError):
         check_data('test_error1', {'a': [3.0 + 5j, -1j]}, None)
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         check_data('test_error4', {'foo': ['a'*50, 'b']}, None)
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         check_data('test_error4', {'foo': ['a a', 'b']}, None)
