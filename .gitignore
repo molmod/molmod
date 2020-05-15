@@ -13,6 +13,7 @@ doc/_build
 doctrees
 dist
 molmod.egg-info
+.eggs
 
 # Output of the examples
 molmod/examples/001_molecules/ibuprofen.xyz
