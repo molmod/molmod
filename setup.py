@@ -81,7 +81,6 @@ setup(
     package_dir = {'molmod': 'molmod'},
     packages=['molmod', 'molmod.test', 'molmod.io', 'molmod.io.test'],
     include_package_data=True,
-    zip_safe=False,
     ext_modules=[Extension(
         "molmod.ext",
         sources=["molmod/ext.pyx", "molmod/common.c", "molmod/ff.c",
