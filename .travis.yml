@@ -62,7 +62,7 @@ script:
 - (cd doc; make html)
 
 # Run tests out of source tree, to make sure that installed version is tested.
-- (cd; pytest $PYPKG -v --cov=$PYPKG --cov-report=term-missing --cov-report=xml --cov-branch)
+- (cd; pytest --pyargs $PYPKG -v --cov=$PYPKG --cov-report=term-missing --cov-report=xml --cov-branch)
 
 after_success:
 # Upload the coverage analysis
