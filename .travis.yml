@@ -44,8 +44,8 @@ install:
 script:
 # Check if code is normalized properly, whitespace etc
 - wget https://raw.githubusercontent.com/tovrstra/devscripts/master/scripts/ds-normalize-code -O ~/ds-normalize-code;
-  chmod +x ds-normalize-code;
-  ~/ds-normalize-code;
+  chmod +x ~/ds-normalize-code;
+  ~/ds-normalize-code
 
 # Build the conda package
 - git fetch origin --tags
