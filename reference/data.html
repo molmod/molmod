@@ -1,0 +1,340 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Databases &#8212; MolMod 1.4.8 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Algorithms" href="algo.html" />
+    <link rel="prev" title="Input/output" href="io.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="algo.html" title="Algorithms"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="Input/output"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="databases">
+<h1>Databases<a class="headerlink" href="#databases" title="Permalink to this headline">¶</a></h1>
+<p>The modules <a class="reference internal" href="#module-molmod.periodic" title="molmod.periodic"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.periodic</span></code></a>, <a class="reference internal" href="#module-molmod.bonds" title="molmod.bonds"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.bonds</span></code></a> and
+<a class="reference internal" href="#module-molmod.isotopes" title="molmod.isotopes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.isotopes</span></code></a> are not loaded automatically with the import statement
+<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">molmod</span> <span class="pre">import</span> <span class="pre">*</span></code>, but have to be imported explicitely due to their long
+loading time, i.e.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">molmod.periodic</span> <span class="kn">import</span> <span class="n">periodic</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">molmod.bonds</span> <span class="kn">import</span> <span class="n">bonds</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">molmod.isotopes</span> <span class="kn">import</span> <span class="n">ame2003</span><span class="p">,</span> <span class="n">nubtab03</span>
+</pre></div>
+</div>
+<div class="section" id="module-molmod.periodic">
+<span id="molmod-periodic-the-periodic-system"></span><h2><a class="reference internal" href="#module-molmod.periodic" title="molmod.periodic"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.periodic</span></code></a> – The periodic system<a class="headerlink" href="#module-molmod.periodic" title="Permalink to this headline">¶</a></h2>
+<p>An object of the <code class="docutils literal notranslate"><span class="pre">PeriodicData</span></code> class centralizes information about the
+periodic system. The data is loaded during initialization of this
+module and accessiable through the <code class="docutils literal notranslate"><span class="pre">periodic</span></code> instance, which acts like
+a container:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">molmod.periodic</span> <span class="kn">import</span> <span class="n">periodic</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">periodic</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">periodic</span><span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">vdw_radius</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">periodic</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="molmod.periodic.AtomInfo">
+<em class="property">class </em><code class="descclassname">molmod.periodic.</code><code class="descname">AtomInfo</code><a class="headerlink" href="#molmod.periodic.AtomInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data structure for info about an atom</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.periodic.PeriodicData">
+<em class="property">class </em><code class="descclassname">molmod.periodic.</code><code class="descname">PeriodicData</code><a class="headerlink" href="#molmod.periodic.PeriodicData" title="Permalink to this definition">¶</a></dt>
+<dd><p>The entire periodic system</p>
+<p>This object is created when importing this module. There is no need
+to do it a second time manually.</p>
+<dl class="method">
+<dt id="molmod.periodic.PeriodicData.iter_numbers">
+<code class="descname">iter_numbers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.periodic.PeriodicData.iter_numbers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over all atom numbers in the periodic system</p>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">molmod.periodic</span> <span class="kn">import</span> <span class="n">periodic</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">periodic</span><span class="o">.</span><span class="n">iter_numbers</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="nb">print</span> <span class="n">number</span><span class="p">,</span> <span class="n">periodic</span><span class="p">[</span><span class="n">number</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-molmod.bonds">
+<span id="molmod-bonds-the-bond-length-database"></span><h2><a class="reference internal" href="#module-molmod.bonds" title="molmod.bonds"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.bonds</span></code></a> – The bond length database<a class="headerlink" href="#module-molmod.bonds" title="Permalink to this headline">¶</a></h2>
+<p>An object <code class="docutils literal notranslate"><span class="pre">bonds</span></code> of the class <code class="docutils literal notranslate"><span class="pre">BondData</span></code> is created upon importing this
+module. It loads information about average bond lengths from a csv file
+when it is initialized. Missing data points in the csv file are estimated
+by adding Van der Waals radii of the two atoms of the given bond.</p>
+<p>This module also defines a few constants for different bond types:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="72%" />
+<col width="28%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>BOND_SINGLE</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>BOND_DOUBLE</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>BOND_TRIPLE</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td>BOND_HYBRID</td>
+<td>3</td>
+</tr>
+<tr class="row-even"><td>BOND_HYDROGEN</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="molmod.bonds.BondData">
+<em class="property">class </em><code class="descclassname">molmod.bonds.</code><code class="descname">BondData</code><a class="headerlink" href="#molmod.bonds.BondData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Database with bond lengths</p>
+<p>This object is created when importing this module. There is no need
+to do it a second time manually.</p>
+<dl class="attribute">
+<dt id="molmod.bonds.BondData.bond_tolerance">
+<code class="descname">bond_tolerance</code><em class="property"> = 1.2</em><a class="headerlink" href="#molmod.bonds.BondData.bond_tolerance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="molmod.bonds.BondData.bonded">
+<code class="descname">bonded</code><span class="sig-paren">(</span><em>n1</em>, <em>n2</em>, <em>distance</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.bonds.BondData.bonded" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the estimated bond type</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">n1</span></code>  –  the atom number of the first atom in the bond</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">n2</span></code>  –  the atom number of the second atom the bond</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">distance</span></code>  –  the distance between the two atoms</div>
+</div>
+</dd>
+</dl>
+<p>This method checks whether for the given pair of atom numbers, the
+given distance corresponds to a certain bond length. The best
+matching bond type will be returned. If the distance is a factor
+<code class="docutils literal notranslate"><span class="pre">self.bond_tolerance</span></code> larger than a tabulated distance, the
+algorithm will not relate them.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.bonds.BondData.get_length">
+<code class="descname">get_length</code><span class="sig-paren">(</span><em>n1</em>, <em>n2</em>, <em>bond_type=1</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.bonds.BondData.get_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the length of a bond between n1 and n2 of type bond_type</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">n1</span></code>  –  the atom number of the first atom in the bond</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">n2</span></code>  –  the atom number of the second atom the bond</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">bond_type</span></code>  –  the type of bond [default=BOND_SINGLE]</div>
+</div>
+</dd>
+</dl>
+<p>This is a safe method for querying a bond_length. If no answer can be
+found, this get_length returns None.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-molmod.isotopes">
+<span id="molmod-isotopes-the-isotope-database"></span><h2><a class="reference internal" href="#module-molmod.isotopes" title="molmod.isotopes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.isotopes</span></code></a> – The isotope database<a class="headerlink" href="#module-molmod.isotopes" title="Permalink to this headline">¶</a></h2>
+<p>This module defines two database interfaces: ame2003 and nubtab03. The
+AME2003 <a class="footnote-reference" href="#id4" id="id1">[1]</a>, <a class="footnote-reference" href="#id5" id="id2">[2]</a> database contains all the isotope masses and can be used as
+follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">molmod.isotopes</span> <span class="kn">import</span> <span class="n">ame2003</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">ame2003</span><span class="o">.</span><span class="n">masses</span><span class="p">[</span><span class="mi">7</span><span class="p">][</span><span class="mi">15</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This would print the mass of nitrogen 15. The abundances are provided by the
+NUBTAB03 database <a class="footnote-reference" href="#id6" id="id3">[3]</a>. Use it as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">molmod.isotopes</span> <span class="kn">import</span> <span class="n">nubtab03</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">nubtab</span><span class="o">.</span><span class="n">abundances</span><span class="p">[</span><span class="mi">6</span><span class="p">][</span><span class="mi">12</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This would print the abundance of the carbon 12 isotope.</p>
+<p>References:</p>
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>The AME2003 atomic mass evaluation (I). Evaluation of input data, adjustment
+procedures. A.H. Wapstra, G. Audi, and C. Thibault. Nuclear Physics A729,
+129 (2003).</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>The AME2003 atomic mass evaluation (II). Tables, graphs, and references. G.
+Audi, A.H. Wapstra, and C. Thibault. Nuclear Physics A729, 337 (2003).</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id6" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td>The NUBASE evaluation of nuclear and decay properties. G. Audi, O. Bersillon,
+J. Blachot and A.H. Wapstra, Nuclear Physics A729, 3-128 (2003)</td></tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="molmod.isotopes.Ame2003">
+<em class="property">class </em><code class="descclassname">molmod.isotopes.</code><code class="descname">Ame2003</code><a class="headerlink" href="#molmod.isotopes.Ame2003" title="Permalink to this definition">¶</a></dt>
+<dd><p>An interface to a subset of the data from Ame2003.</p>
+<p>This object contains an attribute masses. This is a dictionary whose keys
+are the proton numbers (Z) and values are the corresponding values are
+again dictionaries. The latter dictionaries have the mass number (A) as
+keys and the corresponding isotope masses in atomic units as values. E.g.
+self.masses[6][12] is the mass of carbon 12.</p>
+<p>If you use this interface, cite the following references:</p>
+<p>The AME2003 atomic mass evaluation (I). Evaluation of input data, adjustment
+procedures. A.H. Wapstra, G. Audi, and C. Thibault. Nuclear Physics A729,
+129 (2003).</p>
+<p>The AME2003 atomic mass evaluation (II). Tables, graphs, and references. G.
+Audi, A.H. Wapstra, and C. Thibault. Nuclear Physics A729, 337 (2003).</p>
+<p>An object of this type is created in this module, so there is not
+need to construct it manually.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.isotopes.NubTab03">
+<em class="property">class </em><code class="descclassname">molmod.isotopes.</code><code class="descname">NubTab03</code><a class="headerlink" href="#molmod.isotopes.NubTab03" title="Permalink to this definition">¶</a></dt>
+<dd><p>An interface to a subset of the data that from NubTab03.</p>
+<p>This object contains an attribute abundances. This is a dictionary whose
+keys are the proton numbers (Z) and values are the corresponding values
+are again dictionaries. The latter dictionaries have the mass number (A)
+as keys and the corresponding isotope abundances as values. E.g.
+self.masses[6][12] is the abundance of carbon 12.</p>
+<p>If you use this interface, cite the following reference:</p>
+<p>The NUBASE evaluation of nuclear and decay properties. G. Audi, O. Bersillon,
+J. Blachot and A.H. Wapstra, Nuclear Physics A729, 3-128 (2003)</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">filename</span></code>  –  the nubtab03 data file</div>
+</div>
+</dd>
+</dl>
+<p>An object of this type is created in this module, so there is not
+need to construct it externally.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Databases</a><ul>
+<li><a class="reference internal" href="#module-molmod.periodic"><code class="docutils literal notranslate"><span class="pre">molmod.periodic</span></code> – The periodic system</a></li>
+<li><a class="reference internal" href="#module-molmod.bonds"><code class="docutils literal notranslate"><span class="pre">molmod.bonds</span></code> – The bond length database</a></li>
+<li><a class="reference internal" href="#module-molmod.isotopes"><code class="docutils literal notranslate"><span class="pre">molmod.isotopes</span></code> – The isotope database</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="io.html"
+                        title="previous chapter">Input/output</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="algo.html"
+                        title="next chapter">Algorithms</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/data.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="algo.html" title="Algorithms"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="Input/output"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

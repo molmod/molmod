@@ -1,0 +1,787 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Internal coordinates &#8212; MolMod 1.4.8 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Pattern-matching in molecular graphs" href="patterns.html" />
+    <link rel="prev" title="Working with molecular graphs" href="graph.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="patterns.html" title="Pattern-matching in molecular graphs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="graph.html" title="Working with molecular graphs"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="examples.html" accesskey="U">MolMod by example</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="internal-coordinates">
+<h1>Internal coordinates<a class="headerlink" href="#internal-coordinates" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Internal coordinates are often used to characterize molecular geometries and for
+the definition of energy terms in valence force-field models. In general an
+internal coordinate can be defined as any function of the Cartesian atomic
+coordinates that does not depend on global rotation and translation.</p>
+<p>The module <a class="reference internal" href="../reference/algo.html#module-molmod.ic" title="molmod.ic"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.ic</span></code></a> contains functions for the
+internal coordinates listed in the table below.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="20%" />
+<col width="59%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Number of arguments</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">bond_length</span></code></td>
+<td>2</td>
+<td>Distance between two atoms</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">pair_distance</span></code></td>
+<td>2</td>
+<td>(idem)</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">bend_cos</span></code></td>
+<td>3</td>
+<td>The cosine of a bending angle</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">bend_angle</span></code></td>
+<td>4</td>
+<td>The bending angle</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">dihed_cos</span></code></td>
+<td>4</td>
+<td>The cosine of a dihedral angle</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">dihed_angle</span></code></td>
+<td>4</td>
+<td>The dihedral angle, following IUPAC standard for the sign</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">opbend_angle</span></code></td>
+<td>4</td>
+<td>The out of plane bending angle</td>
+</tr>
+</tbody>
+</table>
+<p>In addition to the value of
+the internal coordinate, it can also compute the first and second order
+derivatives of the internal coordinate towards the Cartesian coordinates.
+Each internal coordinate function follows the same <a class="reference external" href="http://en.wikipedia.org/wiki/Application_programming_interface">API</a> style, i.e.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">some_ic</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>All mandatory arguments are 3-element numpy arrays with the atomic coordinates
+that define the internal coordinate. The last and optional argument determines
+which derivatives are computed. By default no derivatives are computed, and the
+internal coordinate is returned in a singleton tuple. When <code class="docutils literal notranslate"><span class="pre">deriv==1</span></code> the
+internal coordinate and the gradient are returned in a tuple. When <code class="docutils literal notranslate"><span class="pre">deriv==2</span></code>
+the internal coordinate, the gradient and the Hessian are returned in a tuple.</p>
+<p>The implementation is based on a generic schemes that takes care of following
+the chain rule for the derivatives, which makes it rather easy to extend this
+module with new types of internal coordinates.</p>
+<p>The examples and problems below use a propane and dopamine geometry. The latter
+is optimized at the B3LYP/6-31G(d) level, followed by a frequency computation.
+The computations are carried out with Gaussian03. The formatted checkpoint file
+of the frequency job is stripped to include only the section used in this
+chapter.</p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="a-simple-bond-length">
+<h3>A simple bond length<a class="headerlink" href="#a-simple-bond-length" title="Permalink to this headline">¶</a></h3>
+<p>This is just a simple example…</p>
+<p>File: <code class="docutils literal notranslate"><span class="pre">molmod/examples/003_internal_coordinates/a_bond_length.py</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">from</span> <span class="nn">molmod</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1"># 0) Load the molecule</span>
+<span class="n">mol</span> <span class="o">=</span> <span class="n">Molecule</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;dopamine.xyz&quot;</span><span class="p">)</span>
+<span class="c1"># 1) Compute the length of the hydrogen bond.</span>
+<span class="c1"># (Atoms 1 and 20 form a hydrogen bond.)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">bond_length</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">]])[</span><span class="mi">0</span><span class="p">]</span>
+<span class="c1"># The return value of bond_length is a singleton by default. The final</span>
+<span class="c1"># part `[0]` takes the first value of this singleton.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hydrogen bond length [Angstrom] =&quot;</span><span class="p">,</span> <span class="n">d</span><span class="o">/</span><span class="n">angstrom</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="all-bending-angles-in-dopamine">
+<h3>All bending angles in dopamine<a class="headerlink" href="#all-bending-angles-in-dopamine" title="Permalink to this headline">¶</a></h3>
+<p>We use the graph features to detect all bending angles in the dopamine molecule.
+An overview is printed including the atomic indexes and elements involved in
+each angle.</p>
+<p>File: <code class="docutils literal notranslate"><span class="pre">molmod/examples/003_internal_coordinates/b_bending_angles.py</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">from</span> <span class="nn">molmod</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1"># 0) Load the molecule and set the default graph</span>
+<span class="n">mol</span> <span class="o">=</span> <span class="n">Molecule</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;dopamine.xyz&quot;</span><span class="p">)</span>
+<span class="n">mol</span><span class="o">.</span><span class="n">set_default_graph</span><span class="p">()</span>
+
+<span class="c1"># 1) Build a list of atom indexes involved in angles.</span>
+<span class="n">angles</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># First loop over all atoms on the molecule.</span>
+<span class="k">for</span> <span class="n">i1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+    <span class="c1"># For each atom we will find all bending angles centered at the current</span>
+    <span class="c1"># atom. For this we construct (an ordered!) list of all bonded neighbors.</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">[</span><span class="n">i1</span><span class="p">])</span>
+    <span class="c1"># The second loop iterates over all neighbors. The enumerate function is</span>
+    <span class="c1"># used to assign a counter value to the variable index.</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">i0</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="c1"># The third loop iterates over all other neighbors that came before i1.</span>
+        <span class="k">for</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">n</span><span class="p">[:</span><span class="n">index</span><span class="p">]:</span>
+            <span class="c1"># Each triple is stored as an item in the list angles.</span>
+            <span class="n">angles</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">))</span>
+
+<span class="c1"># 2) Iterate over all angles, compute and print.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;An overview of all bending angles in dopamine:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">angles</span><span class="p">:</span>
+    <span class="c1"># Notice again the [0] at the end.</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">bend_angle</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">]])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Python formatting of the indexes, symbols, and the angle in degrees.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%2i</span><span class="s2"> </span><span class="si">%2i</span><span class="s2"> </span><span class="si">%2i</span><span class="s2">    </span><span class="si">%2s</span><span class="s2"> </span><span class="si">%2s</span><span class="s2"> </span><span class="si">%2s</span><span class="s2">    </span><span class="si">%5.1f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="n">i0</span><span class="p">],</span> <span class="n">mol</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="n">i1</span><span class="p">],</span> <span class="n">mol</span><span class="o">.</span><span class="n">symbols</span><span class="p">[</span><span class="n">i2</span><span class="p">],</span> <span class="n">angle</span><span class="o">/</span><span class="n">deg</span>
+    <span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="simple-force-field-hessian">
+<h3>Simple Force-field Hessian<a class="headerlink" href="#simple-force-field-hessian" title="Permalink to this headline">¶</a></h3>
+<p>In this example we do a simple computation of a force-field Hessian for the
+propane molecule. The force-field in this example model has only bond-stretch
+and bending angle terms. We further assume that all internal coordinates are at
+the rest-value of the corresponding energy term in the force field. This
+facilitates the program as we only have to take into account the force constants
+of the energy terms.</p>
+<p>The mathematical form of the FF model is:</p>
+<div class="math notranslate nohighlight">
+\[E_{\text{FF}} =
+\sum_{i=1}^{M_\text{bonds}} K_{i,\text{bond}} (b_i - b_{i,0})^2 +
+\sum_{i=1}^{M_\text{bends}} K_{i,\text{bend}} (\theta_i - \theta_{i,0})^2.\]</div>
+<p>The Cartesian gradient of the force-field energy becomes:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial E_{\text{FF}}}{\partial x_{j}} =
+\sum_{i=1}^{M_\text{bonds}} 2 K_{i,\text{bond}}
+    (b_i - b_{i,0}) \frac{\partial b_i}{\partial x_{j}} +
+\sum_{i=1}^{M_\text{bends}} 2 K_{i,\text{bend}}
+    (\theta_i - \theta_{i,0}) \frac{\partial \theta_i}{\partial x_{j}}\]</div>
+<p>The Cartesian Hessian of the force-field becomes:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial^2 E_{\text{FF}}}{\partial x_{j_1} \partial x_{j_2}} =
+\sum_{i=1}^{M_\text{bonds}} 2 K_{i,\text{bond}} \left[
+    \frac{\partial b_i}{\partial x_{j_1}} \frac{\partial b_i}{\partial x_{j_2}} +
+    (b_i - b_{i,0}) \frac{\partial^2 b}{\partial x_{j_1} \partial x_{j_2}}
+\right] +
+\sum_{i=1}^{M_\text{bends}} 2 K_{i,\text{bend}} \left[
+    \frac{\partial \theta_i}{\partial x_{j_1}} \frac{\partial \theta_i}{\partial x_{j_2}} +
+    (\theta_i - \theta_{i,0}) \frac{\partial^2 \theta_i}{\partial x_{j_1} \partial x_{j_2}} +
+\right]\]</div>
+<p>For the sake of a simple example, we assume that all bond lengths and valence
+angles are at their optimum such that the second derivatives of the internal
+coordinates towards the Cartesian coordinates drop out of the expression for the
+Hessian:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial^2 E_{\text{FF}}}{\partial x_{j_1} \partial x_{j_2}} \approx
+\sum_{i=1}^{M_\text{bonds}} 2 K_{i,\text{bond}}
+    \frac{\partial b_i}{\partial x_{j_1}} \frac{\partial b_i}{\partial x_{j_2}} +
+\sum_{i=1}^{M_\text{bends}} 2 K_{i,\text{bend}}
+    \frac{\partial \theta_i}{\partial x_{j_1}} \frac{\partial \theta_i}{\partial x_{j_2}} +\]</div>
+<p>We use the following force constants.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="25%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Energy term</th>
+<th class="head">Force constant</th>
+<th class="head">Unit</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>CH bond</td>
+<td>310</td>
+<td>k cal mol<sup>-1</sup> Å<sup>-2</sup></td>
+</tr>
+<tr class="row-odd"><td>CC bond</td>
+<td>220</td>
+<td>k cal mol<sup>-1</sup> Å<sup>-2</sup></td>
+</tr>
+<tr class="row-even"><td>HCH bend</td>
+<td>35</td>
+<td>k cal mol<sup>-1</sup> rad<sup>-2</sup></td>
+</tr>
+<tr class="row-odd"><td>HCC bend</td>
+<td>30</td>
+<td>k cal mol<sup>-1</sup> rad<sup>-2</sup></td>
+</tr>
+<tr class="row-even"><td>CCC bend</td>
+<td>60</td>
+<td>k cal mol<sup>-1</sup> rad<sup>-2</sup></td>
+</tr>
+</tbody>
+</table>
+<p>The program below uses an object-oriented approach to implement the force-field
+model. Each energy term is conceived as an object of either the
+<code class="docutils literal notranslate"><span class="pre">BondStretchTerm</span></code> or the <code class="docutils literal notranslate"><span class="pre">BendingAngleTerm</span></code> class. They both derive from
+the <code class="docutils literal notranslate"><span class="pre">HarmonicEnergyTerm</span></code> class where all the Hessian logic is implemented.
+Each term object contains attributes for the force-field parameters and the atom
+indexes that are involved in the internal coordinate. The term objects are kept
+in a list in the <code class="docutils literal notranslate"><span class="pre">ForceField</span></code> class that has a method to compute the Hessian
+for a given geometry.</p>
+<p>File: <code class="docutils literal notranslate"><span class="pre">molmod/examples/003_internal_coordinates/c_ff_hessian.py</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">from</span> <span class="nn">molmod</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<span class="k">class</span> <span class="nc">HarmonicEnergyTerm</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for all energy terms.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_constant</span><span class="p">,</span> <span class="n">indexes</span><span class="p">,</span> <span class="n">icfn</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           Arguments:</span>
+<span class="sd">            | ``force_constant`` -- The force constant in atomic units.</span>
+<span class="sd">            | ``indexes`` -- The indexes of the atoms in the internal</span>
+<span class="sd">                             coordinate. The order must be the same as the order</span>
+<span class="sd">                             of the mandatory arguments of icfn.</span>
+<span class="sd">            | ``icfn`` -- a function from molmod.ic that can compute the</span>
+<span class="sd">                          internal coordinate and its derivatives.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force_constant</span> <span class="o">=</span> <span class="n">force_constant</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">indexes</span> <span class="o">=</span> <span class="n">indexes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">icfn</span> <span class="o">=</span> <span class="n">icfn</span>
+
+    <span class="k">def</span> <span class="nf">add_to_hessian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">hessian</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add the contributions of this energy term to the Hessian</span>
+
+<span class="sd">           Arguments:</span>
+<span class="sd">            | ``coordinates`` -- A numpy array with 3N Cartesian coordinates.</span>
+<span class="sd">            | ``hessian`` -- A matrix for the full Hessian to which this energy</span>
+<span class="sd">                             term has to add its contribution.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Compute the derivatives of the bond stretch towards the two cartesian</span>
+        <span class="c1"># coordinates. The bond length is computed too, but not used.</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">icfn</span><span class="p">(</span><span class="n">coordinates</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indexes</span><span class="p">)],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Add the contribution to the Hessian (an outer product)</span>
+        <span class="k">for</span> <span class="n">ja</span><span class="p">,</span> <span class="n">ia</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indexes</span><span class="p">):</span>
+            <span class="c1"># ja is 0, 1, 2, ...</span>
+            <span class="c1"># ia is i0, i1, i2, ...</span>
+            <span class="k">for</span> <span class="n">jb</span><span class="p">,</span> <span class="n">ib</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indexes</span><span class="p">):</span>
+                <span class="n">contrib</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">force_constant</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="n">ja</span><span class="p">],</span> <span class="n">g</span><span class="p">[</span><span class="n">jb</span><span class="p">])</span>
+                <span class="n">hessian</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">ia</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="n">ia</span><span class="o">+</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">ib</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="n">ib</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="n">contrib</span>
+
+
+<span class="k">class</span> <span class="nc">BondStretchTerm</span><span class="p">(</span><span class="n">HarmonicEnergyTerm</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A single bond-stretch energy term in the force-field term.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_constant</span><span class="p">,</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           Arguments:</span>
+<span class="sd">            | ``force_constant`` -- The force constant in atomic units.</span>
+<span class="sd">            | ``i0`` -- The atom index of the first atom in the bond.</span>
+<span class="sd">            | ``i1`` -- The atom index of the second atom in the bond.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">HarmonicEnergyTerm</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_constant</span><span class="p">,</span> <span class="p">(</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">),</span> <span class="n">bond_length</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">BendAngleTerm</span><span class="p">(</span><span class="n">HarmonicEnergyTerm</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A single bond-stretch energy term in the force-field term.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_constant</span><span class="p">,</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           Arguments:</span>
+<span class="sd">            | ``force_constant`` -- The force constant in atomic units.</span>
+<span class="sd">            | ``i0`` -- The atom index of the first atom in the angle.</span>
+<span class="sd">            | ``i1`` -- The atom index of the central atom in the angle.</span>
+<span class="sd">            | ``i2`` -- The atom index of the third atom in the angle.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">HarmonicEnergyTerm</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_constant</span><span class="p">,</span> <span class="p">(</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">),</span> <span class="n">bend_angle</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ForceField</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A container object for all force field terms.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">terms</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           Argument:</span>
+<span class="sd">            | ``terms`` -- a list of force-field terms</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terms</span> <span class="o">=</span> <span class="n">terms</span>
+        <span class="c1"># just print out the energy terms</span>
+        <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">terms</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Energy term&quot;</span><span class="p">,</span> <span class="n">term</span><span class="o">.</span><span class="n">icfn</span><span class="p">,</span> <span class="n">term</span><span class="o">.</span><span class="n">force_constant</span><span class="p">,</span> <span class="n">term</span><span class="o">.</span><span class="n">indexes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">hessian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute the force-field Hessian for the given coordinates.</span>
+
+<span class="sd">           Argument:</span>
+<span class="sd">            | ``coordinates`` -- A numpy array with the Cartesian atom</span>
+<span class="sd">                                 coordinates, with shape (N,3).</span>
+
+<span class="sd">           Returns:</span>
+<span class="sd">            | ``hessian`` -- A numpy array with the Hessian, with shape (3*N,</span>
+<span class="sd">                             3*N).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># N3 is 3 times the number of atoms.</span>
+        <span class="n">N3</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">size</span>
+        <span class="c1"># Start with a zero hessian.</span>
+        <span class="n">hessian</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N3</span><span class="p">,</span><span class="n">N3</span><span class="p">),</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="c1"># Add the contribution of each term.</span>
+        <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">terms</span><span class="p">:</span>
+            <span class="n">term</span><span class="o">.</span><span class="n">add_to_hessian</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">hessian</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">hessian</span>
+
+
+<span class="k">def</span> <span class="nf">setup_hydrocarbon_ff</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a simple ForceField object for hydrocarbons based on the graph.&quot;&quot;&quot;</span>
+    <span class="c1"># A) Define parameters.</span>
+    <span class="c1"># the bond parameters:</span>
+    <span class="n">bond_params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="mi">310</span><span class="o">*</span><span class="n">kcalmol</span><span class="o">/</span><span class="n">angstrom</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span> <span class="mi">220</span><span class="o">*</span><span class="n">kcalmol</span><span class="o">/</span><span class="n">angstrom</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="c1"># for every (a, b), also add (b, a)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">bond_params</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">bond_params</span><span class="p">[(</span><span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span> <span class="o">=</span> <span class="n">val</span>
+    <span class="c1"># the bend parameters</span>
+    <span class="n">bend_params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="mi">35</span><span class="o">*</span><span class="n">kcalmol</span><span class="o">/</span><span class="n">rad</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span> <span class="mi">30</span><span class="o">*</span><span class="n">kcalmol</span><span class="o">/</span><span class="n">rad</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span> <span class="mi">60</span><span class="o">*</span><span class="n">kcalmol</span><span class="o">/</span><span class="n">rad</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="c1"># for every (a, b, c), also add (c, b, a)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">bend_params</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">key</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="n">bend_params</span><span class="p">[(</span><span class="n">key</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="c1"># B) detect all internal coordinates and corresponding energy terms.</span>
+    <span class="n">terms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># bonds</span>
+    <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="n">bond_params</span><span class="p">[(</span><span class="n">graph</span><span class="o">.</span><span class="n">numbers</span><span class="p">[</span><span class="n">i0</span><span class="p">],</span> <span class="n">graph</span><span class="o">.</span><span class="n">numbers</span><span class="p">[</span><span class="n">i1</span><span class="p">])]</span>
+        <span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">BondStretchTerm</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">))</span>
+    <span class="c1"># bends (see b_bending_angles.py for the explanation)</span>
+    <span class="k">for</span> <span class="n">i1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">num_vertices</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">[</span><span class="n">i1</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">i0</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">n</span><span class="p">[:</span><span class="n">index</span><span class="p">]:</span>
+                <span class="n">K</span> <span class="o">=</span> <span class="n">bend_params</span><span class="p">[(</span><span class="n">graph</span><span class="o">.</span><span class="n">numbers</span><span class="p">[</span><span class="n">i0</span><span class="p">],</span> <span class="n">graph</span><span class="o">.</span><span class="n">numbers</span><span class="p">[</span><span class="n">i1</span><span class="p">],</span> <span class="n">graph</span><span class="o">.</span><span class="n">numbers</span><span class="p">[</span><span class="n">i2</span><span class="p">])]</span>
+                <span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">BendAngleTerm</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">))</span>
+
+    <span class="c1"># C) Create and return the force field</span>
+    <span class="k">return</span> <span class="n">ForceField</span><span class="p">(</span><span class="n">terms</span><span class="p">)</span>
+
+
+<span class="c1"># This if block is only executed when this file is ran as a program, and not</span>
+<span class="c1"># when it is loaded as a module.</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">propane</span> <span class="o">=</span> <span class="n">Molecule</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;propane.xyz&quot;</span><span class="p">)</span>
+    <span class="n">propane</span><span class="o">.</span><span class="n">set_default_graph</span><span class="p">()</span>
+    <span class="n">ff</span> <span class="o">=</span> <span class="n">setup_hydrocarbon_ff</span><span class="p">(</span><span class="n">propane</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+    <span class="n">hessian</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">propane</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The Hessian in kcal/mol/angstrom**2&quot;</span><span class="p">)</span>
+    <span class="n">unit</span> <span class="o">=</span> <span class="n">kcalmol</span><span class="o">/</span><span class="n">angstrom</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">hessian</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">% 5.0f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">v</span><span class="o">/</span><span class="n">unit</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">row</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="dft-hessian-in-internal-coordinates-stationary-geometries">
+<h3>DFT Hessian in <cite>internal coordinates</cite> – Stationary geometries<a class="headerlink" href="#dft-hessian-in-internal-coordinates-stationary-geometries" title="Permalink to this headline">¶</a></h3>
+<p>Given a DFT Hessian for a stationary molecular system, and a list of internal
+coordinates, <span class="math notranslate nohighlight">\(q_i\)</span>, one may construct a model for the Hessian based on a
+complete second order expansion in terms of internal coordinates. This means
+that one uses a force-field model with all possible cross terms as follows:</p>
+<div class="math notranslate nohighlight">
+\[E_{\text{FF}} = \sum_{i_1=1}^M
+\sum_{i_2=1}^M
+K_{i_1 i_2} (q_{i_1} - q_{i_1,0}) (q_{i_2} - q_{i_2,0})\]</div>
+<p>One can define internal force constants, <span class="math notranslate nohighlight">\(K_{ij}\)</span> such that the
+force-field Hessian coincides with a given Hessian from a DFT computation. One
+could call the matrix <span class="math notranslate nohighlight">\(K\)</span> the Hessian in <cite>internal coordinates</cite>, but as
+we will see below, this not a very strict definition. The purpose of such a
+transformation is that the matrix <span class="math notranslate nohighlight">\(K\)</span> is (or can be made) more diagonally
+dominant than the original Hessian. It is a tool to get insight in the
+contributions to the Hessian that one should include in a force-field model.
+Similar models are used in redundant optimization methods.</p>
+<p>Assuming that the geometry is at a stationary point of the potential energy
+surface, one has to following expression for the force-field Hessian:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial^2 E_{\text{FF}}}{\partial x_{j_1} \partial x_{j_2}}
+= \sum_{i_1=1}^M \sum_{i_2=1}^M
+K_{i_1 i_2} \left(
+    \frac{\partial q_{i_1}}{\partial x_{j_1}}
+    \frac{\partial q_{i_2}}{\partial x_{j_2}}
+    +\frac{\partial q_{i_1}}{\partial x_{j_2}}
+    \frac{\partial q_{i_2}}{\partial x_{j_1}}
+\right)
+= 2\sum_{i_1=1}^M \sum_{i_2=1}^M
+K_{i_1 i_2}
+\frac{\partial q_{i_1}}{\partial x_{j_1}}
+\frac{\partial q_{i_2}}{\partial x_{j_2}}\]</div>
+<p>The last step assumes that <span class="math notranslate nohighlight">\(K_{i_1 i_2} = K_{i_2 i_1}\)</span>. This can be
+rewritten in matrix notation:</p>
+<div class="math notranslate nohighlight" id="equation-matrix-hessian-int">
+<span class="eqno">(1)<a class="headerlink" href="#equation-matrix-hessian-int" title="Permalink to this equation">¶</a></span>\[H = J K J^T\]</div>
+<p>with</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+    H_{j_1 j_2} &amp; = \frac{\partial^2 E_{\text{FF}}}{\partial x_{j_1} \partial x_{j_2}} \\
+    J_{j_1 i_i} &amp; = \frac{\partial q_{i_1}}{\partial x_{j_1}}
+\end{align*}</div><p>In practice, the Jacobian matrix <span class="math notranslate nohighlight">\(J\)</span> is rectangular, mainly because there
+are often much more internal coordinates than Cartesian coordinates. Therefore
+one can not simply invert <a class="reference internal" href="#equation-matrix-hessian-int">(1)</a> to obtain the Hessian in
+internal coordinates. There are actually many matrices <span class="math notranslate nohighlight">\(K\)</span> that solve
+equation <a class="reference internal" href="#equation-matrix-hessian-int">(1)</a>, and one has to introduce some additional
+criteria to fix <span class="math notranslate nohighlight">\(K\)</span>.</p>
+<p>For the sake of simplicity, we will use the <a class="reference external" href="http://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse">Moore-Penrose pseudoinverse</a> of the
+Jacobian to invert <a class="reference internal" href="#equation-matrix-hessian-int">(1)</a>, but there may be better choices.
+This may seem a unique choice, but in practice it is not. The problem is that
+the columns of the Jacobian can have different units. Therefore the numerical
+Jacobian and its pseudoinverse depend on the choice of the units. Again, we make
+a simple choice here to solve this issue: all columns where the internal
+coordinates are some sort of distance, are kept as is. All angles are converted
+to a length unit with a fixed conversion factor: c = 1Å / 5°. Again, there may
+be better choices, e.g. one may normalize the columns of the Jacobian.</p>
+<p>The program below performs such an inversion on a DFT Hessian of the for the
+dopamine molecule, using all bond lengths, bending angles and dihedral angles.
+The script is written in an object-oriented style: each internal coordinate is
+an object of the class <code class="docutils literal notranslate"><span class="pre">BondLength</span></code>, <code class="docutils literal notranslate"><span class="pre">BendingAngle</span></code> or <code class="docutils literal notranslate"><span class="pre">DihdralAngle</span></code>.
+These three classes are derived from <code class="docutils literal notranslate"><span class="pre">InternalCoordinates</span></code> and share a common
+<a class="reference external" href="http://en.wikipedia.org/wiki/Application_programming_interface">API</a> such
+that the main program does not have to worry about the nature of the internal
+coordinates.</p>
+<p>The Hessian is computed with a Gaussian03 B3LYP/6-31G(d) frequency job. The
+result is stored in the file <code class="docutils literal notranslate"><span class="pre">dopamine.fchk</span></code>, which is a stripped version of the
+file generated by the <code class="docutils literal notranslate"><span class="pre">fromchk</span></code> program that is part of Gaussian03.</p>
+<p>File: <code class="docutils literal notranslate"><span class="pre">molmod/examples/003_internal_coordinates/d_dft_hessian.py</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">from</span> <span class="nn">molmod</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">molmod.io</span> <span class="kn">import</span> <span class="n">FCHKFile</span>
+
+
+<span class="k">class</span> <span class="nc">InternalCoordinate</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract base class for all internal coordinates.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indexes</span><span class="p">,</span> <span class="n">icfn</span><span class="p">,</span> <span class="n">conversion</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           Arguments:</span>
+<span class="sd">            | ``indexes`` -- The indexes of the atoms in the internal</span>
+<span class="sd">                             coordinate. The order must be the same as the order</span>
+<span class="sd">                             of the mandatory arguments of icfn.</span>
+<span class="sd">            | ``icfn`` -- a function from molmod.ic that can compute the</span>
+<span class="sd">                          internal coordinate and its derivatives.</span>
+<span class="sd">            | ``conversion`` -- In case the internal coordinate does not have a</span>
+<span class="sd">                                unit of length, then this conversion factor is</span>
+<span class="sd">                                used to convert it to a length unit. This way,</span>
+<span class="sd">                                the Jacobian becomes a dimensionless constant.</span>
+
+<span class="sd">           All the Jacobian-logic is implemented in this abstract class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">indexes</span> <span class="o">=</span> <span class="n">indexes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">icfn</span> <span class="o">=</span> <span class="n">icfn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conversion</span> <span class="o">=</span> <span class="n">conversion</span>
+
+    <span class="k">def</span> <span class="nf">fill_jacobian_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">jaccol</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fill in a column of the Jacobian.</span>
+
+<span class="sd">           Arguments:</span>
+<span class="sd">            | ``jaccol`` -- The column of Jacobian to which the result must be</span>
+<span class="sd">                            added.</span>
+<span class="sd">            | ``coordinates`` -- A numpy array with Cartesian coordinates,</span>
+<span class="sd">                                 shape=(N,3)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">icfn</span><span class="p">(</span><span class="n">coordinates</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indexes</span><span class="p">)],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indexes</span><span class="p">):</span>
+            <span class="n">jaccol</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">j</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="n">j</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="n">g</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">jaccol</span>
+
+
+<span class="k">class</span> <span class="nc">BondLength</span><span class="p">(</span><span class="n">InternalCoordinate</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">):</span>
+        <span class="n">InternalCoordinate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">),</span> <span class="n">bond_length</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">BendingAngle</span><span class="p">(</span><span class="n">InternalCoordinate</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">):</span>
+        <span class="n">InternalCoordinate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">),</span> <span class="n">bend_angle</span><span class="p">,</span> <span class="n">angstrom</span><span class="o">/</span><span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="n">deg</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">DihedralAngle</span><span class="p">(</span><span class="n">InternalCoordinate</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">):</span>
+        <span class="n">InternalCoordinate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">),</span> <span class="n">dihed_angle</span><span class="p">,</span> <span class="n">angstrom</span><span class="o">/</span><span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="n">deg</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">setup_ics</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Make a list of internal coordinates based on the graph</span>
+
+<span class="sd">       Argument:</span>
+<span class="sd">        | ``graph`` -- A Graph instance.</span>
+
+<span class="sd">       The list of internal coordinates will include all bond lengths, all</span>
+<span class="sd">       bending angles, and all dihedral angles.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ics</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># A) Collect all bonds.</span>
+    <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
+        <span class="n">ics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">BondLength</span><span class="p">(</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">))</span>
+    <span class="c1"># B) Collect all bends. (see b_bending_angles.py for the explanation)</span>
+    <span class="k">for</span> <span class="n">i1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">num_vertices</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">[</span><span class="n">i1</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">i0</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">n</span><span class="p">[:</span><span class="n">index</span><span class="p">]:</span>
+                <span class="n">ics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">BendingAngle</span><span class="p">(</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">))</span>
+    <span class="c1"># C) Collect all dihedrals.</span>
+    <span class="k">for</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i0</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">[</span><span class="n">i1</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">i0</span><span class="o">==</span><span class="n">i2</span><span class="p">:</span>
+                <span class="c1"># All four indexes must be different.</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">i3</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">[</span><span class="n">i2</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">i3</span><span class="o">==</span><span class="n">i1</span> <span class="ow">or</span> <span class="n">i3</span><span class="o">==</span><span class="n">i0</span><span class="p">:</span>
+                    <span class="c1"># All four indexes must be different.</span>
+                    <span class="k">continue</span>
+                <span class="n">ics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DihedralAngle</span><span class="p">(</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">ics</span>
+
+
+<span class="k">def</span> <span class="nf">compute_jacobian</span><span class="p">(</span><span class="n">ics</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Construct a Jacobian for the given internal and Cartesian coordinates</span>
+
+<span class="sd">       Arguments:</span>
+<span class="sd">        | ``ics`` -- A list of internal coordinate objects.</span>
+<span class="sd">        | ``coordinates`` -- A numpy array with Cartesian coordinates,</span>
+<span class="sd">                             shape=(N,3)</span>
+
+<span class="sd">       The return value will be a numpy array with the Jacobian matrix. There</span>
+<span class="sd">       will be a column for each internal coordinate, and a row for each</span>
+<span class="sd">       Cartesian coordinate (3*N rows).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">N3</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">jacobian</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ics</span><span class="p">)),</span> <span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">ic</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ics</span><span class="p">):</span>
+        <span class="c1"># Let the ic object fill in each column of the Jacobian.</span>
+        <span class="n">ic</span><span class="o">.</span><span class="n">fill_jacobian_column</span><span class="p">(</span><span class="n">jacobian</span><span class="p">[:,</span><span class="n">j</span><span class="p">],</span> <span class="n">coordinates</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">jacobian</span>
+
+
+<span class="c1"># This if block is only executed when this file is ran as a program, and not</span>
+<span class="c1"># when it is loaded as a module.</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Load the formatted checkpoint file with the frequency computation. This</span>
+    <span class="c1"># file also contains the atomic numbers and the coordinates of the atoms,</span>
+    <span class="c1"># and therefore one can access the dopamine molecule object through</span>
+    <span class="c1"># fchk.molecule.</span>
+    <span class="n">fchk</span> <span class="o">=</span> <span class="n">FCHKFile</span><span class="p">(</span><span class="s2">&quot;dopamine.fchk&quot;</span><span class="p">)</span>
+    <span class="c1"># Set the default graph for the construction of the internal coordinates:</span>
+    <span class="n">fchk</span><span class="o">.</span><span class="n">molecule</span><span class="o">.</span><span class="n">set_default_graph</span><span class="p">()</span>
+    <span class="c1"># Setup a list of internal coordinates</span>
+    <span class="n">ics</span> <span class="o">=</span> <span class="n">setup_ics</span><span class="p">(</span><span class="n">fchk</span><span class="o">.</span><span class="n">molecule</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+    <span class="c1"># Compute the Jacobian.</span>
+    <span class="n">J</span> <span class="o">=</span> <span class="n">compute_jacobian</span><span class="p">(</span><span class="n">ics</span><span class="p">,</span> <span class="n">fchk</span><span class="o">.</span><span class="n">molecule</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span>
+    <span class="c1"># Compute the pseudo-inverse, using a loose threshold for the singular</span>
+    <span class="c1"># values to filter out equivalent internal coordinates.</span>
+    <span class="n">Jinv</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="mf">1e-5</span><span class="p">)</span>
+    <span class="c1"># Get the Hessian in Cartesian coordinates.</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">fchk</span><span class="o">.</span><span class="n">get_hessian</span><span class="p">()</span>
+    <span class="c1"># Transform to internal coordinates.</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Jinv</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">Jinv</span><span class="o">.</span><span class="n">transpose</span><span class="p">()))</span>
+    <span class="c1"># Make a nice printout of K.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The Hessian in internal coordinates in kcal/mol/angstrom**2&quot;</span><span class="p">)</span>
+    <span class="n">unit</span> <span class="o">=</span> <span class="n">kcalmol</span><span class="o">/</span><span class="n">angstrom</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">K</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">% 5.0f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">v</span><span class="o">/</span><span class="n">unit</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">row</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>For the computation of the pseudo-inverse, there is one more gotcha’s: some
+internal coordinates are exactly redundant, i.e. in the case of dopamine, the
+the dihedral angles in the aromatic ring are a bit problematic. It is comparable
+to the situation of ethene, where one dihdral angle can always be written as a
+simple linear function of the three other ones. The columns in the Jacobian
+corresponding to these dihedrals are linearly dependent. One can in principle
+leave out 6 columns in the case of dopamine. However, any selection of internal
+coordinates to be removed would be a subjective choice. One can avoid such
+subjective input by dropping the almost-zero singular values during he
+computation of the generalized inverse. Therefore the second argument to
+<code class="docutils literal notranslate"><span class="pre">pinv</span></code> in the script is set to <code class="docutils literal notranslate"><span class="pre">1e-5</span></code>, which means that all singular values
+that are 100000 times smaller than the largest one, are treated as if they were
+zeros.</p>
+</div>
+</div>
+<div class="section" id="problems">
+<h2>Problems<a class="headerlink" href="#problems" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="all-bond-ch-bond-lengths-in-propane">
+<h3>All bond CH-bond lengths in propane<a class="headerlink" href="#all-bond-ch-bond-lengths-in-propane" title="Permalink to this headline">¶</a></h3>
+<p>Write a program that computes all CH-bond lengths in the propane molecule. Use
+the same style as in the example that computes the bending angles in the
+dopamine molecule.</p>
+</div>
+<div class="section" id="more-complete-force-field-hessian">
+<h3>More complete Force-field Hessian<a class="headerlink" href="#more-complete-force-field-hessian" title="Permalink to this headline">¶</a></h3>
+<p>Modify the program that computes the Hessian of propane in such a way that it
+takes into account the contributions due to deviations of internal coordinates
+from the rest value of each force-field term.</p>
+</div>
+<div class="section" id="dft-hessian-in-internal-coordinates-non-stationary-geometries">
+<h3>DFT Hessian in <cite>internal coordinates</cite> – Non-stationary geometries<a class="headerlink" href="#dft-hessian-in-internal-coordinates-non-stationary-geometries" title="Permalink to this headline">¶</a></h3>
+<p>Extend the program for the computation of the Hessian in internal coordinates
+such that it also works for non-stationery points on the potential energy
+surface. The starting point is a more general expression for the force-field
+model</p>
+<div class="math notranslate nohighlight">
+\[E_{\text{FF}} =
+\sum_{i=1}^M A (q_{i} - q_{i,0}) +
+\sum_{i_1=1}^M \sum_{i_2=1}^M
+K_{i_1 i_2} (q_{i_1} - q_{i_1,0}) (q_{i_2} - q_{i_2,0})\]</div>
+<p>where the rest values can be the current internal coordinates, or some reference
+values. The vector <span class="math notranslate nohighlight">\(A\)</span> and the matrix <span class="math notranslate nohighlight">\(K\)</span> can be defined in such
+a way that the force-field gradient and Hessian in Cartesian coordinates
+coincide with their DFT counter-parts. First derive proper forms for <span class="math notranslate nohighlight">\(A\)</span>
+and <span class="math notranslate nohighlight">\(K\)</span>.</p>
+<p>Let the program still use the current internal coordinates as reference values
+for the force field. Let it also print out the vector <span class="math notranslate nohighlight">\(A\)</span>.</p>
+</div>
+<div class="section" id="fitting-force-constants">
+<h3>Fitting force-constants<a class="headerlink" href="#fitting-force-constants" title="Permalink to this headline">¶</a></h3>
+<p>Write a program that fits the force-constants of the propane molecule based on a
+DFT Hessian computation on the ground-state geometry, for given values of the
+rest lengths and angles. Test to what extent these force constants depend on the
+choice of rest parameters.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Internal coordinates</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#a-simple-bond-length">A simple bond length</a></li>
+<li><a class="reference internal" href="#all-bending-angles-in-dopamine">All bending angles in dopamine</a></li>
+<li><a class="reference internal" href="#simple-force-field-hessian">Simple Force-field Hessian</a></li>
+<li><a class="reference internal" href="#dft-hessian-in-internal-coordinates-stationary-geometries">DFT Hessian in <cite>internal coordinates</cite> – Stationary geometries</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#problems">Problems</a><ul>
+<li><a class="reference internal" href="#all-bond-ch-bond-lengths-in-propane">All bond CH-bond lengths in propane</a></li>
+<li><a class="reference internal" href="#more-complete-force-field-hessian">More complete Force-field Hessian</a></li>
+<li><a class="reference internal" href="#dft-hessian-in-internal-coordinates-non-stationary-geometries">DFT Hessian in <cite>internal coordinates</cite> – Non-stationary geometries</a></li>
+<li><a class="reference internal" href="#fitting-force-constants">Fitting force-constants</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="graph.html"
+                        title="previous chapter">Working with molecular graphs</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="patterns.html"
+                        title="next chapter">Pattern-matching in molecular graphs</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/internal_coordinates.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="patterns.html" title="Pattern-matching in molecular graphs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="graph.html" title="Working with molecular graphs"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="examples.html" >MolMod by example</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

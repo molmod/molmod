@@ -1,0 +1,418 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Units and constants &#8212; MolMod 1.4.8 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Basic classes" href="basic.html" />
+    <link rel="prev" title="MolMod Developers guide" href="../development/development.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="basic.html" title="Basic classes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../development/development.html" title="MolMod Developers guide"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="units-and-constants">
+<h1>Units and constants<a class="headerlink" href="#units-and-constants" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-molmod.units">
+<span id="molmod-units-conversion-from-and-to-atomic-units"></span><h2><a class="reference internal" href="#module-molmod.units" title="molmod.units"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.units</span></code></a> – Conversion from and to atomic units<a class="headerlink" href="#module-molmod.units" title="Permalink to this headline">¶</a></h2>
+<p>Internally the MolMod package works always in atomic units. This unit system
+is consistent, like the SI unit system one does not need conversion factors
+in the middle of a computation once all values are converted to atomic units.
+This facilitates the programming and reduces accidental bugs due to
+forgetting these conversion factor in the body of the code.</p>
+<p>References for the conversion values:</p>
+<ul class="simple">
+<li>B. J. Mohr and B. N. Taylor,
+CODATA recommended values of the fundamental physical
+constants: 1998, Rev. Mod. Phys. 72(2), 351 (2000)</li>
+<li>The NIST Reference on Constants, Units, and Uncertainty
+(<a class="reference external" href="http://physics.nist.gov/cuu/Constants/index.html">http://physics.nist.gov/cuu/Constants/index.html</a>)</li>
+<li>1 calorie = 4.184 Joules</li>
+</ul>
+<p>Naming conventions in this module: unit is the value of one external unit
+in internal - i.e. atomic - units. e.g. If you want to have a distance of
+five angstrom in internal units: <code class="docutils literal notranslate"><span class="pre">5*angstrom</span></code>. If you want to convert a
+length of 5 internal units to angstrom: <code class="docutils literal notranslate"><span class="pre">5/angstrom</span></code>. It is recommended to
+perform this kind of conversions, only when data is read from the input and
+data is written to the output.</p>
+<p>An often recurring question is how to convert a frequency in internal units
+to a spectroscopic wavenumber in inverse centimeters. This is how it can be
+done:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">molmod</span> <span class="kn">import</span> <span class="n">centimeter</span><span class="p">,</span> <span class="n">lightspeed</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">invcm</span> <span class="o">=</span> <span class="n">lightspeed</span><span class="o">/</span><span class="n">centimeter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">freq</span> <span class="o">=</span> <span class="mf">0.00320232</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">freq</span><span class="o">/</span><span class="n">invcm</span>
+</pre></div>
+</div>
+<p>These are the conversion constants defined in this module:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="47%" />
+<col width="53%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>ampere</td>
+<td>1.5097490095e+02</td>
+</tr>
+<tr class="row-odd"><td>amu</td>
+<td>1.8228886274e+03</td>
+</tr>
+<tr class="row-even"><td>angstrom</td>
+<td>1.8897261339e+00</td>
+</tr>
+<tr class="row-odd"><td>atm</td>
+<td>3.4439674262e-09</td>
+</tr>
+<tr class="row-even"><td>au</td>
+<td>1.0000000000e+00</td>
+</tr>
+<tr class="row-odd"><td>avogadro</td>
+<td>6.0221415000e+23</td>
+</tr>
+<tr class="row-even"><td>bar</td>
+<td>3.3989315828e-09</td>
+</tr>
+<tr class="row-odd"><td>calorie</td>
+<td>9.5968941808e+17</td>
+</tr>
+<tr class="row-even"><td>centimeter</td>
+<td>1.8897261339e+08</td>
+</tr>
+<tr class="row-odd"><td>coulomb</td>
+<td>6.2415097445e+18</td>
+</tr>
+<tr class="row-even"><td>debye</td>
+<td>3.9343031369e-01</td>
+</tr>
+<tr class="row-odd"><td>decimeter</td>
+<td>1.8897261339e+09</td>
+</tr>
+<tr class="row-even"><td>deg</td>
+<td>1.7453292520e-02</td>
+</tr>
+<tr class="row-odd"><td>electronvolt</td>
+<td>3.6749325920e-02</td>
+</tr>
+<tr class="row-even"><td>femtosecond</td>
+<td>4.1341373337e+01</td>
+</tr>
+<tr class="row-odd"><td>gram</td>
+<td>1.0977693253e+27</td>
+</tr>
+<tr class="row-even"><td>hertz</td>
+<td>2.4188843265e-17</td>
+</tr>
+<tr class="row-odd"><td>joule</td>
+<td>2.2937127583e+17</td>
+</tr>
+<tr class="row-even"><td>kcalmol</td>
+<td>1.5936015753e-03</td>
+</tr>
+<tr class="row-odd"><td>kelvin</td>
+<td>1.0000000000e+00</td>
+</tr>
+<tr class="row-even"><td>kilogram</td>
+<td>1.0977693253e+30</td>
+</tr>
+<tr class="row-odd"><td>kjmol</td>
+<td>3.8087991760e-04</td>
+</tr>
+<tr class="row-even"><td>liter</td>
+<td>6.7483345942e+27</td>
+</tr>
+<tr class="row-odd"><td>meter</td>
+<td>1.8897261339e+10</td>
+</tr>
+<tr class="row-even"><td>micrometer</td>
+<td>1.8897261339e+04</td>
+</tr>
+<tr class="row-odd"><td>miligram</td>
+<td>1.0977693253e+24</td>
+</tr>
+<tr class="row-even"><td>milimeter</td>
+<td>1.8897261339e+07</td>
+</tr>
+<tr class="row-odd"><td>mol</td>
+<td>6.0221415000e+23</td>
+</tr>
+<tr class="row-even"><td>nanometer</td>
+<td>1.8897261339e+01</td>
+</tr>
+<tr class="row-odd"><td>nanosecond</td>
+<td>4.1341373337e+07</td>
+</tr>
+<tr class="row-even"><td>newton</td>
+<td>1.2137805141e+07</td>
+</tr>
+<tr class="row-odd"><td>pascal</td>
+<td>3.3989315828e-14</td>
+</tr>
+<tr class="row-even"><td>picometer</td>
+<td>1.8897261339e-02</td>
+</tr>
+<tr class="row-odd"><td>picosecond</td>
+<td>4.1341373337e+04</td>
+</tr>
+<tr class="row-even"><td>rad</td>
+<td>1.0000000000e+00</td>
+</tr>
+<tr class="row-odd"><td>rydberg</td>
+<td>5.0000000000e-01</td>
+</tr>
+<tr class="row-even"><td>second</td>
+<td>4.1341373337e+16</td>
+</tr>
+<tr class="row-odd"><td>unified</td>
+<td>1.8228886274e+03</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<dl class="function">
+<dt id="molmod.units.parse_unit">
+<code class="descclassname">molmod.units.</code><code class="descname">parse_unit</code><span class="sig-paren">(</span><em>expression</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.units.parse_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate a python expression string containing constants</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">expression</span></code>  –  A string containing a numerical expressions
+including unit conversions.</div>
+</div>
+</dd>
+</dl>
+<p>In addition to the variables in this module, also the following
+shorthands are supported:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="47%" />
+<col width="53%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Short name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>A</td>
+<td>1.8897261339e+00</td>
+</tr>
+<tr class="row-odd"><td>C</td>
+<td>6.2415097445e+18</td>
+</tr>
+<tr class="row-even"><td>Hz</td>
+<td>2.4188843265e-17</td>
+</tr>
+<tr class="row-odd"><td>J</td>
+<td>2.2937127583e+17</td>
+</tr>
+<tr class="row-even"><td>K</td>
+<td>1.0000000000e+00</td>
+</tr>
+<tr class="row-odd"><td>N</td>
+<td>1.2137805141e+07</td>
+</tr>
+<tr class="row-even"><td>Pa</td>
+<td>3.3989315828e-14</td>
+</tr>
+<tr class="row-odd"><td>cal</td>
+<td>9.5968941808e+17</td>
+</tr>
+<tr class="row-even"><td>cm</td>
+<td>1.8897261339e+08</td>
+</tr>
+<tr class="row-odd"><td>e</td>
+<td>1.0000000000e+00</td>
+</tr>
+<tr class="row-even"><td>eV</td>
+<td>3.6749325920e-02</td>
+</tr>
+<tr class="row-odd"><td>fs</td>
+<td>4.1341373337e+01</td>
+</tr>
+<tr class="row-even"><td>g</td>
+<td>1.0977693253e+27</td>
+</tr>
+<tr class="row-odd"><td>kg</td>
+<td>1.0977693253e+30</td>
+</tr>
+<tr class="row-even"><td>l</td>
+<td>6.7483345942e+27</td>
+</tr>
+<tr class="row-odd"><td>m</td>
+<td>1.8897261339e+10</td>
+</tr>
+<tr class="row-even"><td>mg</td>
+<td>1.0977693253e+24</td>
+</tr>
+<tr class="row-odd"><td>mm</td>
+<td>1.8897261339e+07</td>
+</tr>
+<tr class="row-even"><td>nm</td>
+<td>1.8897261339e+01</td>
+</tr>
+<tr class="row-odd"><td>ns</td>
+<td>4.1341373337e+07</td>
+</tr>
+<tr class="row-even"><td>pm</td>
+<td>1.8897261339e-02</td>
+</tr>
+<tr class="row-odd"><td>ps</td>
+<td>4.1341373337e+04</td>
+</tr>
+<tr class="row-even"><td>s</td>
+<td>4.1341373337e+16</td>
+</tr>
+<tr class="row-odd"><td>u</td>
+<td>1.8228886274e+03</td>
+</tr>
+<tr class="row-even"><td>um</td>
+<td>1.8897261339e+04</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="module-molmod.constants">
+<span id="molmod-constants-physical-constants"></span><h2><a class="reference internal" href="#module-molmod.constants" title="molmod.constants"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.constants</span></code></a> – Physical Constants<a class="headerlink" href="#module-molmod.constants" title="Permalink to this headline">¶</a></h2>
+<p>These are the physical constants defined in this module (in atomic units):</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="47%" />
+<col width="53%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>avogadro</td>
+<td>6.0221415000e+23</td>
+</tr>
+<tr class="row-odd"><td>boltzmann</td>
+<td>3.1668154051e-06</td>
+</tr>
+<tr class="row-even"><td>lightspeed</td>
+<td>1.3703599975e+02</td>
+</tr>
+<tr class="row-odd"><td>planck</td>
+<td>6.2831853072e+00</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Units and constants</a><ul>
+<li><a class="reference internal" href="#module-molmod.units"><code class="docutils literal notranslate"><span class="pre">molmod.units</span></code> – Conversion from and to atomic units</a></li>
+<li><a class="reference internal" href="#module-molmod.constants"><code class="docutils literal notranslate"><span class="pre">molmod.constants</span></code> – Physical Constants</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../development/development.html"
+                        title="previous chapter">MolMod Developers guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="basic.html"
+                        title="next chapter">Basic classes</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/const.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="basic.html" title="Basic classes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../development/development.html" title="MolMod Developers guide"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

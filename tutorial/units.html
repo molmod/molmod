@@ -1,0 +1,316 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Unit conversion &#8212; MolMod 1.4.8 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Working with molecules" href="molecule.html" />
+    <link rel="prev" title="MolMod by example" href="examples.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="molecule.html" title="Working with molecules"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="MolMod by example"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="examples.html" accesskey="U">MolMod by example</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="unit-conversion">
+<h1>Unit conversion<a class="headerlink" href="#unit-conversion" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The MolMod package expresses all quantities in a well-defined <cite>internal units</cite>.
+Whenever numerical data goes into the MolMod code, it is assumed to be in
+<cite>internal units</cite>, and results will also be returned in <cite>internal units</cite>. When
+data is read from a file (through one of the modules in <a class="reference internal" href="../reference/io.html#module-molmod.io" title="molmod.io"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.io</span></code></a>) the
+numerical values are immediately converted to <cite>internal units</cite>. In case one
+needs to print a number on screen or to a file, it can be converted back to some
+<cite>non-internal unit</cite>.</p>
+<p>The <cite>internal units</cite> in MolMod are the atomic units. Most atomic units are
+listed at the <a class="reference external" href="http://physics.nist.gov/cuu/Constants/index.html">NIST website for physical constants</a>. There is no atomic unit
+for temperature, so we use Kelvin as the <cite>internal unit</cite> of temperature. This
+approach has three advantages:</p>
+<ol class="arabic simple">
+<li>Atomic units are, just like the SI units, consistent. This means that, given
+any mathematical expression, one can just plug in all values in atomic units
+and the result will come out in atomic units, without the need for some
+conversion factor.</li>
+<li>Most molecular quantities have a reasonable order of magnitude in atomic
+units, which reduces numerical issues.</li>
+<li>Several important constants become unity, which simplifies the programming.</li>
+</ol>
+<p>The conversion factors to translate values from and to <cite>internal units</cite> are
+defined in the module <a class="reference internal" href="../reference/const.html#module-molmod.units" title="molmod.units"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.units</span></code></a>. The convention for unit conversion is
+as follows:</p>
+<ul class="simple">
+<li><strong>Multiplication</strong> with a constant converts a value <strong>to</strong> <cite>internal units</cite>.</li>
+<li><strong>Division</strong> with the same constant converts a value <strong>back</strong> to the
+<cite>non-internal unit</cite></li>
+</ul>
+<p>A simple example illustrates these conventions:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">molmod</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">distance</span> <span class="o">=</span> <span class="mi">5</span><span class="o">*</span><span class="n">angstrom</span>
+<span class="nb">print</span> <span class="s2">&quot;Distances in internal units:&quot;</span><span class="p">,</span> <span class="n">distance</span>
+<span class="nb">print</span> <span class="s2">&quot;Distances in Angstrom:&quot;</span><span class="p">,</span> <span class="n">distance</span><span class="o">/</span><span class="n">angstrom</span>
+</pre></div>
+</td></tr></table></div>
+<p>Some relevant physical constants are defined in <a class="reference internal" href="../reference/const.html#module-molmod.constants" title="molmod.constants"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.constants</span></code></a>.</p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="energies">
+<h3>Energies<a class="headerlink" href="#energies" title="Permalink to this headline">¶</a></h3>
+<p>This example shows, given a reactant and product energy, how one computes the
+reaction energy and prints out the result in kJ/mol.</p>
+<p>File: <code class="docutils literal notranslate"><span class="pre">molmod/examples/000_units/a_reaction.py</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">from</span> <span class="nn">past.utils</span> <span class="kn">import</span> <span class="n">old_div</span>
+<span class="kn">from</span> <span class="nn">molmod</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">energy_react</span> <span class="o">=</span> <span class="o">-</span><span class="mf">157.31456213</span>
+<span class="n">energy_prod</span> <span class="o">=</span> <span class="o">-</span><span class="mf">157.31397873</span>
+
+<span class="n">reaction_energy</span> <span class="o">=</span> <span class="n">energy_prod</span> <span class="o">-</span> <span class="n">energy_react</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reaction energy [kJ mol^-1]:&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">reaction_energy</span><span class="o">/</span><span class="n">kjmol</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>This example is very basic, but it demonstrates some general requirements for
+any script that uses the MolMod package:</p>
+<ul>
+<li><p class="first">The first line always reads <code class="docutils literal notranslate"><span class="pre">#!/usr/bin/env</span> <span class="pre">python</span></code>. This only matters when
+the script is executed on a Unix machine. It is the so-called <a class="reference external" href="http://en.wikipedia.org/wiki/Shebang_%28Unix%29">shebang line</a>, which is used to
+determine the interpreter when the script is executed on the command line:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">toon</span><span class="nd">@poony</span> <span class="o">~&gt;</span> <span class="o">./</span><span class="n">a_reaction</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>is equivalent to:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">toon</span><span class="nd">@poony</span> <span class="o">~&gt;</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">env</span> <span class="n">python</span> <span class="n">a_reaction</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>The short form only works when the executable flag of the script file is set.
+If this is not the case yet, it can be changed as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">toon</span><span class="nd">@poony</span> <span class="o">~&gt;</span> <span class="n">chmod</span> <span class="o">+</span><span class="n">x</span> <span class="n">a_reaction</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">The beginning of the file must contain a line <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">molmod</span> <span class="pre">import</span> <span class="pre">*</span></code> to
+import the entire molmod package. Some alternative methods to import
+libraries in Python are discussed in the <a class="reference external" href="http://docs.python.org/">official Python documentation</a>.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="wavenumber">
+<h3>Wavenumber<a class="headerlink" href="#wavenumber" title="Permalink to this headline">¶</a></h3>
+<p>Given the mass and force constant of a harmonic spring the following script
+computes the spectroscopic wavenumber of the oscillation. The mass and the force
+constant are an approximate model for a C-H bond.</p>
+<p>File: <code class="docutils literal notranslate"><span class="pre">molmod/examples/000_units/b_chbond.py</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">from</span> <span class="nn">molmod</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">pi</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">amu</span>
+<span class="n">k</span> <span class="o">=</span> <span class="mi">3200</span><span class="o">*</span><span class="n">kjmol</span><span class="o">/</span><span class="n">angstrom</span><span class="o">**</span><span class="mi">2</span>
+
+<span class="n">freq</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">k</span><span class="o">/</span><span class="n">m</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Force constant [kcal mol^-1 angstrom^-2]:&quot;</span><span class="p">,</span> <span class="n">k</span><span class="o">/</span><span class="p">(</span><span class="n">kcalmol</span><span class="o">/</span><span class="n">angstrom</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Wavenumber [cm^-1]:&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">freq</span><span class="o">/</span><span class="n">lightspeed</span><span class="o">*</span><span class="n">centimeter</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="rotational-partition-function-of-hydrogen">
+<h3>Rotational partition function of Hydrogen<a class="headerlink" href="#rotational-partition-function-of-hydrogen" title="Permalink to this headline">¶</a></h3>
+<p>The last example solves a typical statistical physics exam question: “Compute
+the probability that a Hydrogen molecule in a dilute gas does not rotate at a
+temperature of 300 K. Approximate the Hydrogen molecule as a rigid rotor”. The
+parameters are included in the source code below. The constant <code class="docutils literal notranslate"><span class="pre">boltzmann</span></code> is
+defined in <a class="reference internal" href="../reference/const.html#module-molmod.constants" title="molmod.constants"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.constants</span></code></a>.</p>
+<p>File: <code class="docutils literal notranslate"><span class="pre">molmod/examples/000_units/c_h2rot.py</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">from</span> <span class="nn">molmod</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">exp</span><span class="p">,</span> <span class="n">pi</span>
+
+<span class="c1"># The parameters</span>
+<span class="n">m</span> <span class="o">=</span> <span class="mf">1.00794</span><span class="o">*</span><span class="n">amu</span>
+<span class="n">d</span> <span class="o">=</span> <span class="mi">74</span><span class="o">*</span><span class="n">picometer</span>
+<span class="n">temp</span> <span class="o">=</span> <span class="mi">300</span>
+
+<span class="c1"># The moment of inertia</span>
+<span class="n">imom</span> <span class="o">=</span> <span class="n">m</span><span class="o">*</span><span class="n">d</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span>
+<span class="c1"># The rotational temperature:</span>
+<span class="n">rot_temp</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">imom</span><span class="o">*</span><span class="n">boltzmann</span><span class="p">)</span>
+<span class="c1"># A function that computes a term in the rotational partition function:</span>
+<span class="k">def</span> <span class="nf">q_rot_term</span><span class="p">(</span><span class="n">j</span><span class="p">):</span>
+    <span class="c1"># j is the index of the term</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">rot_temp</span><span class="o">*</span><span class="n">j</span><span class="o">*</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">temp</span><span class="p">)</span>
+
+<span class="c1"># Approximate the partition function with 10 terms. This is good enough for H2.</span>
+<span class="n">q_rot</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">q_rot</span> <span class="o">+=</span> <span class="n">q_rot_term</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+<span class="c1"># Compute the probability of the state j=0</span>
+<span class="n">prob</span> <span class="o">=</span> <span class="n">q_rot_term</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">q_rot</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The rotational temperature [Kelvin]:&quot;</span><span class="p">,</span> <span class="n">rot_temp</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Probability [%]:&quot;</span><span class="p">,</span> <span class="n">prob</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="problems">
+<h2>Problems<a class="headerlink" href="#problems" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="h2-oscillation">
+<h3>H2 oscillation<a class="headerlink" href="#h2-oscillation" title="Permalink to this headline">¶</a></h3>
+<p>Consider the classical description of the H2 nuclei. Assume that the bond
+length oscillates with an amplitude of 0.1 Ångström around its equilibrium
+value. The spectroscopic wavenumber is 4160 cm<sup>-1</sup>. Write a program that
+computes the classical kinetic energy in kJ mol<sup>-1</sup> when the bond length
+passes through its equilibrium value.</p>
+</div>
+<div class="section" id="heat-capacity-of-the-h2-stretch-mode">
+<h3>Heat capacity of the H2 stretch mode<a class="headerlink" href="#heat-capacity-of-the-h2-stretch-mode" title="Permalink to this headline">¶</a></h3>
+<p>Consider the quantummechanical description of the stretch mode in the H2
+molecule. Write a program that prints out the internal energy in kJ mol<sup>-1</sup> and the heat capacity in J mol<sup>-1</sup> K<sup>-1</sup> at different
+temperatures: 300K, 400K, 500K and 600K. The partition function of a harmonic
+oscillator is given by:</p>
+<div class="math notranslate nohighlight">
+\[q_{\text{vib}} = \frac{\exp\left(-\frac{\hbar\nu}{2 k_BT}\right)}
+{1-\exp\left(-\frac{\hbar\nu}{k_BT}\right)}\]</div>
+<p>The heat capacity can be derived from the partition function,</p>
+<div class="math notranslate nohighlight">
+\[C = \frac{\partial E}{\partial T},\]</div>
+<p>where E is the internal energy,</p>
+<div class="math notranslate nohighlight">
+\[E = k_BT^2 \frac{\partial \ln(q_{\text{vib}})}{\partial T}.\]</div>
+<p>The spectroscopic wavenumer of the H-H bond is 4160 cm<sup>-1</sup>.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Unit conversion</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#energies">Energies</a></li>
+<li><a class="reference internal" href="#wavenumber">Wavenumber</a></li>
+<li><a class="reference internal" href="#rotational-partition-function-of-hydrogen">Rotational partition function of Hydrogen</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#problems">Problems</a><ul>
+<li><a class="reference internal" href="#h2-oscillation">H2 oscillation</a></li>
+<li><a class="reference internal" href="#heat-capacity-of-the-h2-stretch-mode">Heat capacity of the H2 stretch mode</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="examples.html"
+                        title="previous chapter">MolMod by example</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="molecule.html"
+                        title="next chapter">Working with molecules</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/units.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="molecule.html" title="Working with molecules"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="MolMod by example"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="examples.html" >MolMod by example</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

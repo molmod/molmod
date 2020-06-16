@@ -1,0 +1,202 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>MolMod Documentation &#8212; MolMod 1.4.8 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation instructions" href="tutorial/install.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial/install.html" title="Installation instructions"
+             accesskey="N">next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">MolMod 1.4.8 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="molmod-documentation">
+<h1>MolMod Documentation<a class="headerlink" href="#molmod-documentation" title="Permalink to this headline">¶</a></h1>
+<p>MolMod is a Python library with many compoments that are useful to write
+molecular modeling programs. It is used by other projects at the CMM such as
+<a class="reference external" href="http://molmod.github.com/zeobuilder">Zeobuilder</a>,
+<a class="reference external" href="http://molmod.github.com/tamkin">TAMkin</a>,
+<a class="reference external" href="http://molmod.github.com/hipart">HiPart</a> and
+<a class="reference external" href="http://molmod.github.com/md-tracks">MD-Tracks</a>.
+This documentation is under construction. Some things are not in place yet. Hang
+on…</p>
+<p>If you have questions about the MolMod library, post your questions on the
+<a class="reference external" href="https://groups.google.com/forum/#!forum/molmodlib">MolMod mailing list</a></p>
+<p>If you use the MolMod library for your research or for the preparation of
+publications, please cite MolMod as follows: “T. Verstraelen, Molmod Software
+Library, <a class="reference external" href="http://molmod.ugent.be/software">http://molmod.ugent.be/software</a>”</p>
+<div class="section" id="tutorials">
+<h2>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/install.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/cite.html">How to cite MolMod</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/examples.html">MolMod by example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/applications.html">Small MolMod applications</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="development">
+<h2>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="development/authors.html">Contributors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development/releases.html">Release history</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development/development.html">MolMod Developers guide</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="library-reference">
+<h2>Library reference<a class="headerlink" href="#library-reference" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reference/const.html">Units and constants</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/const.html#module-molmod.units"><code class="docutils literal notranslate"><span class="pre">molmod.units</span></code> – Conversion from and to atomic units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/const.html#module-molmod.constants"><code class="docutils literal notranslate"><span class="pre">molmod.constants</span></code> – Physical Constants</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/basic.html">Basic classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/basic.html#molmod-molecules-molecular-systems"><code class="docutils literal notranslate"><span class="pre">molmod.molecules</span></code> – Molecular systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/basic.html#module-molmod.graphs"><code class="docutils literal notranslate"><span class="pre">molmod.graphs</span></code> – Abstract graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/basic.html#molmod-molecular-graphs-molecular-graphs"><code class="docutils literal notranslate"><span class="pre">molmod.molecular_graphs</span></code> – Molecular graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/basic.html#module-molmod.unit_cells"><code class="docutils literal notranslate"><span class="pre">molmod.unit_cells</span></code> – Periodic boundary conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/basic.html#module-molmod.transformations"><code class="docutils literal notranslate"><span class="pre">molmod.transformations</span></code> Transformations in 3D</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/io.html">Input/output</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.atrj"><code class="docutils literal notranslate"><span class="pre">molmod.io.atrj</span></code> – ATRJ Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.cml"><code class="docutils literal notranslate"><span class="pre">molmod.io.cml</span></code> – CML Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.cp2k"><code class="docutils literal notranslate"><span class="pre">molmod.io.cp2k</span></code> – CP2K Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.cpmd"><code class="docutils literal notranslate"><span class="pre">molmod.io.cpmd</span></code> – CPMD Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.gamess"><code class="docutils literal notranslate"><span class="pre">molmod.io.gamess</span></code> – Gamess punch files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.cube"><code class="docutils literal notranslate"><span class="pre">molmod.io.cube</span></code> – Gaussian Cube Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.dlpoly"><code class="docutils literal notranslate"><span class="pre">molmod.io.dlpoly</span></code> – DLPoly Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.fchk"><code class="docutils literal notranslate"><span class="pre">molmod.io.fchk</span></code> – Gaussian Formatted Checkpoint Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.number_state"><code class="docutils literal notranslate"><span class="pre">molmod.io.number_state</span></code> – Custom Formatted Checkpoint Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.gromacs"><code class="docutils literal notranslate"><span class="pre">molmod.io.gromacs</span></code> – Gromacs Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.lammps"><code class="docutils literal notranslate"><span class="pre">molmod.io.lammps</span></code> – LAMMPS Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.pdb"><code class="docutils literal notranslate"><span class="pre">molmod.io.pdb</span></code> – PDB Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.psf"><code class="docutils literal notranslate"><span class="pre">molmod.io.psf</span></code> – PSF Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.sdf"><code class="docutils literal notranslate"><span class="pre">molmod.io.sdf</span></code> – SDF Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.xyz"><code class="docutils literal notranslate"><span class="pre">molmod.io.xyz</span></code> – XYZ Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/io.html#module-molmod.io.common"><code class="docutils literal notranslate"><span class="pre">molmod.io.common</span></code> – Common routines</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/data.html">Databases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/data.html#module-molmod.periodic"><code class="docutils literal notranslate"><span class="pre">molmod.periodic</span></code> – The periodic system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/data.html#module-molmod.bonds"><code class="docutils literal notranslate"><span class="pre">molmod.bonds</span></code> – The bond length database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/data.html#module-molmod.isotopes"><code class="docutils literal notranslate"><span class="pre">molmod.isotopes</span></code> – The isotope database</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/algo.html">Algorithms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/algo.html#module-molmod.binning"><code class="docutils literal notranslate"><span class="pre">molmod.binning</span></code> – Binning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/algo.html#module-molmod.clusters"><code class="docutils literal notranslate"><span class="pre">molmod.clusters</span></code> – Clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/algo.html#module-molmod.ic"><code class="docutils literal notranslate"><span class="pre">molmod.ic</span></code> – Internal coordinates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/algo.html#module-molmod.minimizer"><code class="docutils literal notranslate"><span class="pre">molmod.minimizer</span></code> – Minimizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/algo.html#module-molmod.symmetry"><code class="docutils literal notranslate"><span class="pre">molmod.symmetry</span></code> – Symmetry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/algo.html#module-molmod.toyff"><code class="docutils literal notranslate"><span class="pre">molmod.toyff</span></code> – ToyFF</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/internals.html">Internals of the MolMod package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/internals.html#module-molmod.utils"><code class="docutils literal notranslate"><span class="pre">molmod.utils</span></code> – Read-only objects and cached attributes</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">MolMod Documentation</a><ul>
+<li><a class="reference internal" href="#tutorials">Tutorials</a></li>
+<li><a class="reference internal" href="#development">Development</a></li>
+<li><a class="reference internal" href="#library-reference">Library reference</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial/install.html"
+                        title="next chapter">Installation instructions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial/install.html" title="Installation instructions"
+             >next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">MolMod 1.4.8 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

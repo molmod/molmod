@@ -1,0 +1,418 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Pattern-matching in molecular graphs &#8212; MolMod 1.4.8 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Small MolMod applications" href="applications.html" />
+    <link rel="prev" title="Internal coordinates" href="internal_coordinates.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="applications.html" title="Small MolMod applications"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="internal_coordinates.html" title="Internal coordinates"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="examples.html" accesskey="U">MolMod by example</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="pattern-matching-in-molecular-graphs">
+<h1>Pattern-matching in molecular graphs<a class="headerlink" href="#pattern-matching-in-molecular-graphs" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Pattern matching in MolMod is a Pythonic extensible alternative to the <a class="reference external" href="http://en.wikipedia.org/wiki/Smiles_arbitrary_target_specification">SMARTS</a> patterns
+introduced by <cite>Daylight Chemical Information Systesm</cite>. It can be used to define
+and detected force-field atom types in molecular graphs, to enumerate chemical
+fragments in molecular graphs, or even to restore atom order consistency for a
+bunch of different geometries with the same topology.</p>
+<p>The pattern matching functionality is implemented in the modules
+<a class="reference internal" href="../reference/basic.html#module-molmod.graphs" title="molmod.graphs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.graphs</span></code></a> and <a class="reference internal" href="../reference/basic.html#module-molmod.molecular_graphs" title="molmod.molecular_graphs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.molecular_graphs</span></code></a>, but it can all be
+accesseded with a single import statemenent, i.e. <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">molmod</span> <span class="pre">import</span> <span class="pre">*</span></code>.</p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="basic-atom-types-in-propane">
+<h3><cite>Basic</cite> atom types in propane<a class="headerlink" href="#basic-atom-types-in-propane" title="Permalink to this headline">¶</a></h3>
+<p>The script below detects the following atom types based on the bond graph of the
+propane molecule.</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">cach3</span></code>: Carbon in CH<sup>3</sup> group</li>
+<li><code class="docutils literal notranslate"><span class="pre">cach2</span></code>: Carbon in CH<sup>2</sup> group</li>
+<li><code class="docutils literal notranslate"><span class="pre">hach3</span></code>: Hydrogen in CH<sup>3</sup> group</li>
+<li><code class="docutils literal notranslate"><span class="pre">hach2</span></code>: Hydrogen in CH<sup>2</sup> group</li>
+</ul>
+<p>An atom type in MolMod is defined as a function that takes two arguments: an
+integer atom index and a MolecularGraph instance. The function returns <code class="docutils literal notranslate"><span class="pre">True</span></code>
+when the atom is of the type associated with the function and <code class="docutils literal notranslate"><span class="pre">False</span></code>
+otherwise. For example the following function represents a generic Carbon atom
+type:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">is_carbon</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">graph</span><span class="o">.</span><span class="n">numbers</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">==</span> <span class="mi">6</span>
+</pre></div>
+</div>
+<p>One can list all carbons in a molecule by looping over all atoms and testing
+each atom with the <code class="docutils literal notranslate"><span class="pre">is_carbon</span></code> function:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="o">=</span> <span class="n">Molecule</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;propane.xyz&quot;</span><span class="p">)</span>
+<span class="n">molecule</span><span class="o">.</span><span class="n">set_default_graph</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">molecule</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">num_vertices</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">is_carbon</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
+        <span class="n">carbons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">carbons</span>
+</pre></div>
+</td></tr></table></div>
+<p>One can go beyond the basics by adding extra requirements to the atom type
+function, e.g. as follows:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">is_cach3</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">numbers</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">6</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">nis</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">count_h</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">count_c</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">ni</span> <span class="ow">in</span> <span class="n">nis</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">numbers</span><span class="p">[</span><span class="n">ni</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">count_h</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">graph</span><span class="o">.</span><span class="n">numbers</span><span class="p">[</span><span class="n">ni</span><span class="p">]</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="n">count_c</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">count_h</span><span class="o">==</span><span class="mi">3</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">count_c</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<p>This atom type definition can be used in exactly the same way as the
+<code class="docutils literal notranslate"><span class="pre">is_carbon</span></code> function. It is clear that atom types based on simple explicit
+functions are error prone and time-consuming. Therefore the modules
+<a class="reference internal" href="../reference/basic.html#module-molmod.graphs" title="molmod.graphs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.graphs</span></code></a> and <a class="reference internal" href="../reference/basic.html#module-molmod.molecular_graphs" title="molmod.molecular_graphs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.molecular_graphs</span></code></a> introduce <code class="docutils literal notranslate"><span class="pre">Criteria</span></code>
+classes whose instances act as atom-types. For example the following is a
+completely equivalent definition of the two atom types so far:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">is_carbon</span> <span class="o">=</span> <span class="n">HasAtomNumber</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">is_cach3</span> <span class="o">=</span> <span class="n">CritAnd</span><span class="p">(</span><span class="n">is_carbon</span><span class="p">,</span> <span class="n">HasNeighborNumbers</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>These atom types act as functions that can be used in exactly the same way as
+the explicit functions given above, but they are much easier to define. The
+following table contains all <code class="docutils literal notranslate"><span class="pre">Criteria</span></code> classes that can be used to construct
+atom types. Atom types constructed with <code class="docutils literal notranslate"><span class="pre">Criteria</span></code> classes will be referred to
+as <cite>basic</cite> atom types. As we will see below, there is a second way to define
+<cite>advanced</cite> atom types.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="75%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Anything()</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> for any atom</td>
+</tr>
+<tr class="row-odd"><td>CritOr(crit1, crit2, …)</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> when one of the arguments would return True</td>
+</tr>
+<tr class="row-even"><td>CritAnd(crit1, crit2, …)</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> only when all arguments would return True</td>
+</tr>
+<tr class="row-odd"><td>CritXor(crit1, crit2, …)</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> when an odd number of arguments would return True</td>
+</tr>
+<tr class="row-even"><td>CritNot(crit)</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> only when the argument would return False</td>
+</tr>
+<tr class="row-odd"><td>HasAtomNumber(number)</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> for an atom that has the given atom number</td>
+</tr>
+<tr class="row-even"><td>HasNumNeighbors(count)</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> for an atom with the given number of neighbors</td>
+</tr>
+<tr class="row-odd"><td>HasNeighborNumbers(number1, number2, …)</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> for an atom with the same number of bonds as there are arguments and when the bonded atoms have the given atom numbers</td>
+</tr>
+<tr class="row-even"><td>HasNeighbors(crit1, crit2, …)</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> for an atom with the same number of bonds as there are arguments and when each bonded atoms matches one of the given criteria</td>
+</tr>
+</tbody>
+</table>
+<p>The script below detects all atom types in propane by looping over all atoms and
+testing which atom type function returns True for each atom. If some atom has
+zero or more than two matching atom types, the program raises an error.</p>
+<p>File: <code class="docutils literal notranslate"><span class="pre">molmod/examples/004_patterns/a_propane_types.py</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">from</span> <span class="nn">molmod</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1"># 0) Load the molecule and set the default graph</span>
+<span class="n">mol</span> <span class="o">=</span> <span class="n">Molecule</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;propane.xyz&quot;</span><span class="p">)</span>
+<span class="n">mol</span><span class="o">.</span><span class="n">set_default_graph</span><span class="p">()</span>
+
+<span class="c1"># 1) Define the atom types</span>
+<span class="n">is_carbon</span> <span class="o">=</span> <span class="n">HasAtomNumber</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">is_hydrogen</span> <span class="o">=</span> <span class="n">HasAtomNumber</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">is_cach3</span> <span class="o">=</span> <span class="n">CritAnd</span><span class="p">(</span><span class="n">is_carbon</span><span class="p">,</span> <span class="n">HasNeighborNumbers</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">is_cach2</span> <span class="o">=</span> <span class="n">CritAnd</span><span class="p">(</span><span class="n">is_carbon</span><span class="p">,</span> <span class="n">HasNeighborNumbers</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">is_hach3</span> <span class="o">=</span> <span class="n">CritAnd</span><span class="p">(</span><span class="n">is_hydrogen</span><span class="p">,</span> <span class="n">HasNeighbors</span><span class="p">(</span><span class="n">is_cach3</span><span class="p">))</span>
+<span class="n">is_hach2</span> <span class="o">=</span> <span class="n">CritAnd</span><span class="p">(</span><span class="n">is_hydrogen</span><span class="p">,</span> <span class="n">HasNeighbors</span><span class="p">(</span><span class="n">is_cach2</span><span class="p">))</span>
+<span class="n">atom_types</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;cach3&quot;</span><span class="p">:</span> <span class="n">is_cach3</span><span class="p">,</span>
+    <span class="s2">&quot;cach2&quot;</span><span class="p">:</span> <span class="n">is_cach2</span><span class="p">,</span>
+    <span class="s2">&quot;hach3&quot;</span><span class="p">:</span> <span class="n">is_hach3</span><span class="p">,</span>
+    <span class="s2">&quot;hach2&quot;</span><span class="p">:</span> <span class="n">is_hach2</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># 2) loop to detect all atom types</span>
+<span class="n">detected</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+    <span class="c1"># match label is going to be the label of the matching atom type.</span>
+    <span class="n">match_label</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">atom_type</span> <span class="ow">in</span> <span class="n">atom_types</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">atom_type</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">graph</span><span class="p">):</span>
+            <span class="c1"># We have a match.</span>
+            <span class="k">if</span> <span class="n">match_label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># This is how it should be.</span>
+                <span class="n">match_label</span> <span class="o">=</span> <span class="n">label</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># This should not happen after a previous match.</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Atom </span><span class="si">%i</span><span class="s2"> matches more than one type, at least </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">match_label</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">match_label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># No matching type detected, so raise an error.</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Atom </span><span class="si">%i</span><span class="s2"> does not have any type.&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+    <span class="c1"># Get the list of atom indexes associated with match_label. If such a list</span>
+    <span class="c1"># is not present in the detected dictionary yet, an empty list is assigned</span>
+    <span class="c1"># to the match_label key and returned. (Lookup setdefault in the Python</span>
+    <span class="c1"># docs if this is not clear.)</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">match_label</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="c1"># Add the current atom index to the list.</span>
+    <span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+<span class="c1"># 3) print out the detected atom types</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">indexes</span> <span class="ow">in</span> <span class="n">detected</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">indexes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="some-basic-atom-types-in-dopamine">
+<h3>Some <cite>basic</cite> atom types in dopamine<a class="headerlink" href="#some-basic-atom-types-in-dopamine" title="Permalink to this headline">¶</a></h3>
+<p>The script below detects just a few atom types in the dopamine molecule.</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">csp3</span></code>: sp3 carbons</li>
+<li><code class="docutils literal notranslate"><span class="pre">csp2</span></code>: sp2 carbons</li>
+<li><code class="docutils literal notranslate"><span class="pre">hoh</span></code>: hydroxyl hydrogens</li>
+</ul>
+<p>File: <code class="docutils literal notranslate"><span class="pre">molmod/examples/004_patterns/b_dopamine_types.py</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">from</span> <span class="nn">molmod</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1"># 0) Load the molecule and set the default graph</span>
+<span class="n">mol</span> <span class="o">=</span> <span class="n">Molecule</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;dopamine.xyz&quot;</span><span class="p">)</span>
+<span class="n">mol</span><span class="o">.</span><span class="n">set_default_graph</span><span class="p">()</span>
+
+<span class="c1"># 1) Define the atom types</span>
+<span class="n">atom_types</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;csp3&quot;</span><span class="p">:</span> <span class="n">CritAnd</span><span class="p">(</span><span class="n">HasAtomNumber</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span> <span class="n">HasNumNeighbors</span><span class="p">(</span><span class="mi">4</span><span class="p">)),</span>
+    <span class="s2">&quot;csp2&quot;</span><span class="p">:</span> <span class="n">CritAnd</span><span class="p">(</span><span class="n">HasAtomNumber</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span> <span class="n">HasNumNeighbors</span><span class="p">(</span><span class="mi">3</span><span class="p">)),</span>
+    <span class="s2">&quot;hoh&quot;</span><span class="p">:</span> <span class="n">CritAnd</span><span class="p">(</span><span class="n">HasAtomNumber</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">HasNeighborNumbers</span><span class="p">(</span><span class="mi">8</span><span class="p">)),</span>
+<span class="p">}</span>
+
+<span class="c1"># 2) loop to detect all atom types</span>
+<span class="n">detected</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+    <span class="c1"># match label is going to be the label of the matching atom type.</span>
+    <span class="n">match_label</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">atom_type</span> <span class="ow">in</span> <span class="n">atom_types</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">atom_type</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">graph</span><span class="p">):</span>
+            <span class="c1"># We have a match.</span>
+            <span class="k">if</span> <span class="n">match_label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># This is how it should be.</span>
+                <span class="n">match_label</span> <span class="o">=</span> <span class="n">label</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># This should not happen after a previous match.</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Atom </span><span class="si">%i</span><span class="s2"> matches more than one type, at least </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">match_label</span><span class="p">))</span>
+    <span class="c1"># Get the list of atom indexes associated with match_label. If such a list</span>
+    <span class="c1"># is not present in the detected dictionary yet, an empty list is assigned</span>
+    <span class="c1"># to the match_label key and returned. (Lookup setdefault in the Python</span>
+    <span class="c1"># docs if this is not clear.)</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">match_label</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="c1"># Add the current atom index to the list.</span>
+    <span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+<span class="c1"># 3) print out the detected atom types</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">indexes</span> <span class="ow">in</span> <span class="n">detected</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">indexes</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This script does not complain when some atoms could not be labeled.</p>
+</div>
+<div class="section" id="some-advanced-atom-types-in-dopamine">
+<h3>Some <cite>advanced</cite> atom types in dopamine<a class="headerlink" href="#some-advanced-atom-types-in-dopamine" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="detecting-aromatic-rings-in">
+<h3>Detecting aromatic rings in …<a class="headerlink" href="#detecting-aromatic-rings-in" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="detecting-benzene-fragments-in">
+<h3>Detecting benzene fragments in …<a class="headerlink" href="#detecting-benzene-fragments-in" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="all-five-membered-rings-in-a-zeolite-cluster">
+<h3>All five-membered rings in a zeolite cluster<a class="headerlink" href="#all-five-membered-rings-in-a-zeolite-cluster" title="Permalink to this headline">¶</a></h3>
+<p>In this example we show how one can identify all 5T rings (i.e. with 5 silicon
+and 5 oxygen atoms) in a zeolite cluster. We will use the following fragment of
+the MFI framework as a cluster model:</p>
+<img alt="../_images/mfi_fragment_small.png" src="../_images/mfi_fragment_small.png" />
+</div>
+<div class="section" id="restoring-consistent-atom-order">
+<h3>Restoring consistent atom order<a class="headerlink" href="#restoring-consistent-atom-order" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="problems">
+<h2>Problems<a class="headerlink" href="#problems" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="all-atom-types-in-dopamine">
+<h3>All atom types in dopamine<a class="headerlink" href="#all-atom-types-in-dopamine" title="Permalink to this headline">¶</a></h3>
+<p>Extend the script <code class="docutils literal notranslate"><span class="pre">b_dopamine_types.py</span></code> such that it recognizes also the
+following atom types:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">hcsp3</span></code>: hydrogens bonded to sp3 carbons</li>
+<li><code class="docutils literal notranslate"><span class="pre">hcsp2</span></code>: hydrogens bonded to sp2 carbons</li>
+<li><code class="docutils literal notranslate"><span class="pre">ooh</span></code>: hydroxyl oxygens</li>
+<li><code class="docutils literal notranslate"><span class="pre">nam</span></code>: amine nitrogen</li>
+<li><code class="docutils literal notranslate"><span class="pre">ham</span></code>: amine hydrogen</li>
+</ul>
+<p>Now the script should assign an atom type to every atom in dopamine.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Pattern-matching in molecular graphs</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#basic-atom-types-in-propane"><cite>Basic</cite> atom types in propane</a></li>
+<li><a class="reference internal" href="#some-basic-atom-types-in-dopamine">Some <cite>basic</cite> atom types in dopamine</a></li>
+<li><a class="reference internal" href="#some-advanced-atom-types-in-dopamine">Some <cite>advanced</cite> atom types in dopamine</a></li>
+<li><a class="reference internal" href="#detecting-aromatic-rings-in">Detecting aromatic rings in …</a></li>
+<li><a class="reference internal" href="#detecting-benzene-fragments-in">Detecting benzene fragments in …</a></li>
+<li><a class="reference internal" href="#all-five-membered-rings-in-a-zeolite-cluster">All five-membered rings in a zeolite cluster</a></li>
+<li><a class="reference internal" href="#restoring-consistent-atom-order">Restoring consistent atom order</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#problems">Problems</a><ul>
+<li><a class="reference internal" href="#all-atom-types-in-dopamine">All atom types in dopamine</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="internal_coordinates.html"
+                        title="previous chapter">Internal coordinates</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="applications.html"
+                        title="next chapter">Small MolMod applications</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/patterns.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="applications.html" title="Small MolMod applications"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="internal_coordinates.html" title="Internal coordinates"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="examples.html" >MolMod by example</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

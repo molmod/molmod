@@ -1,0 +1,2253 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Basic classes &#8212; MolMod 1.4.8 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Input/output" href="io.html" />
+    <link rel="prev" title="Units and constants" href="const.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="Input/output"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="const.html" title="Units and constants"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="basic-classes">
+<h1>Basic classes<a class="headerlink" href="#basic-classes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="molmod-molecules-molecular-systems">
+<h2><a class="reference internal" href="#module-molmod.molecules" title="molmod.molecules"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.molecules</span></code></a> – Molecular systems<a class="headerlink" href="#molmod-molecules-molecular-systems" title="Permalink to this headline">¶</a></h2>
+<p>Although the name of the class <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> is singular, it is equally
+suitable for a cluster or complex with multiple molecules, or even a complete
+unit cell of a periodic system.</p>
+<span class="target" id="module-molmod.molecules"></span><dl class="class">
+<dt id="molmod.molecules.Molecule">
+<em class="property">class </em><code class="descclassname">molmod.molecules.</code><code class="descname">Molecule</code><span class="sig-paren">(</span><em>numbers</em>, <em>coordinates=None</em>, <em>title=None</em>, <em>masses=None</em>, <em>graph=None</em>, <em>symbols=None</em>, <em>unit_cell=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecules.Molecule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extensible class for molecular systems.</p>
+<p>Most attributes of the molecule object are treated as constants. If you
+want to modify the molecular geometry, just create a modified molecule
+object with the method <a class="reference internal" href="internals.html#molmod.utils.ReadOnly.copy_with" title="molmod.utils.ReadOnly.copy_with"><code class="xref py py-meth docutils literal notranslate"><span class="pre">molmod.utils.ReadOnly.copy_with()</span></code></a>. This facilitates the caching of
+derived quantities such as the distance matrix, while it imposes a
+cleaner coding style without a signifacant computational overhead.</p>
+<dl class="docutils">
+<dt>Mandatory arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">numbers</span></code>  –  numpy array (1D, N elements) with the atomic numbers</div>
+</div>
+</dd>
+<dt>Optional keyword arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">coordinates</span></code>  –  numpy array (2D, Nx3 elements) Cartesian coordinates</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">title</span></code>  –  a string with the name of the molecule</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">massess</span></code>  –  a numpy array with atomic masses in atomic units</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  a MolecularGraph instance</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">symbols</span></code>  –  atomic elements or force-field atom-types</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">unit_cell</span></code>  –  the unit cell in case the system is periodic</div>
+</div>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="molmod.molecules.Molecule.chemical_formula">
+<code class="descname">chemical_formula</code><a class="headerlink" href="#molmod.molecules.Molecule.chemical_formula" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> the chemical formula of the molecule.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecules.Molecule.com">
+<code class="descname">com</code><a class="headerlink" href="#molmod.molecules.Molecule.com" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> the center of mass of the molecule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.molecules.Molecule.compute_rotsym">
+<code class="descname">compute_rotsym</code><span class="sig-paren">(</span><em>threshold=0.0018897261339212521</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecules.Molecule.compute_rotsym" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the rotational symmetry number.</p>
+<dl class="docutils">
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">threshold</span></code>  –  only when a rotation results in an rmsd below the given
+threshold, the rotation is considered to transform the
+molecule onto itself.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecules.Molecule.coordinates">
+<code class="descname">coordinates</code><a class="headerlink" href="#molmod.molecules.Molecule.coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> atomic Cartesian coordinates.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have shape (?, 3).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: the number of rows must be the same as the length of the array numbers.</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecules.Molecule.distance_matrix">
+<code class="descname">distance_matrix</code><a class="headerlink" href="#molmod.molecules.Molecule.distance_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> the matrix with all atom pair distances.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.molecules.Molecule.from_file">
+<em class="property">classmethod </em><code class="descname">from_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecules.Molecule.from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a molecule object read from the given file.</p>
+<p>The file format is inferred from the extensions. Currently supported
+formats are: <code class="docutils literal notranslate"><span class="pre">*.cml</span></code>, <code class="docutils literal notranslate"><span class="pre">*.fchk</span></code>, <code class="docutils literal notranslate"><span class="pre">*.pdb</span></code>, <code class="docutils literal notranslate"><span class="pre">*.sdf</span></code>, <code class="docutils literal notranslate"><span class="pre">*.xyz</span></code></p>
+<p>If a file contains more than one molecule, only the first one is
+read.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">filename</span></code>  –  the name of the file containing the molecule</div>
+</div>
+</dd>
+</dl>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mol</span> <span class="o">=</span> <span class="n">Molecule</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;foo.xyz&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecules.Molecule.graph">
+<code class="descname">graph</code><a class="headerlink" href="#molmod.molecules.Molecule.graph" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the molecular graph with the atom connectivity.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;class</span> <span class="pre">'molmod.molecular_graphs.MolecularGraph'&gt;</span></code></li>
+<li>Special conditions: the atomic numbers must match.</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecules.Molecule.inertia_tensor">
+<code class="descname">inertia_tensor</code><a class="headerlink" href="#molmod.molecules.Molecule.inertia_tensor" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> the intertia tensor of the molecule.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecules.Molecule.mass">
+<code class="descname">mass</code><a class="headerlink" href="#molmod.molecules.Molecule.mass" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> the total mass of the molecule.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecules.Molecule.masses">
+<code class="descname">masses</code><a class="headerlink" href="#molmod.molecules.Molecule.masses" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the atomic masses.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: the size must be the same as the length of the array numbers.</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecules.Molecule.numbers">
+<code class="descname">numbers</code><a class="headerlink" href="#molmod.molecules.Molecule.numbers" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the atomic numbers.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.signedinteger'&gt;</span></code>.</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.molecules.Molecule.rmsd">
+<code class="descname">rmsd</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecules.Molecule.rmsd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the RMSD between two molecules.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">other</span></code>  –  Another molecule with the same atom numbers</div>
+</div>
+</dd>
+<dt>Return values:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">transformation</span></code>  –  the transformation that brings ‘self’ into
+overlap with ‘other’</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">other_trans</span></code>  –  the transformed coordinates of geometry ‘other’</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rmsd</span></code>  –  the rmsd of the distances between corresponding atoms in
+‘self’ and ‘other’</div>
+</div>
+</dd>
+</dl>
+<p>Make sure the atoms in <cite>self</cite> and <cite>other</cite> are in the same order.</p>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">molecule1</span><span class="o">.</span><span class="n">rmsd</span><span class="p">(</span><span class="n">molecule2</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="n">angstrom</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.molecules.Molecule.set_default_graph">
+<code class="descname">set_default_graph</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecules.Molecule.set_default_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set self.graph to the default graph.</p>
+<p>This method is equivalent to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mol</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">MolecularGraph</span><span class="o">.</span><span class="n">from_geometry</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>with the default options, and only works if the graph object is not
+present yet.
+See <a class="reference internal" href="#molmod.molecular_graphs.MolecularGraph.from_geometry" title="molmod.molecular_graphs.MolecularGraph.from_geometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">molmod.molecular_graphs.MolecularGraph.from_geometry()</span></code></a>
+for more fine-grained control over the assignment of bonds.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.molecules.Molecule.set_default_masses">
+<code class="descname">set_default_masses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecules.Molecule.set_default_masses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set self.masses based on self.numbers and periodic table.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.molecules.Molecule.set_default_symbols">
+<code class="descname">set_default_symbols</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecules.Molecule.set_default_symbols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set self.symbols based on self.numbers and the periodic table.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecules.Molecule.size">
+<code class="descname">size</code><a class="headerlink" href="#molmod.molecules.Molecule.size" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the number of atoms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecules.Molecule.symbols">
+<code class="descname">symbols</code><a class="headerlink" href="#molmod.molecules.Molecule.symbols" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> symbols for the atoms, which can be element names for force-field atom types.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'tuple'&gt;</span></code></li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecules.Molecule.title">
+<code class="descname">title</code><a class="headerlink" href="#molmod.molecules.Molecule.title" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> a short description of the system.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'str'&gt;</span></code></li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecules.Molecule.unit_cell">
+<code class="descname">unit_cell</code><a class="headerlink" href="#molmod.molecules.Molecule.unit_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> description of the periodic boundary conditions.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;class</span> <span class="pre">'molmod.unit_cells.UnitCell'&gt;</span></code></li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.molecules.Molecule.write_to_file">
+<code class="descname">write_to_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecules.Molecule.write_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the molecular geometry to a file.</p>
+<p>The file format is inferred from the extensions. Currently supported
+formats are: <code class="docutils literal notranslate"><span class="pre">*.xyz</span></code>, <code class="docutils literal notranslate"><span class="pre">*.cml</span></code></p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">filename</span></code>  –  a filename</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-molmod.graphs">
+<span id="molmod-graphs-abstract-graphs"></span><h2><a class="reference internal" href="#module-molmod.graphs" title="molmod.graphs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.graphs</span></code></a> – Abstract graphs<a class="headerlink" href="#module-molmod.graphs" title="Permalink to this headline">¶</a></h2>
+<p>Some distinctive features include:</p>
+<ul class="simple">
+<li>Iterating over all shortest paths between two vertices (Dijkstra). See
+<a class="reference external" href="http://en.wikipedia.org/wiki/Dijkstra's_algorithm">http://en.wikipedia.org/wiki/Dijkstra’s_algorithm</a> for more info.</li>
+<li>Iterating over vertices or edges using the Breadth First convention. See
+<a class="reference external" href="http://en.wikipedia.org/wiki/Breadth-first_search">http://en.wikipedia.org/wiki/Breadth-first_search</a> for more info.</li>
+<li>The all pairs shortest path matrix (Floyd-Warshall). See
+<a class="reference external" href="http://en.wikipedia.org/wiki/Floyd-Warshall_algorithm">http://en.wikipedia.org/wiki/Floyd-Warshall_algorithm</a> for more info.</li>
+<li>Symmetry analysis of graphs (automorphisms). The Graph class can generate a
+list of permutations between vertices that map the graph onto itself. This
+can be used to generate (and test) all possible geometric symmetries in a
+molecule. See <a class="reference external" href="http://en.wikipedia.org/wiki/Graph_automorphism">http://en.wikipedia.org/wiki/Graph_automorphism</a> for more
+info.</li>
+<li>Scanning a graph for patterns.
+The GraphSearch is a generic class that can scan a graph for certain
+patterns, e.g. given pattern_graphs, strong rings, isomorphisms,
+automorphisms, … The pattern_graph can deal with (multiple sets of)
+additional conditions that must be satisfied, such as “give me all
+dihedral angles where the central atoms are carbons” without duplicates.</li>
+</ul>
+<p>The central class in this module is ‘Graph’. It caches most of the analysis
+results, which implies that the graph structure can not be changed once the
+object is created. If you feel the need to do this, just construct a new
+graph object.</p>
+<dl class="exception">
+<dt id="molmod.graphs.GraphError">
+<em class="property">exception </em><code class="descclassname">molmod.graphs.</code><code class="descname">GraphError</code><a class="headerlink" href="#molmod.graphs.GraphError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when something goes wrong in one of the graph algorithms</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.Graph">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">Graph</code><span class="sig-paren">(</span><em>edges</em>, <em>num_vertices=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>An undirected graph, where edges have equal weight</p>
+<p>The edges attribute is the most elementary and is always available. All
+other attributes are optional.</p>
+<p>Graphs are meant to be immutable objects. Once created they are not
+supposed to be modified. If you want an adapted graph, create a new
+object. The main reason is that all graph analysis work is cached in this
+object. When the edges change, the cache becomes invalid and should be
+erased. The latter is not supported as it is easier to create just a new
+graph object with the modified edges.</p>
+<p>If you want to associate data with vertices or edges, add custom
+dictionary or list attributes to the graph object. This is the way to
+work attributes that are not applicable to all vertices or edges:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">graph</span><span class="o">.</span><span class="n">vertex_property</span> <span class="o">=</span> <span class="p">{</span><span class="n">vertex1</span><span class="p">:</span> <span class="n">blablabla</span><span class="p">,</span> <span class="n">vertex2</span><span class="p">:</span> <span class="n">blablabla</span><span class="p">,</span> <span class="o">...</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">graph</span><span class="o">.</span><span class="n">edge_property</span> <span class="o">=</span> <span class="p">{</span><span class="nb">frozenset</span><span class="p">([</span><span class="n">vertex1</span><span class="p">,</span> <span class="n">vertex2</span><span class="p">]):</span> <span class="n">blablabla</span><span class="p">,</span> <span class="o">..</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>If a certain property applies to all vertices or edges, it is sometimes
+more practical to work with lists or <code class="docutils literal notranslate"><span class="pre">numpy</span></code> arrays that have the same
+ordering as the vertices or the edges:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># atom numbers of ethene</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">graph</span><span class="o">.</span><span class="n">vertex_property</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># bond orders of ethene</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">graph</span><span class="o">.</span><span class="n">edge_property</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">edges</span></code> – <code class="docutils literal notranslate"><span class="pre">tuple(frozenset([vertex1,</span> <span class="pre">vertex2]),</span> <span class="pre">...)</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">num_vertices</span></code> – number of vertices</div>
+</div>
+</dd>
+</dl>
+<p>vertex1 to vertexN must be integers from 0 to N-1. If vertices above
+the highest vertex value are not connected by edges, use the
+num_vertices argument to tell what the total number of vertices is.</p>
+<p>If the edges argument does not have the correct format, it will be
+converted.</p>
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.canonical_order">
+<code class="descname">canonical_order</code><a class="headerlink" href="#molmod.graphs.Graph.canonical_order" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The vertices in a canonical or normalized order..</p>
+<p>This routine will return a list of vertices in an order that does not
+depend on the initial order, but only depends on the connectivity and
+the return values of the function self.get_vertex_string.</p>
+<p>Only the vertices that are involved in edges will be included. The
+result can be given as first argument to self.get_subgraph, with
+reduce=True as second argument. This will return a complete canonical
+graph.</p>
+<p>The routine is designed not to use symmetry relations that are
+obtained with the GraphSearch routine. We also tried to create an
+ordering that feels like natural, i.e. starting in the center and
+pushing vertices with few equivalents to the front. If necessary, the
+nature of the vertices and  their bonds to atoms closer to the center
+will also play a role, but only as a last resort.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.central_vertex">
+<code class="descname">central_vertex</code><a class="headerlink" href="#molmod.graphs.Graph.central_vertex" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The vertex that has the lowest maximum distance to any other vertex.</p>
+<p>This definition does not lead to a unique solution. One arbitrary
+solution is selected.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.central_vertices">
+<code class="descname">central_vertices</code><a class="headerlink" href="#molmod.graphs.Graph.central_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> Vertices that have the lowest maximum distance to any other vertex.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.distances">
+<code class="descname">distances</code><a class="headerlink" href="#molmod.graphs.Graph.distances" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The matrix with the all-pairs shortest path lenghts.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.edge_index">
+<code class="descname">edge_index</code><a class="headerlink" href="#molmod.graphs.Graph.edge_index" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> A map to look up the index of a edge.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.edges">
+<code class="descname">edges</code><a class="headerlink" href="#molmod.graphs.Graph.edges" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the incidence list.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'tuple'&gt;</span></code></li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.equivalent_vertices">
+<code class="descname">equivalent_vertices</code><a class="headerlink" href="#molmod.graphs.Graph.equivalent_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> A dictionary with symmetrically equivalent vertices..</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.fingerprint">
+<code class="descname">fingerprint</code><a class="headerlink" href="#molmod.graphs.Graph.fingerprint" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> A total graph fingerprint.</p>
+<p>The result is invariant under permutation of the vertex indexes. The
+chance that two different (molecular) graphs yield the same
+fingerprint is small but not zero. (See unit tests.)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Graph.full_match">
+<code class="descname">full_match</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Graph.full_match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the mapping between vertex indexes in self and other.</p>
+<p>This also works on disconnected graphs. Derived classes should just
+implement get_vertex_string and get_edge_string to make this method
+aware of the different nature of certain vertices. In case molecules,
+this would make the algorithm sensitive to atom numbers etc.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Graph.get_edge_string">
+<code class="descname">get_edge_string</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Graph.get_edge_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string that fully characterizes the nature of an edge</p>
+<p>In case of an ordinary graph, all edges are the same.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Graph.get_halfs">
+<code class="descname">get_halfs</code><span class="sig-paren">(</span><em>vertex1</em>, <em>vertex2</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Graph.get_halfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split the graph in two halfs by cutting the edge: vertex1-vertex2</p>
+<p>If this is not possible (due to loops connecting both ends), a
+GraphError is raised.</p>
+<p>Returns the vertices in both halfs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Graph.get_halfs_double">
+<code class="descname">get_halfs_double</code><span class="sig-paren">(</span><em>vertex_a1</em>, <em>vertex_b1</em>, <em>vertex_a2</em>, <em>vertex_b2</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Graph.get_halfs_double" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the two parts separated by <code class="docutils literal notranslate"><span class="pre">(vertex_a1,</span> <span class="pre">vertex_b1)</span></code> and <code class="docutils literal notranslate"><span class="pre">(vertex_a2,</span> <span class="pre">vertex_b2)</span></code></p>
+<p>Raise a GraphError when <code class="docutils literal notranslate"><span class="pre">(vertex_a1,</span> <span class="pre">vertex_b1)</span></code> and
+<code class="docutils literal notranslate"><span class="pre">(vertex_a2,</span> <span class="pre">vertex_b2)</span></code> do not separate the graph in two
+disconnected parts. The edges must be neighbors. If not a GraphError
+is raised. The for vertices must not coincide or a GraphError is
+raised.</p>
+<p>Returns the vertices of the two halfs and the four ‘hinge’ vertices
+in the correct order, i.e. both <code class="docutils literal notranslate"><span class="pre">vertex_a1</span></code> and <code class="docutils literal notranslate"><span class="pre">vertex_a2</span></code> are
+in the first half and both <code class="docutils literal notranslate"><span class="pre">vertex_b1</span></code> and <code class="docutils literal notranslate"><span class="pre">vertex_b2</span></code> are in the
+second half.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Graph.get_part">
+<code class="descname">get_part</code><span class="sig-paren">(</span><em>vertex_in</em>, <em>vertices_border</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Graph.get_part" title="Permalink to this definition">¶</a></dt>
+<dd><p>List all vertices that are connected to vertex_in, but are not
+included in or ‘behind’ vertices_border.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Graph.get_subgraph">
+<code class="descname">get_subgraph</code><span class="sig-paren">(</span><em>subvertices</em>, <em>normalize=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Graph.get_subgraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a subgraph of the current graph</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">subvertices</span></code> – The vertices that should be retained.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">normalize</span></code> – Whether or not the vertices should renumbered and
+reduced to the given set of subvertices. When True, also the
+edges are sorted. It the end, this means that new order of the
+edges does not depend on the original order, but only on the
+order of the argument subvertices.
+This option is False by default. When False, only edges will be
+discarded, but the retained data remain unchanged. Also the
+parameter num_vertices is not affected.</div>
+</div>
+</dd>
+</dl>
+<p>The returned graph will have an attribute <code class="docutils literal notranslate"><span class="pre">old_edge_indexes</span></code> that
+relates the positions of the new and the old edges as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">result</span><span class="o">.</span><span class="n">_old_edge_indexes</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>In derived classes, the following should be supported:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="bp">self</span><span class="o">.</span><span class="n">edge_property</span><span class="p">[</span><span class="n">result</span><span class="o">.</span><span class="n">_old_edge_indexes</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">edge_property</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>When <code class="docutils literal notranslate"><span class="pre">normalize==True</span></code>, also the vertices are affected and the
+derived classes should make sure that the following works:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="bp">self</span><span class="o">.</span><span class="n">vertex_property</span><span class="p">[</span><span class="n">result</span><span class="o">.</span><span class="n">_old_vertex_indexes</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">vertex_property</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The attribute <code class="docutils literal notranslate"><span class="pre">old_vertex_indexes</span></code> is only constructed when
+<code class="docutils literal notranslate"><span class="pre">normalize==True</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Graph.get_vertex_fingerprints">
+<code class="descname">get_vertex_fingerprints</code><span class="sig-paren">(</span><em>vertex_strings</em>, <em>edge_strings</em>, <em>num_iter=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Graph.get_vertex_fingerprints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an array with fingerprints for each vertex</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Graph.get_vertex_string">
+<code class="descname">get_vertex_string</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Graph.get_vertex_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string that fully characterizes the nature of the vertex</p>
+<p>In case of an ordinary graph, all vertices are the same.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.independent_vertices">
+<code class="descname">independent_vertices</code><a class="headerlink" href="#molmod.graphs.Graph.independent_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> Lists of vertices that are only interconnected within each list.</p>
+<p>This means that there is no path from a vertex in one list to a
+vertex in another list. In case of a molecular graph, this would
+yield the atoms that belong to individual molecules.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Graph.iter_breadth_first">
+<code class="descname">iter_breadth_first</code><span class="sig-paren">(</span><em>start=None</em>, <em>do_paths=False</em>, <em>do_duplicates=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Graph.iter_breadth_first" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over the vertices with the breadth first algorithm.</p>
+<p>See <a class="reference external" href="http://en.wikipedia.org/wiki/Breadth-first_search">http://en.wikipedia.org/wiki/Breadth-first_search</a> for more info.
+If not start vertex is given, the central vertex is taken.</p>
+<p>By default, the distance to the starting vertex is also computed. If
+the path to the starting vertex should be computed instead, set path
+to True.</p>
+<p>When duplicate is True, then vertices that can be reached through
+different  paths of equal length, will be iterated twice. This
+typically only makes sense when path==True.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Graph.iter_breadth_first_edges">
+<code class="descname">iter_breadth_first_edges</code><span class="sig-paren">(</span><em>start=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Graph.iter_breadth_first_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over the edges with the breadth first convention.</p>
+<p>We need this for the pattern matching algorithms, but a quick look at
+Wikipedia did not result in a known and named algorithm.</p>
+<p>The edges are yielded one by one, together with the distance of the
+edge from the starting vertex and a flag that indicates whether the
+yielded edge connects two vertices that are at the same distance from
+the starting vertex. If that flag is False, the distance from the
+starting vertex to edge[0] is equal to the distance variable and the
+distance from edge[1] to the starting vertex is equal to distance+1.
+One item has the following format: ((i, j), distance, flag)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Graph.iter_shortest_paths">
+<code class="descname">iter_shortest_paths</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Graph.iter_shortest_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over all the shortest paths between vertex a and b.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.max_distance">
+<code class="descname">max_distance</code><a class="headerlink" href="#molmod.graphs.Graph.max_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The maximum value in the distances matrix..</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.neighbors">
+<code class="descname">neighbors</code><a class="headerlink" href="#molmod.graphs.Graph.neighbors" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> A dictionary with neighbors.</p>
+<p>The dictionary will have the following form:
+<code class="docutils literal notranslate"><span class="pre">{vertexX:</span> <span class="pre">(vertexY1,</span> <span class="pre">vertexY2,</span> <span class="pre">...),</span> <span class="pre">...}</span></code>
+This means that vertexX and vertexY1 are connected etc. This also
+implies that the following elements are part of the dictionary:
+<code class="docutils literal notranslate"><span class="pre">{vertexY1:</span> <span class="pre">(vertexX,</span> <span class="pre">...),</span> <span class="pre">vertexY2:</span> <span class="pre">(vertexX,</span> <span class="pre">...),</span> <span class="pre">...}</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.num_edges">
+<code class="descname">num_edges</code><a class="headerlink" href="#molmod.graphs.Graph.num_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the number of edges in the graph.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.num_vertices">
+<code class="descname">num_vertices</code><a class="headerlink" href="#molmod.graphs.Graph.num_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the number of vertices.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'int'&gt;</span></code></li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.symmetries">
+<code class="descname">symmetries</code><a class="headerlink" href="#molmod.graphs.Graph.symmetries" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> Graph symmetries (permutations) that map the graph onto itself..</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.symmetry_cycles">
+<code class="descname">symmetry_cycles</code><a class="headerlink" href="#molmod.graphs.Graph.symmetry_cycles" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The cycle representations of the graph symmetries.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Graph.vertex_fingerprints">
+<code class="descname">vertex_fingerprints</code><a class="headerlink" href="#molmod.graphs.Graph.vertex_fingerprints" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> A fingerprint for each vertex.</p>
+<p>The result is invariant under permutation of the vertex indexes.
+Vertices that are symmetrically equivalent will get the same
+fingerprint, e.g. the hydrogens in methane would get the same
+fingerprint.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.OneToOne">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">OneToOne</code><span class="sig-paren">(</span><em>relations=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.OneToOne" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements a discrete bijection between source and destination elements</p>
+<p>The implementation is based on a consistent set of forward and reverse
+relations, stored in dictionaries.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">relations</span></code>  –  initial relations for the bijection</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.graphs.OneToOne.add_relation">
+<code class="descname">add_relation</code><span class="sig-paren">(</span><em>source</em>, <em>destination</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.OneToOne.add_relation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add new a relation to the bejection</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.OneToOne.add_relations">
+<code class="descname">add_relations</code><span class="sig-paren">(</span><em>relations</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.OneToOne.add_relations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add multiple relations to a bijection</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.OneToOne.get_destination">
+<code class="descname">get_destination</code><span class="sig-paren">(</span><em>source</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.OneToOne.get_destination" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the end point of a relation that start with ‘source’</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.OneToOne.get_source">
+<code class="descname">get_source</code><span class="sig-paren">(</span><em>destination</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.OneToOne.get_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the starting point of a relation that ends with ‘destination’</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.OneToOne.in_destinations">
+<code class="descname">in_destinations</code><span class="sig-paren">(</span><em>destination</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.OneToOne.in_destinations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if the given destination is present</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.OneToOne.in_sources">
+<code class="descname">in_sources</code><span class="sig-paren">(</span><em>source</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.OneToOne.in_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if the given source is present</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.OneToOne.inverse">
+<code class="descname">inverse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.OneToOne.inverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the inverse bijection.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.Match">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">Match</code><span class="sig-paren">(</span><em>relations=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Match" title="Permalink to this definition">¶</a></dt>
+<dd><p>A match between a pattern and a graph</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">relations</span></code>  –  initial relations for the bijection</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.graphs.Match.copy_with_new_relations">
+<code class="descname">copy_with_new_relations</code><span class="sig-paren">(</span><em>new_relations</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Match.copy_with_new_relations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new match object extended with new relations</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.graphs.Match.from_first_relation">
+<em class="property">classmethod </em><code class="descname">from_first_relation</code><span class="sig-paren">(</span><em>vertex0</em>, <em>vertex1</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Match.from_first_relation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Intialize a fresh match based on the first relation</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Match.get_new_edges">
+<code class="descname">get_new_edges</code><span class="sig-paren">(</span><em>subject_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Match.get_new_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get new edges from the subject graph for the graph search algorithm</p>
+<p>The Graph search algorithm extends the matches iteratively by adding
+matching vertices that are one edge further from the starting vertex
+at each iteration.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.Pattern">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">Pattern</code><a class="headerlink" href="#molmod.graphs.Pattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for a pattern in a graph.</p>
+<p>Note the following conventions:</p>
+<ul class="simple">
+<li>A pattern can always be represented by a graph (or a set of graphs)
+and some additional conditions. This graph is the so called ‘PATTERN
+GRAPH’. For technical reasons, this pattern graph is not always
+constructed explicitly. Variables related to this graph often get
+suffix ‘0’. Note that a pattern graph is always fully connected.</li>
+<li>The graph in which we search for the pattern, is called the ‘SUBJECT
+GRAPH’. Variables related to this graph often get suffix ‘1’.</li>
+</ul>
+<dl class="attribute">
+<dt id="molmod.graphs.Pattern.MatchClass">
+<code class="descname">MatchClass</code><a class="headerlink" href="#molmod.graphs.Pattern.MatchClass" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#molmod.graphs.Match" title="molmod.graphs.Match"><code class="xref py py-class docutils literal notranslate"><span class="pre">Match</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Pattern.check_next_match">
+<code class="descname">check_next_match</code><span class="sig-paren">(</span><em>match</em>, <em>new_relations</em>, <em>subject_graph</em>, <em>one_match</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Pattern.check_next_match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does this match object make sense for the current pattern</p>
+<p>Return False if some symmetry or other considerations are not
+satisfied. The checks in this function are typically only possible by
+considering the whole instead of looking just at a few
+vertices/edges/relations.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Pattern.check_symmetry">
+<code class="descname">check_symmetry</code><span class="sig-paren">(</span><em>new_relations</em>, <em>current_match</em>, <em>next_match</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Pattern.check_symmetry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Off all symmetric <code class="docutils literal notranslate"><span class="pre">new_relations</span></code>, only allow one</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Pattern.compare">
+<code class="descname">compare</code><span class="sig-paren">(</span><em>vertex0</em>, <em>vertex1</em>, <em>subject_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Pattern.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if <code class="docutils literal notranslate"><span class="pre">vertex0</span></code> and <code class="docutils literal notranslate"><span class="pre">vertex1</span></code> can be equal</p>
+<p>False positives are allowed, but the less false positives, the more
+efficient the <a class="reference internal" href="#molmod.graphs.GraphSearch" title="molmod.graphs.GraphSearch"><code class="xref py py-class docutils literal notranslate"><span class="pre">GraphSearch</span></code></a> will be.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Pattern.complete">
+<code class="descname">complete</code><span class="sig-paren">(</span><em>match</em>, <em>subject_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Pattern.complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if no more additional relations are required</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Pattern.get_new_edges">
+<code class="descname">get_new_edges</code><span class="sig-paren">(</span><em>level</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Pattern.get_new_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get new edges from the pattern graph for the graph search algorithm</p>
+<p>The level argument denotes the distance of the new edges from the
+starting vertex in the pattern graph.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Pattern.iter_final_matches">
+<code class="descname">iter_final_matches</code><span class="sig-paren">(</span><em>match</em>, <em>subject_graph</em>, <em>one_match</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Pattern.iter_final_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Just return the original match</p>
+<p>Derived classes can specialize here to make efficient use of
+symmetries</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.Pattern.iter_initial_relations">
+<code class="descname">iter_initial_relations</code><span class="sig-paren">(</span><em>subject_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Pattern.iter_initial_relations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over all initial relations to start a Graph Search</p>
+<p>The function iterates of single relations between a pattern vertex
+and a subject vertex. In practice it is sufficient to select one
+vertex in the pattern and then associate it with each (reasonable)
+vertex in the subject graph.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.Pattern.sub">
+<code class="descname">sub</code><em class="property"> = True</em><a class="headerlink" href="#molmod.graphs.Pattern.sub" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.CriteriaSet">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">CriteriaSet</code><span class="sig-paren">(</span><em>vertex_criteria=None</em>, <em>edge_criteria=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CriteriaSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of criteria that can be associated with a custum pattern.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">vertex_criteria</span></code>  –  a dictionary with criteria for the
+vertices, <code class="docutils literal notranslate"><span class="pre">key=vertex_index</span></code>,
+<code class="docutils literal notranslate"><span class="pre">value=criterion</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">edge_criteria</span></code>  –  a dictionary with criteria for the edges
+<code class="docutils literal notranslate"><span class="pre">key=edge_index</span></code>, <code class="docutils literal notranslate"><span class="pre">value=criterion</span></code></div>
+</div>
+</dd>
+</dl>
+<p>Any other keyword argument will be assigned as attribute to matches
+that fulfill the criteria of this set.</p>
+<dl class="method">
+<dt id="molmod.graphs.CriteriaSet.test_match">
+<code class="descname">test_match</code><span class="sig-paren">(</span><em>match</em>, <em>pattern_graph</em>, <em>subject_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CriteriaSet.test_match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if a match satisfies the criteria</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.Anything">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">Anything</code><a class="headerlink" href="#molmod.graphs.Anything" title="Permalink to this definition">¶</a></dt>
+<dd><p>A criterion that always returns True</p>
+<dl class="method">
+<dt id="molmod.graphs.Anything.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>index</em>, <em>subject_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.Anything.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Always returns True</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.CritOr">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">CritOr</code><span class="sig-paren">(</span><em>*criteria</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CritOr" title="Permalink to this definition">¶</a></dt>
+<dd><p>OR Operator for criteria objects</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">criteria</span></code>  –  a list of criteria to apply the OR operation to.</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.graphs.CritOr.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>index</em>, <em>graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CritOr.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates all the criteria and applies an OR opartion</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">index</span></code>  –  the index of the vertex/edge on which the criterion
+is applied</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  the graph on which the criterion is tested</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.CritAnd">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">CritAnd</code><span class="sig-paren">(</span><em>*criteria</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CritAnd" title="Permalink to this definition">¶</a></dt>
+<dd><p>AND Operator for criteria objects</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">criteria</span></code>  –  a list of criteria to apply the AND operation to</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.graphs.CritAnd.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>index</em>, <em>graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CritAnd.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates all the criteria and applies an AND opartion</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">index</span></code>  –  the index of the vertex/edge on which the criterion
+is applied</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  the graph on which the criterion is tested</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.CritXor">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">CritXor</code><span class="sig-paren">(</span><em>*criteria</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CritXor" title="Permalink to this definition">¶</a></dt>
+<dd><p>XOR Operator for criteria objects</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">criteria</span></code>  –  a list of criteria to apply the XOR operation to.</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.graphs.CritXor.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>index</em>, <em>graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CritXor.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates all the criteria and applies a generalized XOR opartion</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">index</span></code>  –  the index of the vertex/edge on which the criterion
+is applied</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  the graph on which the criterion is tested</div>
+</div>
+</dd>
+</dl>
+<p>when the XOR operation is applied to more than two criteria, True
+is only returned when an odd number of criteria return True.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.CritNot">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">CritNot</code><span class="sig-paren">(</span><em>criterion</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CritNot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverion of another criterion</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">criterion</span></code>  –  another criterion object</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.graphs.CritNot.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>index</em>, <em>graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CritNot.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates all the criterion and applies an inversion opartion</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">index</span></code>  –  the index of the vertex/edge on which the criterion is
+applied</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  the graph on which the criterion is tested</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.CustomPattern">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">CustomPattern</code><span class="sig-paren">(</span><em>pattern_graph</em>, <em>criteria_sets=None</em>, <em>vertex_tags=None</em>, <em>start_vertex=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CustomPattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>A pattern based on a given pattern graph</p>
+<p>The pattern graph can be complemented with additional criteria for the
+vertices and edges. Additionally the effective symmetry of the pattern
+graph can be reduced by tagging the vertices in the pattern graph with
+different labels.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">pattern_graph</span></code> – the pattern that has to be found in the subject
+graph.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">criteria_sets</span></code> – Criteria sets associate additional conditions
+with vertices and edges, and can also introduce
+global match conditions.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">vertex_tags</span></code> – vertex tags can reduce the symmetry of the
+pattern_graph pattern. An example case where this is useful:
+Consider atoms 0, 1, 2 that are bonded in this order. We want to
+compute the distance from atom 2 to the line (0, 1). In this case
+the matches (0-&gt;a, 1-&gt;b, 2-&gt;c) and (0-&gt;c, 1-&gt;b, 2-&gt;a) correspond
+to different internal coordinates. We want the graph search to
+return the two solutions. In order to do this, set
+<code class="docutils literal notranslate"><span class="pre">vertex_tags={0:0,</span> <span class="pre">1:0,</span> <span class="pre">2:1}</span></code>. This means that vertex 0 and 1
+are equivalent, but that vertex 2 has a different nature. In the
+case of a bending angle, only one match like (0-&gt;a, 1-&gt;b, 2-&gt;c) is
+sufficient and we do not want to reduce the symmetry of the
+<code class="docutils literal notranslate"><span class="pre">pattern_graph</span></code>. In this case, one should not use vertex_tags at
+all.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">start_vertex</span></code>  –  The first vertex in the pattern graph that is
+linked with a vertex in the subject graph. A wise choice can
+improve the performance of a graph search. If not given, the
+central vertex is take as start_vertex</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.graphs.CustomPattern.check_next_match">
+<code class="descname">check_next_match</code><span class="sig-paren">(</span><em>match</em>, <em>new_relations</em>, <em>subject_graph</em>, <em>one_match</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CustomPattern.check_next_match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the (onset for a) match can be a valid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.CustomPattern.complete">
+<code class="descname">complete</code><span class="sig-paren">(</span><em>match</em>, <em>subject_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CustomPattern.complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True of the match is complete</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.CustomPattern.get_new_edges">
+<code class="descname">get_new_edges</code><span class="sig-paren">(</span><em>level</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CustomPattern.get_new_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get new edges from the pattern graph for the graph search algorithm</p>
+<p>The level argument denotes the distance of the new edges from the
+starting vertex in the pattern graph.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.CustomPattern.iter_final_matches">
+<code class="descname">iter_final_matches</code><span class="sig-paren">(</span><em>canonical_match</em>, <em>subject_graph</em>, <em>one_match</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CustomPattern.iter_final_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a match, iterate over all related equivalent matches</p>
+<p>When criteria sets are defined, the iterator runs over all symmetric
+equivalent matches that fulfill one of the criteria sets. When not
+criteria sets are defined, the iterator only yields the input match.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.CustomPattern.iter_initial_relations">
+<code class="descname">iter_initial_relations</code><span class="sig-paren">(</span><em>subject_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.CustomPattern.iter_initial_relations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over all valid initial relations for a match</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.EqualPattern">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">EqualPattern</code><span class="sig-paren">(</span><em>pattern_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.EqualPattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Like CustomPattern, but the pattern has the same size as the subject graph</p>
+<p>See <code class="xref py py-meth docutils literal notranslate"><span class="pre">CustomPattern.__init__()</span></code></p>
+<dl class="attribute">
+<dt id="molmod.graphs.EqualPattern.MatchClass">
+<code class="descname">MatchClass</code><a class="headerlink" href="#molmod.graphs.EqualPattern.MatchClass" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">EqualMatch</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.EqualPattern.compare">
+<code class="descname">compare</code><span class="sig-paren">(</span><em>vertex0</em>, <em>vertex1</em>, <em>subject_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.EqualPattern.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true when the two vertices are of the same kind</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.EqualPattern.iter_initial_relations">
+<code class="descname">iter_initial_relations</code><span class="sig-paren">(</span><em>subject_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.EqualPattern.iter_initial_relations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over all valid initial relations for a match</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.graphs.EqualPattern.sub">
+<code class="descname">sub</code><em class="property"> = False</em><a class="headerlink" href="#molmod.graphs.EqualPattern.sub" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.RingPattern">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">RingPattern</code><span class="sig-paren">(</span><em>max_size</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.RingPattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>A pattern that matches strong rings up to a given size</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">max_size</span></code>  –  the maximum number of vertices in a ring</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.graphs.RingPattern.check_next_match">
+<code class="descname">check_next_match</code><span class="sig-paren">(</span><em>match</em>, <em>new_relations</em>, <em>subject_graph</em>, <em>one_match</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.RingPattern.check_next_match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the (onset for a) match can be a valid (part of a) ring</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.RingPattern.complete">
+<code class="descname">complete</code><span class="sig-paren">(</span><em>match</em>, <em>subject_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.RingPattern.complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the completeness of a ring match</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.RingPattern.get_new_edges">
+<code class="descname">get_new_edges</code><span class="sig-paren">(</span><em>level</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.RingPattern.get_new_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get new edges from the pattern graph for the graph search algorithm</p>
+<p>The level argument denotes the distance of the new edges from the
+starting vertex in the pattern graph.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.RingPattern.iter_initial_relations">
+<code class="descname">iter_initial_relations</code><span class="sig-paren">(</span><em>subject_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.RingPattern.iter_initial_relations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over all valid initial relations for a match</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.graphs.GraphSearch">
+<em class="property">class </em><code class="descclassname">molmod.graphs.</code><code class="descname">GraphSearch</code><span class="sig-paren">(</span><em>pattern</em>, <em>debug=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.GraphSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>An algorithm that searches for all matches of a pattern in a graph</p>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gs</span> <span class="o">=</span> <span class="n">GraphSearch</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">gs</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="nb">print</span> <span class="n">match</span><span class="o">.</span><span class="n">forward</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">pattern</span></code>  –  A Pattern instance, describing the pattern to
+look for</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">debug</span></code>  –  When true, debugging info is printed on screen
+[default=False]</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.graphs.GraphSearch.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>subject_graph</em>, <em>one_match=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.GraphSearch.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterator over all matches of self.pattern in the given graph.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">subject_graph  –  The subject_graph in which the matches
+according to self.pattern have to be found.</div>
+<div class="line">one_match –  If True, only one match will be returned. This
+allows certain optimizations.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.graphs.GraphSearch.print_debug">
+<code class="descname">print_debug</code><span class="sig-paren">(</span><em>text</em>, <em>indent=0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.graphs.GraphSearch.print_debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Only prints debug info on screen when self.debug == True.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="molmod-molecular-graphs-molecular-graphs">
+<h2><a class="reference internal" href="#module-molmod.molecular_graphs" title="molmod.molecular_graphs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.molecular_graphs</span></code></a> – Molecular graphs<a class="headerlink" href="#molmod-molecular-graphs-molecular-graphs" title="Permalink to this headline">¶</a></h2>
+<p>This is an extension of the Graph object with molecular features.</p>
+<span class="target" id="module-molmod.molecular_graphs"></span><dl class="class">
+<dt id="molmod.molecular_graphs.MolecularGraph">
+<em class="property">class </em><code class="descclassname">molmod.molecular_graphs.</code><code class="descname">MolecularGraph</code><span class="sig-paren">(</span><em>edges</em>, <em>numbers</em>, <em>orders=None</em>, <em>symbols=None</em>, <em>num_vertices=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.MolecularGraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Describes a molecular graph: connectivity, atom numbers and bond orders.</p>
+<p>This class inherits all features from the Graph class and adds methods
+and attributes that are specific from molecular graphs. Instances are
+immutable, so if you want to modify a molecular graph, just instantiate a
+new object with modified connectivity, numbers and orders. The advantage
+is that various graph analysis and properties can be cached.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">edges</span></code>  –  See base class (Graph) documentation</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">numbers</span></code>  –  consecutive atom numbers</div>
+</div>
+</dd>
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">orders</span></code>  –  bond orders</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">symbols</span></code>  –  atomic symbols</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">num_vertices</span></code>  –  must be the same as the number of atoms or None</div>
+</div>
+</dd>
+</dl>
+<p>When the nature of an atom or a bond is unclear ambiguous, set the
+corresponding integer to zero. This means the nature of the atom or
+bond is unspecified. When the bond orders are not given, they are all
+set to  zero.</p>
+<p>If you want to use ‘special’ atom types, use negative numbers. The
+same for bond orders. e.g. a nice choice for the bond order of a
+hybrid bond is -1.</p>
+<dl class="method">
+<dt id="molmod.molecular_graphs.MolecularGraph.add_hydrogens">
+<code class="descname">add_hydrogens</code><span class="sig-paren">(</span><em>formal_charges=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.MolecularGraph.add_hydrogens" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a molecular graph where hydrogens are added explicitely</p>
+<p>When the bond order is unknown, it assumes bond order one. If the
+graph  has an attribute formal_charges, this routine will take it
+into account when counting the number of hydrogens to be added. The
+returned graph will also have a formal_charges attribute.</p>
+<p>This routine only adds hydrogen atoms for a limited set of atoms from
+the periodic system: B, C, N, O, F, Al, Si, P, S, Cl, Br.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecular_graphs.MolecularGraph.blob">
+<code class="descname">blob</code><a class="headerlink" href="#molmod.molecular_graphs.MolecularGraph.blob" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> A compact text representation of the graph.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecular_graphs.MolecularGraph.edges">
+<code class="descname">edges</code><a class="headerlink" href="#molmod.molecular_graphs.MolecularGraph.edges" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the incidence list.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'tuple'&gt;</span></code></li>
+</ul>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.molecular_graphs.MolecularGraph.from_blob">
+<em class="property">classmethod </em><code class="descname">from_blob</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.MolecularGraph.from_blob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a molecular graph from the blob representation</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.molecular_graphs.MolecularGraph.from_geometry">
+<em class="property">classmethod </em><code class="descname">from_geometry</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_orders=False</em>, <em>scaling=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.MolecularGraph.from_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a MolecularGraph object based on interatomic distances</p>
+<p>All short distances are computed with the binning module and compared
+with a database of bond lengths. Based on this comparison, bonded
+atoms are detected.</p>
+<p>Before marking a pair of atoms A and B as bonded, it is also checked
+that there is no third atom C somewhat between A and B.
+When an atom C exists that is closer to B (than A) and the angle
+A-B-C is less than 45 degrees, atoms A and B are not bonded.
+Similarly if C is closer to A (than B) and the angle B-A-C is less
+then 45 degrees, A and B are not connected.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">molecule</span></code>  –  The molecule to derive the graph from</div>
+</div>
+</dd>
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">do_orders</span></code>  –  set to True to estimate the bond order</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">scaling</span></code>  –  scale the threshold for the connectivity. increase
+this to 1.5 in case of transition states when a
+fully connected topology is required.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.molecular_graphs.MolecularGraph.get_edge_string">
+<code class="descname">get_edge_string</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.MolecularGraph.get_edge_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string based on the bond order</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.molecular_graphs.MolecularGraph.get_subgraph">
+<code class="descname">get_subgraph</code><span class="sig-paren">(</span><em>subvertices</em>, <em>normalize=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.MolecularGraph.get_subgraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a subgraph of the current graph</p>
+<p>See <a class="reference internal" href="#molmod.graphs.Graph.get_subgraph" title="molmod.graphs.Graph.get_subgraph"><code class="xref py py-meth docutils literal notranslate"><span class="pre">molmod.graphs.Graph.get_subgraph()</span></code></a> for more information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.molecular_graphs.MolecularGraph.get_vertex_string">
+<code class="descname">get_vertex_string</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.MolecularGraph.get_vertex_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string based on the atom number</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecular_graphs.MolecularGraph.num_vertices">
+<code class="descname">num_vertices</code><a class="headerlink" href="#molmod.molecular_graphs.MolecularGraph.num_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the number of vertices.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'int'&gt;</span></code></li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecular_graphs.MolecularGraph.numbers">
+<code class="descname">numbers</code><a class="headerlink" href="#molmod.molecular_graphs.MolecularGraph.numbers" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the atomic numbers associated with the vertices.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.signedinteger'&gt;</span></code>.</li>
+<li>Special conditions: the number of vertices and atomic numbers must be the same.</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecular_graphs.MolecularGraph.orders">
+<code class="descname">orders</code><a class="headerlink" href="#molmod.molecular_graphs.MolecularGraph.orders" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the bond orders associated with the edges.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: the number of edges and bond orders must be the same.</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.molecular_graphs.MolecularGraph.symbols">
+<code class="descname">symbols</code><a class="headerlink" href="#molmod.molecular_graphs.MolecularGraph.symbols" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> symbols for the atoms, which can be element names for force-field atom types.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'tuple'&gt;</span></code></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.molecular_graphs.HasAtomNumber">
+<em class="property">class </em><code class="descclassname">molmod.molecular_graphs.</code><code class="descname">HasAtomNumber</code><span class="sig-paren">(</span><em>number</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.HasAtomNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Criterion for the atom number of a vertex</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">number</span></code>  –  the expected atom number</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.molecular_graphs.HasAtomNumber.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>index</em>, <em>graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.HasAtomNumber.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True only if the atom number is correct</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">index</span></code>  –  the index of the vertex/edge on which the criterion is
+applied</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  the graph on which the criterion is tested</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.molecular_graphs.HasNumNeighbors">
+<em class="property">class </em><code class="descclassname">molmod.molecular_graphs.</code><code class="descname">HasNumNeighbors</code><span class="sig-paren">(</span><em>count</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.HasNumNeighbors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Criterion for the number of neighboring vertexes</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">count</span></code>  –  the expected number of neighbors</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.molecular_graphs.HasNumNeighbors.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>index</em>, <em>graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.HasNumNeighbors.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True only if the number of neighbors is correct</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">index</span></code>  –  the index of the vertex/edge on which the criterion is
+applied</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  the graph on which the criterion is tested</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.molecular_graphs.HasNeighborNumbers">
+<em class="property">class </em><code class="descclassname">molmod.molecular_graphs.</code><code class="descname">HasNeighborNumbers</code><span class="sig-paren">(</span><em>*numbers</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.HasNeighborNumbers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Criterion for the atom numbers of the neighbor vertexes</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">*numbers</span></code>  –  a list with atom numbers</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.molecular_graphs.HasNeighborNumbers.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>index</em>, <em>graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.HasNeighborNumbers.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True only if each neighbor can be linked with an atom number</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">index</span></code>  –  the index of the vertex/edge on which the criterion is
+applied</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  the graph on which the criterion is tested</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.molecular_graphs.HasNeighbors">
+<em class="property">class </em><code class="descclassname">molmod.molecular_graphs.</code><code class="descname">HasNeighbors</code><span class="sig-paren">(</span><em>*neighbor_criteria</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.HasNeighbors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests if the neighbors of a vertex match the given criteria</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">*neighbor_criteria</span></code>  –  a list of criteria objects</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.molecular_graphs.HasNeighbors.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>index</em>, <em>graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.HasNeighbors.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True only if each neighbor can be linked with a positive criterion</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">index</span></code>  –  the index of the vertex/edge on which the criterion is
+applied</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  the graph on which the criterion is tested</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.molecular_graphs.BondLongerThan">
+<em class="property">class </em><code class="descclassname">molmod.molecular_graphs.</code><code class="descname">BondLongerThan</code><span class="sig-paren">(</span><em>length</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.BondLongerThan" title="Permalink to this definition">¶</a></dt>
+<dd><p>A vertex criterion to select bonds longer than a given threshold</p>
+<p>This criterion assumes that the molecular graph has an attribute
+self.bond_lengths</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">length</span></code> – the minimum length of the bond</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.molecular_graphs.BondLongerThan.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>index</em>, <em>graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.BondLongerThan.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True only if the bond is longer than the threshold</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">index</span></code>  –  the index of the vertex/edge on which the criterion is
+applied</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  the graph on which the criterion is tested</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.molecular_graphs.atom_criteria">
+<code class="descclassname">molmod.molecular_graphs.</code><code class="descname">atom_criteria</code><span class="sig-paren">(</span><em>*params</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.atom_criteria" title="Permalink to this definition">¶</a></dt>
+<dd><p>An auxiliary function to construct a dictionary of Criteria</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.molecular_graphs.BondPattern">
+<em class="property">class </em><code class="descclassname">molmod.molecular_graphs.</code><code class="descname">BondPattern</code><span class="sig-paren">(</span><em>criteria_sets=None</em>, <em>vertex_tags=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.BondPattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pattern for two consecutive vertices</p>
+<p>Arguments: see <a class="reference internal" href="#molmod.graphs.CustomPattern" title="molmod.graphs.CustomPattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">molmod.graphs.CustomPattern</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.molecular_graphs.BendingAnglePattern">
+<em class="property">class </em><code class="descclassname">molmod.molecular_graphs.</code><code class="descname">BendingAnglePattern</code><span class="sig-paren">(</span><em>criteria_sets=None</em>, <em>vertex_tags=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.BendingAnglePattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pattern for three consecutive vertices</p>
+<p>Arguments: see <a class="reference internal" href="#molmod.graphs.CustomPattern" title="molmod.graphs.CustomPattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">molmod.graphs.CustomPattern</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.molecular_graphs.DihedralAnglePattern">
+<em class="property">class </em><code class="descclassname">molmod.molecular_graphs.</code><code class="descname">DihedralAnglePattern</code><span class="sig-paren">(</span><em>criteria_sets=None</em>, <em>vertex_tags=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.DihedralAnglePattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pattern for four consecutive vertices</p>
+<p>Arguments: see <a class="reference internal" href="#molmod.graphs.CustomPattern" title="molmod.graphs.CustomPattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">molmod.graphs.CustomPattern</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.molecular_graphs.OutOfPlanePattern">
+<em class="property">class </em><code class="descclassname">molmod.molecular_graphs.</code><code class="descname">OutOfPlanePattern</code><span class="sig-paren">(</span><em>criteria_sets=None</em>, <em>vertex_tags=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.OutOfPlanePattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pattern for a central vertex connected to three other vertices</p>
+<p>Arguments: see <a class="reference internal" href="#molmod.graphs.CustomPattern" title="molmod.graphs.CustomPattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">molmod.graphs.CustomPattern</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.molecular_graphs.TetraPattern">
+<em class="property">class </em><code class="descclassname">molmod.molecular_graphs.</code><code class="descname">TetraPattern</code><span class="sig-paren">(</span><em>criteria_sets=None</em>, <em>vertex_tags=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.TetraPattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pattern for a central vertex connected to four other vertices</p>
+<p>Arguments: see <a class="reference internal" href="#molmod.graphs.CustomPattern" title="molmod.graphs.CustomPattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">molmod.graphs.CustomPattern</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.molecular_graphs.NRingPattern">
+<em class="property">class </em><code class="descclassname">molmod.molecular_graphs.</code><code class="descname">NRingPattern</code><span class="sig-paren">(</span><em>size</em>, <em>criteria_sets=None</em>, <em>vertex_tags=None</em>, <em>strong=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.NRingPattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pattern for strong rings with a fixed size</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">size</span></code>  –  the size of the ring</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.molecular_graphs.NRingPattern.check_next_match">
+<code class="descname">check_next_match</code><span class="sig-paren">(</span><em>match</em>, <em>new_relations</em>, <em>subject_graph</em>, <em>one_match</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.NRingPattern.check_next_match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the (onset for a) match can be a valid (part of a) ring</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.molecular_graphs.NRingPattern.complete">
+<code class="descname">complete</code><span class="sig-paren">(</span><em>match</em>, <em>subject_graph</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.molecular_graphs.NRingPattern.complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the completeness of the ring match</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-molmod.unit_cells">
+<span id="molmod-unit-cells-periodic-boundary-conditions"></span><h2><a class="reference internal" href="#module-molmod.unit_cells" title="molmod.unit_cells"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.unit_cells</span></code></a> – Periodic boundary conditions<a class="headerlink" href="#module-molmod.unit_cells" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="molmod.unit_cells.UnitCell">
+<em class="property">class </em><code class="descclassname">molmod.unit_cells.</code><code class="descname">UnitCell</code><span class="sig-paren">(</span><em>matrix</em>, <em>active=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.unit_cells.UnitCell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extensible representation of a unit cell.</p>
+<p>Most attributes of the UnitCell object are treated as constants. If you
+want to modify the unit cell, just create a modified UnitCell
+object. This facilitates the caching of derived quantities such as the
+distance matrices, while it imposes a cleaner coding style without
+a significant computational overhead.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">matrix</span></code>  –  the array with cell vectors. each column
+corresponds to a single cell vector.</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">active</span></code>  –  an array with three boolean values indicating
+which cell vectors are active. [default: all three
+True]</div>
+</div>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="molmod.unit_cells.UnitCell.active">
+<code class="descname">active</code><a class="headerlink" href="#molmod.unit_cells.UnitCell.active" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the active cell vectors.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have shape (3).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.bool_'&gt;</span></code>.</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.unit_cells.UnitCell.active_inactive">
+<code class="descname">active_inactive</code><a class="headerlink" href="#molmod.unit_cells.UnitCell.active_inactive" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The indexes of the active and the inactive cell vectors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.unit_cells.UnitCell.add_cell_vector">
+<code class="descname">add_cell_vector</code><span class="sig-paren">(</span><em>vector</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.unit_cells.UnitCell.add_cell_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new unit cell with an additional cell vector</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.unit_cells.UnitCell.alignment_a">
+<code class="descname">alignment_a</code><a class="headerlink" href="#molmod.unit_cells.UnitCell.alignment_a" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> Computes the rotation matrix that aligns the unit cell with the.
+Cartesian axes, starting with cell vector a.</p>
+<ul class="simple">
+<li>a parallel to x</li>
+<li>b in xy-plane with b_y positive</li>
+<li>c with c_z positive</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.unit_cells.UnitCell.alignment_c">
+<code class="descname">alignment_c</code><a class="headerlink" href="#molmod.unit_cells.UnitCell.alignment_c" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> Computes the rotation matrix that aligns the unit cell with the.
+Cartesian axes, starting with cell vector c.</p>
+<ul class="simple">
+<li>c parallel to z</li>
+<li>b in zy-plane with b_y positive</li>
+<li>a with a_x positive</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.unit_cells.UnitCell.eps">
+<code class="descname">eps</code><em class="property"> = 1e-06</em><a class="headerlink" href="#molmod.unit_cells.UnitCell.eps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.unit_cells.UnitCell.from_parameters3">
+<em class="property">classmethod </em><code class="descname">from_parameters3</code><span class="sig-paren">(</span><em>lengths</em>, <em>angles</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.unit_cells.UnitCell.from_parameters3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a 3D unit cell with the given parameters</p>
+<p>The a vector is always parallel with the x-axis and they point in the
+same direction. The b vector is always in the xy plane and points
+towards the positive y-direction. The c vector points towards the
+positive z-direction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.unit_cells.UnitCell.get_radius_indexes">
+<code class="descname">get_radius_indexes</code><span class="sig-paren">(</span><em>radius</em>, <em>max_ranges=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.unit_cells.UnitCell.get_radius_indexes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the indexes of the interacting neighboring unit cells</p>
+<p>Interacting neighboring unit cells have at least one point in their
+box volume that has a distance smaller or equal than radius to at
+least one point in the central cell. This concept is of importance
+when computing pair wise long-range interactions in periodic systems.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">radius</span></code>  –  the radius of the interaction sphere</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">max_ranges</span></code>  –  numpy array with three elements: The maximum
+ranges of indexes to consider. This is
+practical when working with the minimum image
+convention to reduce the generated bins to the
+minimum image. (see binning.py) Use -1 to
+avoid such limitations. The default is three
+times -1.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.unit_cells.UnitCell.get_radius_ranges">
+<code class="descname">get_radius_ranges</code><span class="sig-paren">(</span><em>radius</em>, <em>mic=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.unit_cells.UnitCell.get_radius_ranges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return ranges of indexes of the interacting neighboring unit cells</p>
+<p>Interacting neighboring unit cells have at least one point in their
+box volume that has a distance smaller or equal than radius to at
+least one point in the central cell. This concept is of importance
+when computing pair wise long-range interactions in periodic systems.</p>
+<p>The mic (stands for minimum image convention) option can be used to
+change the behavior of this routine such that only neighboring cells
+are considered that have at least one point withing a distance below
+<cite>radius</cite> from the center of the reference cell.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.unit_cells.UnitCell.matrix">
+<code class="descname">matrix</code><a class="headerlink" href="#molmod.unit_cells.UnitCell.matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> matrix whose columns are the primitive cell vectors.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have shape (3, 3).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.unit_cells.UnitCell.ordered">
+<code class="descname">ordered</code><a class="headerlink" href="#molmod.unit_cells.UnitCell.ordered" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> An equivalent unit cell with the active cell vectors coming first.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.unit_cells.UnitCell.parameters">
+<code class="descname">parameters</code><a class="headerlink" href="#molmod.unit_cells.UnitCell.parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The cell parameters (lengths and angles).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.unit_cells.UnitCell.reciprocal">
+<code class="descname">reciprocal</code><a class="headerlink" href="#molmod.unit_cells.UnitCell.reciprocal" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The reciprocal of the unit cell.</p>
+<p>In case of a three-dimensional periodic system, this is trivially the
+transpose of the inverse of the cell matrix. This means that each
+column of the matrix corresponds to a reciprocal cell vector. In case
+of lower-dimensional periodicity, the inactive columns are zero, and
+the active columns span the same sub space as the original cell
+vectors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.unit_cells.UnitCell.shortest_vector">
+<code class="descname">shortest_vector</code><span class="sig-paren">(</span><em>delta</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.unit_cells.UnitCell.shortest_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the relative vector under periodic boundary conditions.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">delta</span></code>  –  the relative vector between two points</div>
+</div>
+</dd>
+</dl>
+<p>The return value is not necessarily the shortest possible vector,
+but instead is the vector with fractional coordinates in the range
+[-0.5,0.5[. This is most of the times the shortest vector between
+the two points, but not always. (See commented test.) It is always
+the shortest vector for orthorombic cells.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.unit_cells.UnitCell.spacings">
+<code class="descname">spacings</code><a class="headerlink" href="#molmod.unit_cells.UnitCell.spacings" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> Computes the distances between neighboring crystal planes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.unit_cells.UnitCell.to_cartesian">
+<code class="descname">to_cartesian</code><span class="sig-paren">(</span><em>fractional</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.unit_cells.UnitCell.to_cartesian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts fractional to Cartesian coordinates</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fractional</span></code>  –  Can be a numpy array with shape (3, ) or with shape
+(N, 3).</div>
+</div>
+</dd>
+</dl>
+<p>The return value has the same shape as the argument. This function is
+the inverse of to_fractional.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.unit_cells.UnitCell.to_fractional">
+<code class="descname">to_fractional</code><span class="sig-paren">(</span><em>cartesian</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.unit_cells.UnitCell.to_fractional" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Cartesian to fractional coordinates</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">cartesian</span></code>  –  Can be a numpy array with shape (3, ) or with shape
+(N, 3).</div>
+</div>
+</dd>
+</dl>
+<p>The return value has the same shape as the argument. This function is
+the inverse of to_cartesian.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.unit_cells.UnitCell.volume">
+<code class="descname">volume</code><a class="headerlink" href="#molmod.unit_cells.UnitCell.volume" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The volume of the unit cell.</p>
+<p>The actual definition of the volume depends on the number of active
+directions:</p>
+<ul class="simple">
+<li>num_active == 0  –  always -1</li>
+<li>num_active == 1  –  length of the cell vector</li>
+<li>num_active == 2  –  surface of the parallelogram</li>
+<li>num_active == 3  –  volume of the parallelepiped</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-molmod.transformations">
+<span id="molmod-transformations-transformations-in-3d"></span><h2><a class="reference internal" href="#module-molmod.transformations" title="molmod.transformations"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.transformations</span></code></a> Transformations in 3D<a class="headerlink" href="#module-molmod.transformations" title="Permalink to this headline">¶</a></h2>
+<p>In addition to Translation, Rotation and Complete classes, two utility
+functions are provided: rotation_around_center and superpose. The latter is an
+implementation of the Kabsch algorithm.</p>
+<dl class="class">
+<dt id="molmod.transformations.Translation">
+<em class="property">class </em><code class="descclassname">molmod.transformations.</code><code class="descname">Translation</code><span class="sig-paren">(</span><em>t</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Translation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a translation in 3D</p>
+<p>The attribute t contains the actual translation vector, which is a numpy
+array with three elements.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">t</span></code>  –  translation vector, a list-like object with three
+numbers</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.transformations.Translation.apply_to">
+<code class="descname">apply_to</code><span class="sig-paren">(</span><em>x</em>, <em>columns=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Translation.apply_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply this translation to the given object</p>
+<p>The argument can be several sorts of objects:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">np.array</span></code> with shape (3, )</li>
+<li><code class="docutils literal notranslate"><span class="pre">np.array</span></code> with shape (N, 3)</li>
+<li><code class="docutils literal notranslate"><span class="pre">np.array</span></code> with shape (3, N), use <code class="docutils literal notranslate"><span class="pre">columns=True</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Translation</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Rotation</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Complete</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">UnitCell</span></code></li>
+</ul>
+<p>In case of arrays, the 3D vectors are translated. In case of trans-
+formations, a new transformation is returned that consists of this
+translation applied AFTER the given translation. In case of a unit
+cell, the original object is returned.</p>
+<p>This method is equivalent to <code class="docutils literal notranslate"><span class="pre">self*x</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.transformations.Translation.compare">
+<code class="descname">compare</code><span class="sig-paren">(</span><em>other</em>, <em>t_threshold=0.001</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Translation.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare two translations</p>
+<p>The RMSD of the translation vectors is computed. The return value
+is True when the RMSD is below the threshold, i.e. when the two
+translations are almost identical.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.transformations.Translation.from_matrix">
+<em class="property">classmethod </em><code class="descname">from_matrix</code><span class="sig-paren">(</span><em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Translation.from_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a translation from a 4x4 matrix</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.transformations.Translation.identity">
+<em class="property">classmethod </em><code class="descname">identity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Translation.identity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the identity transformation</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.transformations.Translation.inv">
+<code class="descname">inv</code><a class="headerlink" href="#molmod.transformations.Translation.inv" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The inverse translation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.transformations.Translation.matrix">
+<code class="descname">matrix</code><a class="headerlink" href="#molmod.transformations.Translation.matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The 4x4 matrix representation of this translation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.transformations.Translation.t">
+<code class="descname">t</code><a class="headerlink" href="#molmod.transformations.Translation.t" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the translation vector.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have shape (3).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.transformations.Rotation">
+<em class="property">class </em><code class="descclassname">molmod.transformations.</code><code class="descname">Rotation</code><span class="sig-paren">(</span><em>r</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Rotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a rotation in 3D about the origin</p>
+<p>The attribute r contains the actual rotation matrix, which is a numpy
+array with shape (3, 3).</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">r</span></code>  –  rotation matrix, a 3 by 3 orthonormal array-like object</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.transformations.Rotation.apply_to">
+<code class="descname">apply_to</code><span class="sig-paren">(</span><em>x</em>, <em>columns=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Rotation.apply_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply this rotation to the given object</p>
+<p>The argument can be several sorts of objects:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">np.array</span></code> with shape (3, )</li>
+<li><code class="docutils literal notranslate"><span class="pre">np.array</span></code> with shape (N, 3)</li>
+<li><code class="docutils literal notranslate"><span class="pre">np.array</span></code> with shape (3, N), use <code class="docutils literal notranslate"><span class="pre">columns=True</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Translation</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Rotation</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Complete</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">UnitCell</span></code></li>
+</ul>
+<p>In case of arrays, the 3D vectors are rotated. In case of trans-
+formations, a transformation is returned that consists of this
+rotation applied AFTER the given translation. In case of a unit cell,
+a unit cell with rotated cell vectors is returned.</p>
+<p>This method is equivalent to <code class="docutils literal notranslate"><span class="pre">self*x</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.transformations.Rotation.compare">
+<code class="descname">compare</code><span class="sig-paren">(</span><em>other</em>, <em>r_threshold=0.001</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Rotation.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare two rotations</p>
+<p>The RMSD of the rotation matrices is computed. The return value
+is True when the RMSD is below the threshold, i.e. when the two
+rotations are almost identical.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.transformations.Rotation.from_matrix">
+<em class="property">classmethod </em><code class="descname">from_matrix</code><span class="sig-paren">(</span><em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Rotation.from_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a rotation from a 4x4 matrix</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.transformations.Rotation.from_properties">
+<em class="property">classmethod </em><code class="descname">from_properties</code><span class="sig-paren">(</span><em>angle</em>, <em>axis</em>, <em>invert</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Rotation.from_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a rotation based on the properties</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.transformations.Rotation.identity">
+<em class="property">classmethod </em><code class="descname">identity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Rotation.identity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the identity transformation</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.transformations.Rotation.inv">
+<code class="descname">inv</code><a class="headerlink" href="#molmod.transformations.Rotation.inv" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The inverse rotation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.transformations.Rotation.matrix">
+<code class="descname">matrix</code><a class="headerlink" href="#molmod.transformations.Rotation.matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The 4x4 matrix representation of this rotation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.transformations.Rotation.properties">
+<code class="descname">properties</code><a class="headerlink" href="#molmod.transformations.Rotation.properties" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> Rotation properties: angle, axis, invert.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.transformations.Rotation.r">
+<code class="descname">r</code><a class="headerlink" href="#molmod.transformations.Rotation.r" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the rotation matrix.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have shape (3, 3).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: the columns must orthogonal.</li>
+</ul>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.transformations.Rotation.random">
+<em class="property">classmethod </em><code class="descname">random</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Rotation.random" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a random rotation</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.transformations.Complete">
+<em class="property">class </em><code class="descclassname">molmod.transformations.</code><code class="descname">Complete</code><span class="sig-paren">(</span><em>r</em>, <em>t</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a rotation and translation in 3D</p>
+<p>The attribute t contains the actual translation vector, which is a numpy
+array with three elements. The attribute r contains the actual rotation
+matrix, which is a numpy array with shape (3, 3).</p>
+<p>Internally the translation part is always applied after the rotation
+part.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">r</span></code>  –  rotation matrix, a 3 by 3 orthonormal array-like object</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">t</span></code>  –  translation vector, a list-like object with three
+numbers</div>
+</div>
+</dd>
+</dl>
+<dl class="classmethod">
+<dt id="molmod.transformations.Complete.about_axis">
+<em class="property">classmethod </em><code class="descname">about_axis</code><span class="sig-paren">(</span><em>center</em>, <em>angle</em>, <em>axis</em>, <em>invert=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Complete.about_axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create transformation that represents a rotation about an axis</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">center</span></code>  –  Point on the axis</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">angle</span></code>  –  Rotation angle</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">axis</span></code>  –  Rotation axis</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">invert</span></code>  –  When True, an inversion rotation is constructed
+[default=False]</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.transformations.Complete.apply_to">
+<code class="descname">apply_to</code><span class="sig-paren">(</span><em>x</em>, <em>columns=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Complete.apply_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply this transformation to the given object</p>
+<p>The argument can be several sorts of objects:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">np.array</span></code> with shape (3, )</li>
+<li><code class="docutils literal notranslate"><span class="pre">np.array</span></code> with shape (N, 3)</li>
+<li><code class="docutils literal notranslate"><span class="pre">np.array</span></code> with shape (3, N), use <code class="docutils literal notranslate"><span class="pre">columns=True</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Translation</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Rotation</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Complete</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">UnitCell</span></code></li>
+</ul>
+<p>In case of arrays, the 3D vectors are transformed. In case of trans-
+formations, a transformation is returned that consists of this
+transformation applied AFTER the given translation. In case of a unit
+cell, a unit cell with rotated cell vectors is returned. (The
+translational part does not affect the unit cell.)</p>
+<p>This method is equivalent to self*x.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.transformations.Complete.cast">
+<em class="property">classmethod </em><code class="descname">cast</code><span class="sig-paren">(</span><em>c</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Complete.cast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the first argument into a Complete object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.transformations.Complete.compare">
+<code class="descname">compare</code><span class="sig-paren">(</span><em>other</em>, <em>t_threshold=0.001</em>, <em>r_threshold=0.001</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Complete.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare two transformations</p>
+<p>The RMSD values of the rotation matrices and the translation vectors
+are computed. The return value is True when the RMSD values are below
+the thresholds, i.e. when the two transformations are almost
+identical.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.transformations.Complete.from_matrix">
+<em class="property">classmethod </em><code class="descname">from_matrix</code><span class="sig-paren">(</span><em>m</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Complete.from_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a complete transformation from a 4x4 matrix</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.transformations.Complete.from_properties">
+<em class="property">classmethod </em><code class="descname">from_properties</code><span class="sig-paren">(</span><em>angle</em>, <em>axis</em>, <em>invert</em>, <em>translation</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Complete.from_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a transformation based on the properties</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="molmod.transformations.Complete.identity">
+<em class="property">classmethod </em><code class="descname">identity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.Complete.identity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the identity transformation</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.transformations.Complete.inv">
+<code class="descname">inv</code><a class="headerlink" href="#molmod.transformations.Complete.inv" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The inverse transformation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.transformations.Complete.matrix">
+<code class="descname">matrix</code><a class="headerlink" href="#molmod.transformations.Complete.matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> The 4x4 matrix representation of this transformation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.transformations.Complete.properties">
+<code class="descname">properties</code><a class="headerlink" href="#molmod.transformations.Complete.properties" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Cached attribute:</em> Transformation properties: angle, axis, invert, translation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.transformations.Complete.r">
+<code class="descname">r</code><a class="headerlink" href="#molmod.transformations.Complete.r" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the rotation matrix.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have shape (3, 3).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: the columns must orthogonal.</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="molmod.transformations.Complete.t">
+<code class="descname">t</code><a class="headerlink" href="#molmod.transformations.Complete.t" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Read-only attribute:</em> the translation vector.</p>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have shape (3).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.transformations.superpose">
+<code class="descclassname">molmod.transformations.</code><code class="descname">superpose</code><span class="sig-paren">(</span><em>ras</em>, <em>rbs</em>, <em>weights=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.superpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the transformation that minimizes the RMSD between the points ras and rbs</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">ras</span></code>  –  a <code class="docutils literal notranslate"><span class="pre">np.array</span></code> with 3D coordinates of geometry A,
+shape=(N,3)</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rbs</span></code>  –  a <code class="docutils literal notranslate"><span class="pre">np.array</span></code> with 3D coordinates of geometry B,
+shape=(N,3)</div>
+</div>
+</dd>
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">weights</span></code>  –  a numpy array with fitting weights for each
+coordinate, shape=(N,)</div>
+</div>
+</dd>
+<dt>Return value:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">transformation</span></code>  –  the transformation that brings geometry A into
+overlap with geometry B</div>
+</div>
+</dd>
+</dl>
+<p>Each row in ras and rbs represents a 3D coordinate. Corresponding rows
+contain the points that are brought into overlap by the fitting
+procedure. The implementation is based on the Kabsch Algorithm:</p>
+<p><a class="reference external" href="http://dx.doi.org/10.1107%2FS0567739476001873">http://dx.doi.org/10.1107%2FS0567739476001873</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.transformations.fit_rmsd">
+<code class="descclassname">molmod.transformations.</code><code class="descname">fit_rmsd</code><span class="sig-paren">(</span><em>ras</em>, <em>rbs</em>, <em>weights=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.transformations.fit_rmsd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit geometry rbs onto ras, returns more info than superpose</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">ras</span></code>  –  a numpy array with 3D coordinates of geometry A,
+shape=(N,3)</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rbs</span></code>  –  a numpy array with 3D coordinates of geometry B,
+shape=(N,3)</div>
+</div>
+</dd>
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">weights</span></code>  –  a numpy array with fitting weights for each
+coordinate, shape=(N,)</div>
+</div>
+</dd>
+<dt>Return values:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">transformation</span></code>  –  the transformation that brings geometry A into
+overlap with geometry B</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rbs_trans</span></code>  –  the transformed coordinates of geometry B</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rmsd</span></code>  –  the rmsd of the distances between corresponding atoms in
+geometry A and B</div>
+</div>
+</dd>
+</dl>
+<p>This is a utility routine based on the function superpose. It just
+computes rbs_trans and rmsd after calling superpose with the same
+arguments</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Basic classes</a><ul>
+<li><a class="reference internal" href="#molmod-molecules-molecular-systems"><code class="docutils literal notranslate"><span class="pre">molmod.molecules</span></code> – Molecular systems</a></li>
+<li><a class="reference internal" href="#module-molmod.graphs"><code class="docutils literal notranslate"><span class="pre">molmod.graphs</span></code> – Abstract graphs</a></li>
+<li><a class="reference internal" href="#molmod-molecular-graphs-molecular-graphs"><code class="docutils literal notranslate"><span class="pre">molmod.molecular_graphs</span></code> – Molecular graphs</a></li>
+<li><a class="reference internal" href="#module-molmod.unit_cells"><code class="docutils literal notranslate"><span class="pre">molmod.unit_cells</span></code> – Periodic boundary conditions</a></li>
+<li><a class="reference internal" href="#module-molmod.transformations"><code class="docutils literal notranslate"><span class="pre">molmod.transformations</span></code> Transformations in 3D</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="const.html"
+                        title="previous chapter">Units and constants</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="io.html"
+                        title="next chapter">Input/output</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/basic.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="Input/output"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="const.html" title="Units and constants"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

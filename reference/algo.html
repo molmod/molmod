@@ -1,0 +1,1627 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Algorithms &#8212; MolMod 1.4.8 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Internals of the MolMod package" href="internals.html" />
+    <link rel="prev" title="Databases" href="data.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="internals.html" title="Internals of the MolMod package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="data.html" title="Databases"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="algorithms">
+<h1>Algorithms<a class="headerlink" href="#algorithms" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-molmod.binning">
+<span id="molmod-binning-binning"></span><h2><a class="reference internal" href="#module-molmod.binning" title="molmod.binning"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.binning</span></code></a> – Binning<a class="headerlink" href="#module-molmod.binning" title="Permalink to this headline">¶</a></h2>
+<p>Binning is a useful technique for efficiently calculating all distances
+between a number of coordinates when you are only interested in the distances
+below a given cutoff. The algorithm consists of two major steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Divide the given set of coordinates into bins on a regular grid</li>
+<li>Calculate the distances (or other useful things) between coordinates in
+neighboring bins.</li>
+</ol>
+</div></blockquote>
+<dl class="class">
+<dt id="molmod.binning.PairSearchIntra">
+<em class="property">class </em><code class="descclassname">molmod.binning.</code><code class="descname">PairSearchIntra</code><span class="sig-paren">(</span><em>coordinates</em>, <em>cutoff</em>, <em>unit_cell=None</em>, <em>grid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.binning.PairSearchIntra" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterator over all pairs of coordinates with a distance below a cutoff.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,(</span><span class="mi">10</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">distance</span> <span class="ow">in</span> <span class="n">PairSearchIntra</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">):</span>
+    <span class="nb">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">distance</span>
+</pre></div>
+</div>
+<p>Note that for periodic systems the minimum image convention is applied.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">coordinates</span></code>  –  A Nx3 numpy array with Cartesian coordinates</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">radius</span></code>  –  The cutoff radius for the pair distances.
+Distances larger than the cutoff will be neglected
+in the pair search.</div>
+</div>
+</dd>
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">unit_cell</span></code>  –  Specifies the periodic boundary conditions</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">grid</span></code>  –  Specification of the grid, can be a floating point
+number which will result in cubic bins with edge length
+equal to the given number. Otherwise a UnitCell object
+can be specified to construct non-cubic bins. In the
+latter case and when a unit_cell is given, the unit cell
+vectors must be integer linear combinations of the grid
+cell vectors (for those directions that are active in
+the unit cell). If this is not the case, a ValueError is
+raised.</div>
+</div>
+</dd>
+</dl>
+<p>The default value of grid depends on other parameters:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>When no unit cell is given, it is equal to cutoff/2.9.</li>
+<li>When a unit cell is given, the grid cell is as close to cubic
+as possible, with spacings below cutoff/2 that are integer
+divisions of the unit cell spacings</li>
+</ol>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.binning.PairSearchInter">
+<em class="property">class </em><code class="descclassname">molmod.binning.</code><code class="descname">PairSearchInter</code><span class="sig-paren">(</span><em>coordinates0</em>, <em>coordinates1</em>, <em>cutoff</em>, <em>unit_cell=None</em>, <em>grid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.binning.PairSearchInter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterator over all pairs of coordinates with a distance below a cutoff.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coordinates0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,(</span><span class="mi">10</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+<span class="n">coordinates1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,(</span><span class="mi">10</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">distance</span> <span class="ow">in</span> <span class="n">PairSearchInter</span><span class="p">(</span><span class="n">coordinates0</span><span class="p">,</span> <span class="n">coordinates1</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">):</span>
+    <span class="nb">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">distance</span>
+</pre></div>
+</div>
+<p>Note that for periodic systems the minimum image convention is applied.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">coordinates0</span></code>  –  A Nx3 numpy array with Cartesian coordinates</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">coordinates1</span></code>  –  A Nx3 numpy array with Cartesian coordinates</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">radius</span></code>  –  The cutoff radius for the pair distances.
+Distances larger than the cutoff will be neglected
+in the pair search.</div>
+</div>
+</dd>
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">unit_cell</span></code>  –  Specifies the periodic boundary conditions</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">grid</span></code>  –  Specification of the grid, can be a floating point
+number which will result in cubic bins with edge length
+equal to the given number. Otherwise a UnitCell object
+can be specified to construct non-cubic bins. In the
+latter case and when a unit_cell is given, the unit cell
+vectors must be integer linear combinations of the grid
+cell vectors (for those directions that are active in
+the unit cell). If this is not the case, a ValueError is
+raised.</div>
+</div>
+</dd>
+<dt>The default value of grid depends on other parameters:</dt>
+<dd><ol class="first last arabic simple">
+<li>When no unit cell is given, it is equal to cutoff/2.9.</li>
+<li>When a unit cell is given, the grid cell is as close to cubic
+as possible, with spacings below cutoff/2 that are integer
+divisions of the unit cell spacings</li>
+</ol>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-molmod.clusters">
+<span id="molmod-clusters-clustering"></span><h2><a class="reference internal" href="#module-molmod.clusters" title="molmod.clusters"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.clusters</span></code></a> – Clustering<a class="headerlink" href="#module-molmod.clusters" title="Permalink to this headline">¶</a></h2>
+<p>Given a mixed set of related and unrelated data pionts, it is often interesting
+to extract clusters of related items. The basic workflow is as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cf</span> <span class="o">=</span> <span class="n">ClusterFactory</span><span class="p">()</span>
+<span class="k">while</span> <span class="n">foo</span><span class="p">:</span>
+    <span class="n">cf</span><span class="o">.</span><span class="n">add_related</span><span class="p">(</span><span class="n">some</span><span class="p">,</span> <span class="n">related</span><span class="p">,</span> <span class="n">items</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="n">cf</span><span class="o">.</span><span class="n">iter_clusters</span><span class="p">():</span>
+    <span class="nb">print</span> <span class="n">cluster</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="molmod.clusters.Cluster">
+<em class="property">class </em><code class="descclassname">molmod.clusters.</code><code class="descname">Cluster</code><span class="sig-paren">(</span><em>items</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.clusters.Cluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of related items</p>
+<p>This is the most elementary implementation of a cluster. In practice
+on is often interested in extending the functionality of a cluster.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">items</span></code>  –  the items that belong in this cluster</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.clusters.Cluster.add_item">
+<code class="descname">add_item</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.clusters.Cluster.add_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an item to a cluster</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.clusters.Cluster.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.clusters.Cluster.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge another cluster into this cluster</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.clusters.RuleCluster">
+<em class="property">class </em><code class="descclassname">molmod.clusters.</code><code class="descname">RuleCluster</code><span class="sig-paren">(</span><em>items</em>, <em>rules=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.clusters.RuleCluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clusters based on rules</p>
+<p>This is a typical derived Cluster class where the relation between the
+items is one or more rules, which one would like to know at the end of
+the clustering algorithm.</p>
+<p>An example application is the shake algorithm where it is beneficial
+to group constraints that share certain degrees of freedom into a cluster
+of equations.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">items</span></code>  –  the items that belong in this cluster</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rules</span></code>  –  a list of rules that binds the items</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.clusters.RuleCluster.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.clusters.RuleCluster.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extend the current cluster with data from another cluster</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.clusters.ClusterFactory">
+<em class="property">class </em><code class="descclassname">molmod.clusters.</code><code class="descname">ClusterFactory</code><span class="sig-paren">(</span><em>cls=&lt;class 'molmod.clusters.Cluster'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.clusters.ClusterFactory" title="Permalink to this definition">¶</a></dt>
+<dd><p>A very basic cluster algorithm</p>
+<dl class="docutils">
+<dt>Optinional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">cls</span></code>  –  A class to construct new cluster objects
+[default=Cluster]</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.clusters.ClusterFactory.add_related">
+<code class="descname">add_related</code><span class="sig-paren">(</span><em>*objects</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.clusters.ClusterFactory.add_related" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add related items</p>
+<p>The arguments can be individual items or cluster objects containing
+several items.</p>
+<p>When two groups of related items share one or more common members,
+they will be merged into one cluster.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.clusters.ClusterFactory.get_clusters">
+<code class="descname">get_clusters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.clusters.ClusterFactory.get_clusters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a set with the clusters</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-molmod.ic">
+<span id="molmod-ic-internal-coordinates"></span><h2><a class="reference internal" href="#module-molmod.ic" title="molmod.ic"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.ic</span></code></a> – Internal coordinates<a class="headerlink" href="#module-molmod.ic" title="Permalink to this headline">¶</a></h2>
+<p>This implementation is pure python and sacrifices computational efficiency on
+the altar of programming flexibility. It is really easy to implement new types
+of internal coordinates since one only has to enter the formula that evaluates
+the internal coordinate. First and second order derivatives towards Cartesian
+coordinates require only a minimum of extra work.</p>
+<p>Two auxiliary classes Scalar and Vector3 support most of the mathematical
+operations required to compute the internal coordinates. Additionally they also
+know the chain rule for each operation and can therefore evaluate the
+derivatives simultaneously.</p>
+<dl class="class">
+<dt id="molmod.ic.Scalar">
+<em class="property">class </em><code class="descclassname">molmod.ic.</code><code class="descname">Scalar</code><span class="sig-paren">(</span><em>size</em>, <em>deriv=0</em>, <em>value=0</em>, <em>index=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.Scalar" title="Permalink to this definition">¶</a></dt>
+<dd><p>A scalar object with optional first and second order derivates</p>
+<p>Each input value to which the derivative is computed has its own index.
+The numerical value of the derivatives are stored in arrays self.d and
+self.dd. The value of the scalar itself if self.v</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">size</span></code> – The number of inputs on which this ic depends. e.g. a
+distance depends on 6 Cartesian coordinates.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">deriv</span></code> – Consider up to deriv order derivatives. (max=2)</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">value</span></code> – The initial value.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">index</span></code> – If this scalar is one of the input variables, this is
+its index.</div>
+</div>
+</dd>
+</dl>
+<p>The scalar object supports several in place modifications.</p>
+<dl class="method">
+<dt id="molmod.ic.Scalar.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.Scalar.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a deep copy</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.ic.Scalar.inv">
+<code class="descname">inv</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.Scalar.inv" title="Permalink to this definition">¶</a></dt>
+<dd><p>In place invert</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.ic.Scalar.results">
+<code class="descname">results</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.Scalar.results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value and optionally derivative and second order derivative</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.ic.Vector3">
+<em class="property">class </em><code class="descclassname">molmod.ic.</code><code class="descname">Vector3</code><span class="sig-paren">(</span><em>size</em>, <em>deriv=0</em>, <em>values=(0</em>, <em>0</em>, <em>0)</em>, <em>indexes=(None</em>, <em>None</em>, <em>None)</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.Vector3" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Three dimensional vector with optional first and second order derivatives.</p>
+<p>This object is nothing more than a tier for three Scalar objects.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">size</span></code> – The number of inputs on which this ic depends. e.g. a
+distance depends on 6 Cartesian coordinates.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">deriv</span></code> – Consider up to deriv order derivatives. (max=2)</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">values</span></code> – The initial values.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">indexes</span></code> – If this vector is one of the input variables, these
+are the indexes of the components.</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.ic.Vector3.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.Vector3.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a deep copy</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.ic.Vector3.norm">
+<code class="descname">norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.Vector3.norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a Scalar object with the norm of this vector</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.ic.dot">
+<code class="descclassname">molmod.ic.</code><code class="descname">dot</code><span class="sig-paren">(</span><em>r1</em>, <em>r2</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.dot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the dot product</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">r1</span></code>, <code class="docutils literal notranslate"><span class="pre">r2</span></code>  – two <a class="reference internal" href="#molmod.ic.Vector3" title="molmod.ic.Vector3"><code class="xref py py-class docutils literal notranslate"><span class="pre">Vector3</span></code></a> objects</div>
+</div>
+</dd>
+</dl>
+<p>(Returns a Scalar)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.ic.cross">
+<code class="descclassname">molmod.ic.</code><code class="descname">cross</code><span class="sig-paren">(</span><em>r1</em>, <em>r2</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.cross" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the cross product</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">r1</span></code>, <code class="docutils literal notranslate"><span class="pre">r2</span></code>  – two <a class="reference internal" href="#molmod.ic.Vector3" title="molmod.ic.Vector3"><code class="xref py py-class docutils literal notranslate"><span class="pre">Vector3</span></code></a> objects</div>
+</div>
+</dd>
+</dl>
+<p>(Returns a Vector3)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.ic.bond_length">
+<code class="descclassname">molmod.ic.</code><code class="descname">bond_length</code><span class="sig-paren">(</span><em>rs</em>, <em>deriv=0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.bond_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the distance between the two points rs[0] and rs[1]</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rs</span></code>  –  two numpy array with three elements</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">deriv</span></code>  –  the derivatives to be computed: 0, 1 or 2 [default=0]</div>
+</div>
+</dd>
+</dl>
+<p>When derivatives are computed a tuple with a single result is returned</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.ic.pair_distance">
+<code class="descclassname">molmod.ic.</code><code class="descname">pair_distance</code><span class="sig-paren">(</span><em>rs</em>, <em>deriv=0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.pair_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the distance between the two points rs[0] and rs[1]</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rs</span></code>  –  two numpy array with three elements</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">deriv</span></code>  –  the derivatives to be computed: 0, 1 or 2 [default=0]</div>
+</div>
+</dd>
+</dl>
+<p>When derivatives are computed a tuple with a single result is returned</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.ic.bend_cos">
+<code class="descclassname">molmod.ic.</code><code class="descname">bend_cos</code><span class="sig-paren">(</span><em>rs</em>, <em>deriv=0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.bend_cos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the cosine of the angle between the vectors rs[0]-rs[1] and rs[2]-rs[1]</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rs</span></code>  –  three numpy array with three elements</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">deriv</span></code>  –  the derivatives to be computed: 0, 1 or 2 [default=0]</div>
+</div>
+</dd>
+</dl>
+<p>When derivatives are computed a tuple with a single result is returned</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.ic.bend_angle">
+<code class="descclassname">molmod.ic.</code><code class="descname">bend_angle</code><span class="sig-paren">(</span><em>rs</em>, <em>deriv=0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.bend_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the angle between the vectors rs[0]-rs[1] and rs[2]-rs[1]</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rs</span></code>  –  three numpy array with three elements</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">deriv</span></code>  –  the derivatives to be computed: 0, 1 or 2 [default=0]</div>
+</div>
+</dd>
+</dl>
+<p>When derivatives are computed a tuple with a single result is returned</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.ic.dihed_cos">
+<code class="descclassname">molmod.ic.</code><code class="descname">dihed_cos</code><span class="sig-paren">(</span><em>rs</em>, <em>deriv=0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.dihed_cos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the cosine of the angle between the planes rs[0], rs[1], rs[2] and rs[1], rs[2], rs[3]</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rs</span></code>  –  four numpy array with three elements</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">deriv</span></code>  –  the derivatives to be computed: 0, 1 or 2 [default=0]</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.ic.dihed_angle">
+<code class="descclassname">molmod.ic.</code><code class="descname">dihed_angle</code><span class="sig-paren">(</span><em>rs</em>, <em>deriv=0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.dihed_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the angle between the planes rs[0], rs[1], rs[2] and rs[1], rs[2], rs[3]</p>
+<p>The sign convention corresponds to the IUPAC definition of the torsion
+angle: <a class="reference external" href="http://dx.doi.org/10.1351/goldbook.T06406">http://dx.doi.org/10.1351/goldbook.T06406</a></p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rs</span></code>  –  four numpy array with three elements</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">deriv</span></code>  –  the derivatives to be computed: 0, 1 or 2 [default=0]</div>
+</div>
+</dd>
+</dl>
+<p>When derivatives are computed a tuple with a single result is returned</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.ic.opbend_cos">
+<code class="descclassname">molmod.ic.</code><code class="descname">opbend_cos</code><span class="sig-paren">(</span><em>rs</em>, <em>deriv=0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.opbend_cos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the cosine of the angle between the vector (rs[0],rs[3]) and plane rs[0],rs[1],rs[2]</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rs</span></code>  –  four numpy array with three elements</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">deriv</span></code>  –  the derivatives to be computed: 0, 1 or 2 [default=0]</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.ic.opbend_angle">
+<code class="descclassname">molmod.ic.</code><code class="descname">opbend_angle</code><span class="sig-paren">(</span><em>rs</em>, <em>deriv=0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.opbend_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the angle between the vector rs[0], rs[3] and the plane rs[0], rs[1], rs[2]</p>
+<p>The sign convention is as follows: positive if rs[3] lies in the space
+above plane rs[0], rs[1], rs[2] and negative if rs[3] lies below. Above
+is defined by right hand rule from rs[0]-rs[1] to rs[0]-rs[2].</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rs</span></code>  –  four numpy array with three elements</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">deriv</span></code>  –  the derivatives to be computed: 0, 1 or 2 [default=0]</div>
+</div>
+</dd>
+</dl>
+<p>When no derivatives are computed a tuple with a single result is returned.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.ic.opbend_dist">
+<code class="descclassname">molmod.ic.</code><code class="descname">opbend_dist</code><span class="sig-paren">(</span><em>rs</em>, <em>deriv=0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.opbend_dist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the out-of-plane distance, i.e. the distance between atom rs[3] and plane rs[0],rs[1],rs[2]</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rs</span></code>  –  four numpy array with three elements</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">deriv</span></code>  –  the derivatives to be computed: 0, 1 or 2 [default=0]</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.ic.opbend_mcos">
+<code class="descclassname">molmod.ic.</code><code class="descname">opbend_mcos</code><span class="sig-paren">(</span><em>rs</em>, <em>deriv=0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.opbend_mcos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the mean cos of the 3 opbend_angles</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.ic.opbend_mangle">
+<code class="descclassname">molmod.ic.</code><code class="descname">opbend_mangle</code><span class="sig-paren">(</span><em>rs</em>, <em>deriv=0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.ic.opbend_mangle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the mean value of the 3 opbend_angles</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-molmod.minimizer">
+<span id="molmod-minimizer-minimizer"></span><h2><a class="reference internal" href="#module-molmod.minimizer" title="molmod.minimizer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.minimizer</span></code></a> – Minimizer<a class="headerlink" href="#module-molmod.minimizer" title="Permalink to this headline">¶</a></h2>
+<p>The implementation is mainly concerned with robustness, rather than
+computational efficiency. Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">do_gradient</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">do_gradient</span><span class="p">:</span>
+        <span class="n">gradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">])</span>
+        <span class="k">return</span> <span class="n">value</span><span class="p">,</span> <span class="n">gradient</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+<span class="n">x_init</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+<span class="n">search_direction</span> <span class="o">=</span> <span class="n">ConjugateGradient</span><span class="p">()</span>
+<span class="n">line_search</span> <span class="o">=</span> <span class="n">NewtonLineSearch</span><span class="p">()</span>
+<span class="n">convergence</span> <span class="o">=</span> <span class="n">ConvergenceCondition</span><span class="p">(</span><span class="n">grad_rms</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">step_rms</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+<span class="n">stop_loss</span> <span class="o">=</span> <span class="n">StopLossCondition</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">minimizer</span> <span class="o">=</span> <span class="n">Minimizer</span><span class="p">(</span>
+    <span class="n">x_init</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="n">search_direction</span><span class="p">,</span> <span class="n">line_search</span><span class="p">,</span> <span class="n">convergence</span><span class="p">,</span> <span class="n">stop_loss</span><span class="p">,</span>
+    <span class="n">anagrad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span> <span class="s2">&quot;optimum&quot;</span><span class="p">,</span> <span class="n">minimizer</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">fun</span><span class="p">(</span><span class="n">minimizer</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The signature of the function <code class="docutils literal notranslate"><span class="pre">fun</span></code> must always be the same as in the
+example. The first argument. <code class="docutils literal notranslate"><span class="pre">x</span></code> is mandatory and contains a 1D numpy array
+with function arguments. The second argument, <code class="docutils literal notranslate"><span class="pre">do_gradient</span></code> is optional
+with default value <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>The returned values must also follow the same convention as in the example.
+When <code class="docutils literal notranslate"><span class="pre">do_gradient==True</span></code>, two return values are given. The first one is
+the function value and the second one is a 1D numpy array with the partial
+derivatives of the function towards the arguments. When
+<code class="docutils literal notranslate"><span class="pre">do_gradient==False</span></code>, only one value is returned, i.e. the function value.</p>
+<dl class="class">
+<dt id="molmod.minimizer.SearchDirection">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">SearchDirection</code><a class="headerlink" href="#molmod.minimizer.SearchDirection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract base class for a search direction method</p>
+<dl class="method">
+<dt id="molmod.minimizer.SearchDirection.is_sd">
+<code class="descname">is_sd</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.SearchDirection.is_sd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the last direction was steepest descent</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.SearchDirection.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.SearchDirection.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the internal state of the search direction algorithm</p>
+<p>This implies that the next direction will be steepest descent.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.SearchDirection.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>gradient</em>, <em>step</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.SearchDirection.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the search direction given the latest gradient and step</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.minimizer.SteepestDescent">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">SteepestDescent</code><a class="headerlink" href="#molmod.minimizer.SteepestDescent" title="Permalink to this definition">¶</a></dt>
+<dd><p>The steepest descent method.</p>
+<p>This method simply sets the search direction to minus the gradient. This
+method is the least efficient choice and becomes very inefficient for
+ill-conditioned problems.</p>
+<dl class="method">
+<dt id="molmod.minimizer.SteepestDescent.is_sd">
+<code class="descname">is_sd</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.SteepestDescent.is_sd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the last direction was steepest descent</p>
+<p>Always returns True in this case.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.SteepestDescent.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.SteepestDescent.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the internal state of the search direction algorithm</p>
+<p>Does nothing in this case.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.SteepestDescent.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>gradient</em>, <em>step</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.SteepestDescent.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the search direction given the latest gradient and step</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.minimizer.ConjugateGradient">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">ConjugateGradient</code><a class="headerlink" href="#molmod.minimizer.ConjugateGradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>The conjugate gradient method</p>
+<p>This method is always superior to the steepest descent method in
+practical applications. An automatic reset mechanism reverts the search
+direction to the steepest descent when beta becomes negative.</p>
+<dl class="method">
+<dt id="molmod.minimizer.ConjugateGradient.is_sd">
+<code class="descname">is_sd</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.ConjugateGradient.is_sd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the last direction was steepest descent</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.ConjugateGradient.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.ConjugateGradient.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the internal state of the search direction algorithm</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.ConjugateGradient.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>gradient</em>, <em>step</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.ConjugateGradient.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the search direction given the latest gradient and step</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.minimizer.QuasiNewton">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">QuasiNewton</code><a class="headerlink" href="#molmod.minimizer.QuasiNewton" title="Permalink to this definition">¶</a></dt>
+<dd><p>The quasi Newton method</p>
+<dl class="method">
+<dt id="molmod.minimizer.QuasiNewton.is_sd">
+<code class="descname">is_sd</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.QuasiNewton.is_sd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the last direction was steepest descent</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.QuasiNewton.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.QuasiNewton.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the internal state of the search direction algorithm</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.QuasiNewton.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>gradient</em>, <em>step</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.QuasiNewton.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the search direction given the latest gradient and step</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.minimizer.LineSearch">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">LineSearch</code><span class="sig-paren">(</span><em>qmax=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.LineSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract base class for a line search</p>
+<dl class="docutils">
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">qmax</span></code>  –  The maximum step size of a line search</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.minimizer.LineSearch.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>fun</em>, <em>f0</em>, <em>initial_step_size</em>, <em>epsilon</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.LineSearch.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value that minimizes the one-dimensional function ‘fun’</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fun</span></code>  –  function to minimize (one-dimensional)</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">f0</span></code>   –  the function value at the starting point q=0”</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">initial_step_size</span></code>  –  a guess of the order of magnitude of
+step size to be found.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">epsilon</span></code>  –  a value that is small compared to
+initial_step_size</div>
+</div>
+</dd>
+<dt>Returns:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">success</span></code>  –  a boolean indicating that the line search
+resulted in an improved solution</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">wolfe</span></code>  –  a boolean indicating that the new solution
+satisfies Wolfe conditions</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">qopt</span></code>  –  the position of the new solution on the line</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fopt</span></code>  –  the corresponding function value</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.LineSearch.limit_step">
+<code class="descname">limit_step</code><span class="sig-paren">(</span><em>step</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.LineSearch.limit_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clip the a step within the maximum allowed range</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.minimizer.GoldenLineSearch">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">GoldenLineSearch</code><span class="sig-paren">(</span><em>qtol</em>, <em>qmax=None</em>, <em>max_iter=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.GoldenLineSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>The golden section line search algorithm</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">qtol</span></code>  –  The threshold for displacements along the line.
+(When displacements become smaller than qtol, we
+assume convergence.)</div>
+</div>
+</dd>
+<dt>Optional arguments</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">qmax</span></code>  –  The maximum step size of a line search</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">max_iter</span></code>  –  the maximum number of iteration for the line
+search (only applies to the bracketing part)</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.minimizer.GoldenLineSearch.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>fun</em>, <em>initial_step_size</em>, <em>epsilon</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.GoldenLineSearch.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value that minimizes the one-dimensional function ‘fun’</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fun</span></code>  –  function to minimize (one-dimensional)</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">f0</span></code>   –  the function value at the starting point q=0”</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">initial_step_size</span></code>  –  a guess of the order of magnitude of
+step size to be found. This is used to
+bracket the minimum.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">epsilon</span></code>  –  a value that is small compared to
+initial_step_size</div>
+</div>
+</dd>
+<dt>Returns:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">success</span></code>  –  a boolean indicating that the line search
+resulted in an improved solution</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">wolfe</span></code>  –  a boolean indicating that the new solution
+satisfies Wolfe conditions</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">qopt</span></code>  –  the position of the new solution on the line</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fopt</span></code>  –  the corresponding function value</div>
+</div>
+</dd>
+</dl>
+<p>P.S. The wolfe parameter is always True, but this aspect is not
+guaranteed to be correct. Never use the <a class="reference internal" href="#molmod.minimizer.GoldenLineSearch" title="molmod.minimizer.GoldenLineSearch"><code class="xref py py-class docutils literal notranslate"><span class="pre">GoldenLineSearch</span></code></a> in
+combination with a quasi Newton method.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.minimizer.NewtonLineSearch">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">NewtonLineSearch</code><span class="sig-paren">(</span><em>c1=0.0001</em>, <em>c2=0.1</em>, <em>max_iter=5</em>, <em>qmax=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.NewtonLineSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Newton line search algorithm</p>
+<p>When the curvature is negative, a steepest descent step is tried, using
+the step size from the previous step multiplied by 1.5. If the new
+function value is higher, the step size is reduced by a factor two. The
+latter is repeated at most max_iter times. If no lower value is found,
+the line search fails. (This is known is the back tracking algorithm)</p>
+<p>When the curvature is positive, Newton step are performed. When the
+function or the absolute value of the derivative at a new point
+increases, the procedure is interupted and the last descent point is
+used. When there is no last descent point, back tracking is used. The
+Wolfe conditions are used to determine the convergence of the line
+search. At most max_iter Newton steps are allowed.</p>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">c1</span></code>  –  The coefficient in the first Wolfe condition
+(sufficient decrease of the function) [default=1e-4]</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">c2</span></code>  –  The coefficient in the second Wolfe condition
+(sufficient decrease of the derivative)
+[default=1e-1]. the default is optimal for the
+conjugate gradient method</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">max_iter</span></code>  –  the maximum number of iterations in the line
+search.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">qmax</span></code>  –  The maximum step size of a line search</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.minimizer.NewtonLineSearch.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>fun</em>, <em>initial_step_size</em>, <em>epsilon</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.NewtonLineSearch.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value that minimizes the one-dimensional function ‘fun’</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fun</span></code>  –  function to minimize (one-dimensional)</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">f0</span></code>   –  the function value at the starting point q=0”</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">initial_step_size</span></code>  –  a guess of the order of magnitude of
+step size to be found. This is used
+in case the default newton line search
+fails and when the routine reverts to
+backtracking as a last resort.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">epsilon</span></code>  –  a value that is small compared to
+initial_step_size</div>
+</div>
+</dd>
+<dt>Returns:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">success</span></code>  –  a boolean indicating that the line search
+resulted in an improved solution</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">wolfe</span></code>  –  a boolean indicating that the new solution
+satisfies Wolfe conditions</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">qopt</span></code>  –  the position of the new solution on the line</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fopt</span></code>  –  the corresponding function value</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.minimizer.Preconditioner">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">Preconditioner</code><span class="sig-paren">(</span><em>fun</em>, <em>each</em>, <em>grad_rms</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.Preconditioner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for preconditioners</p>
+<p>A preconditioner is a (linear) transformation of the unknowns to a new
+basis in which the Hessian of the minimum becomes a better-conditioned
+matrix. In these new coordinates the convergence of the minimizer will
+be faster. Picking the right preconditioner is a matter of experience.
+One must balance the extra computational cost of the preconditioner
+against the gains in computational cost because of the reduced number of
+iterations in the minimizer.</p>
+<p>The preconditioners in this package act as wrappers around the function
+to be optimized. One just replaces a function by the preconditioner in
+the constructor of the Minimizer object. E.g.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Minimizer</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>becomes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Minimizer</span><span class="p">(</span><span class="n">SomePreconditioner</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span> <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Also note that the convergence and stop loss conditions are not affected
+by the preconditioner. They get the gradient and step in original
+coordinates.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fun</span></code>  –  the function whose arguments must be transformed</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">each</span></code>  –  update the linear transformation after each ‘each’
+minimizer steps without updates</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">grad_rms</span></code>  –  only update when the rms value of the gradient
+(in the original coordinates) is below this
+threshold</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.minimizer.Preconditioner.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x_prec</em>, <em>do_gradient=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.Preconditioner.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>The actual wrapper around the function call.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x_prec</span></code>  –  the unknowns in preconditioned coordinates</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">do_gradient</span></code>  –  if True, the gradient is also computed and
+transformed to preconditioned coordinates</div>
+</div>
+</dd>
+</dl>
+<p>Note that this implementation assumes that the preconditioner is a
+linear transformation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.Preconditioner.do">
+<code class="descname">do</code><span class="sig-paren">(</span><em>x_orig</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.Preconditioner.do" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the unknowns to preconditioned coordinates</p>
+<p>This method also transforms the gradient to original coordinates</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.Preconditioner.undo">
+<code class="descname">undo</code><span class="sig-paren">(</span><em>x_prec</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.Preconditioner.undo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the unknowns to original coordinates</p>
+<p>This method also transforms the gradient to preconditioned coordinates</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.Preconditioner.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>counter</em>, <em>f</em>, <em>x_orig</em>, <em>gradient_orig</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.Preconditioner.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform an update of the linear transformation</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">counter</span></code>  –  the iteration counter of the minimizer</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">f</span></code>  –  the function value at <code class="docutils literal notranslate"><span class="pre">x_orig</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x_orig</span></code>  –  the unknowns in original coordinates</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">gradient_orig</span></code>  –  the gradient in original coordinates</div>
+</div>
+</dd>
+<dt>Return value:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">do_update</span></code>  –  True when an update is required.</div>
+</div>
+</dd>
+</dl>
+<p>Derived classes must call this method to test of the preconditioner
+requires updating. Derived classes must also return this boolean
+to their caller.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.minimizer.DiagonalPreconditioner">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">DiagonalPreconditioner</code><span class="sig-paren">(</span><em>fun</em>, <em>each</em>, <em>grad_rms</em>, <em>epsilon=0.001</em>, <em>scale_limit=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.DiagonalPreconditioner" title="Permalink to this definition">¶</a></dt>
+<dd><p>The diagonal preconditioner</p>
+<p>This preconditioner derives a diagonal transformation based on a finite
+difference approximation of the diagonal elements of the Hessian. The
+trasnformation is such that these diagonal elements would become equal
+after the transformation. This type of preconditioner is especially
+usefull when the unknowns have different units. In many cases this
+preconditioner is a good trade off betweem accelerated convergence and
+extra cost. In particular when it is combined with a conjugate gradient
+minimizer, it can be more effecient that a quasi Newton method.</p>
+<p>(For more general info on preconditioners, read the doc string of the
+Preconditioner base class.)</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fun</span></code>  –  the function whose arguments must be transformed</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">each</span></code>  –  update the linear transformation after each ‘each’
+minimizer steps without updates</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">grad_rms</span></code>  –  only update when the rms value of the gradient
+(in the original coordinates) is below this
+threshold</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">epsilon</span></code>  –  a small scalar used for the finite differences
+(taken in previous preconditioned coordinates)
+[default=1e-3]</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">scale_limit</span></code>  –  scales smaller than scale_limit times the
+largest scale are fixed to scale_limit times
+the largest scale</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.minimizer.DiagonalPreconditioner.do">
+<code class="descname">do</code><span class="sig-paren">(</span><em>x_orig</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.DiagonalPreconditioner.do" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the unknowns to preconditioned coordinates</p>
+<p>This method also transforms the gradient to original coordinates</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.DiagonalPreconditioner.undo">
+<code class="descname">undo</code><span class="sig-paren">(</span><em>x_prec</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.DiagonalPreconditioner.undo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the unknowns to original coordinates</p>
+<p>This method also transforms the gradient to preconditioned coordinates</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.DiagonalPreconditioner.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>counter</em>, <em>f</em>, <em>x_orig</em>, <em>gradient_orig</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.DiagonalPreconditioner.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform an update of the linear transformation</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">counter</span></code>  –  the iteration counter of the minimizer</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">f</span></code>  –  the function value at <code class="docutils literal notranslate"><span class="pre">x_orig</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x_orig</span></code>  –  the unknowns in original coordinates</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">gradient_orig</span></code>  –  the gradient in original coordinates</div>
+</div>
+</dd>
+<dt>Return value:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">done_update</span></code>  –  True when an update has been done</div>
+</div>
+</dd>
+</dl>
+<p>The minimizer must reset the search direction method when an updated
+has been done.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.minimizer.FullPreconditioner">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">FullPreconditioner</code><span class="sig-paren">(</span><em>fun</em>, <em>each</em>, <em>grad_rms</em>, <em>epsilon=0.001</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.FullPreconditioner" title="Permalink to this definition">¶</a></dt>
+<dd><p>The full preconditioner</p>
+<p>This preconditioner is a bit experimental. The transformation is such
+that the hessian in the new coordinates becomes a constant matrix,
+i.e. diagonal with all elements the same.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fun</span></code>  –  the function whose arguments must be transformed</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">each</span></code>  –  update the linear transformation after each ‘each’
+minimizer steps without updates</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">grad_rms</span></code>  –  only update when the rms value of the gradient
+(in the original coordinates) is below this
+threshold</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">epsilon</span></code>  –  a small scalar used for the finite differences
+(taken in original coordinates) [default=1e-3]</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.minimizer.FullPreconditioner.do">
+<code class="descname">do</code><span class="sig-paren">(</span><em>x_orig</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.FullPreconditioner.do" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the unknowns to preconditioned coordinates</p>
+<p>This method also transforms the gradient to original coordinates</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.FullPreconditioner.undo">
+<code class="descname">undo</code><span class="sig-paren">(</span><em>x_prec</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.FullPreconditioner.undo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the unknowns to original coordinates</p>
+<p>This method also transforms the gradient to preconditioned coordinates</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.FullPreconditioner.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>counter</em>, <em>f</em>, <em>x_orig</em>, <em>gradient_orig</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.FullPreconditioner.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform an update of the linear transformation</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">counter</span></code>  –  the iteration counter of the minimizer</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">f</span></code>  –  the function value at <code class="docutils literal notranslate"><span class="pre">x_orig</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x_orig</span></code>  –  the unknowns in original coordinates</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">gradient_orig</span></code>  –  the gradient in original coordinates</div>
+</div>
+</dd>
+<dt>Return value:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">done_update</span></code>  –  True when an update has been done</div>
+</div>
+</dd>
+</dl>
+<p>The minimizer must reset the search direction method when an updated
+has been done.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.minimizer.ConvergenceCondition">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">ConvergenceCondition</code><span class="sig-paren">(</span><em>step_rms=None</em>, <em>step_max=None</em>, <em>grad_rms=None</em>, <em>grad_max=None</em>, <em>rel_grad_rms=None</em>, <em>rel_grad_max=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.ConvergenceCondition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callable object that tests the convergence of the minimizer</p>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">step_rms</span></code>  –  threshold for the RMS value of the step vector
+in the iterative minimizer</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">step_max</span></code>  –  threshold for the maximum component of the step
+vector in the iterative minimizer</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">grad_rms</span></code>  –  threshold for the RMS value of the gradient
+components of the function to be minimized</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">grad_max</span></code>  –  threshold for the maximum value of the gradient
+components of the function to be minimized</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rel_grad_rms</span></code>  –  threshold for the RMS value of the gradient
+components of the function to be minimized,
+divided by the function value</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rel_grad_max</span></code>  –  threshold for the maximum value of the gradient
+components of the function to be minimized,
+divided by the function value</div>
+</div>
+</dd>
+</dl>
+<p>Only the present arguments define when the minimization has
+converged. All actual values must go below the given thresholds.</p>
+<dl class="method">
+<dt id="molmod.minimizer.ConvergenceCondition.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>grad</em>, <em>step</em>, <em>f</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.ConvergenceCondition.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True when the minimizer has converged</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">grad</span></code>  –  The gradient at the current point.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">step</span></code>  –  The last step vector.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">f</span></code> – The last function value.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.ConvergenceCondition.get_header">
+<code class="descname">get_header</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.ConvergenceCondition.get_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the header for screen logging of the minimization</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.minimizer.StopLossCondition">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">StopLossCondition</code><span class="sig-paren">(</span><em>max_iter=None</em>, <em>fun_margin=None</em>, <em>grad_margin=None</em>, <em>step_min=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.StopLossCondition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callable object that checks if minimizer has lost track</p>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">max_iter</span></code>  –  the maximum number of iterations allowed</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fun_margin</span></code>  –  if the function to be minimized goes above the
+lowest value so far plus this margin, the
+minimization is aborted</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">grad_margin</span></code>  –  if the RMS value of the gradient components
+goes above the lowest value plus this
+threshold, the minimization is aborted</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">step_min</span></code>  –  If the RMS step size drops below this margin, the
+optimization is interrupted.</div>
+</div>
+</dd>
+</dl>
+<p>Only the present arguments define when the minimization has lost
+track.</p>
+<dl class="method">
+<dt id="molmod.minimizer.StopLossCondition.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>counter</em>, <em>fn</em>, <em>gradient</em>, <em>step</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.StopLossCondition.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True when the minimizer has lost track</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.StopLossCondition.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.StopLossCondition.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.minimizer.Constraints">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">Constraints</code><span class="sig-paren">(</span><em>equations</em>, <em>threshold</em>, <em>rcond1=1e-10</em>, <em>max_iter=100</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.Constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Algorithm to apply half-open and convential constraints during minimization.</p>
+<p>The constraint solver internally works with a constraint cost
+function, defined as the squared sum of the constraint functions.
+The constraints are satisfied by bringing the cost function to zero.
+This is done in iterative fashion. At each iteration, two attempts
+are made to lower the constraint cost function:</p>
+<ol class="arabic simple">
+<li>Take a Levenberg-Marquardt-like step.</li>
+<li>If (1) fails or is too slow, take a step to fix only one of the
+constraints, i.e. the constraint which has the largest mismatch.</li>
+</ol>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">equations</span></code> – a list of (sign,equation) pairs. sign can be +1,
+0 of -1. equation is a function with one
+argument: the vector of unknowns in the
+minimizer. It returns the value of the constraint
+function and the gradient of that function. If
+sign is +1, the parameters will be forced in the
+region where the constraint function is positive.
+(Similar for -1, constraint function is forced to
+be negative.) When the sign is 0, the constraint
+function is forced to be zero.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">threshold</span></code> – The acceptable allowed deviation from the
+constraints. The deviation is defined as the
+euclidean norm of the (active) constraint
+functions.</div>
+</div>
+</dd>
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rcond1</span></code> – During the iterative solution of the constraint
+equations in the shake algorithm, it may happen
+that an ill-conditioned set of equations must be
+solved. In that case rcond1 is the first ridge
+parameter used to regularize these equations. If
+needed, the ridge parameter is multiplied by 10
+until a better fit of the constraints is found.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">max_iter</span></code> – The maximum number of iterations in the shake
+algorithm. This is used in several functions.</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.minimizer.Constraints.free_shake">
+<code class="descname">free_shake</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.Constraints.free_shake" title="Permalink to this definition">¶</a></dt>
+<dd><p>Brings unknowns to the constraints.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x</span></code> – The unknowns.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.Constraints.project">
+<code class="descname">project</code><span class="sig-paren">(</span><em>x</em>, <em>vector</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.Constraints.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Project a vector (gradient or direction) on the active constraints.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x</span></code> – The unknowns.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">vector</span></code> – A numpy array with a direction or a gradient.</div>
+</div>
+</dd>
+</dl>
+<p>The return value is a gradient or direction, where the components
+that point away from the constraints are projected out. In case of
+half-open constraints, the projection is only active of the vector
+points into the infeasible region.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.Constraints.safe_shake">
+<code class="descname">safe_shake</code><span class="sig-paren">(</span><em>x</em>, <em>fun</em>, <em>fmax</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.Constraints.safe_shake" title="Permalink to this definition">¶</a></dt>
+<dd><p>Brings unknowns to the constraints, without increasing fun above fmax.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x</span></code> – The unknowns.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fun</span></code> – The function being minimized.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fmax</span></code> – The highest allowed value of the function being
+minimized.</div>
+</div>
+</dd>
+</dl>
+<p>The function <code class="docutils literal notranslate"><span class="pre">fun</span></code> takes a mandatory argument <code class="docutils literal notranslate"><span class="pre">x</span></code> and an optional
+argument <code class="docutils literal notranslate"><span class="pre">do_gradient</span></code>:</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x</span></code>  –  the arguments of the function to be tested</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">do_gradient</span></code>  –  when False, only the function value is
+returned. when True, a 2-tuple with the
+function value and the gradient are returned
+[default=False]</div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.minimizer.Minimizer">
+<em class="property">class </em><code class="descclassname">molmod.minimizer.</code><code class="descname">Minimizer</code><span class="sig-paren">(</span><em>x_init</em>, <em>fun</em>, <em>search_direction</em>, <em>line_search</em>, <em>convergence_condition</em>, <em>stop_loss_condition</em>, <em>anagrad=False</em>, <em>epsilon=1e-06</em>, <em>verbose=True</em>, <em>callback=None</em>, <em>initial_step_size=1.0</em>, <em>constraints=None</em>, <em>debug_line=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.Minimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A flexible multivariate minimizer</p>
+<p>The minimizer searches (in principle) for the ‘nearest’ local minimum.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x_init</span></code>  –  the initial guess for the minimum</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fun</span></code>  –  function to be minimized (see below)</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">search_direction</span></code>  –  a SearchDirection object</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">line_search</span></code>  –  a LineSearch object</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">convergence_condition</span></code>  –  a ConvergenceCondition object</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">stop_loss_condition</span></code>  –  a StopLossCondition object</div>
+</div>
+</dd>
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">anagrad</span></code>  –  when set to True, analytical gradients are used</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">epsilon</span></code>  –  a small value compared to expected changes in the
+unknowns [default=1e-6]. it is used to compute
+finite differences.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">verbose</span></code>  –  print progress information on screen
+[default=True]</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">callback</span></code>  –  optional callback routine after each iteration.
+the callback routine gets the minimizer as first
+and only argument. [default=None]</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">initial_step_size</span></code>  –  The initial step size used in the first
+call to the line search. For later
+line searches, the actual step size
+found by the previous line search is
+used as initial step size. How the
+initial step size is used, depends on
+the line search algorithm.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">constraints</span></code>  –  An instance of the Constraints class.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">debug_line</span></code>  –  If True, and when the line search fails, a
+plot with the line function will be made with
+matplotlib and written as
+<code class="docutils literal notranslate"><span class="pre">'line_failed_%s.png'</span> <span class="pre">%</span> <span class="pre">isodatetime</span></code>.</div>
+</div>
+</dd>
+</dl>
+<p>The function <code class="docutils literal notranslate"><span class="pre">fun</span></code> takes a mandatory argument <code class="docutils literal notranslate"><span class="pre">x</span></code> and an optional
+argument <code class="docutils literal notranslate"><span class="pre">do_gradient</span></code>:</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x</span></code>  –  the arguments of the function to be tested</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">do_gradient</span></code>  –  when False, only the function value is
+returned. when True, a 2-tuple with the
+function value and the gradient are returned
+[default=False]</div>
+</div>
+</div></blockquote>
+<dl class="method">
+<dt id="molmod.minimizer.Minimizer.get_final">
+<code class="descname">get_final</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.Minimizer.get_final" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the final solution in the original coordinates</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.Minimizer.initialize">
+<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.Minimizer.initialize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="molmod.minimizer.Minimizer.propagate">
+<code class="descname">propagate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.Minimizer.propagate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.minimizer.check_anagrad">
+<code class="descclassname">molmod.minimizer.</code><code class="descname">check_anagrad</code><span class="sig-paren">(</span><em>fun</em>, <em>x0</em>, <em>epsilon</em>, <em>threshold</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.check_anagrad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the analytical gradient using finite differences</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fun</span></code>  –  the function to be tested, more info below</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x0</span></code>  –  the reference point around which the function should be
+tested</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">epsilon</span></code>  –  a small scalar used for the finite differences</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">threshold</span></code>  –  the maximum acceptable difference between the
+analytical gradient and the gradient obtained by
+finite differentiation</div>
+</div>
+</dd>
+</dl>
+<p>The function <code class="docutils literal notranslate"><span class="pre">fun</span></code> takes a mandatory argument <code class="docutils literal notranslate"><span class="pre">x</span></code> and an optional
+argument <code class="docutils literal notranslate"><span class="pre">do_gradient</span></code>:</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x</span></code>  –  the arguments of the function to be tested</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">do_gradient</span></code>  –  When False, only the function value is returned.
+When True, a 2-tuple with the function value and
+the gradient are returned [default=False]</div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.minimizer.check_delta">
+<code class="descclassname">molmod.minimizer.</code><code class="descname">check_delta</code><span class="sig-paren">(</span><em>fun</em>, <em>x</em>, <em>dxs</em>, <em>period=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.check_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the difference between two function values using the analytical gradient</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fun</span></code>  –  The function to be tested, more info below.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x</span></code>  –  The argument vector.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">dxs</span></code>  –  A matrix where each row is a vector of small differences
+to be added to the argument vector.</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">period</span></code>  –  If the function value is periodic, one may provide the
+period such that differences are computed using
+periodic boundary conditions.</div>
+</div>
+</dd>
+</dl>
+<p>The function <code class="docutils literal notranslate"><span class="pre">fun</span></code> takes a mandatory argument <code class="docutils literal notranslate"><span class="pre">x</span></code> and an optional
+argument <code class="docutils literal notranslate"><span class="pre">do_gradient</span></code>:</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x</span></code>  –  The arguments of the function to be tested.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">do_gradient</span></code>  –  When False, only the function value is returned.
+When True, a 2-tuple with the function value and
+the gradient are returned. [default=False]</div>
+</div>
+</div></blockquote>
+<p>For every row in dxs, the following computation is repeated:</p>
+<ol class="arabic simple">
+<li>D1 = ‘f(x+dx) - f(x)’ is computed.</li>
+<li>D2 = ‘0.5 (grad f(x+dx) + grad f(x)) . dx’ is computed.</li>
+</ol>
+<p>A threshold is set to the median of the D1 set. For each case where <a href="#id1"><span class="problematic" id="id2">|D1|</span></a>
+is larger than the threshold, <a href="#id3"><span class="problematic" id="id4">|D1 - D2|</span></a>, should be smaller than the
+threshold.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.minimizer.compute_fd_hessian">
+<code class="descclassname">molmod.minimizer.</code><code class="descname">compute_fd_hessian</code><span class="sig-paren">(</span><em>fun</em>, <em>x0</em>, <em>epsilon</em>, <em>anagrad=True</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.minimizer.compute_fd_hessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Hessian using the finite difference method</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fun</span></code>  –  the function for which the Hessian should be computed,
+more info below</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x0</span></code>  –  the point at which the Hessian must be computed</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">epsilon</span></code>  –  a small scalar step size used to compute the finite
+differences</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">anagrad</span></code>  –  when True, analytical gradients are used
+[default=True]</div>
+</div>
+</dd>
+</dl>
+<p>The function <code class="docutils literal notranslate"><span class="pre">fun</span></code> takes a mandatory argument <code class="docutils literal notranslate"><span class="pre">x</span></code> and an optional
+argument <code class="docutils literal notranslate"><span class="pre">do_gradient</span></code>:</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x</span></code>  –  the arguments of the function to be tested</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">do_gradient</span></code>  –  When False, only the function value is returned.
+When True, a 2-tuple with the function value and
+the gradient are returned [default=False]</div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="module-molmod.symmetry">
+<span id="molmod-symmetry-symmetry"></span><h2><a class="reference internal" href="#module-molmod.symmetry" title="molmod.symmetry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.symmetry</span></code></a> – Symmetry<a class="headerlink" href="#module-molmod.symmetry" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="molmod.symmetry.compute_rotsym">
+<code class="descclassname">molmod.symmetry.</code><code class="descname">compute_rotsym</code><span class="sig-paren">(</span><em>molecule</em>, <em>graph</em>, <em>threshold=0.0018897261339212521</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.symmetry.compute_rotsym" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the rotational symmetry number</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">molecule</span></code>  –  The molecule</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  The corresponding bond graph</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">threshold</span></code>  –  only when a rotation results in an rmsd below the
+given threshold, the rotation is considered to
+transform the molecule onto itself.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-molmod.toyff">
+<span id="molmod-toyff-toyff"></span><h2><a class="reference internal" href="#module-molmod.toyff" title="molmod.toyff"><code class="xref py py-mod docutils literal notranslate"><span class="pre">molmod.toyff</span></code></a> – ToyFF<a class="headerlink" href="#module-molmod.toyff" title="Permalink to this headline">¶</a></h2>
+<p>The ToyFF is not meant for accurate geometries, but rather to generate
+molecular geometries from scratch. The routines below start with just a
+random set of coordinates and turn that into a rough molecular geometry.
+Post-processing with a more reliable force field is mandatory.</p>
+<dl class="function">
+<dt id="molmod.toyff.guess_geometry">
+<code class="descclassname">molmod.toyff.</code><code class="descname">guess_geometry</code><span class="sig-paren">(</span><em>graph</em>, <em>unit_cell=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.toyff.guess_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a molecular geometry based on a molecular graph.</p>
+<p>This routine does not require initial coordinates and will give a very
+rough picture of the initial geometry. Do not expect all details to be
+in perfect condition. A subsequent optimization with a more accurate
+level of theory is at least advisable.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  The molecular graph of the system, see
+:class:molmod.molecular_graphs.MolecularGraph</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">unit_cell</span></code>  –  periodic boundry conditions, see
+<a class="reference internal" href="basic.html#molmod.unit_cells.UnitCell" title="molmod.unit_cells.UnitCell"><code class="xref py py-class docutils literal notranslate"><span class="pre">molmod.unit_cells.UnitCell</span></code></a></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">verbose</span></code>  –  Show optimizer progress when True</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="molmod.toyff.tune_geometry">
+<code class="descclassname">molmod.toyff.</code><code class="descname">tune_geometry</code><span class="sig-paren">(</span><em>graph</em>, <em>mol</em>, <em>unit_cell=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.toyff.tune_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fine tune a molecular geometry, starting from a (very) poor guess of
+the initial geometry.</p>
+<p>Do not expect all details to be in perfect condition. A subsequent
+optimization with a more accurate level of theory is at least advisable.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  The molecular graph of the system, see
+:class:molmod.molecular_graphs.MolecularGraph</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mol</span></code>  –  A :class:molmod.molecules.Molecule class with the initial
+guess of the coordinates</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">unit_cell</span></code>  –  periodic boundry conditions, see
+<a class="reference internal" href="basic.html#molmod.unit_cells.UnitCell" title="molmod.unit_cells.UnitCell"><code class="xref py py-class docutils literal notranslate"><span class="pre">molmod.unit_cells.UnitCell</span></code></a></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">verbose</span></code>  –  Show optimizer progress when True</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.toyff.ToyFF">
+<em class="property">class </em><code class="descclassname">molmod.toyff.</code><code class="descname">ToyFF</code><span class="sig-paren">(</span><em>graph</em>, <em>unit_cell=None</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.toyff.ToyFF" title="Permalink to this definition">¶</a></dt>
+<dd><p>A force field implementation for generating geometries.</p>
+<p>See :func:guess_geomtry and :func:tune_geomtry for two practical use
+cases.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code>  –  the molecular graph from which the force field terms
+are extracted. See
+:class:molmod.molecular_graphs.MolecularGraph</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">unit_cell</span></code>  –  periodic boundry conditions, see
+<a class="reference internal" href="basic.html#molmod.unit_cells.UnitCell" title="molmod.unit_cells.UnitCell"><code class="xref py py-class docutils literal notranslate"><span class="pre">molmod.unit_cells.UnitCell</span></code></a></div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="molmod.toyff.ToyFF.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>x</em>, <em>do_gradient=False</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.toyff.ToyFF.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the energy (and gradient) for a set of Cartesian coordinates</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">x</span></code>  –  the Cartesian coordinates</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">do_gradient</span></code>  –  when set to True, the gradient is also
+computed and returned. [default=False]</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="molmod.toyff.SpecialAngles">
+<em class="property">class </em><code class="descclassname">molmod.toyff.</code><code class="descname">SpecialAngles</code><a class="headerlink" href="#molmod.toyff.SpecialAngles" title="Permalink to this definition">¶</a></dt>
+<dd><p>A database with precomputed valence angles from small molecules</p>
+<dl class="method">
+<dt id="molmod.toyff.SpecialAngles.get_angle">
+<code class="descname">get_angle</code><span class="sig-paren">(</span><em>triplet</em><span class="sig-paren">)</span><a class="headerlink" href="#molmod.toyff.SpecialAngles.get_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a rest angle for a given triplet</p>
+<p>A triplet consists of a tuple with six elements: (n0, v0, n1, v1, n2, v2)
+The indexes refer to consecutive atoms forming a valence angle. n0,
+n1 and n2 are the atom numbers of the angle and v0, v1 and v2 are the
+valences of the corresponding atoms. n1 and v1 are the values for the
+central atom in the angle.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Algorithms</a><ul>
+<li><a class="reference internal" href="#module-molmod.binning"><code class="docutils literal notranslate"><span class="pre">molmod.binning</span></code> – Binning</a></li>
+<li><a class="reference internal" href="#module-molmod.clusters"><code class="docutils literal notranslate"><span class="pre">molmod.clusters</span></code> – Clustering</a></li>
+<li><a class="reference internal" href="#module-molmod.ic"><code class="docutils literal notranslate"><span class="pre">molmod.ic</span></code> – Internal coordinates</a></li>
+<li><a class="reference internal" href="#module-molmod.minimizer"><code class="docutils literal notranslate"><span class="pre">molmod.minimizer</span></code> – Minimizer</a></li>
+<li><a class="reference internal" href="#module-molmod.symmetry"><code class="docutils literal notranslate"><span class="pre">molmod.symmetry</span></code> – Symmetry</a></li>
+<li><a class="reference internal" href="#module-molmod.toyff"><code class="docutils literal notranslate"><span class="pre">molmod.toyff</span></code> – ToyFF</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="data.html"
+                        title="previous chapter">Databases</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="internals.html"
+                        title="next chapter">Internals of the MolMod package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/algo.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="internals.html" title="Internals of the MolMod package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="data.html" title="Databases"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MolMod 1.4.8 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>
