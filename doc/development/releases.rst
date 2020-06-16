@@ -24,6 +24,11 @@
 Release history
 ###############
 
+**Version 1.4.8** June 16, 2020
+
+- Switch to PyTest for testing. The ``zip_unsafe`` option is no longer needed in
+  ``setup.py``, because pytest can also collect unit tests inside egg installs.
+
 **Version 1.4.7** May 14, 2020
 
 - Fix version in the NumPy dependency (at least 1.16.00). This is needed to
