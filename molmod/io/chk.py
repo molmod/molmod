@@ -142,7 +142,7 @@ def dump_chk(filename, data):
                     raise TypeError('Arrays with fields are not supported.')
                 shape_str = ','.join(str(i) for i in value.shape)
                 if issubclass(value.dtype.type, (str, np.unicode, np.bytes_)):
-                    value = value.astype(np.unicode)
+                    value = value.astype(str)
                     for cell in value.flat:
                         if len(cell) >= 22:
                             raise ValueError('In case of string arrays, a string may contain at most 21 characters.')
