@@ -47,3 +47,4 @@ from molmod.io.pdb import *
 from molmod.io.psf import *
 from molmod.io.sdf import *
 from molmod.io.xyz import *
+from molmod.io.h5 import *
