@@ -54,7 +54,7 @@ version_template = """\
 __version__ = '{}'
 """
 if __version__ is None:
-    print('Trying to get the version from {}',format(fn_version))
+    print('Trying to get the version from ' + fn_version)
     # Try to load the git version tag from version.py
     try:
         with open(fn_version, 'r') as fh:
