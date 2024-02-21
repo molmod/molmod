@@ -36,16 +36,17 @@ import Cython.Build
 
 # Try to get the version from git describe
 __version__ = None
-try:
-    print('Trying to get the version from git describe')
-    git_describe = subprocess.check_output(["git", "describe", "--tags"])
-    version_words = git_describe.decode('utf-8').strip().split('-')
-    __version__ = version_words[0]
-    if len(version_words) > 1:
-        __version__ += '.post' + version_words[1]
-    print('Version from git describe: {}'.format(__version__))
-except (subprocess.CalledProcessError, OSError):
-    pass
+if os.path.exists('.git'):
+    try:
+        print('Trying to get the version from git describe')
+        git_describe = subprocess.check_output(["git", "describe", "--tags"])
+        version_words = git_describe.decode('utf-8').strip().split('-')
+        __version__ = version_words[0]
+        if len(version_words) > 1:
+            __version__ += '.post' + version_words[1]
+        print('Version from git describe: {}'.format(__version__))
+    except (subprocess.CalledProcessError, OSError):
+        pass
 
 # Interact with version.py
 fn_version = os.path.join(os.path.dirname(__file__), 'molmod', 'version.py')
